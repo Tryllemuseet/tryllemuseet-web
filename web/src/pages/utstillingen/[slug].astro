@@ -1,0 +1,333 @@
+---
+// src/pages/utstillingen/[slug].astro
+import BaseLayout from '../../layouts/BaseLayout.astro'
+import { getAllMagicians, getMagicianBySlug } from '../../lib/sanity'
+import { toHTML } from '@portabletext/to-html'
+
+export async function getStaticPaths() {
+  const magicians = await getAllMagicians()
+  return magicians.map(m => ({ params: { slug: m.slug } }))
+}
+
+const { slug } = Astro.params
+const m = await getMagicianBySlug(slug!)
+
+if (!m) return Astro.redirect('/utstillingen', 301)
+
+const adultHtml  = m.adultText  ? toHTML(m.adultText)  : ''
+const sectionsHtml = m.mobileSections?.map(s => ({
+  heading: s.heading,
+  html: s.body ? toHTML(s.body) : ''
+})) ?? []
+---
+
+<BaseLayout
+  title={`${m.title} — Tryllemuseet`}
+  description={m.mobileIntro ?? `Les om ${m.title} på Tryllemuseet`}
+>
+
+  <!-- HERO -->
+  <section class="magician-hero">
+    <div class="container hero-inner">
+      {m.posterImage?.asset?.url && (
+        <div class="poster-wrap">
+          <img
+            src={m.posterImage.asset.url}
+            alt={m.posterImage.alt ?? m.title}
+            class="poster-img"
+          />
+        </div>
+      )}
+      <div class="hero-text">
+        <p class="section-label">Felt {m.order} · QR{m.qrNumber}</p>
+        <h1 class="display-title hero-title">{m.title}</h1>
+        {m.years    && <p class="hero-years">{m.years}</p>}
+        {m.tagline  && <p class="hero-tagline">«{m.tagline}»</p>}
+        {m.mobileIntro && <p class="hero-intro">{m.mobileIntro}</p>}
+
+        <!-- QR-badge -->
+        <div class="qr-badge">
+          <div class="qr-icon" aria-hidden="true">
+            <svg viewBox="0 0 32 32" fill="none">
+              <rect x="2"  y="2"  width="10" height="10" rx="1" stroke="currentColor" stroke-width="2" fill="none"/>
+              <rect x="5"  y="5"  width="4"  height="4"  fill="currentColor"/>
+              <rect x="20" y="2"  width="10" height="10" rx="1" stroke="currentColor" stroke-width="2" fill="none"/>
+              <rect x="23" y="5"  width="4"  height="4"  fill="currentColor"/>
+              <rect x="2"  y="20" width="10" height="10" rx="1" stroke="currentColor" stroke-width="2" fill="none"/>
+              <rect x="5"  y="23" width="4"  height="4"  fill="currentColor"/>
+              <rect x="14" y="2"  width="2"  height="4"  fill="currentColor"/>
+              <rect x="14" y="8"  width="4"  height="2"  fill="currentColor"/>
+              <rect x="14" y="14" width="4"  height="2"  fill="currentColor"/>
+              <rect x="20" y="14" width="2"  height="4"  fill="currentColor"/>
+              <rect x="24" y="14" width="6"  height="2"  fill="currentColor"/>
+              <rect x="14" y="20" width="2"  height="6"  fill="currentColor"/>
+              <rect x="18" y="22" width="4"  height="2"  fill="currentColor"/>
+              <rect x="24" y="20" width="6"  height="2"  fill="currentColor"/>
+              <rect x="28" y="22" width="2"  height="8"  fill="currentColor"/>
+              <rect x="20" y="26" width="6"  height="2"  fill="currentColor"/>
+            </svg>
+          </div>
+          <div>
+            <p class="qr-label">Skann for mer</p>
+            <p class="qr-url">QR{m.qrNumber}.tryllemuseet.no</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="container page-body">
+
+    <!-- VOKSENTEKST -->
+    {adultHtml && (
+      <section class="adult-section" aria-label="Voksentekst">
+        <h2 class="section-heading">Om {m.title}</h2>
+        <div class="prose" set:html={adultHtml} />
+      </section>
+    )}
+
+    <!-- BARNETEKST -->
+    {m.childText && (
+      <aside class="child-panel" aria-label="For barn">
+        <div class="child-panel-inner">
+          <p class="child-label">⭐ For barn</p>
+          <p class="child-text">{m.childText}</p>
+          {m.childActivity && (
+            <div class="child-activity">
+              <span aria-hidden="true">★</span>
+              {m.childActivity}
+            </div>
+          )}
+        </div>
+      </aside>
+    )}
+
+    <!-- UTDYPENDE SEKSJONER -->
+    {sectionsHtml.length > 0 && (
+      <section class="mobile-sections" aria-label="Utdypende innhold">
+        <h2 class="section-heading">Les mer</h2>
+        {sectionsHtml.map(s => (
+          <div class="content-section">
+            <h3 class="content-heading">{s.heading}</h3>
+            <div class="prose" set:html={s.html} />
+          </div>
+        ))}
+      </section>
+    )}
+
+    <!-- KILDER -->
+    {m.sources && m.sources.length > 0 && (
+      <section class="sources-section" aria-label="Kilder">
+        <h2 class="section-heading">Kilder</h2>
+        <ul class="sources-list">
+          {m.sources.map(src => (
+            <li>
+              {src.url
+                ? <a href={src.url} target="_blank" rel="noopener noreferrer">{src.label}</a>
+                : <span>{src.label}</span>
+              }
+            </li>
+          ))}
+        </ul>
+      </section>
+    )}
+
+    <!-- NAVIGASJON mellom magikere -->
+    <nav class="magician-nav" aria-label="Naviger mellom utstillingsfelt">
+      <a href="/utstillingen" class="btn-back">← Alle felt</a>
+      <div class="nav-neighbors">
+        {m.order > 1 && (
+          <a href={`/utstillingen`} class="btn-nav">← Forrige felt</a>
+        )}
+        {m.order < 7 && (
+          <a href={`/utstillingen`} class="btn-nav">Neste felt →</a>
+        )}
+      </div>
+    </nav>
+
+  </div>
+</BaseLayout>
+
+<style>
+  /* HERO */
+  .magician-hero {
+    background: var(--burgundy-dk);
+    padding: 3.5rem 0 3rem;
+    border-bottom: 2px solid var(--gold-dark);
+  }
+
+  .hero-inner {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 3rem;
+    align-items: start;
+  }
+
+  .poster-wrap {
+    width: 200px;
+    flex-shrink: 0;
+    border-radius: 4px;
+    overflow: hidden;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+    border: 2px solid var(--gold-dark);
+  }
+
+  .poster-img { width: 100%; display: block; }
+
+  .hero-text { color: var(--cream); }
+
+  .hero-title  { font-size: clamp(1.8rem, 4vw, 3rem); color: var(--cream); margin: 0.5rem 0 0.4rem; }
+  .hero-years  { font-family: var(--font-ui); font-size: 0.9rem; color: var(--gold-light); opacity: 0.75; margin-bottom: 0.4rem; }
+  .hero-tagline { font-family: var(--font-body); font-size: 1.1rem; font-style: italic; color: var(--gold); margin-bottom: 1rem; }
+  .hero-intro  { font-family: var(--font-ui); font-size: 1rem; line-height: 1.65; opacity: 0.85; max-width: 540px; margin-bottom: 1.5rem; }
+
+  /* QR badge */
+  .qr-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+    background: rgba(212,168,67,0.12);
+    border: 1px solid rgba(212,168,67,0.3);
+    border-radius: 6px;
+    padding: 0.6rem 1rem;
+    margin-top: 0.5rem;
+  }
+
+  .qr-icon { width: 32px; height: 32px; color: var(--gold); flex-shrink: 0; }
+  .qr-label { font-family: var(--font-ui); font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--gold-light); opacity: 0.7; }
+  .qr-url   { font-family: var(--font-ui); font-size: 0.85rem; color: var(--gold); font-weight: 600; }
+
+  /* PAGE BODY */
+  .page-body { padding: 3rem 0 5rem; max-width: 720px; }
+
+  .section-heading {
+    font-family: var(--font-display);
+    font-size: 1.3rem;
+    color: var(--burgundy);
+    margin-bottom: 1.25rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--cream-dark);
+    letter-spacing: 0.04em;
+  }
+
+  /* ADULT SECTION */
+  .adult-section { margin-bottom: 2.5rem; }
+
+  /* PROSE */
+  .prose { font-family: var(--font-body); font-size: 1rem; line-height: 1.75; color: var(--ink); }
+  .prose p { margin-bottom: 1rem; }
+  .prose p:last-child { margin-bottom: 0; }
+
+  /* CHILD PANEL */
+  .child-panel {
+    background: #FFF9E0;
+    border: 2px solid #E8C840;
+    border-radius: 6px;
+    margin-bottom: 2.5rem;
+  }
+
+  .child-panel-inner { padding: 1.5rem; }
+
+  .child-label {
+    font-family: var(--font-ui);
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: #C47A00;
+    margin-bottom: 0.6rem;
+  }
+
+  .child-text {
+    font-family: var(--font-body);
+    font-size: 1rem;
+    line-height: 1.65;
+    color: var(--ink);
+    margin-bottom: 0.75rem;
+  }
+
+  .child-activity {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+    background: #E8C840;
+    border-radius: 4px;
+    padding: 0.6rem 0.9rem;
+    font-family: var(--font-ui);
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--ink);
+  }
+
+  /* MOBILE SECTIONS */
+  .mobile-sections { margin-bottom: 2.5rem; }
+
+  .content-section { margin-bottom: 2rem; }
+
+  .content-heading {
+    font-family: var(--font-display);
+    font-size: 1.05rem;
+    color: var(--ink);
+    margin-bottom: 0.75rem;
+    letter-spacing: 0.03em;
+  }
+
+  /* SOURCES */
+  .sources-section { margin-bottom: 2.5rem; }
+
+  .sources-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    list-style: none;
+  }
+
+  .sources-list li::before { content: '→  '; color: var(--gold-dark); }
+
+  .sources-list a {
+    font-family: var(--font-ui);
+    font-size: 0.875rem;
+    color: var(--blue, #185FA5);
+    text-decoration: underline;
+  }
+  .sources-list a:hover { color: var(--burgundy); }
+
+  .sources-list span {
+    font-family: var(--font-ui);
+    font-size: 0.875rem;
+    color: var(--grey);
+    font-style: italic;
+  }
+
+  /* NAVIGATION */
+  .magician-nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-top: 2rem;
+    border-top: 1px solid var(--cream-dark);
+    flex-wrap: wrap;
+    gap: 0.75rem;
+  }
+
+  .btn-back, .btn-nav {
+    font-family: var(--font-ui);
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--burgundy);
+    padding: 0.5rem 1rem;
+    border: 1.5px solid var(--cream-dark);
+    border-radius: var(--radius);
+    transition: border-color 180ms, color 180ms;
+  }
+  .btn-back:hover, .btn-nav:hover { border-color: var(--gold); color: var(--gold-dark); }
+
+  .nav-neighbors { display: flex; gap: 0.5rem; }
+
+  /* RESPONSIVE */
+  @media (max-width: 700px) {
+    .hero-inner { grid-template-columns: 1fr; gap: 1.5rem; }
+    .poster-wrap { width: 140px; }
+    .page-body { padding: 2rem 0 3rem; }
+  }
+</style>

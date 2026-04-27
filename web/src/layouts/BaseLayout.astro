@@ -1,0 +1,528 @@
+---
+// src/layouts/BaseLayout.astro
+export interface Props {
+  title?: string;
+  description?: string;
+}
+
+const {
+  title = 'Tryllemuseet',
+  description = 'Norges minste, merkeligste og mest magiske museum',
+} = Astro.props;
+
+const navLinks = [
+  { href: '/',              label: 'Hjem'          },
+  { href: '/besok',         label: 'Besøk oss'     },
+  { href: '/utstillingen',  label: 'Utstillingen'  },
+  { href: '/tryllehistorie',label: 'Tryllehistorie'},
+  { href: '/barn',          label: 'Barn & unge'   },
+  { href: '/om-oss',        label: 'Om oss'        },
+];
+
+const currentPath = Astro.url.pathname;
+---
+
+<!DOCTYPE html>
+<html lang="nb">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content={description} />
+  <title>{title}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Lora:ital,wght@0,400;0,600;1,400&family=Source+Sans+3:wght@300;400;600&display=swap" rel="stylesheet" />
+</head>
+<body>
+
+  <!-- ── HEADER ─────────────────────────────────────────────────── -->
+  <header class="site-header">
+    <div class="header-inner">
+
+      <a href="/" class="logo-link" aria-label="Tryllemuseet — forsiden">
+        <div class="logo-mark">
+          <svg viewBox="0 0 60 55" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <!-- Hat brim -->
+            <ellipse cx="30" cy="44" rx="27" ry="7" stroke="#8A8A8A" stroke-width="2.5" fill="none"/>
+            <!-- Hat body -->
+            <path d="M8 44 L12 16 Q30 10 48 16 L52 44" stroke="#8A8A8A" stroke-width="2.5" fill="none" stroke-linejoin="round"/>
+            <!-- M letter -->
+            <text x="17" y="38" font-family="Georgia,serif" font-weight="700" font-size="24" fill="#D4A843">M</text>
+          </svg>
+        </div>
+        <div class="logo-text">
+          <span class="logo-name">Tryllemuseet</span>
+          <span class="logo-tagline">Norges mest magiske museum</span>
+        </div>
+      </a>
+
+      <!-- Desktop nav -->
+      <nav class="main-nav" aria-label="Hovednavigasjon">
+        <ul>
+          {navLinks.map(link => (
+            <li>
+              <a
+                href={link.href}
+                class:list={['nav-link', { active: currentPath === link.href || (link.href !== '/' && currentPath.startsWith(link.href)) }]}
+              >
+                {link.label}
+              </a>
+            </li>
+          ))}
+        </ul>
+      </nav>
+
+      <!-- Mobile hamburger -->
+      <button class="hamburger" id="menu-toggle" aria-label="Åpne meny" aria-expanded="false" aria-controls="mobile-menu">
+        <span></span><span></span><span></span>
+      </button>
+
+    </div>
+
+    <!-- Mobile menu -->
+    <nav class="mobile-menu" id="mobile-menu" aria-label="Mobilnavigasjon" aria-hidden="true">
+      <ul>
+        {navLinks.map(link => (
+          <li>
+            <a
+              href={link.href}
+              class:list={['mobile-nav-link', { active: currentPath === link.href || (link.href !== '/' && currentPath.startsWith(link.href)) }]}
+            >
+              {link.label}
+            </a>
+          </li>
+        ))}
+      </ul>
+    </nav>
+  </header>
+
+  <!-- ── MAIN ───────────────────────────────────────────────────── -->
+  <main id="main-content">
+    <slot />
+  </main>
+
+  <!-- ── FOOTER ─────────────────────────────────────────────────── -->
+  <footer class="site-footer">
+    <div class="footer-inner">
+
+      <div class="footer-brand">
+        <span class="footer-name">✦ Tryllemuseet ✦</span>
+        <p class="footer-address">Årvollveien 35, 0590 Oslo</p>
+        <p class="footer-hours">Søndager 12–16 &nbsp;·&nbsp; og etter avtale</p>
+      </div>
+
+      <div class="footer-links">
+        <h3>Utforsk</h3>
+        <ul>
+          {navLinks.slice(1).map(link => (
+            <li><a href={link.href}>{link.label}</a></li>
+          ))}
+        </ul>
+      </div>
+
+      <div class="footer-contact">
+        <h3>Kontakt</h3>
+        <a href="/kontakt" class="footer-cta">Send oss en melding</a>
+        <div class="social-links">
+          <a href="https://www.facebook.com/tryllemuseet" aria-label="Facebook" target="_blank" rel="noopener">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>
+          </a>
+          <a href="https://www.instagram.com/tryllemuseet" aria-label="Instagram" target="_blank" rel="noopener">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="0.8" fill="currentColor" stroke="none"/></svg>
+          </a>
+        </div>
+      </div>
+
+    </div>
+    <div class="footer-bottom">
+      <p>© {new Date().getFullYear()} Tryllemuseet &nbsp;·&nbsp; <a href="/personvern">Personvern</a></p>
+    </div>
+  </footer>
+
+</body>
+</html>
+
+<script>
+  // Mobile menu toggle
+  const toggle = document.getElementById('menu-toggle');
+  const menu   = document.getElementById('mobile-menu');
+  toggle?.addEventListener('click', () => {
+    const open = menu?.classList.toggle('open');
+    toggle.setAttribute('aria-expanded', String(open));
+    menu?.setAttribute('aria-hidden', String(!open));
+  });
+  // Close on link click
+  menu?.querySelectorAll('a').forEach(a =>
+    a.addEventListener('click', () => {
+      menu.classList.remove('open');
+      toggle?.setAttribute('aria-expanded', 'false');
+      menu.setAttribute('aria-hidden', 'true');
+    })
+  );
+</script>
+
+<style is:global>
+  /* ── TOKENS ──────────────────────────────────────────────────── */
+  :root {
+    --gold:        #D4A843;
+    --gold-light:  #E8C870;
+    --gold-dark:   #A07820;
+    --burgundy:    #6B0F1A;
+    --burgundy-dk: #4A0A12;
+    --cream:       #FBF7EF;
+    --cream-dark:  #F0E8D8;
+    --ink:         #1A1208;
+    --ink-mid:     #3D2E1A;
+    --grey:        #8A8A8A;
+    --grey-light:  #D0C8B8;
+
+    --font-display: 'Cinzel', 'Times New Roman', serif;
+    --font-body:    'Lora', Georgia, serif;
+    --font-ui:      'Source Sans 3', system-ui, sans-serif;
+
+    --header-h:    72px;
+    --max-w:       1200px;
+    --radius:      4px;
+    --shadow:      0 2px 16px rgba(26,18,8,0.12);
+    --shadow-lg:   0 8px 40px rgba(26,18,8,0.18);
+
+    --transition:  200ms ease;
+  }
+
+  /* ── RESET ───────────────────────────────────────────────────── */
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
+
+  body {
+    font-family: var(--font-body);
+    font-size: 1rem;
+    line-height: 1.7;
+    color: var(--ink);
+    background: var(--cream);
+    min-height: 100dvh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  img, svg { display: block; max-width: 100%; }
+  a { color: inherit; text-decoration: none; }
+  ul { list-style: none; }
+  button { cursor: pointer; border: none; background: none; font: inherit; }
+
+  main { flex: 1; padding-top: var(--header-h); }
+
+  /* ── HEADER ──────────────────────────────────────────────────── */
+  .site-header {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 100;
+    background: var(--burgundy);
+    border-bottom: 2px solid var(--gold-dark);
+    box-shadow: 0 2px 20px rgba(0,0,0,0.35);
+  }
+
+  .header-inner {
+    max-width: var(--max-w);
+    margin: 0 auto;
+    padding: 0 1.5rem;
+    height: var(--header-h);
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+  }
+
+  /* Logo */
+  .logo-link {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-shrink: 0;
+    text-decoration: none;
+  }
+
+  .logo-mark svg {
+    width: 44px;
+    height: 40px;
+    transition: transform var(--transition);
+  }
+  .logo-link:hover .logo-mark svg { transform: translateY(-2px); }
+
+  .logo-text {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.1;
+  }
+
+  .logo-name {
+    font-family: var(--font-display);
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--gold);
+    letter-spacing: 0.08em;
+  }
+
+  .logo-tagline {
+    font-family: var(--font-ui);
+    font-size: 0.65rem;
+    color: var(--gold-light);
+    opacity: 0.75;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  /* Desktop nav */
+  .main-nav {
+    margin-left: auto;
+  }
+
+  .main-nav ul {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+  }
+
+  .nav-link {
+    font-family: var(--font-ui);
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--cream);
+    letter-spacing: 0.04em;
+    padding: 0.4rem 0.75rem;
+    border-radius: var(--radius);
+    transition: color var(--transition), background var(--transition);
+    position: relative;
+  }
+
+  .nav-link::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 50%; right: 50%;
+    height: 2px;
+    background: var(--gold);
+    transition: left var(--transition), right var(--transition);
+  }
+
+  .nav-link:hover { color: var(--gold); }
+  .nav-link:hover::after { left: 0.75rem; right: 0.75rem; }
+  .nav-link.active { color: var(--gold); }
+  .nav-link.active::after { left: 0.75rem; right: 0.75rem; }
+
+  /* Hamburger */
+  .hamburger {
+    display: none;
+    flex-direction: column;
+    gap: 5px;
+    margin-left: auto;
+    padding: 8px;
+  }
+
+  .hamburger span {
+    display: block;
+    width: 24px;
+    height: 2px;
+    background: var(--cream);
+    border-radius: 2px;
+    transition: transform var(--transition), opacity var(--transition);
+  }
+
+  /* Mobile menu */
+  .mobile-menu {
+    display: none;
+    background: var(--burgundy-dk);
+    border-top: 1px solid var(--gold-dark);
+  }
+
+  .mobile-menu.open { display: block; }
+
+  .mobile-menu ul {
+    max-width: var(--max-w);
+    margin: 0 auto;
+    padding: 0.75rem 1.5rem 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  .mobile-nav-link {
+    display: block;
+    font-family: var(--font-ui);
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--cream);
+    padding: 0.6rem 0.75rem;
+    border-radius: var(--radius);
+    transition: color var(--transition), background var(--transition);
+    letter-spacing: 0.03em;
+  }
+
+  .mobile-nav-link:hover,
+  .mobile-nav-link.active {
+    color: var(--gold);
+    background: rgba(212,168,67,0.1);
+  }
+
+  /* ── FOOTER ──────────────────────────────────────────────────── */
+  .site-footer {
+    background: var(--burgundy-dk);
+    border-top: 2px solid var(--gold-dark);
+    color: var(--cream);
+    margin-top: auto;
+  }
+
+  .footer-inner {
+    max-width: var(--max-w);
+    margin: 0 auto;
+    padding: 3rem 1.5rem 2rem;
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr;
+    gap: 3rem;
+  }
+
+  .footer-name {
+    font-family: var(--font-display);
+    font-size: 1.2rem;
+    color: var(--gold);
+    letter-spacing: 0.1em;
+    display: block;
+    margin-bottom: 0.75rem;
+  }
+
+  .footer-address,
+  .footer-hours {
+    font-family: var(--font-ui);
+    font-size: 0.875rem;
+    color: var(--cream);
+    opacity: 0.75;
+    line-height: 1.6;
+  }
+
+  .footer-links h3,
+  .footer-contact h3 {
+    font-family: var(--font-display);
+    font-size: 0.75rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 1rem;
+  }
+
+  .footer-links ul {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+  }
+
+  .footer-links a {
+    font-family: var(--font-ui);
+    font-size: 0.875rem;
+    color: var(--cream);
+    opacity: 0.75;
+    transition: opacity var(--transition), color var(--transition);
+  }
+  .footer-links a:hover { opacity: 1; color: var(--gold-light); }
+
+  .footer-cta {
+    display: inline-block;
+    font-family: var(--font-ui);
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--gold);
+    border: 1px solid var(--gold-dark);
+    padding: 0.5rem 1rem;
+    border-radius: var(--radius);
+    transition: background var(--transition), color var(--transition);
+    margin-bottom: 1.25rem;
+  }
+  .footer-cta:hover { background: var(--gold); color: var(--burgundy-dk); }
+
+  .social-links {
+    display: flex;
+    gap: 0.75rem;
+  }
+
+  .social-links a {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    border: 1px solid var(--gold-dark);
+    color: var(--cream);
+    transition: background var(--transition), color var(--transition), border-color var(--transition);
+  }
+  .social-links a:hover { background: var(--gold); color: var(--burgundy-dk); border-color: var(--gold); }
+  .social-links svg { width: 16px; height: 16px; }
+
+  .footer-bottom {
+    border-top: 1px solid rgba(212,168,67,0.2);
+    padding: 1rem 1.5rem;
+    text-align: center;
+    font-family: var(--font-ui);
+    font-size: 0.8rem;
+    color: var(--cream);
+    opacity: 0.5;
+  }
+  .footer-bottom a { opacity: 1; text-decoration: underline; }
+  .footer-bottom a:hover { color: var(--gold-light); }
+
+  /* ── TYPOGRAPHY UTILITIES ────────────────────────────────────── */
+  .display-title {
+    font-family: var(--font-display);
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    line-height: 1.15;
+    color: var(--ink);
+  }
+
+  .section-label {
+    font-family: var(--font-ui);
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--gold-dark);
+  }
+
+  .gold-rule {
+    border: none;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--gold), transparent);
+    margin: 2rem 0;
+  }
+
+  /* ── LAYOUT UTILITIES ────────────────────────────────────────── */
+  .container {
+    max-width: var(--max-w);
+    margin: 0 auto;
+    padding: 0 1.5rem;
+  }
+
+  .section {
+    padding: 4rem 0;
+  }
+
+  /* ── RESPONSIVE ──────────────────────────────────────────────── */
+  @media (max-width: 900px) {
+    .main-nav { display: none; }
+    .hamburger { display: flex; }
+    .logo-tagline { display: none; }
+
+    .footer-inner {
+      grid-template-columns: 1fr 1fr;
+      gap: 2rem;
+    }
+    .footer-brand { grid-column: 1 / -1; }
+  }
+
+  @media (max-width: 560px) {
+    .header-inner { padding: 0 1rem; }
+    .logo-name { font-size: 1.05rem; }
+
+    .footer-inner {
+      grid-template-columns: 1fr;
+      padding: 2rem 1rem 1.5rem;
+      gap: 1.5rem;
+    }
+    .footer-brand { grid-column: auto; }
+  }
+</style>
