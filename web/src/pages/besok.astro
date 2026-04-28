@@ -5,7 +5,7 @@ import BaseLayout from '../layouts/BaseLayout.astro'
 
 <BaseLayout
   title="Besøk oss — Tryllemuseet"
-  description="Tryllemuseet holder til på Årvoll i Oslo. Åpent søndager 12–15. Gratis inngang for barn."
+  description="Tryllemuseet holder til på Årvoll i Oslo. Åpent søndager 12–15. Gratis inngang for alle."
 >
 
   <!-- HERO ──────────────────────────────────────────────────────── -->
@@ -35,7 +35,7 @@ import BaseLayout from '../layouts/BaseLayout.astro'
       <div class="qi-divider"></div>
       <div class="qi-item">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
-        <div><strong>Inngang</strong><span>Barn gratis · Voksne Kr 50,–</span></div>
+        <div><strong>Inngang</strong><span>Gratis inngang for alle</span></div>
       </div>
       <div class="qi-divider"></div>
       <div class="qi-item">
@@ -82,11 +82,11 @@ import BaseLayout from '../layouts/BaseLayout.astro'
             </tr>
             <tr>
               <td>Voksne</td>
-              <td class="price-val">Kr 50,–</td>
+              <td class="price-val">Gratis</td>
             </tr>
             <tr>
               <td>Familie</td>
-              <td class="price-val">Kr 100,–</td>
+              <td class="price-val">Gratis</td>
             </tr>
             <tr>
               <td>Grupper (10+)</td>
@@ -100,35 +100,53 @@ import BaseLayout from '../layouts/BaseLayout.astro'
         </p>
       </section>
 
+	  <section class="section member-section">
+	  <div class="container member-inner">
+		<div class="member-text">
+		<p class="section-label">Støtt museet</p>
+		<h2 class="display-title" style="font-size:1.75rem">Bli medlem!</h2>
+		<p>Som medlem støtter du Tryllemuseet og bidrar til å holde magien levende for kommende generasjoner. Medlemskapet er enkelt å tegne.</p>
+		</div>
+		<a href="https://blimedlem.tryllemuseet.no" target="_blank" rel="noopener noreferrer" class="btn-member-big">
+		Bli medlem nå →
+		</a>
+	  </div>
+	  </section>
+	  
       <section class="info-card">
         <h2 class="info-heading"><span aria-hidden="true">🎩</span> Trylleforestillinger</h2>
         <p class="info-text">
           Vi arrangerer tre trylleforestillinger hvert halvår — for familier,
-          barn og alle som elsker magi. Forestillingene holdes i museets lokaler
+          barn og alle som elsker magi. Forestillingene holdes på Årvoll gård
           og er åpne for alle.
         </p>
         <a href="/arrangementer" class="btn-gold">Se kommende forestillinger →</a>
       </section>
 
-      <section class="info-card social-card">
-        <h2 class="info-heading"><span aria-hidden="true">📱</span> Følg oss</h2>
-        <div class="social-links">
-          <a href="https://www.facebook.com/tryllemuseet" target="_blank" rel="noopener noreferrer" class="social-link social-fb">
-            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>
-            <div>
-              <span class="social-name">Facebook</span>
-              <span class="social-handle">facebook.com/tryllemuseet</span>
-            </div>
-          </a>
-          <a href="https://www.instagram.com/tryllemuseet" target="_blank" rel="noopener noreferrer" class="social-link social-ig">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="0.8" fill="currentColor" stroke="none"/></svg>
-            <div>
-              <span class="social-name">Instagram</span>
-              <span class="social-handle">instagram.com/tryllemuseet</span>
-            </div>
-          </a>
-        </div>
-      </section>
+ <section class="info-card social-card">
+  <h2 class="info-heading"><span aria-hidden="true">📱</span> Følg oss</h2>
+  <div class="social-links">
+
+    <a href="https://www.facebook.com/tryllemuseet" target="_blank" rel="noopener noreferrer" class="social-link social-fb">
+      <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" width="22" height="22">
+        <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/>
+      </svg>
+      <span class="social-name">Facebook</span>
+      <span class="social-handle">facebook.com/tryllemuseet</span>
+    </a>
+
+    <a href="https://www.instagram.com/tryllemuseet" target="_blank" rel="noopener noreferrer" class="social-link social-ig">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" width="22" height="22">
+        <rect x="2" y="2" width="20" height="20" rx="5"/>
+        <circle cx="12" cy="12" r="4"/>
+        <circle cx="17.5" cy="6.5" r="0.8" fill="currentColor" stroke="none"/>
+      </svg>
+      <span class="social-name">Instagram</span>
+      <span class="social-handle">instagram.com/tryllemuseet</span>
+    </a>
+
+  </div>
+</section>
 
     </div>
 
@@ -234,15 +252,24 @@ import BaseLayout from '../layouts/BaseLayout.astro'
   .btn-gold { display: inline-block; font-family: var(--font-ui); font-size: 0.875rem; font-weight: 600; background: var(--gold); color: var(--burgundy-dk); padding: 0.55rem 1.25rem; border-radius: var(--radius); transition: background 180ms, transform 180ms; text-decoration: none; }
   .btn-gold:hover { background: var(--gold-light); transform: translateY(-1px); }
 
-  .social-links { display: flex; flex-direction: column; gap: 0.75rem; }
-  .social-link { display: flex; align-items: center; gap: 0.85rem; padding: 0.75rem 1rem; border-radius: 6px; text-decoration: none; color: white; transition: opacity 150ms, transform 150ms; }
-  .social-link:hover { opacity: 0.92; transform: translateX(2px); }
-  .social-fb { background: #1877F2; }
-  .social-ig { background: linear-gradient(135deg,#f09433,#e6683c 25%,#dc2743 50%,#cc2366 75%,#bc1888); }
-  .social-link svg { width: 22px; height: 22px; flex-shrink: 0; }
-  .social-link div { display: flex; flex-direction: column; line-height: 1.3; }
-  .social-name { font-family: var(--font-ui); font-weight: 700; font-size: 0.95rem; }
-  .social-handle { font-family: var(--font-ui); font-size: 0.75rem; opacity: 0.8; }
+.social-links { display: flex; flex-direction: column; gap: 0.75rem; }
+
+.social-link {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 0.85rem;
+  padding: 0.75rem 1rem;
+  border-radius: 6px;
+  text-decoration: none;
+  color: white;
+  transition: opacity 150ms;
+}
+.social-link:hover { opacity: 0.9; }
+.social-fb { background: #1877F2; }
+.social-ig { background: linear-gradient(135deg,#f09433,#e6683c 25%,#dc2743 50%,#cc2366 75%,#bc1888); }
+.social-name { font-family: var(--font-ui); font-weight: 700; font-size: 0.95rem; }
+.social-handle { font-family: var(--font-ui); font-size: 0.75rem; opacity: 0.8; margin-left: auto; }
 
   .map-wrap { border-radius: 4px; overflow: hidden; border: 1px solid var(--cream-dark); margin-bottom: 1rem; }
   .address-row { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.5rem; padding-bottom: 1rem; border-bottom: 1px solid var(--cream-dark); margin-bottom: 1rem; }
