@@ -88,3 +88,10 @@ export async function getUpcomingEvents(limit = 3): Promise<Event[]> {
     }
   `, { limit })
 }
+
+export async function getStaticPaths() {
+  const magicians = await getAllMagicians()
+  return magicians
+    .filter(m => m.slug && typeof m.slug === 'string')
+    .map(m => ({ params: { slug: String(m.slug) } }))
+}
