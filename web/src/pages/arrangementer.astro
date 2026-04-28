@@ -1,0 +1,568 @@
+---
+// src/pages/arrangementer.astro
+import BaseLayout from '../layouts/BaseLayout.astro'
+import { sanityClient } from '../lib/sanity'
+import { toHTML } from '@portabletext/to-html'
+
+const events = await sanityClient.fetch(`
+  *[_type == "event"] | order(date asc) {
+    _id, title, "slug": slug.current,
+    date, ageGroup, price, excerpt, featured,
+    bookingUrl,
+    description,
+    image { asset->{ url }, alt }
+  }
+`)
+
+const now = new Date()
+
+const upcoming = events.filter((e: any) => new Date(e.date) >= now)
+const past     = events.filter((e: any) => new Date(e.date) < now)
+
+function formatDate(d: string) {
+  return new Date(d).toLocaleDateString('nb-NO', {
+    weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
+  })
+}
+
+function formatTime(d: string) {
+  return new Date(d).toLocaleTimeString('nb-NO', {
+    hour: '2-digit', minute: '2-digit'
+  })
+}
+
+function formatDateShort(d: string) {
+  return new Date(d).toLocaleDateString('nb-NO', {
+    day: 'numeric', month: 'short'
+  })
+}
+---
+
+<BaseLayout
+  title="Arrangementer — Tryllemuseet"
+  description="Kommende tryllekurs, forestillinger og arrangementer på Tryllemuseet i Oslo."
+>
+
+  <!-- HERO ──────────────────────────────────────────────────────── -->
+  <section class="arr-hero">
+    <div class="container">
+      <p class="section-label">Tryllemuseet</p>
+      <h1 class="display-title arr-title">Arrangementer</h1>
+      <p class="arr-sub">
+        Tryllekurs, familieforestillinger og magiske opplevelser for alle aldre.
+        Tre forestillinger og kurs hvert halvår.
+      </p>
+    </div>
+  </section>
+
+  <main class="container arr-main">
+
+    <!-- KOMMENDE ─────────────────────────────────────────────────── -->
+    {upcoming.length > 0 ? (
+      <section class="arr-section">
+        <h2 class="arr-section-title">Kommende arrangementer</h2>
+
+        <div class="events-list">
+          {upcoming.map((event: any) => {
+            const descHtml = event.description ? toHTML(event.description) : ''
+            return (
+              <article class:list={['event-card', { 'event-card--featured': event.featured }]}>
+
+                {event.featured && (
+                  <div class="featured-badge">✦ Fremhevet</div>
+                )}
+
+                <div class="event-layout">
+
+                  {/* Datoblokk */}
+                  <div class="event-date-col">
+                    <div class="date-block">
+                      <span class="date-day">
+                        {new Date(event.date).getDate()}
+                      </span>
+                      <span class="date-month">
+                        {new Date(event.date).toLocaleDateString('nb-NO', { month: 'short' })}
+                      </span>
+                      <span class="date-year">
+                        {new Date(event.date).getFullYear()}
+                      </span>
+                    </div>
+                    <div class="date-time">{formatTime(event.date)}</div>
+                  </div>
+
+                  {/* Bilde */}
+                  {event.image?.asset?.url && (
+                    <div class="event-image-col">
+                      <img
+                        src={event.image.asset.url}
+                        alt={event.image.alt ?? event.title}
+                        loading="lazy"
+                      />
+                    </div>
+                  )}
+
+                  {/* Innhold */}
+                  <div class="event-content">
+
+                    <div class="event-meta">
+                      {event.ageGroup && (
+                        <span class="meta-tag meta-tag--age">{event.ageGroup}</span>
+                      )}
+                      {event.price && (
+                        <span class="meta-tag meta-tag--price">{event.price}</span>
+                      )}
+                      <span class="meta-tag meta-tag--date">
+                        {formatDate(event.date)}
+                      </span>
+                    </div>
+
+                    <h3 class="event-title">{event.title}</h3>
+
+                    {event.excerpt && (
+                      <p class="event-excerpt">{event.excerpt}</p>
+                    )}
+
+                    {descHtml && (
+                      <div class="event-description prose" set:html={descHtml} />
+                    )}
+
+                    <div class="event-actions">
+                      {event.bookingUrl && (
+                        <a
+                          href={event.bookingUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          class="btn-book"
+                        >
+                          Meld deg på
+                          <svg viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                            <path d="M3 8h10M8 3l5 5-5 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                          </svg>
+                        </a>
+                      )}
+                      <a href="/kontakt" class="btn-info">Spørsmål? Kontakt oss</a>
+                    </div>
+
+                  </div>
+                </div>
+              </article>
+            )
+          })}
+        </div>
+      </section>
+    ) : (
+      <section class="arr-section">
+        <div class="no-events">
+          <span class="no-events-icon" aria-hidden="true">🎩</span>
+          <h2>Ingen kommende arrangementer akkurat nå</h2>
+          <p>Følg oss på Facebook og Instagram for å bli varslet om nye kurs og forestillinger.</p>
+          <div class="no-events-social">
+            <a href="https://www.facebook.com/tryllemuseet" target="_blank" rel="noopener noreferrer" class="btn-social btn-fb">Facebook</a>
+            <a href="https://www.instagram.com/tryllemuseet" target="_blank" rel="noopener noreferrer" class="btn-social btn-ig">Instagram</a>
+          </div>
+        </div>
+      </section>
+    )}
+
+    <!-- INFO-STRIP ───────────────────────────────────────────────── -->
+    <aside class="info-strip">
+      <div class="info-strip-item">
+        <span class="info-strip-icon" aria-hidden="true">🎭</span>
+        <div>
+          <strong>3 forestillinger pr. halvår</strong>
+          <p>Vi arrangerer familieforestillinger og tryllekurs jevnlig gjennom året.</p>
+        </div>
+      </div>
+      <div class="info-strip-divider"></div>
+      <div class="info-strip-item">
+        <span class="info-strip-icon" aria-hidden="true">👥</span>
+        <div>
+          <strong>Grupper og skoler</strong>
+          <p>Vi tar imot grupper etter avtale. <a href="/kontakt">Ta kontakt</a> for booking.</p>
+        </div>
+      </div>
+      <div class="info-strip-divider"></div>
+      <div class="info-strip-item">
+        <span class="info-strip-icon" aria-hidden="true">📍</span>
+        <div>
+          <strong>Årvoll gård, Oslo</strong>
+          <p>Årvollveien 35, 0590 Oslo. <a href="/besok">Se veibeskrivelse</a>.</p>
+        </div>
+      </div>
+    </aside>
+
+    <!-- TIDLIGERE ────────────────────────────────────────────────── -->
+    {past.length > 0 && (
+      <section class="arr-section past-section">
+        <h2 class="arr-section-title arr-section-title--past">Tidligere arrangementer</h2>
+        <div class="past-grid">
+          {past.map((event: any) => (
+            <div class="past-card">
+              <span class="past-date">{formatDateShort(event.date)}</span>
+              <div>
+                <p class="past-title">{event.title}</p>
+                {event.ageGroup && <span class="past-tag">{event.ageGroup}</span>}
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+    )}
+
+  </main>
+
+</BaseLayout>
+
+<style>
+  /* ── HERO ──────────────────────────────────────────────────────── */
+  .arr-hero {
+    background: var(--burgundy-dk);
+    padding: 3.5rem 0 2.5rem;
+    border-bottom: 2px solid var(--gold-dark);
+    color: var(--cream);
+  }
+  .arr-title { font-size: clamp(2rem,5vw,3rem); color: var(--cream); margin: 0.5rem 0 0.75rem; }
+  .arr-sub   { font-family: var(--font-ui); font-size: 1rem; opacity: 0.82; max-width: 560px; line-height: 1.6; }
+
+  /* ── MAIN ──────────────────────────────────────────────────────── */
+  .arr-main { padding: 3rem 0 5rem; }
+
+  .arr-section { margin-bottom: 3rem; }
+
+  .arr-section-title {
+    font-family: var(--font-display);
+    font-size: 1.4rem;
+    color: var(--burgundy);
+    letter-spacing: 0.04em;
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid var(--gold-dark);
+  }
+
+  .arr-section-title--past {
+    font-size: 1.1rem;
+    color: var(--grey);
+    border-bottom-color: var(--cream-dark);
+  }
+
+  /* ── EVENTS LIST ───────────────────────────────────────────────── */
+  .events-list { display: flex; flex-direction: column; gap: 1.5rem; }
+
+  .event-card {
+    background: white;
+    border: 1px solid var(--cream-dark);
+    border-radius: 8px;
+    overflow: hidden;
+    position: relative;
+    transition: box-shadow 200ms ease;
+  }
+
+  .event-card:hover { box-shadow: var(--shadow-lg); }
+
+  .event-card--featured {
+    border-color: var(--gold);
+    border-width: 2px;
+  }
+
+  .featured-badge {
+    background: var(--gold);
+    color: var(--burgundy-dk);
+    font-family: var(--font-ui);
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 0.3rem 1rem;
+    display: inline-block;
+  }
+
+  .event-layout {
+    display: grid;
+    grid-template-columns: auto auto 1fr;
+    gap: 0;
+  }
+
+  /* Datoblokk */
+  .event-date-col {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    padding: 1.5rem 1.25rem;
+    background: var(--burgundy);
+    min-width: 80px;
+    gap: 0.5rem;
+  }
+
+  .date-block {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .date-day {
+    font-family: var(--font-display);
+    font-size: 2.2rem;
+    color: var(--gold);
+    line-height: 1;
+  }
+
+  .date-month {
+    font-family: var(--font-ui);
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--cream);
+    opacity: 0.8;
+  }
+
+  .date-year {
+    font-family: var(--font-ui);
+    font-size: 0.7rem;
+    color: var(--cream);
+    opacity: 0.5;
+    margin-top: 0.1rem;
+  }
+
+  .date-time {
+    font-family: var(--font-ui);
+    font-size: 0.8rem;
+    color: var(--gold-light);
+    opacity: 0.8;
+  }
+
+  /* Bilde */
+  .event-image-col {
+    width: 220px;
+    flex-shrink: 0;
+    overflow: hidden;
+  }
+
+  .event-image-col img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  /* Innhold */
+  .event-content {
+    padding: 1.5rem 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .event-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+  }
+
+  .meta-tag {
+    font-family: var(--font-ui);
+    font-size: 0.72rem;
+    font-weight: 600;
+    padding: 0.2rem 0.55rem;
+    border-radius: 3px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+
+  .meta-tag--age   { background: var(--cream-dark); color: var(--ink-mid); }
+  .meta-tag--price { background: #E8F5E9; color: #2E7D32; font-weight: 700; }
+  .meta-tag--date  { background: rgba(107,15,26,0.08); color: var(--burgundy); text-transform: none; letter-spacing: 0; font-weight: 400; font-size: 0.8rem; }
+
+  .event-title {
+    font-family: var(--font-display);
+    font-size: 1.3rem;
+    color: var(--burgundy);
+    letter-spacing: 0.03em;
+    line-height: 1.25;
+    margin: 0;
+  }
+
+  .event-excerpt {
+    font-family: var(--font-body);
+    font-size: 1rem;
+    color: var(--ink);
+    line-height: 1.65;
+    font-style: italic;
+  }
+
+  .event-description {
+    font-family: var(--font-ui);
+    font-size: 0.9rem;
+    color: var(--ink-mid);
+    line-height: 1.65;
+  }
+
+  .prose p { margin-bottom: 0.6rem; }
+  .prose p:last-child { margin-bottom: 0; }
+
+  .event-actions {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+    margin-top: 0.5rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--cream-dark);
+  }
+
+  .btn-book {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-family: var(--font-ui);
+    font-size: 0.95rem;
+    font-weight: 700;
+    background: var(--gold);
+    color: var(--burgundy-dk);
+    padding: 0.7rem 1.5rem;
+    border-radius: 4px;
+    text-decoration: none;
+    transition: background 180ms, transform 180ms;
+  }
+
+  .btn-book svg { width: 16px; height: 16px; flex-shrink: 0; }
+  .btn-book:hover { background: var(--gold-light); transform: translateY(-1px); }
+
+  .btn-info {
+    font-family: var(--font-ui);
+    font-size: 0.875rem;
+    color: var(--grey);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+    transition: color 150ms;
+  }
+  .btn-info:hover { color: var(--burgundy); }
+
+  /* ── INGEN ARRANGEMENTER ───────────────────────────────────────── */
+  .no-events {
+    text-align: center;
+    padding: 4rem 2rem;
+    background: white;
+    border: 1px solid var(--cream-dark);
+    border-radius: 8px;
+  }
+
+  .no-events-icon { font-size: 3rem; display: block; margin-bottom: 1rem; }
+  .no-events h2 { font-family: var(--font-display); font-size: 1.3rem; color: var(--burgundy); margin-bottom: 0.75rem; }
+  .no-events p { font-family: var(--font-ui); font-size: 0.95rem; color: var(--ink-mid); margin-bottom: 1.5rem; }
+
+  .no-events-social { display: flex; gap: 0.75rem; justify-content: center; }
+  .btn-social { font-family: var(--font-ui); font-size: 0.875rem; font-weight: 600; padding: 0.6rem 1.25rem; border-radius: 4px; color: white; text-decoration: none; transition: opacity 150ms; }
+  .btn-social:hover { opacity: 0.9; }
+  .btn-fb { background: #1877F2; }
+  .btn-ig { background: linear-gradient(135deg,#f09433,#dc2743 50%,#bc1888); }
+
+  /* ── INFO STRIP ────────────────────────────────────────────────── */
+  .info-strip {
+    display: flex;
+    align-items: stretch;
+    background: white;
+    border: 1px solid var(--cream-dark);
+    border-radius: 8px;
+    margin-bottom: 3rem;
+    flex-wrap: wrap;
+  }
+
+  .info-strip-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.9rem;
+    padding: 1.25rem 1.5rem;
+    flex: 1;
+    min-width: 200px;
+  }
+
+  .info-strip-icon { font-size: 1.4rem; flex-shrink: 0; margin-top: 0.1rem; }
+
+  .info-strip-item strong {
+    font-family: var(--font-ui);
+    font-size: 0.875rem;
+    font-weight: 700;
+    color: var(--ink);
+    display: block;
+    margin-bottom: 0.2rem;
+  }
+
+  .info-strip-item p {
+    font-family: var(--font-ui);
+    font-size: 0.825rem;
+    color: var(--grey);
+    line-height: 1.5;
+  }
+
+  .info-strip-item a { color: var(--burgundy); text-decoration: underline; }
+
+  .info-strip-divider {
+    width: 1px;
+    background: var(--cream-dark);
+    margin: 0.75rem 0;
+    flex-shrink: 0;
+  }
+
+  /* ── TIDLIGERE ─────────────────────────────────────────────────── */
+  .past-section { opacity: 0.7; }
+
+  .past-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    background: var(--cream-dark);
+    border: 1px solid var(--cream-dark);
+    border-radius: 6px;
+    overflow: hidden;
+  }
+
+  .past-card {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.7rem 1rem;
+    background: white;
+  }
+
+  .past-date {
+    font-family: var(--font-ui);
+    font-size: 0.8rem;
+    color: var(--grey);
+    min-width: 60px;
+    flex-shrink: 0;
+  }
+
+  .past-title {
+    font-family: var(--font-ui);
+    font-size: 0.875rem;
+    color: var(--ink-mid);
+    font-style: italic;
+  }
+
+  .past-tag {
+    font-family: var(--font-ui);
+    font-size: 0.7rem;
+    background: var(--cream-dark);
+    color: var(--grey);
+    padding: 0.1rem 0.4rem;
+    border-radius: 2px;
+    margin-left: 0.5rem;
+  }
+
+  /* ── RESPONSIVE ────────────────────────────────────────────────── */
+  @media (max-width: 800px) {
+    .event-layout { grid-template-columns: auto 1fr; }
+    .event-image-col { display: none; }
+    .info-strip { flex-direction: column; }
+    .info-strip-divider { width: 100%; height: 1px; margin: 0; }
+  }
+
+  @media (max-width: 500px) {
+    .event-layout { grid-template-columns: 1fr; }
+    .event-date-col { flex-direction: row; justify-content: flex-start; padding: 0.75rem 1rem; }
+    .date-block { flex-direction: row; align-items: baseline; gap: 0.3rem; }
+    .date-day { font-size: 1.4rem; }
+    .event-content { padding: 1rem; }
+  }
+</style>
