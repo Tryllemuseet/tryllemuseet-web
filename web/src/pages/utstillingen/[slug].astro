@@ -6,7 +6,9 @@ import { toHTML } from '@portabletext/to-html'
 
 export async function getStaticPaths() {
   const magicians = await getAllMagicians()
-  return magicians.map(m => ({ params: { slug: m.slug } }))
+  return magicians
+    .filter(m => m.slug && typeof m.slug === 'string')
+    .map(m => ({ params: { slug: String(m.slug) } }))
 }
 
 const { slug } = Astro.params
