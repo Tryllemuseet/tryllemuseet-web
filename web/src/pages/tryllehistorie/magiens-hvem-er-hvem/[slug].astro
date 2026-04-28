@@ -1,0 +1,366 @@
+---
+// src/pages/tryllehistorie/magiens-hvem-er-hvem/[slug].astro
+import BaseLayout from '../../../layouts/BaseLayout.astro'
+import { sanityClient } from '../../../lib/sanity'
+import { toHTML } from '@portabletext/to-html'
+
+export async function getStaticPaths() {
+  const bios = await sanityClient.fetch(`
+    *[_type == "biography"] { "slug": slug.current }
+  `)
+  return bios
+    .filter((b: any) => b.slug && typeof b.slug === 'string')
+    .map((b: any) => ({ params: { slug: String(b.slug) } }))
+}
+
+const { slug } = Astro.params
+const bio = await sanityClient.fetch(`
+  *[_type == "biography" && slug.current == $slug][0] {
+    name, artistName, years, nationality,
+    shortBio, fullBio,
+    mainImage { asset->{ url }, alt, caption },
+    gallery[] { asset->{ url }, alt, caption },
+    links[] { label, url, type },
+    sources[] { label, url },
+    tags, lastVerified, needsUpdate
+  }
+`, { slug })
+
+if (!bio) return Astro.redirect('/tryllehistorie/magiens-hvem-er-hvem', 301)
+
+const fullBioHtml = bio.fullBio ? toHTML(bio.fullBio) : ''
+
+const linkIcons: Record<string, string> = {
+  wikipedia: '📖',
+  website:   '🌐',
+  youtube:   '▶️',
+  facebook:  '👥',
+  instagram: '📷',
+  other:     '🔗',
+}
+---
+
+<BaseLayout
+  title={`${bio.name} — Magiens Hvem er Hvem`}
+  description={bio.shortBio ?? `Les om ${bio.name} på Tryllemuseet`}
+>
+
+  <!-- HERO ──────────────────────────────────────────────────────── -->
+  <section class="bio-hero">
+    <div class="container hero-inner">
+
+      {bio.mainImage?.asset?.url && (
+        <figure class="hero-image">
+          <img src={bio.mainImage.asset.url} alt={bio.mainImage.alt ?? bio.name} />
+          {bio.mainImage.caption && <figcaption>{bio.mainImage.caption}</figcaption>}
+        </figure>
+      )}
+
+      <div class="hero-text">
+        <p class="section-label">
+          <a href="/tryllehistorie/magiens-hvem-er-hvem">Magiens Hvem er Hvem</a>
+        </p>
+        <h1 class="display-title hero-name">{bio.name}</h1>
+        {bio.artistName && <p class="hero-artist">Kunstnernavn: <em>{bio.artistName}</em></p>}
+        {bio.years && <p class="hero-years">{bio.years}</p>}
+
+        {bio.tags && bio.tags.length > 0 && (
+          <div class="hero-tags">
+            {bio.tags.map((tag: string) => (
+              <span class="bio-tag">{tag}</span>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  </section>
+
+  <div class="container page-body">
+
+    <!-- KORTBIOGRAFI ────────────────────────────────────────────── -->
+    {bio.shortBio && (
+      <p class="short-bio">{bio.shortBio}</p>
+    )}
+
+    <!-- FULL BIOGRAFI ───────────────────────────────────────────── -->
+    {fullBioHtml && (
+      <section class="full-bio">
+        <h2 class="section-heading">Biografi</h2>
+        <div class="prose" set:html={fullBioHtml} />
+      </section>
+    )}
+
+    <!-- BILDEGALLERI ────────────────────────────────────────────── -->
+    {bio.gallery && bio.gallery.length > 0 && (
+      <section class="gallery-section">
+        <h2 class="section-heading">Bilder</h2>
+        <div class="gallery-grid">
+          {bio.gallery.map((img: any) => (
+            <figure class="gallery-item">
+              <img src={img.asset.url} alt={img.alt ?? bio.name} loading="lazy" />
+              {img.caption && <figcaption>{img.caption}</figcaption>}
+            </figure>
+          ))}
+        </div>
+      </section>
+    )}
+
+    <!-- LENKER ──────────────────────────────────────────────────── -->
+    {bio.links && bio.links.length > 0 && (
+      <section class="links-section">
+        <h2 class="section-heading">Lenker</h2>
+        <ul class="links-list">
+          {bio.links.map((link: any) => (
+            <li>
+              <a href={link.url} target="_blank" rel="noopener noreferrer">
+                <span class="link-icon" aria-hidden="true">
+                  {linkIcons[link.type ?? 'other']}
+                </span>
+                {link.label}
+                <svg class="ext-icon" viewBox="0 0 12 12" fill="none" aria-label="Åpnes i ny fane">
+                  <path d="M2 10L10 2M10 2H5M10 2V7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                </svg>
+              </a>
+            </li>
+          ))}
+        </ul>
+      </section>
+    )}
+
+    <!-- KILDER ──────────────────────────────────────────────────── -->
+    {bio.sources && bio.sources.length > 0 && (
+      <section class="sources-section">
+        <h2 class="section-heading">Kilder</h2>
+        <ul class="sources-list">
+          {bio.sources.map((src: any) => (
+            <li>
+              {src.url
+                ? <a href={src.url} target="_blank" rel="noopener noreferrer">
+                    {src.label}
+                    <svg class="ext-icon" viewBox="0 0 12 12" fill="none" aria-label="Åpnes i ny fane">
+                      <path d="M2 10L10 2M10 2H5M10 2V7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                    </svg>
+                  </a>
+                : <span>{src.label}</span>
+              }
+            </li>
+          ))}
+        </ul>
+
+        <!-- Disclaimer -->
+        <p class="source-disclaimer">
+          Denne biografien er basert på <em>«Magiens Hvem er Hvem»</em> av Terje Nordheim (2005)
+          og dekker perioden frem til ca. år 2000.
+          {bio.lastVerified && ` Sist verifisert: ${new Date(bio.lastVerified).toLocaleDateString('nb-NO', {year:'numeric',month:'long'})}.`}
+          {bio.needsUpdate && ' ⚠️ Denne biografien er merket for oppdatering.'}
+          <a href="/kontakt">Bidra med korreksjoner</a>.
+        </p>
+      </section>
+    )}
+
+    <!-- NAVIGASJON ──────────────────────────────────────────────── -->
+    <nav class="bio-nav">
+      <a href="/tryllehistorie/magiens-hvem-er-hvem" class="btn-nav">
+        ← Tilbake til oversikten
+      </a>
+    </nav>
+
+  </div>
+</BaseLayout>
+
+<style>
+  /* HERO */
+  .bio-hero {
+    background: var(--burgundy-dk);
+    padding: 3rem 0 2.5rem;
+    border-bottom: 2px solid var(--gold-dark);
+    color: var(--cream);
+  }
+
+  .hero-inner {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 2.5rem;
+    align-items: start;
+  }
+
+  .hero-image {
+    width: 160px;
+    flex-shrink: 0;
+  }
+
+  .hero-image img {
+    width: 100%;
+    border-radius: 4px;
+    border: 2px solid var(--gold-dark);
+    box-shadow: 0 6px 24px rgba(0,0,0,0.4);
+    display: block;
+  }
+
+  .hero-image figcaption {
+    font-family: var(--font-ui);
+    font-size: 0.7rem;
+    color: var(--cream);
+    opacity: 0.6;
+    margin-top: 0.4rem;
+    text-align: center;
+  }
+
+  .hero-name   { font-size: clamp(1.5rem, 4vw, 2.5rem); color: var(--cream); margin: 0.5rem 0 0.3rem; }
+  .hero-artist { font-family: var(--font-ui); font-size: 0.9rem; color: var(--gold-light); margin-bottom: 0.2rem; }
+  .hero-years  { font-family: var(--font-ui); font-size: 0.85rem; color: var(--gold-light); opacity: 0.7; margin-bottom: 0.75rem; }
+
+  .hero-tags { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+
+  .bio-tag {
+    font-family: var(--font-ui);
+    font-size: 0.68rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    background: rgba(212,168,67,0.15);
+    color: var(--gold-light);
+    border: 1px solid rgba(212,168,67,0.3);
+    padding: 0.15rem 0.5rem;
+    border-radius: 3px;
+  }
+
+  .section-label a { color: var(--gold-light); opacity: 0.7; text-decoration: underline; }
+
+  /* PAGE BODY */
+  .page-body {
+    max-width: 720px;
+    padding: 2.5rem 0 5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+  }
+
+  .short-bio {
+    font-family: var(--font-body);
+    font-size: 1.05rem;
+    line-height: 1.7;
+    color: var(--ink);
+    font-style: italic;
+    border-left: 3px solid var(--gold);
+    padding-left: 1rem;
+  }
+
+  .section-heading {
+    font-family: var(--font-display);
+    font-size: 1.15rem;
+    color: var(--burgundy);
+    margin-bottom: 1rem;
+    padding-bottom: 0.4rem;
+    border-bottom: 1px solid var(--cream-dark);
+    letter-spacing: 0.04em;
+  }
+
+  .prose { font-family: var(--font-body); font-size: 1rem; line-height: 1.75; color: var(--ink); }
+  .prose p { margin-bottom: 1rem; }
+  .prose p:last-child { margin-bottom: 0; }
+
+  /* GALLERY */
+  .gallery-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 1rem;
+  }
+
+  .gallery-item img {
+    width: 100%;
+    border-radius: 4px;
+    border: 1px solid var(--cream-dark);
+    display: block;
+  }
+
+  .gallery-item figcaption {
+    font-family: var(--font-ui);
+    font-size: 0.75rem;
+    color: var(--grey);
+    margin-top: 0.3rem;
+    text-align: center;
+  }
+
+  /* LINKS */
+  .links-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .links-list a {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-family: var(--font-ui);
+    font-size: 0.95rem;
+    color: #185FA5;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+    transition: color 150ms;
+  }
+  .links-list a:hover { color: var(--burgundy); }
+
+  .link-icon { font-size: 1rem; }
+
+  .ext-icon { width: 10px; height: 10px; opacity: 0.5; flex-shrink: 0; }
+
+  /* SOURCES */
+  .sources-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    margin-bottom: 1rem;
+  }
+
+  .sources-list li { display: flex; align-items: baseline; gap: 0.4rem; }
+  .sources-list li::before { content: '→'; color: var(--gold-dark); flex-shrink: 0; }
+
+  .sources-list a {
+    font-family: var(--font-ui);
+    font-size: 0.875rem;
+    color: #185FA5;
+    text-decoration: underline;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+  }
+
+  .sources-list span { font-family: var(--font-ui); font-size: 0.875rem; color: var(--grey); font-style: italic; }
+
+  .source-disclaimer {
+    font-family: var(--font-ui);
+    font-size: 0.8rem;
+    color: var(--grey);
+    line-height: 1.6;
+    font-style: italic;
+    margin-top: 0.75rem;
+  }
+
+  .source-disclaimer a { color: var(--burgundy); text-decoration: underline; }
+
+  /* NAV */
+  .bio-nav { padding-top: 1.5rem; border-top: 1px solid var(--cream-dark); }
+
+  .btn-nav {
+    font-family: var(--font-ui);
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--burgundy);
+    padding: 0.5rem 1rem;
+    border: 1.5px solid var(--cream-dark);
+    border-radius: var(--radius);
+    transition: border-color 150ms, color 150ms;
+    display: inline-block;
+  }
+  .btn-nav:hover { border-color: var(--gold); color: var(--gold-dark); }
+
+  /* RESPONSIVE */
+  @media (max-width: 600px) {
+    .hero-inner { grid-template-columns: 1fr; gap: 1.25rem; }
+    .hero-image { width: 120px; }
+  }
+</style>

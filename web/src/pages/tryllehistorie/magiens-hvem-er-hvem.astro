@@ -1,0 +1,508 @@
+---
+// src/pages/tryllehistorie/magiens-hvem-er-hvem.astro
+import BaseLayout from '../../layouts/BaseLayout.astro'
+import { sanityClient } from '../../lib/sanity'
+
+const biographies = await sanityClient.fetch(`
+  *[_type == "biography"] | order(name asc) {
+    _id,
+    name,
+    artistName,
+    years,
+    nationality,
+    shortBio,
+    tags,
+    needsUpdate,
+    featured,
+    "slug": slug.current,
+    mainImage { asset->{ url }, alt }
+  }
+`)
+
+// Grupper alfabetisk
+const grouped: Record<string, typeof biographies> = {}
+for (const bio of biographies) {
+  const letter = bio.name.charAt(0).toUpperCase()
+  if (!grouped[letter]) grouped[letter] = []
+  grouped[letter].push(bio)
+}
+const letters = Object.keys(grouped).sort()
+const total = biographies.length
+---
+
+<BaseLayout
+  title="Magiens Hvem er Hvem — Tryllemuseet"
+  description={`Biografisk oversikt over ${total} norske tryllekunstnere. Basert på Terje Nordheims «Magiens Hvem er Hvem».`}
+>
+
+  <!-- HERO ──────────────────────────────────────────────────────── -->
+  <section class="bio-hero">
+    <div class="container">
+      <p class="section-label">Tryllehistorie</p>
+      <h1 class="display-title bio-title">Magiens Hvem er Hvem</h1>
+      <p class="bio-sub">
+        Biografisk oversikt over {total} norske tryllekunstnere.
+      </p>
+    </div>
+  </section>
+
+  <!-- STICKY SØKEFELT + KILDE-NOTICE ─────────────────────────────── -->
+  <div class="search-bar-wrap" id="search-bar">
+    <div class="container search-bar-inner">
+      <div class="search-field">
+        <svg viewBox="0 0 20 20" fill="none" aria-hidden="true">
+          <circle cx="9" cy="9" r="6" stroke="currentColor" stroke-width="1.8"/>
+          <path d="M13.5 13.5L17 17" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+        </svg>
+        <input
+          type="search"
+          id="bio-search"
+          placeholder="Søk på navn eller kunstnernavn…"
+          aria-label="Søk i Magiens Hvem er Hvem"
+          autocomplete="off"
+          autocorrect="off"
+          spellcheck="false"
+        />
+        <button class="search-clear" id="search-clear" aria-label="Tøm søk" hidden>✕</button>
+      </div>
+
+      <!-- Alfabetnavigasjon -->
+      <nav class="alpha-nav" aria-label="Hopp til bokstav">
+        {letters.map(l => (
+          <a href={`#letter-${l}`} class="alpha-link" data-letter={l}>{l}</a>
+        ))}
+      </nav>
+    </div>
+  </div>
+
+  <!-- KILDE-NOTICE ────────────────────────────────────────────────── -->
+  <div class="container">
+    <aside class="source-notice">
+      <div class="notice-icon" aria-hidden="true">ℹ</div>
+      <div>
+        <strong>Om kilden:</strong> Denne oversikten er basert på
+        <em>«Magiens Hvem er Hvem»</em> av Terje Nordheim (2005),
+        og dekker norske tryllekunstnere frem til ca. år 2000 — altså over 25 år gammelt.
+        Oppdateringsarbeid er påbegynt. Kjenner du noen av disse — eller mangler du en person?
+        <a href="/kontakt">Ta kontakt med oss</a>.
+      </div>
+    </aside>
+  </div>
+
+  <!-- INGEN TREFF ─────────────────────────────────────────────────── -->
+  <div class="container no-results" id="no-results" hidden>
+    <p>Ingen treff på <strong id="no-results-term"></strong>.</p>
+    <p>Prøv et annet navn, eller <a href="/kontakt">kontakt oss</a> om du savner noen.</p>
+  </div>
+
+  <!-- BIOGRAFILISTE ─────────────────────────────────────────────── -->
+  <main class="container bio-list" id="bio-list">
+    {letters.map(letter => (
+      <section class="letter-section" id={`letter-${letter}`} data-letter={letter}>
+        <h2 class="letter-heading" aria-label={`Bokstav ${letter}`}>{letter}</h2>
+        <div class="bio-grid">
+          {grouped[letter].map(bio => (
+            <article
+              class="bio-card"
+              data-name={bio.name.toLowerCase()}
+              data-artist={bio.artistName?.toLowerCase() ?? ''}
+            >
+              <a href={`/tryllehistorie/magiens-hvem-er-hvem/${bio.slug}`} class="bio-card-link">
+
+                {bio.mainImage?.asset?.url ? (
+                  <div class="bio-thumb">
+                    <img
+                      src={bio.mainImage.asset.url}
+                      alt={bio.mainImage.alt ?? bio.name}
+                      loading="lazy"
+                    />
+                  </div>
+                ) : (
+                  <div class="bio-thumb bio-thumb--placeholder" aria-hidden="true">
+                    🎩
+                  </div>
+                )}
+
+                <div class="bio-info">
+                  <h3 class="bio-name">{bio.name}</h3>
+                  {bio.years && <p class="bio-years">{bio.years}</p>}
+                  {bio.shortBio && (
+                    <p class="bio-excerpt">{bio.shortBio}</p>
+                  )}
+                  {bio.tags && bio.tags.length > 0 && (
+                    <div class="bio-tags">
+                      {bio.tags.slice(0,3).map((tag: string) => (
+                        <span class="bio-tag">{tag}</span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                <span class="bio-arrow" aria-hidden="true">→</span>
+              </a>
+            </article>
+          ))}
+        </div>
+      </section>
+    ))}
+  </main>
+
+  <!-- TILBAKE TIL TOPP ───────────────────────────────────────────── -->
+  <div class="container back-top">
+    <a href="#search-bar">↑ Tilbake til topp</a>
+  </div>
+
+</BaseLayout>
+
+<script>
+  const searchInput  = document.getElementById('bio-search') as HTMLInputElement
+  const searchClear  = document.getElementById('search-clear') as HTMLButtonElement
+  const noResults    = document.getElementById('no-results') as HTMLElement
+  const noResultsTerm = document.getElementById('no-results-term') as HTMLElement
+  const cards        = document.querySelectorAll<HTMLElement>('.bio-card')
+  const sections     = document.querySelectorAll<HTMLElement>('.letter-section')
+  const alphaLinks   = document.querySelectorAll<HTMLElement>('.alpha-link')
+
+  function search(query: string) {
+    const q = query.trim().toLowerCase()
+    searchClear.hidden = q.length === 0
+
+    let totalVisible = 0
+
+    cards.forEach(card => {
+      const name   = card.dataset.name   ?? ''
+      const artist = card.dataset.artist ?? ''
+      const match  = !q || name.includes(q) || artist.includes(q)
+      card.hidden  = !match
+      if (match) totalVisible++
+    })
+
+    // Show/hide letter sections
+    sections.forEach(section => {
+      const visibleCards = section.querySelectorAll<HTMLElement>('.bio-card:not([hidden])')
+      section.hidden = visibleCards.length === 0
+    })
+
+    // No results message
+    if (totalVisible === 0 && q) {
+      noResults.hidden = false
+      noResultsTerm.textContent = `"${query}"`
+    } else {
+      noResults.hidden = true
+    }
+
+    // Update alpha nav active state
+    alphaLinks.forEach(link => {
+      const letter = link.dataset.letter ?? ''
+      const section = document.getElementById(`letter-${letter}`)
+      link.classList.toggle('alpha-link--hidden', !!section?.hidden)
+    })
+  }
+
+  searchInput?.addEventListener('input', e => {
+    search((e.target as HTMLInputElement).value)
+  })
+
+  searchClear?.addEventListener('click', () => {
+    searchInput.value = ''
+    search('')
+    searchInput.focus()
+  })
+
+  // Sticky search bar behaviour
+  const searchBar = document.getElementById('search-bar')
+  const heroEl    = document.querySelector('.bio-hero')
+
+  if (searchBar && heroEl) {
+    const observer = new IntersectionObserver(
+      ([entry]) => searchBar.classList.toggle('search-bar-wrap--stuck', !entry.isIntersecting),
+      { threshold: 0 }
+    )
+    observer.observe(heroEl)
+  }
+</script>
+
+<style>
+  /* ── HERO ──────────────────────────────────────────────────────── */
+  .bio-hero {
+    background: var(--burgundy-dk);
+    padding: 3.5rem 0 2.5rem;
+    border-bottom: 2px solid var(--gold-dark);
+    color: var(--cream);
+  }
+
+  .bio-title { font-size: clamp(1.8rem, 5vw, 3rem); color: var(--cream); margin: 0.5rem 0 0.75rem; }
+  .bio-sub   { font-family: var(--font-ui); font-size: 1rem; opacity: 0.8; }
+
+  /* ── STICKY SØKEFELT ───────────────────────────────────────────── */
+  .search-bar-wrap {
+    position: sticky;
+    top: var(--header-h);
+    z-index: 50;
+    background: white;
+    border-bottom: 1px solid var(--cream-dark);
+    transition: box-shadow 200ms ease;
+  }
+
+  .search-bar-wrap--stuck {
+    box-shadow: 0 4px 20px rgba(26,18,8,0.12);
+  }
+
+  .search-bar-inner {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    padding-top: 0.75rem;
+    padding-bottom: 0.75rem;
+  }
+
+  .search-field {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    background: var(--cream);
+    border: 1.5px solid var(--cream-dark);
+    border-radius: 6px;
+    padding: 0.55rem 0.9rem;
+    transition: border-color 180ms ease;
+  }
+
+  .search-field:focus-within {
+    border-color: var(--gold);
+    box-shadow: 0 0 0 3px rgba(212,168,67,0.15);
+  }
+
+  .search-field svg {
+    width: 18px; height: 18px;
+    color: var(--grey);
+    flex-shrink: 0;
+  }
+
+  #bio-search {
+    flex: 1;
+    border: none;
+    background: transparent;
+    font-family: var(--font-ui);
+    font-size: 1rem;
+    color: var(--ink);
+    outline: none;
+  }
+
+  #bio-search::placeholder { color: var(--grey); }
+
+  .search-clear {
+    font-size: 0.8rem;
+    color: var(--grey);
+    padding: 0.1rem 0.3rem;
+    border-radius: 3px;
+    transition: color 180ms;
+    cursor: pointer;
+  }
+  .search-clear:hover { color: var(--ink); }
+
+  /* ── ALFABETNAVIGASJON ─────────────────────────────────────────── */
+  .alpha-nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.2rem;
+  }
+
+  .alpha-link {
+    font-family: var(--font-display);
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--burgundy);
+    padding: 0.25rem 0.45rem;
+    border-radius: 3px;
+    transition: background 150ms, color 150ms;
+    text-decoration: none;
+  }
+
+  .alpha-link:hover { background: var(--burgundy); color: white; }
+  .alpha-link--hidden { opacity: 0.25; pointer-events: none; }
+
+  /* ── KILDE-NOTICE ──────────────────────────────────────────────── */
+  .source-notice {
+    display: flex;
+    gap: 0.9rem;
+    align-items: flex-start;
+    background: #FFF9E0;
+    border: 1px solid #E8C840;
+    border-radius: 6px;
+    padding: 1rem 1.25rem;
+    margin: 1.5rem 0;
+    font-family: var(--font-ui);
+    font-size: 0.875rem;
+    color: var(--ink-mid);
+    line-height: 1.6;
+  }
+
+  .notice-icon {
+    font-size: 1.1rem;
+    color: #C47A00;
+    flex-shrink: 0;
+    margin-top: 0.1rem;
+  }
+
+  .source-notice a { color: var(--burgundy); text-decoration: underline; }
+  .source-notice a:hover { color: var(--gold-dark); }
+
+  /* ── INGEN TREFF ───────────────────────────────────────────────── */
+  .no-results {
+    padding: 2rem 0;
+    font-family: var(--font-ui);
+    color: var(--ink-mid);
+    text-align: center;
+  }
+
+  .no-results a { color: var(--burgundy); text-decoration: underline; }
+
+  /* ── BIOGRAFILISTE ─────────────────────────────────────────────── */
+  .bio-list { padding-bottom: 5rem; }
+
+  .letter-section { margin-bottom: 2.5rem; }
+
+  .letter-heading {
+    font-family: var(--font-display);
+    font-size: 1.5rem;
+    color: var(--burgundy);
+    border-bottom: 2px solid var(--gold-dark);
+    padding-bottom: 0.3rem;
+    margin-bottom: 1rem;
+    letter-spacing: 0.08em;
+    scroll-margin-top: calc(var(--header-h) + 120px);
+  }
+
+  .bio-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    background: var(--cream-dark);
+    border: 1px solid var(--cream-dark);
+    border-radius: 6px;
+    overflow: hidden;
+  }
+
+  .bio-card { background: white; }
+  .bio-card:hover { background: var(--cream); }
+
+  .bio-card-link {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.9rem 1.25rem;
+    text-decoration: none;
+    color: var(--ink);
+    transition: background 150ms;
+  }
+
+  /* Thumbnail */
+  .bio-thumb {
+    width: 52px;
+    height: 52px;
+    flex-shrink: 0;
+    border-radius: 4px;
+    overflow: hidden;
+    background: var(--cream-dark);
+  }
+
+  .bio-thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .bio-thumb--placeholder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.4rem;
+    color: var(--grey);
+  }
+
+  /* Info */
+  .bio-info { flex: 1; min-width: 0; }
+
+  .bio-name {
+    font-family: var(--font-display);
+    font-size: 0.95rem;
+    color: var(--burgundy);
+    letter-spacing: 0.02em;
+    margin-bottom: 0.1rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .bio-years {
+    font-family: var(--font-ui);
+    font-size: 0.75rem;
+    color: var(--grey);
+    margin-bottom: 0.2rem;
+  }
+
+  .bio-excerpt {
+    font-family: var(--font-ui);
+    font-size: 0.8rem;
+    color: var(--ink-mid);
+    line-height: 1.45;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .bio-tags {
+    display: flex;
+    gap: 0.3rem;
+    margin-top: 0.3rem;
+    flex-wrap: wrap;
+  }
+
+  .bio-tag {
+    font-family: var(--font-ui);
+    font-size: 0.65rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    background: var(--cream-dark);
+    color: var(--ink-mid);
+    padding: 0.1rem 0.4rem;
+    border-radius: 2px;
+  }
+
+  .bio-arrow {
+    color: var(--gold-dark);
+    font-size: 1rem;
+    transition: transform 150ms;
+    flex-shrink: 0;
+  }
+
+  .bio-card:hover .bio-arrow { transform: translateX(3px); }
+
+  /* ── TILBAKE TIL TOPP ──────────────────────────────────────────── */
+  .back-top {
+    text-align: center;
+    padding: 1rem 0 3rem;
+    font-family: var(--font-ui);
+    font-size: 0.875rem;
+  }
+
+  .back-top a {
+    color: var(--grey);
+    text-decoration: none;
+    border: 1px solid var(--cream-dark);
+    padding: 0.4rem 1rem;
+    border-radius: var(--radius);
+    transition: color 150ms, border-color 150ms;
+  }
+
+  .back-top a:hover { color: var(--burgundy); border-color: var(--gold); }
+
+  /* ── RESPONSIVE ────────────────────────────────────────────────── */
+  @media (max-width: 600px) {
+    .bio-excerpt { display: none; }
+    .bio-thumb   { width: 40px; height: 40px; }
+    .bio-tags    { display: none; }
+  }
+</style>
