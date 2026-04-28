@@ -1,0 +1,247 @@
+---
+// src/pages/kontakt.astro
+import BaseLayout from '../layouts/BaseLayout.astro'
+---
+
+<BaseLayout
+  title="Kontakt oss — Tryllemuseet"
+  description="Ta kontakt med Tryllemuseet. Vi svarer på spørsmål om besøk, booking for grupper og forestillinger."
+>
+
+  <section class="kontakt-hero">
+    <div class="container">
+      <p class="section-label">Tryllemuseet</p>
+      <h1 class="display-title kontakt-title">Kontakt oss</h1>
+      <p class="kontakt-sub">
+        Vi svarer på e-post så snart vi kan. Send gjerne direkte til
+        <a href="mailto:post@tryllemuseet.no">post@tryllemuseet.no</a>.
+      </p>
+    </div>
+  </section>
+
+  <div class="container kontakt-grid">
+
+    <div class="form-col">
+      <div class="form-card">
+        <h2 class="form-heading">Send oss en melding</h2>
+
+        <div class="form-success" id="form-success" hidden>
+          <span aria-hidden="true">✅</span>
+          <div>
+            <strong>Takk for meldingen!</strong>
+            <p>Vi svarer så snart vi kan på <a href="mailto:post@tryllemuseet.no">post@tryllemuseet.no</a>.</p>
+          </div>
+        </div>
+
+        <form action="https://formsubmit.co/post@tryllemuseet.no" method="POST" id="contact-form" novalidate>
+          <input type="hidden" name="_subject" value="Ny melding fra tryllemuseet.no" />
+          <input type="hidden" name="_captcha" value="false" />
+          <input type="hidden" name="_template" value="box" />
+          <input type="text" name="_honey" style="display:none" />
+
+          <div class="field-row">
+            <div class="field-group">
+              <label for="navn" class="field-label">Navn <span class="required">*</span></label>
+              <input type="text" id="navn" name="navn" class="field-input" placeholder="Ditt navn" required autocomplete="name" />
+              <p class="field-error" id="error-navn" hidden>Skriv inn navnet ditt.</p>
+            </div>
+            <div class="field-group">
+              <label for="epost" class="field-label">E-post <span class="required">*</span></label>
+              <input type="email" id="epost" name="epost" class="field-input" placeholder="din@epost.no" required autocomplete="email" />
+              <p class="field-error" id="error-epost" hidden>Skriv inn en gyldig e-postadresse.</p>
+            </div>
+          </div>
+
+          <div class="field-group">
+            <label for="emne" class="field-label">Emne</label>
+            <select id="emne" name="emne" class="field-input field-select">
+              <option value="">Velg emne (valgfritt)</option>
+              <option value="Generelt spørsmål">Generelt spørsmål</option>
+              <option value="Booking — gruppe eller skole">Booking — gruppe eller skole</option>
+              <option value="Forestillinger og arrangementer">Forestillinger og arrangementer</option>
+              <option value="Tryllehistorie og samlingen">Tryllehistorie og samlingen</option>
+              <option value="Støtt oss / bli venn">Støtt oss / bli venn</option>
+              <option value="Annet">Annet</option>
+            </select>
+          </div>
+
+          <div class="field-group">
+            <label for="melding" class="field-label">Melding <span class="required">*</span></label>
+            <textarea id="melding" name="melding" class="field-input field-textarea" placeholder="Skriv meldingen din her…" rows="6" required></textarea>
+            <p class="field-error" id="error-melding" hidden>Skriv en melding.</p>
+          </div>
+
+          <button type="submit" class="btn-submit">
+            Send melding
+            <svg viewBox="0 0 20 20" fill="none" aria-hidden="true" width="18" height="18">
+              <path d="M3 10h14M10 3l7 7-7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <div class="info-col">
+
+      <div class="contact-card">
+        <h2 class="contact-card-heading">Kontaktinformasjon</h2>
+
+        <div class="contact-item">
+          <span aria-hidden="true">✉️</span>
+          <div>
+            <p class="contact-label">E-post</p>
+            <a href="mailto:post@tryllemuseet.no" class="contact-value">post@tryllemuseet.no</a>
+          </div>
+        </div>
+
+        <div class="contact-item">
+          <span aria-hidden="true">📍</span>
+          <div>
+            <p class="contact-label">Besøksadresse</p>
+            <p class="contact-value">Årvollveien 35, 0590 Oslo</p>
+            <a href="https://maps.app.goo.gl/GdV1ZrmJeAoXXiYp9" target="_blank" rel="noopener noreferrer" class="contact-sub-link">Åpne i Google Maps →</a>
+          </div>
+        </div>
+
+        <div class="contact-item">
+          <span aria-hidden="true">🕐</span>
+          <div>
+            <p class="contact-label">Åpningstider</p>
+            <p class="contact-value">Søndager 12:00 – 15:00</p>
+            <a href="/besok" class="contact-sub-link">Mer om besøket →</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="contact-card">
+        <h2 class="contact-card-heading">Følg oss</h2>
+        <div class="social-links">
+          <a href="https://www.facebook.com/tryllemuseet" target="_blank" rel="noopener noreferrer" class="social-link social-fb">
+            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" width="20" height="20"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>
+            Facebook
+          </a>
+          <a href="https://www.instagram.com/tryllemuseet" target="_blank" rel="noopener noreferrer" class="social-link social-ig">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" width="20" height="20"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="0.8" fill="currentColor" stroke="none"/></svg>
+            Instagram
+          </a>
+        </div>
+      </div>
+
+      <div class="contact-card">
+        <h2 class="contact-card-heading">Ofte stilte spørsmål</h2>
+        <div class="faq-list">
+          <details class="faq-item">
+            <summary>Kan vi booke besøk for en skole eller gruppe?</summary>
+            <p>Ja! Vi tar imot grupper og skoleklasser etter avtale. Send oss en melding med antall deltakere og ønsket dato.</p>
+          </details>
+          <details class="faq-item">
+            <summary>Er museet tilgjengelig for rullestol?</summary>
+            <p>Ta kontakt med oss på forhånd, så sørger vi for at besøket blir best mulig.</p>
+          </details>
+          <details class="faq-item">
+            <summary>Holdes det bursdagsarrangementer?</summary>
+            <p>Ta kontakt med oss for å høre om mulighetene — vi finner gjerne en magisk løsning!</p>
+          </details>
+          <details class="faq-item">
+            <summary>Kan vi kjøpe tryllerekvisitter?</summary>
+            <p>Vi har et lite utvalg i museumsbutikken. Større utvalg finner du hos spesialforretninger som Egelos Crazy Shop.</p>
+          </details>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</BaseLayout>
+
+<script>
+  const params = new URLSearchParams(window.location.search)
+  if (params.get('sendt') === '1') {
+    document.getElementById('form-success')!.hidden = false
+    document.getElementById('contact-form')!.hidden = true
+  }
+
+  const form = document.getElementById('contact-form') as HTMLFormElement
+  form?.addEventListener('submit', (e) => {
+    let valid = true
+    const navn    = document.getElementById('navn')    as HTMLInputElement
+    const epost   = document.getElementById('epost')   as HTMLInputElement
+    const melding = document.getElementById('melding') as HTMLTextAreaElement
+    const errNavn    = document.getElementById('error-navn')!
+    const errEpost   = document.getElementById('error-epost')!
+    const errMelding = document.getElementById('error-melding')!
+
+    if (!navn.value.trim()) { errNavn.hidden = false; navn.classList.add('field-input--error'); valid = false }
+    else { errNavn.hidden = true; navn.classList.remove('field-input--error') }
+
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(epost.value)) { errEpost.hidden = false; epost.classList.add('field-input--error'); valid = false }
+    else { errEpost.hidden = true; epost.classList.remove('field-input--error') }
+
+    if (!melding.value.trim()) { errMelding.hidden = false; melding.classList.add('field-input--error'); valid = false }
+    else { errMelding.hidden = true; melding.classList.remove('field-input--error') }
+
+    if (!valid) e.preventDefault()
+  })
+</script>
+
+<style>
+  .kontakt-hero { background: var(--burgundy-dk); padding: 3.5rem 0 2.5rem; border-bottom: 2px solid var(--gold-dark); color: var(--cream); }
+  .kontakt-title { font-size: clamp(2rem,5vw,3rem); color: var(--cream); margin: 0.5rem 0 0.75rem; }
+  .kontakt-sub { font-family: var(--font-ui); font-size: 1rem; opacity: 0.82; line-height: 1.6; }
+  .kontakt-sub a { color: var(--gold-light); text-decoration: underline; }
+
+  .kontakt-grid { display: grid; grid-template-columns: 3fr 2fr; gap: 2rem; padding: 2.5rem 0 5rem; align-items: start; }
+
+  .form-card { background: white; border: 1px solid var(--cream-dark); border-radius: 6px; padding: 2rem; }
+  .form-heading { font-family: var(--font-display); font-size: 1.2rem; color: var(--burgundy); margin-bottom: 1.5rem; letter-spacing: 0.04em; }
+
+  .form-success { display: flex; align-items: flex-start; gap: 1rem; padding: 1.25rem; background: #E8F5E9; border: 1px solid #A5D6A7; border-radius: 6px; margin-bottom: 1.5rem; font-family: var(--font-ui); font-size: 1.5rem; }
+  .form-success div strong { display: block; margin-bottom: 0.2rem; color: #1B5E20; font-size: 1rem; }
+  .form-success div p { font-size: 0.875rem; color: #2E7D32; }
+  .form-success a { color: #1B5E20; text-decoration: underline; }
+
+  .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+  .field-group { display: flex; flex-direction: column; gap: 0.35rem; margin-bottom: 1.25rem; }
+  .field-label { font-family: var(--font-ui); font-size: 0.85rem; font-weight: 600; color: var(--ink-mid); }
+  .required { color: var(--burgundy); }
+
+  .field-input { font-family: var(--font-ui); font-size: 0.95rem; color: var(--ink); background: var(--cream); border: 1.5px solid var(--cream-dark); border-radius: 4px; padding: 0.6rem 0.8rem; transition: border-color 180ms, box-shadow 180ms; outline: none; width: 100%; }
+  .field-input:focus { border-color: var(--gold); box-shadow: 0 0 0 3px rgba(212,168,67,0.15); }
+  .field-input--error { border-color: #E53935 !important; }
+  .field-select { cursor: pointer; }
+  .field-textarea { resize: vertical; min-height: 140px; }
+  .field-error { font-family: var(--font-ui); font-size: 0.78rem; color: #E53935; }
+
+  .btn-submit { display: inline-flex; align-items: center; gap: 0.6rem; font-family: var(--font-ui); font-size: 1rem; font-weight: 600; background: var(--burgundy); color: var(--cream); border: none; border-radius: 4px; padding: 0.8rem 1.75rem; cursor: pointer; transition: background 180ms, transform 180ms; margin-top: 0.5rem; }
+  .btn-submit:hover { background: var(--burgundy-dk); transform: translateY(-1px); }
+
+  .contact-card { background: white; border: 1px solid var(--cream-dark); border-radius: 6px; padding: 1.5rem; margin-bottom: 1.25rem; }
+  .contact-card:last-child { margin-bottom: 0; }
+  .contact-card-heading { font-family: var(--font-display); font-size: 1rem; color: var(--burgundy); letter-spacing: 0.04em; margin-bottom: 1.25rem; }
+
+  .contact-item { display: flex; align-items: flex-start; gap: 0.9rem; margin-bottom: 1.25rem; padding-bottom: 1.25rem; border-bottom: 1px solid var(--cream-dark); font-size: 1.2rem; }
+  .contact-item:last-child { margin-bottom: 0; padding-bottom: 0; border-bottom: none; }
+  .contact-label { font-family: var(--font-ui); font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--grey); margin-bottom: 0.2rem; }
+  .contact-value { font-family: var(--font-ui); font-size: 0.9rem; color: var(--ink); line-height: 1.5; text-decoration: none; }
+  a.contact-value:hover { color: var(--burgundy); text-decoration: underline; }
+  .contact-sub-link { display: block; font-family: var(--font-ui); font-size: 0.8rem; color: var(--burgundy); text-decoration: underline; margin-top: 0.3rem; }
+
+  .social-links { display: flex; flex-direction: column; gap: 0.6rem; }
+  .social-link { display: flex; align-items: center; gap: 0.75rem; padding: 0.65rem 0.9rem; border-radius: 5px; text-decoration: none; color: white; font-family: var(--font-ui); font-weight: 600; font-size: 0.9rem; transition: opacity 150ms; }
+  .social-link:hover { opacity: 0.9; }
+  .social-fb { background: #1877F2; }
+  .social-ig { background: linear-gradient(135deg,#f09433,#e6683c 25%,#dc2743 50%,#cc2366 75%,#bc1888); }
+
+  .faq-list { display: flex; flex-direction: column; }
+  .faq-item { border-bottom: 1px solid var(--cream-dark); }
+  .faq-item:last-child { border-bottom: none; }
+  .faq-item summary { font-family: var(--font-ui); font-size: 0.875rem; font-weight: 600; color: var(--ink); padding: 0.75rem 0; cursor: pointer; list-style: none; display: flex; justify-content: space-between; gap: 0.5rem; }
+  .faq-item summary::after { content: '+'; font-size: 1.2rem; color: var(--gold-dark); flex-shrink: 0; transition: transform 200ms; }
+  .faq-item[open] summary::after { transform: rotate(45deg); }
+  .faq-item p { font-family: var(--font-ui); font-size: 0.875rem; color: var(--ink-mid); line-height: 1.6; padding-bottom: 0.75rem; }
+
+  @media (max-width: 800px) {
+    .kontakt-grid { grid-template-columns: 1fr; }
+    .field-row { grid-template-columns: 1fr; }
+  }
+</style>

@@ -1,6 +1,19 @@
-import blockContent from './blockContent'
-import category from './category'
-import post from './post'
-import author from './author'
+// schemaTypes/index.ts
+import { magician }       from './magician'
+import { contentSection } from './contentSection'
+import { sourceItem }     from './sourceItem'
+import { event }          from './event'
+import { siteConfig }     from './siteConfig'
+import { biography }      from './biography'
 
-export const schemaTypes = [post, author, category, blockContent]
+export const schemaTypes = [
+  // Dokumenttyper
+  magician,
+  biography,
+  event,
+  siteConfig,
+
+  // Objekttyper
+  contentSection,
+  sourceItem,
+]

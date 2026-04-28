@@ -1,0 +1,270 @@
+---
+// src/pages/besok.astro
+import BaseLayout from '../layouts/BaseLayout.astro'
+---
+
+<BaseLayout
+  title="Besøk oss — Tryllemuseet"
+  description="Tryllemuseet holder til på Årvoll i Oslo. Åpent søndager 12–15. Gratis inngang for barn."
+>
+
+  <!-- HERO ──────────────────────────────────────────────────────── -->
+  <section class="besok-hero">
+    <div class="container">
+      <p class="section-label">Planlegg besøket</p>
+      <h1 class="display-title besok-title">Besøk oss</h1>
+      <p class="besok-sub">
+        Vi holder til på Årvoll gård i Oslo — et av byens mest sjarmerende
+        kultursteder. Kom og opplev magi på nært hold.
+      </p>
+    </div>
+  </section>
+
+  <!-- HURTIGINFO ─────────────────────────────────────────────────── -->
+  <section class="quickinfo-strip">
+    <div class="container quickinfo-inner">
+      <div class="qi-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        <div><strong>Åpningstider</strong><span>Søndager 12:00–15:00</span></div>
+      </div>
+      <div class="qi-divider"></div>
+      <div class="qi-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+        <div><strong>Adresse</strong><span>Årvollveien 35, 0590 Oslo</span></div>
+      </div>
+      <div class="qi-divider"></div>
+      <div class="qi-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+        <div><strong>Inngang</strong><span>Barn gratis · Voksne Kr 50,–</span></div>
+      </div>
+      <div class="qi-divider"></div>
+      <div class="qi-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        <div><strong>Forestillinger</strong><span>3 pr. halvår</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- GRID ───────────────────────────────────────────────────────── -->
+  <div class="container besok-grid">
+
+    <!-- VENSTRE: Info ───────────────────────────────────────────── -->
+    <div class="besok-info">
+
+      <section class="info-card" id="apningstider">
+        <h2 class="info-heading"><span aria-hidden="true">🕐</span> Åpningstider</h2>
+        <table class="hours-table">
+          <tbody>
+            <tr class="hours-open">
+              <td>Søndag</td>
+              <td>12:00 – 15:00</td>
+              <td><span class="open-badge">Åpent</span></td>
+            </tr>
+            <tr>
+              <td>Mandag – Lørdag</td>
+              <td colspan="2" class="closed">Stengt</td>
+            </tr>
+          </tbody>
+        </table>
+        <p class="small-note">
+          Vi er også åpne ved spesielle arrangementer og etter avtale for grupper og skoler.
+          <a href="/kontakt">Ta kontakt</a> for booking.
+        </p>
+      </section>
+
+      <section class="info-card" id="priser">
+        <h2 class="info-heading"><span aria-hidden="true">🎟️</span> Priser</h2>
+        <table class="price-table">
+          <tbody>
+            <tr>
+              <td>Barn (under 16 år)</td>
+              <td class="price-val price-free">Gratis</td>
+            </tr>
+            <tr>
+              <td>Voksne</td>
+              <td class="price-val">Kr 50,–</td>
+            </tr>
+            <tr>
+              <td>Familie</td>
+              <td class="price-val">Kr 100,–</td>
+            </tr>
+            <tr>
+              <td>Grupper (10+)</td>
+              <td class="price-val">Etter avtale</td>
+            </tr>
+          </tbody>
+        </table>
+        <p class="small-note">
+          Trylleforestillinger kan ha egne priser.
+          Se <a href="/arrangementer">arrangementssiden</a>.
+        </p>
+      </section>
+
+      <section class="info-card">
+        <h2 class="info-heading"><span aria-hidden="true">🎩</span> Trylleforestillinger</h2>
+        <p class="info-text">
+          Vi arrangerer tre trylleforestillinger hvert halvår — for familier,
+          barn og alle som elsker magi. Forestillingene holdes i museets lokaler
+          og er åpne for alle.
+        </p>
+        <a href="/arrangementer" class="btn-gold">Se kommende forestillinger →</a>
+      </section>
+
+      <section class="info-card social-card">
+        <h2 class="info-heading"><span aria-hidden="true">📱</span> Følg oss</h2>
+        <div class="social-links">
+          <a href="https://www.facebook.com/tryllemuseet" target="_blank" rel="noopener noreferrer" class="social-link social-fb">
+            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>
+            <div>
+              <span class="social-name">Facebook</span>
+              <span class="social-handle">facebook.com/tryllemuseet</span>
+            </div>
+          </a>
+          <a href="https://www.instagram.com/tryllemuseet" target="_blank" rel="noopener noreferrer" class="social-link social-ig">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="0.8" fill="currentColor" stroke="none"/></svg>
+            <div>
+              <span class="social-name">Instagram</span>
+              <span class="social-handle">instagram.com/tryllemuseet</span>
+            </div>
+          </a>
+        </div>
+      </section>
+
+    </div>
+
+    <!-- HØYRE: Kart ─────────────────────────────────────────────── -->
+    <div class="besok-map-col">
+
+      <section class="info-card map-card" id="adresse">
+        <h2 class="info-heading"><span aria-hidden="true">📍</span> Finn oss</h2>
+
+        <div class="map-wrap">
+          <iframe
+            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d1999.8!2d10.8357!3d59.9468!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x46416ebf3b9a4b01%3A0x7c35bec18d935c2d!2s%C3%85rvollveien+35%2C+0590+Oslo!5e0!3m2!1sno!2sno!4v1"
+            width="100%"
+            height="300"
+            style="border:0;"
+            allowfullscreen=""
+            loading="lazy"
+            referrerpolicy="no-referrer-when-downgrade"
+            title="Kart til Tryllemuseet, Årvollveien 35 Oslo"
+          ></iframe>
+        </div>
+
+        <div class="address-row">
+          <p class="address-text">
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M8 1.5a4.5 4.5 0 0 0-4.5 4.5c0 3.5 4.5 8.5 4.5 8.5s4.5-5 4.5-8.5A4.5 4.5 0 0 0 8 1.5z"/><circle cx="8" cy="6" r="1.5"/></svg>
+            Årvollveien 35, 0590 Oslo
+          </p>
+          <a href="https://maps.app.goo.gl/GdV1ZrmJeAoXXiYp9" target="_blank" rel="noopener noreferrer" class="map-ext-link">
+            Åpne i Google Maps →
+          </a>
+        </div>
+
+        <div class="transport-box">
+          <h3 class="transport-title">Kollektivtransport</h3>
+          <ul class="transport-list">
+            <li>
+              <span class="tbadge tbadge--t">T</span>
+              T-bane linje 2 eller 3 til <strong>Grorud</strong> eller <strong>Furuset</strong>
+            </li>
+            <li>
+              <span class="tbadge tbadge--b">B</span>
+              Buss 31 eller 68 — stopp <strong>Årvoll</strong>
+            </li>
+          </ul>
+        </div>
+      </section>
+
+      <section class="info-card">
+        <h2 class="info-heading"><span aria-hidden="true">✉️</span> Spørsmål?</h2>
+        <p class="info-text">
+          Lurer du på noe om besøket, vil booke for en gruppe eller skole,
+          eller ønsker mer informasjon?
+        </p>
+        <a href="/kontakt" class="btn-gold">Send oss en melding →</a>
+        <a href="mailto:post@tryllemuseet.no" class="email-direct">post@tryllemuseet.no</a>
+      </section>
+
+    </div>
+  </div>
+
+</BaseLayout>
+
+<style>
+  .besok-hero {
+    background: var(--burgundy-dk);
+    padding: 3.5rem 0 2.5rem;
+    border-bottom: 2px solid var(--gold-dark);
+    color: var(--cream);
+  }
+  .besok-title { font-size: clamp(2rem,5vw,3rem); color: var(--cream); margin: 0.5rem 0 0.75rem; }
+  .besok-sub   { font-family: var(--font-ui); font-size: 1rem; opacity: 0.82; max-width: 560px; line-height: 1.6; }
+
+  .quickinfo-strip { background: white; border-bottom: 1px solid var(--cream-dark); box-shadow: var(--shadow); }
+  .quickinfo-inner { display: flex; align-items: stretch; flex-wrap: wrap; }
+  .qi-item { display: flex; align-items: center; gap: 0.9rem; padding: 1.25rem 1.5rem; flex: 1; min-width: 180px; }
+  .qi-item svg { width: 22px; height: 22px; color: var(--gold-dark); flex-shrink: 0; }
+  .qi-item div { display: flex; flex-direction: column; line-height: 1.3; }
+  .qi-item strong { font-family: var(--font-ui); font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--ink-mid); }
+  .qi-item span { font-family: var(--font-ui); font-size: 0.875rem; color: var(--grey); }
+  .qi-divider { width: 1px; background: var(--cream-dark); margin: 0.75rem 0; flex-shrink: 0; }
+
+  .besok-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; padding: 2.5rem 0 5rem; align-items: start; }
+
+  .info-card { background: white; border: 1px solid var(--cream-dark); border-radius: 6px; padding: 1.5rem; margin-bottom: 1.25rem; }
+  .info-card:last-child { margin-bottom: 0; }
+
+  .info-heading { font-family: var(--font-display); font-size: 1.05rem; color: var(--burgundy); letter-spacing: 0.04em; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem; }
+
+  .hours-table, .price-table { width: 100%; border-collapse: collapse; margin-bottom: 0.75rem; font-family: var(--font-ui); font-size: 0.9rem; }
+  .hours-table td, .price-table td { padding: 0.45rem 0; border-bottom: 1px solid var(--cream-dark); color: var(--ink-mid); }
+  .hours-open td { font-weight: 600; color: var(--ink); }
+  .closed { color: var(--grey); font-style: italic; }
+  .open-badge { font-size: 0.68rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; background: #E8F5E9; color: #2E7D32; padding: 0.15rem 0.5rem; border-radius: 3px; }
+
+  .price-val { text-align: right; font-weight: 600; color: var(--ink); }
+  .price-free { color: #2E7D32; }
+
+  .small-note { font-family: var(--font-ui); font-size: 0.8rem; color: var(--grey); line-height: 1.5; font-style: italic; }
+  .small-note a { color: var(--burgundy); text-decoration: underline; }
+
+  .info-text { font-family: var(--font-ui); font-size: 0.9rem; color: var(--ink-mid); line-height: 1.65; margin-bottom: 1rem; }
+
+  .btn-gold { display: inline-block; font-family: var(--font-ui); font-size: 0.875rem; font-weight: 600; background: var(--gold); color: var(--burgundy-dk); padding: 0.55rem 1.25rem; border-radius: var(--radius); transition: background 180ms, transform 180ms; text-decoration: none; }
+  .btn-gold:hover { background: var(--gold-light); transform: translateY(-1px); }
+
+  .social-links { display: flex; flex-direction: column; gap: 0.75rem; }
+  .social-link { display: flex; align-items: center; gap: 0.85rem; padding: 0.75rem 1rem; border-radius: 6px; text-decoration: none; color: white; transition: opacity 150ms, transform 150ms; }
+  .social-link:hover { opacity: 0.92; transform: translateX(2px); }
+  .social-fb { background: #1877F2; }
+  .social-ig { background: linear-gradient(135deg,#f09433,#e6683c 25%,#dc2743 50%,#cc2366 75%,#bc1888); }
+  .social-link svg { width: 22px; height: 22px; flex-shrink: 0; }
+  .social-link div { display: flex; flex-direction: column; line-height: 1.3; }
+  .social-name { font-family: var(--font-ui); font-weight: 700; font-size: 0.95rem; }
+  .social-handle { font-family: var(--font-ui); font-size: 0.75rem; opacity: 0.8; }
+
+  .map-wrap { border-radius: 4px; overflow: hidden; border: 1px solid var(--cream-dark); margin-bottom: 1rem; }
+  .address-row { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.5rem; padding-bottom: 1rem; border-bottom: 1px solid var(--cream-dark); margin-bottom: 1rem; }
+  .address-text { display: flex; align-items: center; gap: 0.4rem; font-family: var(--font-ui); font-size: 0.9rem; color: var(--ink-mid); font-weight: 600; }
+  .address-text svg { width: 14px; height: 14px; color: var(--gold-dark); flex-shrink: 0; }
+  .map-ext-link { font-family: var(--font-ui); font-size: 0.875rem; font-weight: 600; color: var(--burgundy); text-decoration: underline; transition: color 150ms; }
+  .map-ext-link:hover { color: var(--gold-dark); }
+
+  .transport-box { }
+  .transport-title { font-family: var(--font-ui); font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--grey); margin-bottom: 0.6rem; }
+  .transport-list { list-style: none; display: flex; flex-direction: column; gap: 0.5rem; }
+  .transport-list li { display: flex; align-items: flex-start; gap: 0.6rem; font-family: var(--font-ui); font-size: 0.875rem; color: var(--ink-mid); line-height: 1.45; }
+  .tbadge { font-family: var(--font-ui); font-size: 0.68rem; font-weight: 700; width: 20px; height: 20px; border-radius: 3px; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 0.1rem; }
+  .tbadge--t { background: #E53935; color: white; }
+  .tbadge--b { background: #1565C0; color: white; }
+
+  .email-direct { display: block; font-family: var(--font-ui); font-size: 0.875rem; color: var(--burgundy); text-decoration: underline; margin-top: 0.75rem; transition: color 150ms; }
+  .email-direct:hover { color: var(--gold-dark); }
+
+  @media (max-width: 800px) {
+    .besok-grid { grid-template-columns: 1fr; }
+    .quickinfo-inner { flex-direction: column; }
+    .qi-divider { width: 100%; height: 1px; margin: 0; }
+  }
+</style>
