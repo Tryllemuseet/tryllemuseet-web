@@ -4,24 +4,21 @@ export interface Props {
   title?: string;
   description?: string;
 }
-
 const {
   title = 'Tryllemuseet',
   description = 'Norges minste, merkeligste og mest magiske museum',
 } = Astro.props;
-
 const navLinks = [
-  { href: '/',              label: 'Hjem'          },
-  { href: '/besok',         label: 'Besøk oss'     },
-  { href: '/utstillingen',  label: 'Utstillingen'  },
-  { href: '/tryllehistorie',label: 'Tryllehistorie'},
-  { href: '/barn',          label: 'Barn & unge'   },
-  { href: '/om-oss',        label: 'Om oss'        },
+  { href: '/',               label: 'Hjem'          },
+  { href: '/besok',          label: 'Besøk oss'     },
+  { href: '/utstillingen',   label: 'Utstillingen'  },
+  { href: '/tryllehistorie', label: 'Tryllehistorie'},
+  { href: '/bibliotek',      label: 'Bibliotek'     },
+  { href: '/barn',           label: 'Barn & unge'   },
+  { href: '/om-oss',         label: 'Om oss'        },
 ];
-
 const currentPath = Astro.url.pathname;
 ---
-
 <!DOCTYPE html>
 <html lang="nb">
 <head>
@@ -34,20 +31,19 @@ const currentPath = Astro.url.pathname;
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Lora:ital,wght@0,400;0,600;1,400&family=Source+Sans+3:wght@300;400;600&display=swap" rel="stylesheet" />
 </head>
 <body>
-
   <!-- ── HEADER ─────────────────────────────────────────────────── -->
   <header class="site-header">
     <div class="header-inner">
 
       <a href="/" class="logo-link" aria-label="Tryllemuseet — forsiden">
-		<img
-			src="/LOGO-bred.png"
-			alt="Tryllemuseet"
-			class="logo-img"
-			width="220"
-			height="44"
-		/>
-	</a>
+        <img
+          src="/LOGO-bred.png"
+          alt="Tryllemuseet"
+          class="logo-img"
+          width="220"
+          height="44"
+        />
+      </a>
 
       <!-- Desktop nav -->
       <nav class="main-nav" aria-label="Hovednavigasjon">
@@ -233,21 +229,19 @@ const currentPath = Astro.url.pathname;
     text-decoration: none;
   }
 
-	.logo-img {
-		height: 40px;
-		width: auto;
-		display: block;
-		object-fit: contain;
-	}
+  .logo-img {
+    height: 40px;
+    width: auto;
+    display: block;
+    object-fit: contain;
+  }
 
-@media (max-width: 560px) {
-  .logo-img { height: 32px; }
-}
+  @media (max-width: 560px) {
+    .logo-img { height: 32px; }
+  }
 
   /* Desktop nav */
-  .main-nav {
-    margin-left: auto;
-  }
+  .main-nav { margin-left: auto; }
 
   .main-nav ul {
     display: flex;
