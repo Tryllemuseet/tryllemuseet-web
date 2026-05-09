@@ -1,5 +1,4 @@
 import {defineCliConfig} from 'sanity/cli'
-
 export default defineCliConfig({
   api: {
     projectId: 'n2ynpgty',
@@ -8,5 +7,6 @@ export default defineCliConfig({
   studioHost: 'tryllemuseet-no',
   deployment: {
     autoUpdates: true,
+    appId: 'k7a55u9l8zl8p20iydga1tis',
   }
 })
