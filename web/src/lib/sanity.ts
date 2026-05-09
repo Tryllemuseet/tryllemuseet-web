@@ -95,3 +95,116 @@ export async function getStaticPaths() {
     .filter(m => m.slug && typeof m.slug === 'string')
     .map(m => ({ params: { slug: String(m.slug) } }))
 }
+
+// ── Legg til i src/lib/sanity.ts ────────────────────────────────
+// Kopier alt under denne linjen og lim inn på slutten av sanity.ts
+
+// ── Typer: Bok ───────────────────────────────────────────────────
+export interface BookAuthor {
+  name:       string
+  slug?:      string
+  hasProfile: boolean
+  role?:      string
+}
+
+export interface Book {
+  _id:            string
+  title:          string
+  subtitle?:      string
+  year?:          number
+  yearNote?:      string
+  language?:      string
+  languageNote?:  string
+  bookType?:      'norwegian' | 'international' | 'publicDomain'
+  section?:       string
+  availability?:  'inPrint' | 'freeDownload' | 'checkAvailability' | 'rare'
+  externalUrl?:   string
+  sourceLabel?:   string
+  thumbnailUrl?:  string
+  coverImage?:    string
+  coverImageAlt?: string
+  publisher?:     string
+  isbn?:          string
+  edition?:       string
+  featured?:      boolean
+  tags?:          string[]
+  authors?:       BookAuthor[]
+  description?:   any[]
+}
+
+// ── Spørringer: Bok ──────────────────────────────────────────────
+// Alle bøker sortert på år — til boklistesiden
+export async function getAllBooks(): Promise<Book[]> {
+  return sanityClient.fetch(`
+    *[_type == "book"] | order(year asc) {
+      _id, title, subtitle, year, yearNote,
+      language, languageNote, bookType, section,
+      availability, externalUrl, sourceLabel,
+      thumbnailUrl,
+      "coverImage": coverImage.asset->url,
+      "coverImageAlt": coverImage.alt,
+      publisher, edition, featured, tags,
+      "authors": authors[] {
+        role,
+        "name": coalesce(personRef->title, nameText),
+        "slug": personRef->slug.current,
+        "hasProfile": defined(personRef)
+      },
+      description
+    }
+  `)
+}
+
+// Kun public domain — til biblioteksiden
+export async function getPublicDomainBooks(): Promise<Book[]> {
+  return sanityClient.fetch(`
+    *[_type == "book" && bookType == "publicDomain"] | order(year asc) {
+      _id, title, year, yearNote, section,
+      externalUrl, sourceLabel, thumbnailUrl, tags,
+      "authors": authors[] {
+        "name": coalesce(personRef->title, nameText)
+      },
+      description
+    }
+  `)
+}
+
+// Kun norske bøker
+export async function getNorwegianBooks(): Promise<Book[]> {
+  return sanityClient.fetch(`
+    *[_type == "book" && bookType == "norwegian"] | order(year asc) {
+      _id, title, subtitle, year, publisher, tags,
+      "authors": authors[] {
+        "name": coalesce(personRef->title, nameText),
+        "slug": personRef->slug.current,
+        "hasProfile": defined(personRef)
+      }
+    }
+  `)
+}
+
+// Bøker av én magiker — til magiker-profilsiden
+export async function getBooksByMagician(magicianId: string): Promise<Book[]> {
+  return sanityClient.fetch(`
+    *[_type == "book" && references($magicianId)] | order(year asc) {
+      _id, title, year, yearNote, bookType,
+      availability, externalUrl, thumbnailUrl,
+      "coverImage": coverImage.asset->url,
+      tags
+    }
+  `, { magicianId })
+}
+
+// Fremhevede bøker — til forsiden
+export async function getFeaturedBooks(): Promise<Book[]> {
+  return sanityClient.fetch(`
+    *[_type == "book" && featured == true] | order(year asc) {
+      _id, title, year, bookType,
+      thumbnailUrl,
+      "coverImage": coverImage.asset->url,
+      "authors": authors[] {
+        "name": coalesce(personRef->title, nameText)
+      }
+    }
+  `)
+}
