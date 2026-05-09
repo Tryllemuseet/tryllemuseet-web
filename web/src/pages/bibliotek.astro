@@ -1,0 +1,691 @@
+---
+// src/pages/bibliotek.astro
+import BaseLayout from '../layouts/BaseLayout.astro'
+import { getAllBooks } from '../lib/sanity'
+
+const books = await getAllBooks()
+const total = books.length
+
+// Grupper på seksjon
+const sectionOrder = [
+  { key: 'foundations',       label: 'Historiske og teoretiske fundamenter' },
+  { key: 'robert-houdin',     label: 'Robert-Houdins egne skrifter' },
+  { key: 'houdini',           label: 'Harry Houdinis historiske verk' },
+  { key: 'technique',         label: 'Fagbøker om teknikk og teori' },
+  { key: 'history',           label: 'Magihistorie' },
+  { key: 'biography',         label: 'Biografier' },
+  { key: 'instruction',       label: 'Teknikk og instruksjon' },
+  { key: 'theory',            label: 'Teori og presentasjon' },
+  { key: 'mentalism',         label: 'Mentalisme' },
+  { key: 'coins',             label: 'Myntkunst' },
+  { key: 'cultural-history',  label: 'Magi som kulturhistorie' },
+  { key: 'norwegian-history', label: 'Norsk tryllehistorie' },
+]
+
+const grouped: Record<string, typeof books> = {}
+for (const book of books) {
+  const key = book.section ?? 'other'
+  if (!grouped[key]) grouped[key] = []
+  grouped[key].push(book)
+}
+
+const activeSections = sectionOrder.filter(s => grouped[s.key]?.length)
+
+// Alle unike tags på tvers av bøkene
+const tagMap: Record<string, string> = {
+  historikk:       'Historikk',
+  biografi:        'Biografi',
+  kortkunst:       'Kortkunst',
+  teknikk:         'Teknikk',
+  teori:           'Teori',
+  mentalisme:      'Mentalisme',
+  scenekunst:      'Scenekunst',
+  illusjon:        'Store illusjoner',
+  myntkunst:       'Myntkunst',
+  avsloering:      'Avsløring',
+  'robert-houdin': 'Robert-Houdin',
+  houdini:         'Houdini',
+  'norsk-historikk': 'Norsk historikk',
+}
+
+const availabilityLabel: Record<string, string> = {
+  inPrint:           'Tilgjengelig',
+  freeDownload:      'Gratis nedlast',
+  checkAvailability: 'Sjekk tilgjengelighet',
+  rare:              'Sjelden / antikvarisk',
+}
+---
+
+<BaseLayout
+  title="Bibliotek — Tryllemuseet"
+  description={`${total} bøker om magi, magihistorie og trylleteknikk — fra public domain-klassikere til moderne fagbøker.`}
+>
+
+  <!-- HERO ──────────────────────────────────────────────────────── -->
+  <section class="lib-hero">
+    <div class="container">
+      <p class="section-label">Ressurser</p>
+      <h1 class="display-title lib-title">Bibliotek</h1>
+      <p class="lib-sub">
+        {total} bøker om magi, magihistorie og trylleteknikk —
+        fra gratis nedlastbare klassikere til moderne fagbøker.
+      </p>
+    </div>
+  </section>
+
+  <!-- FILTER ─────────────────────────────────────────────────────── -->
+  <div class="filter-bar-wrap" id="filter-bar">
+    <div class="container filter-bar-inner">
+
+      <!-- Søk -->
+      <div class="search-field">
+        <svg viewBox="0 0 20 20" fill="none" aria-hidden="true">
+          <circle cx="9" cy="9" r="6" stroke="currentColor" stroke-width="1.8"/>
+          <path d="M13.5 13.5L17 17" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+        </svg>
+        <input
+          type="search"
+          id="book-search"
+          placeholder="Søk på tittel eller forfatter…"
+          aria-label="Søk i biblioteket"
+          autocomplete="off"
+          autocorrect="off"
+          spellcheck="false"
+        />
+        <button class="search-clear" id="search-clear" aria-label="Tøm søk" hidden>✕</button>
+      </div>
+
+      <!-- Boktype-tabs -->
+      <div class="type-tabs" role="group" aria-label="Filtrer etter boktype">
+        <button class="type-tab type-tab--active" data-type="alle">Alle</button>
+        <button class="type-tab" data-type="publicDomain">Gratis nedlast</button>
+        <button class="type-tab" data-type="international">Anbefalt lesning</button>
+        <button class="type-tab" data-type="norwegian">Norske bøker</button>
+      </div>
+
+      <!-- Tag-filter -->
+      <div class="tag-filter" role="group" aria-label="Filtrer etter emne">
+        <button class="tag-btn tag-btn--active" data-tag="alle">Alle emner</button>
+        {Object.entries(tagMap).map(([value, label]) => (
+          <button class="tag-btn" data-tag={value}>{label}</button>
+        ))}
+      </div>
+
+    </div>
+  </div>
+
+  <!-- INGEN TREFF ─────────────────────────────────────────────────── -->
+  <div class="container no-results" id="no-results" hidden>
+    <p>Ingen treff. Prøv et annet søk eller fjern filtre.</p>
+  </div>
+
+  <!-- BOKLISTE ───────────────────────────────────────────────────── -->
+  <main class="container book-list" id="book-list">
+    {activeSections.map(({ key, label }) => (
+      <section class="book-section" id={`section-${key}`} data-section={key}>
+        <h2 class="section-heading">{label}</h2>
+        <div class="book-grid">
+          {grouped[key].map(book => {
+            const thumb = book.thumbnailUrl ?? book.coverImage ?? null
+            const authorNames = book.authors?.map((a: any) => a.name).join(', ') ?? ''
+            const yearDisplay = book.yearNote ?? book.year?.toString() ?? ''
+            const avail = book.availability ?? ''
+            const tags = book.tags ?? []
+            return (
+              <article
+                class="book-card"
+                data-title={book.title.toLowerCase()}
+                data-author={authorNames.toLowerCase()}
+                data-type={book.bookType ?? ''}
+                data-tags={tags.join(' ')}
+              >
+                <!-- Cover -->
+                <div class="book-cover">
+                  {thumb ? (
+                    <img
+                      src={thumb}
+                      alt={`Forsidebilde: ${book.title}`}
+                      loading="lazy"
+                      onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"
+                    />
+                  ) : null}
+                  <div class="cover-placeholder" style={thumb ? 'display:none' : ''}>
+                    <span>📖</span>
+                    {yearDisplay && <span class="cover-year">{yearDisplay}</span>}
+                  </div>
+                </div>
+
+                <!-- Info -->
+                <div class="book-info">
+                  <div class="book-top">
+                    <h3 class="book-title">{book.title}</h3>
+                    {yearDisplay && <span class="book-year">{yearDisplay}</span>}
+                  </div>
+
+                  {authorNames && (
+                    <p class="book-author">{authorNames}</p>
+                  )}
+
+                  {book.languageNote ? (
+                    <p class="book-lang">På {book.language === 'no' ? 'norsk' : book.language === 'en' ? 'engelsk' : book.language ?? ''}
+                      {book.languageNote ? ` (${book.languageNote})` : ''}
+                    </p>
+                  ) : book.language && (
+                    <p class="book-lang">På {book.language === 'no' ? 'norsk' : book.language === 'en' ? 'engelsk' : book.language}</p>
+                  )}
+
+                  {tags.length > 0 && (
+                    <div class="book-tags">
+                      {tags.slice(0, 4).map((tag: string) => (
+                        <span class="book-tag">{tagMap[tag] ?? tag}</span>
+                      ))}
+                    </div>
+                  )}
+
+                  <div class="book-footer">
+                    {book.publisher && (
+                      <span class="book-pub">{book.publisher}{book.edition ? `, ${book.edition}` : ''}</span>
+                    )}
+                    <div class="book-actions">
+                      {avail && (
+                        <span class={`avail-badge avail-badge--${avail}`}>
+                          {availabilityLabel[avail] ?? avail}
+                        </span>
+                      )}
+                      {book.externalUrl && (
+                        <a
+                          href={book.externalUrl}
+                          target="_blank"
+                          rel="noopener"
+                          class="btn-download"
+                          aria-label={`Last ned eller åpne ${book.title}`}
+                        >
+                          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                            <path d="M8 2v9M4 8l4 4 4-4"/>
+                            <path d="M2 14h12"/>
+                          </svg>
+                          {book.sourceLabel === 'Library of Congress (Houdinis eksemplar)' ? 'Åpne hos LoC' : 'Last ned PDF'}
+                        </a>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </article>
+            )
+          })}
+        </div>
+      </section>
+    ))}
+  </main>
+
+  <!-- NOTE ───────────────────────────────────────────────────────── -->
+  <div class="container">
+    <aside class="lib-note">
+      <div class="notice-icon" aria-hidden="true">ℹ</div>
+      <div>
+        <strong>Gratis nedlast:</strong> Bøker merket «Gratis nedlast» er i det fri
+        (<em>public domain</em>) og kan lastes ned lovlig fra Internet Archive eller
+        Library of Congress. Øvrige bøker er opphavsrettsbeskyttet og må kjøpes eller lånes.
+        Tryllemuseet anbefaler — vi selger ikke bøkene.
+      </div>
+    </aside>
+  </div>
+
+  <div class="container back-top">
+    <a href="#filter-bar">↑ Tilbake til topp</a>
+  </div>
+
+</BaseLayout>
+
+<script>
+  const searchInput  = document.getElementById('book-search') as HTMLInputElement
+  const searchClear  = document.getElementById('search-clear') as HTMLButtonElement
+  const noResults    = document.getElementById('no-results') as HTMLElement
+  const cards        = document.querySelectorAll<HTMLElement>('.book-card')
+  const sections     = document.querySelectorAll<HTMLElement>('.book-section')
+  const typeTabs     = document.querySelectorAll<HTMLButtonElement>('.type-tab')
+  const tagBtns      = document.querySelectorAll<HTMLButtonElement>('.tag-btn')
+
+  let activeType = 'alle'
+  let activeTag  = 'alle'
+  let activeQuery = ''
+
+  function applyFilters() {
+    let visible = 0
+
+    cards.forEach(card => {
+      const title  = card.dataset.title  ?? ''
+      const author = card.dataset.author ?? ''
+      const type   = card.dataset.type   ?? ''
+      const tags   = (card.dataset.tags  ?? '').split(' ')
+
+      const matchQuery = !activeQuery || title.includes(activeQuery) || author.includes(activeQuery)
+      const matchType  = activeType === 'alle' || type === activeType
+      const matchTag   = activeTag  === 'alle' || tags.includes(activeTag)
+
+      const show = matchQuery && matchType && matchTag
+      card.hidden = !show
+      if (show) visible++
+    })
+
+    sections.forEach(section => {
+      const visibleCards = section.querySelectorAll<HTMLElement>('.book-card:not([hidden])')
+      section.hidden = visibleCards.length === 0
+    })
+
+    noResults.hidden = visible > 0
+    searchClear.hidden = activeQuery.length === 0
+  }
+
+  searchInput?.addEventListener('input', e => {
+    activeQuery = (e.target as HTMLInputElement).value.trim().toLowerCase()
+    applyFilters()
+  })
+
+  searchClear?.addEventListener('click', () => {
+    searchInput.value = ''
+    activeQuery = ''
+    applyFilters()
+    searchInput.focus()
+  })
+
+  typeTabs.forEach(btn => {
+    btn.addEventListener('click', () => {
+      typeTabs.forEach(b => b.classList.remove('type-tab--active'))
+      btn.classList.add('type-tab--active')
+      activeType = btn.dataset.type ?? 'alle'
+      applyFilters()
+    })
+  })
+
+  tagBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      tagBtns.forEach(b => b.classList.remove('tag-btn--active'))
+      btn.classList.add('tag-btn--active')
+      activeTag = btn.dataset.tag ?? 'alle'
+      applyFilters()
+    })
+  })
+
+  // Sticky filter bar
+  const filterBar = document.getElementById('filter-bar')
+  const heroEl    = document.querySelector('.lib-hero')
+  if (filterBar && heroEl) {
+    const observer = new IntersectionObserver(
+      ([entry]) => filterBar.classList.toggle('filter-bar-wrap--stuck', !entry.isIntersecting),
+      { threshold: 0 }
+    )
+    observer.observe(heroEl)
+  }
+</script>
+
+<style>
+  /* ── HERO ──────────────────────────────────────────────────────── */
+  .lib-hero {
+    background: var(--burgundy-dk);
+    padding: 3.5rem 0 2.5rem;
+    border-bottom: 2px solid var(--gold-dark);
+    color: var(--cream);
+  }
+  .lib-title { font-size: clamp(1.8rem, 5vw, 3rem); color: var(--cream); margin: 0.5rem 0 0.75rem; }
+  .lib-sub   { font-family: var(--font-ui); font-size: 1rem; opacity: 0.8; }
+
+  /* ── FILTER BAR ─────────────────────────────────────────────────── */
+  .filter-bar-wrap {
+    position: sticky;
+    top: var(--header-h);
+    z-index: 50;
+    background: white;
+    border-bottom: 1px solid var(--cream-dark);
+    transition: box-shadow 200ms ease;
+  }
+  .filter-bar-wrap--stuck { box-shadow: 0 4px 20px rgba(26,18,8,0.12); }
+
+  .filter-bar-inner {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    padding-top: 0.75rem;
+    padding-bottom: 0.75rem;
+  }
+
+  /* Søkefelt */
+  .search-field {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    background: var(--cream);
+    border: 1.5px solid var(--cream-dark);
+    border-radius: 6px;
+    padding: 0.5rem 0.9rem;
+    transition: border-color 180ms;
+  }
+  .search-field:focus-within {
+    border-color: var(--gold);
+    box-shadow: 0 0 0 3px rgba(212,168,67,0.15);
+  }
+  .search-field svg { width: 18px; height: 18px; color: var(--grey); flex-shrink: 0; }
+  #book-search {
+    flex: 1; border: none; background: transparent;
+    font-family: var(--font-ui); font-size: 1rem; color: var(--ink); outline: none;
+  }
+  #book-search::placeholder { color: var(--grey); }
+  .search-clear { font-size: 0.8rem; color: var(--grey); padding: 0.1rem 0.3rem; border-radius: 3px; cursor: pointer; }
+  .search-clear:hover { color: var(--ink); }
+
+  /* Type-tabs */
+  .type-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+  }
+  .type-tab {
+    font-family: var(--font-ui);
+    font-size: 0.8rem;
+    font-weight: 600;
+    padding: 0.3rem 0.85rem;
+    border: 1.5px solid var(--cream-dark);
+    border-radius: 20px;
+    color: var(--ink-mid);
+    background: transparent;
+    cursor: pointer;
+    transition: border-color 150ms, background 150ms, color 150ms;
+  }
+  .type-tab:hover { border-color: var(--gold); color: var(--ink); }
+  .type-tab--active { background: var(--burgundy); border-color: var(--burgundy); color: white; }
+
+  /* Tag-filter */
+  .tag-filter {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+  }
+  .tag-btn {
+    font-family: var(--font-ui);
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    padding: 0.2rem 0.65rem;
+    border: 1px solid var(--cream-dark);
+    border-radius: 3px;
+    color: var(--ink-mid);
+    background: transparent;
+    cursor: pointer;
+    transition: border-color 150ms, background 150ms, color 150ms;
+  }
+  .tag-btn:hover { border-color: var(--gold); color: var(--ink); }
+  .tag-btn--active { background: var(--gold-dark); border-color: var(--gold-dark); color: white; }
+
+  /* ── INGEN TREFF ───────────────────────────────────────────────── */
+  .no-results {
+    padding: 3rem 0;
+    text-align: center;
+    font-family: var(--font-ui);
+    color: var(--ink-mid);
+  }
+
+  /* ── BOKLISTE ───────────────────────────────────────────────────── */
+  .book-list { padding-bottom: 5rem; }
+
+  .book-section { margin-bottom: 3rem; }
+
+  .section-heading {
+    font-family: var(--font-display);
+    font-size: 1.1rem;
+    color: var(--burgundy);
+    border-bottom: 2px solid var(--gold-dark);
+    padding-bottom: 0.3rem;
+    margin-bottom: 1rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    scroll-margin-top: calc(var(--header-h) + 140px);
+  }
+
+  .book-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    background: var(--cream-dark);
+    border: 1px solid var(--cream-dark);
+    border-radius: 6px;
+    overflow: hidden;
+  }
+
+  /* ── BOK-KORT ──────────────────────────────────────────────────── */
+  .book-card {
+    display: grid;
+    grid-template-columns: 80px 1fr;
+    background: white;
+    transition: background 150ms;
+  }
+  .book-card:hover { background: var(--cream); }
+
+  /* Cover */
+  .book-cover {
+    width: 80px;
+    align-self: stretch;
+    border-right: 1px solid var(--cream-dark);
+    overflow: hidden;
+    background: var(--cream-dark);
+    flex-shrink: 0;
+  }
+  .book-cover img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: top center;
+    display: block;
+  }
+  .cover-placeholder {
+    width: 100%;
+    height: 100%;
+    min-height: 110px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.3rem;
+    font-size: 1.5rem;
+    color: var(--grey);
+  }
+  .cover-year {
+    font-family: var(--font-display);
+    font-size: 0.7rem;
+    font-style: italic;
+    color: var(--grey);
+    text-align: center;
+    padding: 0 0.3rem;
+    line-height: 1.2;
+  }
+
+  /* Info */
+  .book-info {
+    padding: 0.85rem 1.1rem 0.85rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+  }
+
+  .book-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+
+  .book-title {
+    font-family: var(--font-display);
+    font-size: 0.9rem;
+    color: var(--burgundy);
+    letter-spacing: 0.02em;
+    line-height: 1.3;
+    flex: 1;
+  }
+
+  .book-year {
+    font-family: var(--font-ui);
+    font-size: 0.75rem;
+    font-style: italic;
+    color: var(--grey);
+    white-space: nowrap;
+    padding-top: 0.1rem;
+  }
+
+  .book-author {
+    font-family: var(--font-ui);
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--ink-mid);
+  }
+
+  .book-lang {
+    font-family: var(--font-ui);
+    font-size: 0.75rem;
+    font-style: italic;
+    color: var(--grey);
+  }
+
+  .book-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem;
+    margin-top: 0.15rem;
+  }
+  .book-tag {
+    font-family: var(--font-ui);
+    font-size: 0.62rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    background: var(--cream-dark);
+    color: var(--ink-mid);
+    padding: 0.1rem 0.4rem;
+    border-radius: 2px;
+  }
+
+  .book-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin-top: auto;
+    padding-top: 0.5rem;
+    border-top: 1px solid var(--cream-dark);
+  }
+
+  .book-pub {
+    font-family: var(--font-ui);
+    font-size: 0.7rem;
+    font-style: italic;
+    color: var(--grey);
+    flex: 1;
+    min-width: 0;
+  }
+
+  .book-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-shrink: 0;
+  }
+
+  /* Availability badge */
+  .avail-badge {
+    font-family: var(--font-ui);
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 0.15rem 0.5rem;
+    border-radius: 2px;
+    border: 1px solid;
+  }
+  .avail-badge--inPrint {
+    color: #1a6b3a;
+    border-color: rgba(26,107,58,0.35);
+    background: rgba(26,107,58,0.07);
+  }
+  .avail-badge--freeDownload {
+    color: #185fa5;
+    border-color: rgba(24,95,165,0.35);
+    background: rgba(24,95,165,0.07);
+  }
+  .avail-badge--checkAvailability {
+    color: var(--ink-mid);
+    border-color: var(--cream-dark);
+    background: var(--cream-dark);
+  }
+  .avail-badge--rare {
+    color: #8b4513;
+    border-color: rgba(139,69,19,0.35);
+    background: rgba(139,69,19,0.07);
+  }
+
+  /* Download-knapp */
+  .btn-download {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    font-family: var(--font-ui);
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--burgundy);
+    text-decoration: none;
+    border: 1.5px solid var(--cream-dark);
+    border-radius: 4px;
+    padding: 0.25rem 0.6rem;
+    transition: border-color 150ms, color 150ms, background 150ms;
+  }
+  .btn-download svg { width: 11px; height: 11px; }
+  .btn-download:hover {
+    border-color: var(--gold);
+    color: var(--gold-dark);
+    background: rgba(212,168,67,0.08);
+  }
+
+  /* ── NOTE ──────────────────────────────────────────────────────── */
+  .lib-note {
+    display: flex;
+    gap: 0.9rem;
+    align-items: flex-start;
+    background: #FFF9E0;
+    border: 1px solid #E8C840;
+    border-radius: 6px;
+    padding: 1rem 1.25rem;
+    margin: 0 0 2rem;
+    font-family: var(--font-ui);
+    font-size: 0.875rem;
+    color: var(--ink-mid);
+    line-height: 1.6;
+  }
+  .notice-icon { font-size: 1.1rem; color: #C47A00; flex-shrink: 0; margin-top: 0.1rem; }
+
+  /* ── TILBAKE TIL TOPP ──────────────────────────────────────────── */
+  .back-top {
+    text-align: center;
+    padding: 1rem 0 3rem;
+    font-family: var(--font-ui);
+    font-size: 0.875rem;
+  }
+  .back-top a {
+    color: var(--grey);
+    text-decoration: none;
+    border: 1px solid var(--cream-dark);
+    padding: 0.4rem 1rem;
+    border-radius: var(--radius);
+    transition: color 150ms, border-color 150ms;
+  }
+  .back-top a:hover { color: var(--burgundy); border-color: var(--gold); }
+
+  /* ── RESPONSIVE ────────────────────────────────────────────────── */
+  @media (max-width: 600px) {
+    .book-card { grid-template-columns: 60px 1fr; }
+    .book-cover { width: 60px; }
+    .book-tags  { display: none; }
+    .book-pub   { display: none; }
+  }
+</style>
