@@ -1,0 +1,452 @@
+---
+// src/pages/utstillingen/[slug].astro
+import BaseLayout from '../../layouts/BaseLayout.astro'
+import { getAllMagicians, getMagicianBySlug, getBooksByMagician } from '../../lib/sanity'
+import { toHTML } from '@portabletext/to-html'
+
+export async function getStaticPaths() {
+  const magicians = await getAllMagicians()
+  return magicians
+    .filter(m => m.slug && typeof m.slug === 'string')
+    .map(m => ({ params: { slug: String(m.slug) } }))
+}
+
+const { slug } = Astro.params
+const m = await getMagicianBySlug(slug!)
+
+if (!m) return Astro.redirect('/utstillingen', 301)
+
+const books = await getBooksByMagician(m._id)
+
+const adultHtml = m.adultText ? toHTML(m.adultText) : ''
+const sectionsHtml = m.mobileSections?.map(s => ({
+  heading: s.heading,
+  html: s.body ? toHTML(s.body) : ''
+})) ?? []
+
+const availabilityLabel: Record<string, string> = {
+  inPrint:           'Tilgjengelig',
+  freeDownload:      'Gratis nedlast',
+  checkAvailability: 'Sjekk tilgjengelighet',
+  rare:              'Sjelden / antikvarisk',
+}
+---
+
+<BaseLayout
+  title={`${m.title} — Tryllemuseet`}
+  description={m.mobileIntro ?? `Les om ${m.title} på Tryllemuseet`}
+>
+
+  <!-- HERO ────────────────────────────────────────────────────── -->
+  <section class="magician-hero">
+    <div class="container hero-inner">
+      {m.posterImage?.asset?.url && (
+        <div class="poster-wrap">
+          <img
+            src={m.posterImage.asset.url}
+            alt={m.posterImage.alt ?? m.title}
+            class="poster-img"
+          />
+        </div>
+      )}
+      <div class="hero-text">
+        <h1 class="display-title hero-title">{m.title}</h1>
+        {m.years   && <p class="hero-years">{m.years}</p>}
+        {m.tagline && <p class="hero-tagline">«{m.tagline}»</p>}
+      </div>
+    </div>
+  </section>
+
+  <div class="container page-body">
+
+    <!-- 1. BARNETEKST ──────────────────────────────────────────── -->
+    {m.childText && (
+      <section class="child-panel" aria-label="For barn">
+        <p class="child-label">⭐ For barn</p>
+        <p class="child-text">{m.childText}</p>
+        {m.childActivity && (
+          <div class="child-activity">
+            <span aria-hidden="true">★</span>
+            {m.childActivity}
+          </div>
+        )}
+      </section>
+    )}
+
+    <!-- 2. VOKSENTEKST ─────────────────────────────────────────── -->
+    {adultHtml && (
+      <section class="adult-section" aria-label={`Om ${m.title}`}>
+        <h2 class="section-heading">Om {m.title}</h2>
+        <div class="prose" set:html={adultHtml} />
+      </section>
+    )}
+
+    <!-- 3. DETALJERT TEKST ──────────────────────────────────────── -->
+    {(m.mobileIntro || sectionsHtml.length > 0) && (
+      <section class="detail-section" id="detaljer" aria-label="Utdypende innhold">
+        <h2 class="section-heading">Les mer</h2>
+        {m.mobileIntro && (
+          <p class="detail-intro">{m.mobileIntro}</p>
+        )}
+        {sectionsHtml.map(s => (
+          <div class="content-section">
+            <h3 class="content-heading">{s.heading}</h3>
+            <div class="prose" set:html={s.html} />
+          </div>
+        ))}
+      </section>
+    )}
+
+    <!-- 4. BØKER ───────────────────────────────────────────────── -->
+    {books.length > 0 && (
+      <section class="books-section" aria-label={`Bøker av ${m.title}`}>
+        <h2 class="section-heading">Bøker</h2>
+        <ul class="books-list">
+          {books.map((book: any) => {
+            const thumb = book.thumbnailUrl ?? book.coverImage ?? null
+            const yearDisplay = book.yearNote ?? book.year?.toString() ?? ''
+            const avail = book.availability ?? ''
+            return (
+              <li class="book-item">
+                {thumb && (
+                  <div class="book-thumb">
+                    <img src={thumb} alt={`Forsidebilde: ${book.title}`} loading="lazy" />
+                  </div>
+                )}
+                <div class="book-meta">
+                  <span class="book-title">{book.title}</span>
+                  {yearDisplay && <span class="book-year">{yearDisplay}</span>}
+                  {avail && (
+                    <span class={`avail-badge avail-badge--${avail}`}>
+                      {availabilityLabel[avail] ?? avail}
+                    </span>
+                  )}
+                  {book.externalUrl && (
+                    <a
+                      href={book.externalUrl}
+                      target="_blank"
+                      rel="noopener"
+                      class="book-link"
+                    >
+                      Last ned PDF
+                      <svg viewBox="0 0 12 12" fill="none" aria-hidden="true">
+                        <path d="M2 10L10 2M10 2H5M10 2V7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                      </svg>
+                    </a>
+                  )}
+                </div>
+              </li>
+            )
+          })}
+        </ul>
+        <p class="books-more">
+          <a href="/bibliotek">Se alle bøker i biblioteket →</a>
+        </p>
+      </section>
+    )}
+
+    <!-- 5. KILDER ──────────────────────────────────────────────── -->
+    {m.sources && m.sources.length > 0 && (
+      <section class="sources-section" aria-label="Kilder">
+        <h2 class="section-heading">Kilder</h2>
+        <ul class="sources-list">
+          {m.sources.map(src => (
+            <li>
+              {src.url
+                ? (
+                  <a href={src.url} target="_blank" rel="noopener noreferrer">
+                    {src.label}
+                    <svg class="ext-icon" viewBox="0 0 12 12" fill="none" aria-label="Åpnes i ny fane">
+                      <path d="M2 10L10 2M10 2H5M10 2V7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                    </svg>
+                  </a>
+                )
+                : <span>{src.label}</span>
+              }
+            </li>
+          ))}
+        </ul>
+      </section>
+    )}
+
+    <!-- NAVIGASJON ─────────────────────────────────────────────── -->
+    <nav class="magician-nav" aria-label="Naviger mellom utstillingsfelt">
+      <a href="/utstillingen" class="btn-nav">← Alle felt</a>
+    </nav>
+
+  </div>
+</BaseLayout>
+
+<style>
+  /* ── HERO ──────────────────────────────────────────────────────── */
+  .magician-hero {
+    background: var(--burgundy-dk);
+    padding: 3.5rem 0 3rem;
+    border-bottom: 2px solid var(--gold-dark);
+  }
+
+  .hero-inner {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 3rem;
+    align-items: start;
+  }
+
+  .poster-wrap {
+    width: 200px;
+    flex-shrink: 0;
+    border-radius: 4px;
+    overflow: hidden;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+    border: 2px solid var(--gold-dark);
+  }
+  .poster-img { width: 100%; display: block; }
+
+  .hero-text    { color: var(--cream); }
+  .hero-title   { font-size: clamp(1.8rem, 4vw, 3rem); color: var(--cream); margin-bottom: 0.4rem; }
+  .hero-years   { font-family: var(--font-ui); font-size: 0.9rem; color: var(--gold-light); opacity: 0.75; margin-bottom: 0.4rem; }
+  .hero-tagline { font-family: var(--font-body); font-size: 1.1rem; font-style: italic; color: var(--gold); }
+
+  /* ── PAGE BODY ─────────────────────────────────────────────────── */
+  .page-body {
+    padding: 3rem 0 5rem;
+    max-width: 720px;
+    display: flex;
+    flex-direction: column;
+    gap: 2.5rem;
+  }
+
+  /* ── BARNETEKST ────────────────────────────────────────────────── */
+  .child-panel {
+    background: #FFF9E0;
+    border: 2px solid #E8C840;
+    border-radius: 6px;
+    padding: 1.5rem;
+  }
+  .child-label {
+    font-family: var(--font-ui);
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: #C47A00;
+    margin-bottom: 0.6rem;
+  }
+  .child-text {
+    font-family: var(--font-body);
+    font-size: 1rem;
+    line-height: 1.65;
+    color: var(--ink);
+    margin-bottom: 0.75rem;
+  }
+  .child-activity {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+    background: #E8C840;
+    border-radius: 4px;
+    padding: 0.6rem 0.9rem;
+    font-family: var(--font-ui);
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--ink);
+  }
+
+  /* ── BØKER ─────────────────────────────────────────────────────── */
+  .books-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    background: var(--cream-dark);
+    border: 1px solid var(--cream-dark);
+    border-radius: 6px;
+    overflow: hidden;
+    margin-bottom: 0.75rem;
+  }
+
+  .book-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    background: white;
+    padding: 0.75rem 1rem;
+    transition: background 150ms;
+  }
+  .book-item:hover { background: var(--cream); }
+
+  .book-thumb {
+    width: 48px;
+    height: 64px;
+    flex-shrink: 0;
+    border-radius: 2px;
+    overflow: hidden;
+    background: var(--cream-dark);
+  }
+  .book-thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: top;
+  }
+
+  .book-meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+    flex: 1;
+  }
+
+  .book-title {
+    font-family: var(--font-display);
+    font-size: 0.9rem;
+    color: var(--burgundy);
+    letter-spacing: 0.02em;
+    flex: 1;
+    min-width: 200px;
+  }
+
+  .book-year {
+    font-family: var(--font-ui);
+    font-size: 0.75rem;
+    font-style: italic;
+    color: var(--grey);
+  }
+
+  .avail-badge {
+    font-family: var(--font-ui);
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 0.15rem 0.5rem;
+    border-radius: 2px;
+    border: 1px solid;
+  }
+  .avail-badge--inPrint {
+    color: #1a6b3a; border-color: rgba(26,107,58,0.35); background: rgba(26,107,58,0.07);
+  }
+  .avail-badge--freeDownload {
+    color: #185fa5; border-color: rgba(24,95,165,0.35); background: rgba(24,95,165,0.07);
+  }
+  .avail-badge--checkAvailability {
+    color: var(--ink-mid); border-color: var(--cream-dark); background: var(--cream-dark);
+  }
+  .avail-badge--rare {
+    color: #8b4513; border-color: rgba(139,69,19,0.35); background: rgba(139,69,19,0.07);
+  }
+
+  .book-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    font-family: var(--font-ui);
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--burgundy);
+    border: 1.5px solid var(--cream-dark);
+    border-radius: 4px;
+    padding: 0.2rem 0.55rem;
+    transition: border-color 150ms, color 150ms;
+  }
+  .book-link:hover { border-color: var(--gold); color: var(--gold-dark); }
+  .book-link svg { width: 10px; height: 10px; }
+
+  .books-more {
+    font-family: var(--font-ui);
+    font-size: 0.85rem;
+    text-align: right;
+  }
+  .books-more a {
+    color: var(--burgundy);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+    transition: color 150ms;
+  }
+  .books-more a:hover { color: var(--gold-dark); }
+
+  /* ── DETALJERT TEKST ────────────────────────────────────────────── */
+  .detail-section { scroll-margin-top: calc(var(--header-h) + 1rem); }
+  .detail-intro {
+    font-family: var(--font-body);
+    font-size: 1.05rem;
+    line-height: 1.7;
+    color: var(--ink);
+    margin-bottom: 1.5rem;
+    font-style: italic;
+  }
+  .content-section { margin-bottom: 1.75rem; }
+  .content-heading {
+    font-family: var(--font-display);
+    font-size: 1.05rem;
+    color: var(--ink);
+    margin-bottom: 0.75rem;
+    letter-spacing: 0.03em;
+  }
+
+  /* ── KILDER ─────────────────────────────────────────────────────── */
+  .sources-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  .sources-list li {
+    display: flex;
+    align-items: baseline;
+    gap: 0.4rem;
+    font-family: var(--font-ui);
+    font-size: 0.875rem;
+  }
+  .sources-list li::before { content: '→'; color: var(--gold-dark); flex-shrink: 0; }
+  .sources-list a {
+    color: #185FA5;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    transition: color 180ms;
+  }
+  .sources-list a:hover { color: var(--burgundy); }
+  .ext-icon { width: 10px; height: 10px; flex-shrink: 0; opacity: 0.6; }
+  .sources-list span { color: var(--grey); font-style: italic; }
+
+  /* ── SECTION HEADING ────────────────────────────────────────────── */
+  .section-heading {
+    font-family: var(--font-display);
+    font-size: 1.2rem;
+    color: var(--burgundy);
+    margin-bottom: 1.25rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--cream-dark);
+    letter-spacing: 0.04em;
+  }
+
+  /* ── PROSE ──────────────────────────────────────────────────────── */
+  .prose { font-family: var(--font-body); font-size: 1rem; line-height: 1.75; color: var(--ink); }
+  .prose p { margin-bottom: 1rem; }
+  .prose p:last-child { margin-bottom: 0; }
+
+  /* ── NAVIGASJON ─────────────────────────────────────────────────── */
+  .magician-nav { padding-top: 1.5rem; border-top: 1px solid var(--cream-dark); }
+  .btn-nav {
+    font-family: var(--font-ui);
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--burgundy);
+    padding: 0.5rem 1rem;
+    border: 1.5px solid var(--cream-dark);
+    border-radius: var(--radius);
+    transition: border-color 180ms, color 180ms;
+    display: inline-block;
+  }
+  .btn-nav:hover { border-color: var(--gold); color: var(--gold-dark); }
+
+  /* ── RESPONSIVE ─────────────────────────────────────────────────── */
+  @media (max-width: 700px) {
+    .hero-inner  { grid-template-columns: 1fr; gap: 1.5rem; }
+    .poster-wrap { width: 140px; }
+    .page-body   { padding: 2rem 0 3rem; }
+  }
+</style>
