@@ -8,15 +8,22 @@ const {
   title = 'Tryllemuseet',
   description = 'Norges minste, merkeligste og mest magiske museum',
 } = Astro.props;
-const navLinks = [
-  { href: '/',               label: 'Hjem'          },
+
+const navLeft = [
   { href: '/besok',          label: 'Besøk oss'     },
   { href: '/utstillingen',   label: 'Utstillingen'  },
   { href: '/tryllehistorie', label: 'Tryllehistorie'},
   { href: '/bibliotek',      label: 'Bibliotek'     },
+];
+
+const navRight = [
   { href: '/barn',           label: 'Barn & unge'   },
   { href: '/om-oss',         label: 'Om oss'        },
 ];
+
+// navLinks brukes i footer og mobilmeny
+const navLinks = [...navLeft, ...navRight];
+
 const currentPath = Astro.url.pathname;
 ---
 <!DOCTYPE html>
@@ -31,10 +38,28 @@ const currentPath = Astro.url.pathname;
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Lora:ital,wght@0,400;0,600;1,400&family=Source+Sans+3:wght@300;400;600&display=swap" rel="stylesheet" />
 </head>
 <body>
+
   <!-- ── HEADER ─────────────────────────────────────────────────── -->
   <header class="site-header">
     <div class="header-inner">
 
+      <!-- Venstre nav -->
+      <nav class="main-nav main-nav--left" aria-label="Hovednavigasjon venstre">
+        <ul>
+          {navLeft.map(link => (
+            <li>
+              <a
+                href={link.href}
+                class:list={['nav-link', { active: currentPath === link.href || (link.href !== '/' && currentPath.startsWith(link.href)) }]}
+              >
+                {link.label}
+              </a>
+            </li>
+          ))}
+        </ul>
+      </nav>
+
+      <!-- Logo i midten -->
       <a href="/" class="logo-link" aria-label="Tryllemuseet — forsiden">
         <img
           src="/LOGO-bred.png"
@@ -45,10 +70,10 @@ const currentPath = Astro.url.pathname;
         />
       </a>
 
-      <!-- Desktop nav -->
-      <nav class="main-nav" aria-label="Hovednavigasjon">
+      <!-- Høyre nav + Bli medlem-knapp -->
+      <nav class="main-nav main-nav--right" aria-label="Hovednavigasjon høyre">
         <ul>
-          {navLinks.map(link => (
+          {navRight.map(link => (
             <li>
               <a
                 href={link.href}
@@ -58,6 +83,11 @@ const currentPath = Astro.url.pathname;
               </a>
             </li>
           ))}
+          <li>
+            <a href="https://blimedlem.tryllemuseet.no" class="nav-cta" target="_blank" rel="noopener">
+              Bli medlem
+            </a>
+          </li>
         </ul>
       </nav>
 
@@ -81,6 +111,11 @@ const currentPath = Astro.url.pathname;
             </a>
           </li>
         ))}
+        <li>
+          <a href="https://blimedlem.tryllemuseet.no" class="mobile-nav-link mobile-nav-cta" target="_blank" rel="noopener">
+            Bli medlem →
+          </a>
+        </li>
       </ul>
     </nav>
   </header>
@@ -103,7 +138,7 @@ const currentPath = Astro.url.pathname;
       <div class="footer-links">
         <h3>Utforsk</h3>
         <ul>
-          {navLinks.slice(1).map(link => (
+          {navLinks.map(link => (
             <li><a href={link.href}>{link.label}</a></li>
           ))}
         </ul>
@@ -215,18 +250,19 @@ const currentPath = Astro.url.pathname;
     margin: 0 auto;
     padding: 0 1.5rem;
     height: var(--header-h);
-    display: flex;
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
     align-items: center;
-    gap: 2rem;
+    gap: 1rem;
   }
 
-  /* Logo */
+  /* Logo sentrert */
   .logo-link {
     display: flex;
+    justify-content: center;
     align-items: center;
-    gap: 0.75rem;
-    flex-shrink: 0;
     text-decoration: none;
+    flex-shrink: 0;
   }
 
   .logo-img {
@@ -240,13 +276,21 @@ const currentPath = Astro.url.pathname;
     .logo-img { height: 32px; }
   }
 
-  /* Desktop nav */
-  .main-nav { margin-left: auto; }
-
+  /* Nav felles */
   .main-nav ul {
     display: flex;
     align-items: center;
     gap: 0.25rem;
+  }
+
+  /* Venstre nav — høyrejustert mot logoen */
+  .main-nav--left ul {
+    justify-content: flex-end;
+  }
+
+  /* Høyre nav — venstrejustert fra logoen */
+  .main-nav--right ul {
+    justify-content: flex-start;
   }
 
   .nav-link {
@@ -275,13 +319,35 @@ const currentPath = Astro.url.pathname;
   .nav-link.active { color: var(--gold); }
   .nav-link.active::after { left: 0.75rem; right: 0.75rem; }
 
+  /* Bli medlem-knapp i desktop nav */
+  .nav-cta {
+    font-family: var(--font-ui);
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--burgundy);
+    background: var(--gold);
+    padding: 0.4rem 1rem;
+    border-radius: var(--radius);
+    margin-left: 0.5rem;
+    transition: background var(--transition), color var(--transition);
+    white-space: nowrap;
+  }
+
+  .nav-cta:hover {
+    background: var(--gold-light);
+    color: var(--burgundy-dk);
+  }
+
   /* Hamburger */
   .hamburger {
     display: none;
     flex-direction: column;
     gap: 5px;
-    margin-left: auto;
     padding: 8px;
+    grid-column: 3;
+    justify-self: end;
   }
 
   .hamburger span {
@@ -327,6 +393,17 @@ const currentPath = Astro.url.pathname;
   .mobile-nav-link.active {
     color: var(--gold);
     background: rgba(212,168,67,0.1);
+  }
+
+  .mobile-nav-cta {
+    color: var(--gold);
+    border: 1px solid var(--gold-dark);
+    margin-top: 0.5rem;
+  }
+
+  .mobile-nav-cta:hover {
+    background: var(--gold);
+    color: var(--burgundy-dk);
   }
 
   /* ── FOOTER ──────────────────────────────────────────────────── */
@@ -471,9 +548,9 @@ const currentPath = Astro.url.pathname;
 
   /* ── RESPONSIVE ──────────────────────────────────────────────── */
   @media (max-width: 900px) {
-    .main-nav { display: none; }
+    .main-nav--left,
+    .main-nav--right { display: none; }
     .hamburger { display: flex; }
-    .logo-tagline { display: none; }
 
     .footer-inner {
       grid-template-columns: 1fr 1fr;
@@ -484,7 +561,6 @@ const currentPath = Astro.url.pathname;
 
   @media (max-width: 560px) {
     .header-inner { padding: 0 1rem; }
-    .logo-name { font-size: 1.05rem; }
 
     .footer-inner {
       grid-template-columns: 1fr;
