@@ -19,7 +19,7 @@ const bio = await sanityClient.fetch(`
     name, artistName, years, nationality,
     shortBio, fullBio,
     mainImage { asset->{ url }, alt, caption },
-    gallery[] { asset->{ url }, alt, caption },
+    gallery[]{ asset->{ url }, alt, caption },
     links[] { label, url, type },
     sources[] { label, url },
     tags, lastVerified, needsUpdate
@@ -95,7 +95,7 @@ const linkIcons: Record<string, string> = {
       <section class="gallery-section">
         <h2 class="section-heading">Bilder</h2>
         <div class="gallery-grid">
-          {bio.gallery.map((img: any) => (
+          {bio.gallery.filter((img: any) => img?.asset?.url).map((img: any) => (
             <figure class="gallery-item">
               <img src={img.asset.url} alt={img.alt ?? bio.name} loading="lazy" />
               {img.caption && <figcaption>{img.caption}</figcaption>}
