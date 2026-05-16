@@ -1,102 +1,104 @@
 ---
 // src/pages/barn.astro
-import BaseLayout from '../layouts/BaseLayout.astro';
+import BaseLayout from '../layouts/BaseLayout.astro'
+import { getBarnPage } from '../lib/sanity'
 
-const title = "Barn og unge – Tryllemuseet";
-const description = "Tryllemuseet er et magisk sted for barn og unge. Lær triks, utforsk historien og opplev magien!";
+const bp = await getBarnPage()
 
-const aldersgrupper = [
-  { alder: "5–8 år", ikon: "🎩", tekst: "Bli kjent med magiens verden gjennom lek, farger og enkle triks." },
-  { alder: "9–12 år", ikon: "🃏", tekst: "Lær om illusjonistene, prøv interaktive stasjoner og lær ditt første korttriks." },
-  { alder: "13–18 år", ikon: "✨", tekst: "Dykk dypere inn i tryllekunstens historie og teknikk — fra Houdini til i dag." },
-];
-
-const aktiviteter = [
-  {
-    tittel: "Lær et triks",
-    beskrivelse: "På museets triks-stasjon kan barn lære et enkelt men imponerende triks de kan ta med hjem og vise til familie og venner.",
-    ikon: "🪄",
-  },
-  {
-    tittel: "Kle deg ut som en magiker",
-    beskrivelse: "Prøv kappe og topphatt og ta bilde som en ekte gullalder-magiker. Fotostasjon tilgjengelig under besøket.",
-    ikon: "🎭",
-  },
-  {
-    tittel: "Oppdagelseskart",
-    beskrivelse: "Følg museets oppdagelseskart og finn skjulte detaljer i plakatene. Barn som fullfører kartet får et tryllekunstner-diplom.",
-    ikon: "🗺️",
-  },
-  {
-    tittel: "Tryllekurs",
-    beskrivelse: "Vi arrangerer jevnlig kurs for barn og unge. Her lærer du grunnleggende tryllekunst fra erfarne magikere.",
-    ikon: "🎓",
-  },
-];
+const hero = bp?.hero ?? {
+  label: 'For barn og unge',
+  heading: 'En magisk opplevelse',
+  headingEm: 'for hele familien',
+  ingress: 'Tryllemuseet byr på undring, humor og magi for alle aldre.',
+  cta1Label: 'Se kommende kurs', cta1Href: '/arrangementer',
+  cta2Label: 'Book skolebesøk',  cta2Href: '/kontakt',
+}
+const aldersgrupper = bp?.aldersgrupper ?? []
+const aktiviteter   = bp?.aktiviteter   ?? []
+const skole         = bp?.skolebesok    ?? {
+  label: 'For skoler og barnehager',
+  heading: 'Pedagogisk opplegg for klasser',
+  tekst: '',
+  detaljer: [],
+  knappLabel: 'Ta kontakt for booking',
+  knappHref: '/kontakt',
+}
+const kurs = bp?.kursBanner ?? {
+  heading: 'Tryllekurs for barn',
+  tekst: '',
+  knappLabel: 'Se alle arrangementer',
+  knappHref: '/arrangementer',
+}
 ---
 
-<BaseLayout title={title} description={description}>
+<BaseLayout
+  title="Barn og unge — Tryllemuseet"
+  description="Tryllemuseet er et magisk sted for barn og unge. Lær triks, utforsk historien og opplev magien!"
+>
 
-  <!-- Hero -->
+  <!-- ── HERO ─────────────────────────────────────────────────── -->
   <section class="barn-hero">
     <div class="hero-overlay"></div>
     <div class="hero-content container">
-      <span class="hero-label">For barn og unge</span>
-      <h1>En magisk opplevelse<br/><em>for hele familien</em></h1>
-      <p class="hero-ingress">Tryllemuseet byr på undring, humor og magi for alle aldre — med interaktive aktiviteter spesielt tilrettelagt for barn.</p>
+      <span class="hero-label">{hero.label}</span>
+      <h1>{hero.heading}<br/><em>{hero.headingEm}</em></h1>
+      <p class="hero-ingress">{hero.ingress}</p>
       <div class="hero-buttons">
-        <a href="/arrangementer" class="btn btn-primary">Se kommende kurs</a>
-        <a href="/kontakt" class="btn btn-ghost">Book skolebesøk</a>
+        <a href={hero.cta1Href} class="btn btn-primary">{hero.cta1Label}</a>
+        <a href={hero.cta2Href} class="btn btn-ghost">{hero.cta2Label}</a>
       </div>
     </div>
   </section>
 
-  <!-- Aldersgrupper -->
-  <section class="aldersgrupper section-pad">
-    <div class="container">
-      <h2 class="section-title">Noe for alle aldre</h2>
-      <div class="alder-grid">
-        {aldersgrupper.map(a => (
-          <div class="alder-kort">
-            <div class="alder-ikon">{a.ikon}</div>
-            <h3>{a.alder}</h3>
-            <p>{a.tekst}</p>
-          </div>
-        ))}
+  <!-- ── ALDERSGRUPPER ────────────────────────────────────────── -->
+  {aldersgrupper.length > 0 && (
+    <section class="aldersgrupper section-pad">
+      <div class="container">
+        <h2 class="section-title">Noe for alle aldre</h2>
+        <div class="alder-grid">
+          {aldersgrupper.map(a => (
+            <div class="alder-kort">
+              <div class="alder-ikon">{a.ikon}</div>
+              <h3>{a.alder}</h3>
+              <p>{a.tekst}</p>
+            </div>
+          ))}
+        </div>
       </div>
-    </div>
-  </section>
+    </section>
+  )}
 
-  <!-- Aktiviteter -->
-  <section class="aktiviteter section-pad bg-cream">
-    <div class="container">
-      <h2 class="section-title">Hva skjer på museet?</h2>
-      <div class="aktivitet-grid">
-        {aktiviteter.map(a => (
-          <div class="aktivitet-kort">
-            <div class="aktivitet-ikon">{a.ikon}</div>
-            <h3>{a.tittel}</h3>
-            <p>{a.beskrivelse}</p>
-          </div>
-        ))}
+  <!-- ── AKTIVITETER ──────────────────────────────────────────── -->
+  {aktiviteter.length > 0 && (
+    <section class="aktiviteter section-pad bg-cream">
+      <div class="container">
+        <h2 class="section-title">Hva skjer på museet?</h2>
+        <div class="aktivitet-grid">
+          {aktiviteter.map(a => (
+            <div class="aktivitet-kort">
+              <div class="aktivitet-ikon">{a.ikon}</div>
+              <h3>{a.tittel}</h3>
+              <p>{a.beskrivelse}</p>
+            </div>
+          ))}
+        </div>
       </div>
-    </div>
-  </section>
+    </section>
+  )}
 
-  <!-- Skolebesøk -->
+  <!-- ── SKOLEBESØK ───────────────────────────────────────────── -->
   <section class="skolebesok section-pad">
     <div class="container skolebesok-layout">
       <div class="skolebesok-tekst">
-        <span class="etikett">For skoler og barnehager</span>
-        <h2>Pedagogisk opplegg<br/>for klasser</h2>
-        <p>Vi tar imot skoleklasser og barnehagegrupper til tilrettelagte omvisninger. Opplegget er tilpasset læreplanen og gir elevene en unik inngang til kulturhistorie, vitenskap og kreativitet.</p>
-        <ul class="sjekkliste">
-          <li>Varighet: ca. 60–90 minutter</li>
-          <li>Tilpasset alder og klassetrinn</li>
-          <li>Maks 30 elever per gruppe</li>
-          <li>Pris: ta kontakt for tilbud</li>
-        </ul>
-        <a href="/kontakt" class="btn btn-primary">Ta kontakt for booking</a>
+        <span class="etikett">{skole.label}</span>
+        <h2>{skole.heading}</h2>
+        <p>{skole.tekst}</p>
+        {skole.detaljer.length > 0 && (
+          <ul class="sjekkliste">
+            {skole.detaljer.map(d => <li>{d}</li>)}
+          </ul>
+        )}
+        <a href={skole.knappHref} class="btn btn-primary">{skole.knappLabel}</a>
       </div>
       <div class="skolebesok-bilde">
         <div class="bilde-placeholder">
@@ -107,14 +109,14 @@ const aktiviteter = [
     </div>
   </section>
 
-  <!-- Kurs banner -->
+  <!-- ── KURSBANNER ───────────────────────────────────────────── -->
   <section class="kurs-banner">
     <div class="container kurs-banner-inner">
       <div>
-        <h2>Tryllekurs for barn</h2>
-        <p>Vi arrangerer jevnlig kurs der barn lærer grunnleggende tryllekunst fra erfarne magikere. Perfekt for barnebursdag eller som en unik aktivitet!</p>
+        <h2>{kurs.heading}</h2>
+        <p>{kurs.tekst}</p>
       </div>
-      <a href="/arrangementer" class="btn btn-gold">Se alle arrangementer</a>
+      <a href={kurs.knappHref} class="btn btn-gold">{kurs.knappLabel}</a>
     </div>
   </section>
 
@@ -130,36 +132,29 @@ const aktiviteter = [
     background: var(--burgundy);
     overflow: hidden;
   }
-
   .barn-hero::before {
     content: '';
     position: absolute;
     inset: 0;
     background-image: repeating-linear-gradient(
-      45deg,
-      transparent,
-      transparent 40px,
-      rgba(212, 168, 67, 0.04) 40px,
-      rgba(212, 168, 67, 0.04) 80px
+      45deg, transparent, transparent 40px,
+      rgba(212,168,67,0.04) 40px, rgba(212,168,67,0.04) 80px
     );
   }
-
   .hero-overlay {
     position: absolute;
     inset: 0;
     background: radial-gradient(ellipse at 60% 50%, rgba(212,168,67,0.12) 0%, transparent 70%);
   }
-
   .hero-content {
     position: relative;
     z-index: 2;
     padding-block: 5rem;
     max-width: 680px;
   }
-
   .hero-label {
     display: inline-block;
-    font-family: 'Source Sans 3', sans-serif;
+    font-family: var(--font-ui);
     font-size: 0.8rem;
     letter-spacing: 0.18em;
     text-transform: uppercase;
@@ -169,37 +164,26 @@ const aktiviteter = [
     padding: 0.3em 0.9em;
     border-radius: 2px;
   }
-
   .hero-content h1 {
-    font-family: 'Cinzel', serif;
+    font-family: var(--font-display);
     font-size: clamp(2rem, 5vw, 3.2rem);
     color: var(--cream);
     line-height: 1.15;
     margin-bottom: 1.2rem;
   }
-
-  .hero-content h1 em {
-    font-style: normal;
-    color: var(--gold);
-  }
-
+  .hero-content h1 em { font-style: normal; color: var(--gold); }
   .hero-ingress {
-    font-family: 'Lora', serif;
+    font-family: var(--font-body);
     font-size: 1.1rem;
     color: rgba(251,247,239,0.8);
     line-height: 1.7;
     margin-bottom: 2rem;
   }
-
-  .hero-buttons {
-    display: flex;
-    gap: 1rem;
-    flex-wrap: wrap;
-  }
+  .hero-buttons { display: flex; gap: 1rem; flex-wrap: wrap; }
 
   /* ── Buttons ── */
   .btn {
-    font-family: 'Source Sans 3', sans-serif;
+    font-family: var(--font-ui);
     font-size: 0.9rem;
     font-weight: 600;
     letter-spacing: 0.08em;
@@ -210,62 +194,24 @@ const aktiviteter = [
     transition: all 0.2s ease;
     display: inline-block;
   }
-
-  .btn-primary {
-    background: var(--gold);
-    color: var(--burgundy);
-  }
-
-  .btn-primary:hover {
-    background: #e8bc52;
-    transform: translateY(-1px);
-  }
-
-  .btn-ghost {
-    border: 1px solid rgba(212,168,67,0.5);
-    color: var(--cream);
-  }
-
-  .btn-ghost:hover {
-    border-color: var(--gold);
-    color: var(--gold);
-  }
-
-  .btn-gold {
-    background: var(--gold);
-    color: var(--burgundy);
-    font-size: 1rem;
-    padding: 0.8em 2em;
-  }
-
-  .btn-gold:hover {
-    background: #e8bc52;
-  }
+  .btn-primary { background: var(--gold); color: var(--burgundy); }
+  .btn-primary:hover { background: var(--gold-light); transform: translateY(-1px); }
+  .btn-ghost { border: 1px solid rgba(212,168,67,0.5); color: var(--cream); }
+  .btn-ghost:hover { border-color: var(--gold); color: var(--gold); }
+  .btn-gold { background: var(--gold); color: var(--burgundy); font-size: 1rem; padding: 0.8em 2em; }
+  .btn-gold:hover { background: var(--gold-light); }
 
   /* ── Sections ── */
-  .section-pad {
-    padding-block: 5rem;
-  }
-
-  .bg-cream {
-    background: var(--cream);
-  }
-
-  .container {
-    max-width: 1100px;
-    margin-inline: auto;
-    padding-inline: 1.5rem;
-  }
+  .section-pad { padding-block: 5rem; }
+  .bg-cream { background: var(--cream); }
 
   .section-title {
-    font-family: 'Cinzel', serif;
+    font-family: var(--font-display);
     font-size: clamp(1.5rem, 3vw, 2.2rem);
     color: var(--burgundy);
     text-align: center;
     margin-bottom: 3rem;
-    position: relative;
   }
-
   .section-title::after {
     content: '';
     display: block;
@@ -281,7 +227,6 @@ const aktiviteter = [
     grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
     gap: 2rem;
   }
-
   .alder-kort {
     text-align: center;
     padding: 2.5rem 2rem;
@@ -290,29 +235,10 @@ const aktiviteter = [
     background: white;
     transition: box-shadow 0.2s;
   }
-
-  .alder-kort:hover {
-    box-shadow: 0 8px 32px rgba(107,15,26,0.1);
-  }
-
-  .alder-ikon {
-    font-size: 2.5rem;
-    margin-bottom: 1rem;
-  }
-
-  .alder-kort h3 {
-    font-family: 'Cinzel', serif;
-    font-size: 1.1rem;
-    color: var(--burgundy);
-    margin-bottom: 0.75rem;
-  }
-
-  .alder-kort p {
-    font-family: 'Lora', serif;
-    font-size: 0.95rem;
-    color: #555;
-    line-height: 1.65;
-  }
+  .alder-kort:hover { box-shadow: 0 8px 32px rgba(107,15,26,0.1); }
+  .alder-ikon { font-size: 2.5rem; margin-bottom: 1rem; }
+  .alder-kort h3 { font-family: var(--font-display); font-size: 1.1rem; color: var(--burgundy); margin-bottom: 0.75rem; }
+  .alder-kort p  { font-family: var(--font-body); font-size: 0.95rem; color: #555; line-height: 1.65; }
 
   /* ── Aktiviteter ── */
   .aktivitet-grid {
@@ -320,7 +246,6 @@ const aktiviteter = [
     grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
     gap: 2rem;
   }
-
   .aktivitet-kort {
     padding: 2rem 1.5rem;
     background: white;
@@ -328,47 +253,21 @@ const aktiviteter = [
     border-top: 3px solid var(--gold);
     box-shadow: 0 2px 12px rgba(0,0,0,0.06);
   }
-
-  .aktivitet-ikon {
-    font-size: 2rem;
-    margin-bottom: 1rem;
-  }
-
-  .aktivitet-kort h3 {
-    font-family: 'Cinzel', serif;
-    font-size: 1rem;
-    color: var(--burgundy);
-    margin-bottom: 0.6rem;
-  }
-
-  .aktivitet-kort p {
-    font-family: 'Source Sans 3', sans-serif;
-    font-size: 0.95rem;
-    color: #555;
-    line-height: 1.6;
-  }
+  .aktivitet-ikon { font-size: 2rem; margin-bottom: 1rem; }
+  .aktivitet-kort h3 { font-family: var(--font-display); font-size: 1rem; color: var(--burgundy); margin-bottom: 0.6rem; }
+  .aktivitet-kort p  { font-family: var(--font-ui); font-size: 0.95rem; color: #555; line-height: 1.6; }
 
   /* ── Skolebesøk ── */
-  .skolebesok {
-    background: white;
-  }
-
+  .skolebesok { background: white; }
   .skolebesok-layout {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 4rem;
     align-items: center;
   }
-
-  @media (max-width: 768px) {
-    .skolebesok-layout {
-      grid-template-columns: 1fr;
-    }
-  }
-
   .etikett {
     display: inline-block;
-    font-family: 'Source Sans 3', sans-serif;
+    font-family: var(--font-ui);
     font-size: 0.75rem;
     letter-spacing: 0.18em;
     text-transform: uppercase;
@@ -377,38 +276,29 @@ const aktiviteter = [
     padding-bottom: 0.2em;
     margin-bottom: 1rem;
   }
-
   .skolebesok-tekst h2 {
-    font-family: 'Cinzel', serif;
+    font-family: var(--font-display);
     font-size: clamp(1.4rem, 2.5vw, 2rem);
     color: var(--burgundy);
     line-height: 1.3;
     margin-bottom: 1rem;
   }
-
   .skolebesok-tekst p {
-    font-family: 'Lora', serif;
+    font-family: var(--font-body);
     font-size: 1rem;
     color: #444;
     line-height: 1.7;
     margin-bottom: 1.5rem;
   }
-
-  .sjekkliste {
-    list-style: none;
-    padding: 0;
-    margin-bottom: 2rem;
-  }
-
+  .sjekkliste { list-style: none; padding: 0; margin-bottom: 2rem; }
   .sjekkliste li {
-    font-family: 'Source Sans 3', sans-serif;
+    font-family: var(--font-ui);
     font-size: 0.95rem;
     color: #444;
     padding: 0.4em 0 0.4em 1.6em;
     position: relative;
     border-bottom: 1px solid rgba(0,0,0,0.06);
   }
-
   .sjekkliste li::before {
     content: '✦';
     position: absolute;
@@ -417,7 +307,6 @@ const aktiviteter = [
     font-size: 0.7rem;
     top: 0.55em;
   }
-
   .bilde-placeholder {
     aspect-ratio: 4/3;
     background: linear-gradient(135deg, var(--burgundy) 0%, #3d050e 100%);
@@ -429,24 +318,11 @@ const aktiviteter = [
     gap: 1rem;
     color: rgba(251,247,239,0.5);
   }
+  .bilde-placeholder span { font-size: 4rem; opacity: 0.4; }
+  .bilde-placeholder p { font-family: var(--font-ui); font-size: 0.85rem; letter-spacing: 0.1em; }
 
-  .bilde-placeholder span {
-    font-size: 4rem;
-    opacity: 0.4;
-  }
-
-  .bilde-placeholder p {
-    font-family: 'Source Sans 3', sans-serif;
-    font-size: 0.85rem;
-    letter-spacing: 0.1em;
-  }
-
-  /* ── Kurs-banner ── */
-  .kurs-banner {
-    background: var(--burgundy);
-    padding-block: 3.5rem;
-  }
-
+  /* ── Kursbanner ── */
+  .kurs-banner { background: var(--burgundy); padding-block: 3.5rem; }
   .kurs-banner-inner {
     display: flex;
     align-items: center;
@@ -454,19 +330,12 @@ const aktiviteter = [
     gap: 2rem;
     flex-wrap: wrap;
   }
+  .kurs-banner h2 { font-family: var(--font-display); font-size: 1.6rem; color: var(--cream); margin-bottom: 0.5rem; }
+  .kurs-banner p  { font-family: var(--font-body); font-size: 1rem; color: rgba(251,247,239,0.75); max-width: 560px; line-height: 1.6; }
 
-  .kurs-banner h2 {
-    font-family: 'Cinzel', serif;
-    font-size: 1.6rem;
-    color: var(--cream);
-    margin-bottom: 0.5rem;
-  }
-
-  .kurs-banner p {
-    font-family: 'Lora', serif;
-    font-size: 1rem;
-    color: rgba(251,247,239,0.75);
-    max-width: 560px;
-    line-height: 1.6;
+  /* ── Responsive ── */
+  @media (max-width: 768px) {
+    .skolebesok-layout { grid-template-columns: 1fr; }
+    .skolebesok-bilde { display: none; }
   }
 </style>

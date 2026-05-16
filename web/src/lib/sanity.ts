@@ -262,3 +262,67 @@ export async function getHomepage(): Promise<Homepage | null> {
     }
   `)
 }
+// ── Typer: Barn & unge ───────────────────────────────────────────
+export interface BarnPage {
+  hero: {
+    label: string; heading: string; headingEm: string; ingress: string
+    cta1Label: string; cta1Href: string; cta2Label: string; cta2Href: string
+  }
+  aldersgrupper: { alder: string; ikon: string; tekst: string }[]
+  aktiviteter:   { tittel: string; beskrivelse: string; ikon: string }[]
+  skolebesok: {
+    label: string; heading: string; tekst: string
+    detaljer: string[]; knappLabel: string; knappHref: string
+  }
+  kursBanner: { heading: string; tekst: string; knappLabel: string; knappHref: string }
+}
+
+// ── Typer: Om oss ────────────────────────────────────────────────
+export interface OmOssPage {
+  hero: { label: string; heading: string; headingEm: string; ingress: string }
+  omMuseet: { historieHeading: string; historieTekst: any[]; formalHeading: string; formalTekst: string }
+  faktaboks: { stiftet: string; organisasjonsform: string; tilknytning: string; adresse: string; epost: string; orgnr: string }
+  styret: {
+    heading: string; ingress: string
+    medlemmer: { navn: string; rolle: string }[]
+  }
+  medlemskap: {
+    heading: string; ingress: string; motivasjonsTekst: string
+    nivaaer: { type: string; pris: string; anbefalt: boolean; fordeler: string[]; knappLabel: string; knappUrl: string }[]
+    vippsNummer: string; vippsInfo: string
+  }
+  presse: { label: string; heading: string; tekst: string; knappLabel: string; knappHref: string }
+  partnere: { heading: string; liste: { navn: string; beskrivelse: string; url?: string }[] }
+}
+
+// ── Spørring: Barn & unge ────────────────────────────────────────
+export async function getBarnPage(): Promise<BarnPage | null> {
+  return sanityClient.fetch(`
+    *[_type == "barnPage"][0] {
+      hero { label, heading, headingEm, ingress, cta1Label, cta1Href, cta2Label, cta2Href },
+      aldersgrupper[] { alder, ikon, tekst },
+      aktiviteter[] { tittel, beskrivelse, ikon },
+      skolebesok { label, heading, tekst, detaljer, knappLabel, knappHref },
+      kursBanner { heading, tekst, knappLabel, knappHref }
+    }
+  `)
+}
+
+// ── Spørring: Om oss ─────────────────────────────────────────────
+export async function getOmOssPage(): Promise<OmOssPage | null> {
+  return sanityClient.fetch(`
+    *[_type == "omOssPage"][0] {
+      hero { label, heading, headingEm, ingress },
+      omMuseet { historieHeading, historieTekst, formalHeading, formalTekst },
+      faktaboks { stiftet, organisasjonsform, tilknytning, adresse, epost, orgnr },
+      styret { heading, ingress, medlemmer[] { navn, rolle } },
+      medlemskap {
+        heading, ingress, motivasjonsTekst,
+        nivaaer[] { type, pris, anbefalt, fordeler, knappLabel, knappUrl },
+        vippsNummer, vippsInfo
+      },
+      presse { label, heading, tekst, knappLabel, knappHref },
+      partnere { heading, liste[] { navn, beskrivelse, url } }
+    }
+  `)
+}
