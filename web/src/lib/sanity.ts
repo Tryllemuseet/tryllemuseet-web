@@ -208,3 +208,57 @@ export async function getFeaturedBooks(): Promise<Book[]> {
     }
   `)
 }
+// ── Typer: Forside ───────────────────────────────────────────────
+export interface Homepage {
+  hero: {
+    heading:    string
+    headingEm:  string
+    ingress:    string
+    cta1Label:  string
+    cta1Href:   string
+    cta2Label:  string
+    cta2Href:   string
+    bgImage?:   { asset: { url: string }; hotspot: any }
+  }
+  infoBadges:       { label: string }[]
+  utstillingsFokus: { eraLabel: string; heading: string }
+  barnSeksjon: {
+    heading:   string
+    ingress:   string
+    features:  string[]
+    sitater:   { emoji: string; tekst: string; kilde: string }[]
+  }
+  medlemSeksjon: {
+    heading:    string
+    tekst:      string
+    knappLabel: string
+    knappUrl:   string
+  }
+  omMuseet: {
+    heading:     string
+    tekst:       string
+    sitat:       string
+    sitatKilde:  string
+  }
+}
+
+// ── Spørring: Forside ────────────────────────────────────────────
+export async function getHomepage(): Promise<Homepage | null> {
+  return sanityClient.fetch(`
+    *[_type == "homepage"][0] {
+      hero {
+        heading, headingEm, ingress,
+        cta1Label, cta1Href, cta2Label, cta2Href,
+        bgImage { asset->{ url }, hotspot }
+      },
+      infoBadges[] { label },
+      utstillingsFokus { eraLabel, heading },
+      barnSeksjon {
+        heading, ingress, features,
+        sitater[] { emoji, tekst, kilde }
+      },
+      medlemSeksjon { heading, tekst, knappLabel, knappUrl },
+      omMuseet { heading, tekst, sitat, sitatKilde }
+    }
+  `)
+}
