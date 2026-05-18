@@ -326,3 +326,53 @@ export async function getOmOssPage(): Promise<OmOssPage | null> {
     }
   `)
 }
+
+// ── Typer: SiteConfig ────────────────────────────────────────────
+export interface SiteConfig {
+  siteName:          string
+  siteTagline:       string
+  email:             string
+  phone?:            string
+  address:           string
+  addressShort:      string
+  mapUrl:            string
+  openingHoursShort: string
+  openingHoursNote:  string
+  membershipUrl:     string
+  vippsNumber:       string
+  facebook:          string
+  instagram:         string
+  youtube?:          string
+  seoDescription:    string
+}
+
+// ── Spørring: SiteConfig ─────────────────────────────────────────
+export async function getSiteConfig(): Promise<SiteConfig> {
+  const config = await sanityClient.fetch(`
+    *[_type == "siteConfig"][0] {
+      siteName, siteTagline, email, phone,
+      address, addressShort, mapUrl,
+      openingHoursShort, openingHoursNote,
+      membershipUrl, vippsNumber,
+      facebook, instagram, youtube,
+      seoDescription
+    }
+  `)
+  // Fallback om Sanity er tom
+  return config ?? {
+    siteName:          'Tryllemuseet',
+    siteTagline:       'Norges minste, merkeligste og mest magiske museum',
+    email:             'post@tryllemuseet.no',
+    address:           'Årvoll gård, Årvollveien 35\n0590 Oslo',
+    addressShort:      'Årvoll gård, Oslo',
+    mapUrl:            'https://maps.google.com/?q=Årvollveien+35,+0590+Oslo',
+    openingHoursShort: 'Søndager 12–15',
+    openingHoursNote:  'og etter avtale',
+    membershipUrl:     'https://blimedlem.tryllemuseet.no',
+    vippsNumber:       '95626',
+    facebook:          'https://www.facebook.com/tryllemuseet',
+    instagram:         'https://www.instagram.com/tryllemuseet',
+    seoDescription:    'Norges minste, merkeligste og mest magiske museum. Besøk oss på Årvoll gård i Oslo — søndager 12–15. Gratis inngang.',
+  }
+}
+
