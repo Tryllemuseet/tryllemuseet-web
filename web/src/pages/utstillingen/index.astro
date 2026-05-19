@@ -1,7 +1,7 @@
 ---
 // src/pages/utstillingen/index.astro
 import BaseLayout from '../../layouts/BaseLayout.astro'
-import { getAllMagicians } from '../../lib/sanity'
+import { getAllMagicians, urlFor } from '../../lib/sanity'
 
 const magicians = await getAllMagicians()
 
@@ -10,6 +10,12 @@ const FEATURED_SLUGS = ['robert-houdin', 'alexander', 'houdini']
 
 const featured  = magicians.filter(m => FEATURED_SLUGS.includes(m.slug))
 const remaining = magicians.filter(m => !FEATURED_SLUGS.includes(m.slug))
+
+// Build optimised image URLs at build time
+function posterUrl(image: any, width: number) {
+  if (!image?.asset) return null
+  return urlFor(image).width(width).height(Math.round(width * 4 / 3)).format('webp').fit('crop').url()
+}
 
 // Coming-soon sections
 const sections = [
@@ -80,58 +86,76 @@ const sections = [
 
     <!-- Featured three -->
     <div class="featured-grid">
-      {featured.map((m) => (
-        <a href={`/utstillingen/${m.slug}`} class="featured-card">
-          {m.posterImage?.asset?.url ? (
-            <div class="featured-img">
-              <img src={m.posterImage.asset.url} alt={m.posterImage.alt ?? m.title} loading="eager" />
-              <div class="featured-img-overlay" />
+      {featured.map((m) => {
+        const imgUrl = posterUrl(m.posterImage, 600)
+        return (
+          <a href={`/utstillingen/${m.slug}`} class="featured-card">
+            {imgUrl ? (
+              <div class="featured-img">
+                <img
+                  src={imgUrl}
+                  alt={m.posterImage?.alt ?? m.title}
+                  width="600"
+                  height="800"
+                  loading="eager"
+                />
+                <div class="featured-img-overlay" />
+              </div>
+            ) : (
+              <div class="featured-img featured-img--placeholder">
+                <span>🎩</span>
+              </div>
+            )}
+            <div class="featured-body">
+              {m.years && <p class="card-years">{m.years}</p>}
+              <h3 class="featured-name">{m.title}</h3>
+              <p class="featured-tagline">{m.tagline}</p>
+              <p class="featured-intro">{m.mobileIntro}</p>
+              <span class="featured-cta">Les mer →</span>
             </div>
-          ) : (
-            <div class="featured-img featured-img--placeholder">
-              <span>🎩</span>
-            </div>
-          )}
-          <div class="featured-body">
-            {m.years && <p class="card-years">{m.years}</p>}
-            <h3 class="featured-name">{m.title}</h3>
-            <p class="featured-tagline">{m.tagline}</p>
-            <p class="featured-intro">{m.mobileIntro}</p>
-            <span class="featured-cta">Les mer →</span>
-          </div>
-        </a>
-      ))}
+          </a>
+        )
+      })}
     </div>
 
     <!-- Remaining magicians — hidden by default -->
     {remaining.length > 0 && (
       <>
         <div class="remaining-grid" id="remaining-grid" aria-hidden="true">
-          {remaining.map((m) => (
-            <a href={`/utstillingen/${m.slug}`} class="magician-card">
-              {m.posterImage?.asset?.url ? (
-                <div class="card-image">
-                  <img src={m.posterImage.asset.url} alt={m.posterImage.alt ?? m.title} loading="lazy" />
+          {remaining.map((m) => {
+            const imgUrl = posterUrl(m.posterImage, 400)
+            return (
+              <a href={`/utstillingen/${m.slug}`} class="magician-card">
+                {imgUrl ? (
+                  <div class="card-image">
+                    <img
+                      src={imgUrl}
+                      alt={m.posterImage?.alt ?? m.title}
+                      width="400"
+                      height="533"
+                      loading="lazy"
+                    />
+                  </div>
+                ) : (
+                  <div class="card-image card-image--placeholder">
+                    <span>🎩</span>
+                  </div>
+                )}
+                <div class="card-body">
+                  <h3 class="card-title">{m.title}</h3>
+                  {m.years && <p class="card-years">{m.years}</p>}
+                  <p class="card-tagline">{m.tagline}</p>
+                  <p class="card-intro">{m.mobileIntro}</p>
+                  <span class="card-cta">Les mer →</span>
                 </div>
-              ) : (
-                <div class="card-image card-image--placeholder">
-                  <span>🎩</span>
-                </div>
-              )}
-              <div class="card-body">
-                <h3 class="card-title">{m.title}</h3>
-                {m.years && <p class="card-years">{m.years}</p>}
-                <p class="card-tagline">{m.tagline}</p>
-                <p class="card-intro">{m.mobileIntro}</p>
-                <span class="card-cta">Les mer →</span>
-              </div>
-            </a>
-          ))}
+              </a>
+            )
+          })}
         </div>
 
         <div class="see-all-wrap">
           <button class="see-all-btn" id="see-all-btn" aria-expanded="false" aria-controls="remaining-grid">
-            <span class="see-all-label">Se alle magikere</span>
+            <span class="see-all-label">Se utstillingen</span>
             <span class="see-all-icon">↓</span>
           </button>
         </div>
@@ -178,20 +202,17 @@ const sections = [
     const expanded = btn.getAttribute('aria-expanded') === 'true'
 
     if (!expanded) {
-      // Open
       grid?.classList.add('open')
       grid?.removeAttribute('aria-hidden')
       btn.setAttribute('aria-expanded', 'true')
       btn.querySelector('.see-all-label')!.textContent = 'Vis færre'
       btn.querySelector('.see-all-icon')!.textContent  = '↑'
     } else {
-      // Close — wait for animation before hiding
       grid?.classList.remove('open')
       grid?.setAttribute('aria-hidden', 'true')
       btn.setAttribute('aria-expanded', 'false')
-      btn.querySelector('.see-all-label')!.textContent = 'Se alle magikere'
+      btn.querySelector('.see-all-label')!.textContent = 'Se utstillingen'
       btn.querySelector('.see-all-icon')!.textContent  = '↓'
-      // Scroll back up to button
       btn.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
     }
   })
@@ -205,10 +226,9 @@ const sections = [
 
   /* ── GULLALDER ── */
   .gullalder-section { padding-bottom: 1rem; }
-
-  .section-header  { margin-bottom: 2rem; }
-  .section-title   { font-size: clamp(1.5rem, 3vw, 2.2rem); margin: 0.3rem 0 0.75rem; }
-  .section-intro   { font-family: var(--font-ui); font-size: 0.975rem; color: var(--ink-mid); max-width: 560px; line-height: 1.65; }
+  .section-header    { margin-bottom: 2rem; }
+  .section-title     { font-size: clamp(1.5rem, 3vw, 2.2rem); margin: 0.3rem 0 0.75rem; }
+  .section-intro     { font-family: var(--font-ui); font-size: 0.975rem; color: var(--ink-mid); max-width: 560px; line-height: 1.65; }
 
   /* Featured three */
   .featured-grid {
@@ -217,51 +237,35 @@ const sections = [
     gap: 1.5rem;
     margin-bottom: 1.5rem;
   }
-
   .featured-card {
-    display: flex;
-    flex-direction: column;
+    display: flex; flex-direction: column;
     background: white;
     border: 1px solid var(--cream-dark);
-    border-radius: 6px;
-    overflow: hidden;
-    text-decoration: none;
-    color: var(--ink);
+    border-radius: 6px; overflow: hidden;
+    text-decoration: none; color: var(--ink);
     transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease;
   }
-  .featured-card:hover {
-    transform: translateY(-4px);
-    box-shadow: var(--shadow-lg);
-    border-color: var(--gold-light);
-  }
+  .featured-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-lg); border-color: var(--gold-light); }
 
   .featured-img {
-    aspect-ratio: 3/4;
-    overflow: hidden;
-    background: var(--cream-dark);
-    max-height: 320px;
+    aspect-ratio: 3/4; overflow: hidden;
+    background: var(--cream-dark); max-height: 320px;
     position: relative;
   }
-  .featured-img img {
-    width: 100%; height: 100%;
-    object-fit: cover;
-    transition: transform 320ms ease;
-  }
+  .featured-img img { width: 100%; height: 100%; object-fit: cover; transition: transform 320ms ease; }
   .featured-card:hover .featured-img img { transform: scale(1.04); }
   .featured-img-overlay {
     position: absolute; inset: 0;
     background: linear-gradient(to top, rgba(26,18,8,0.18) 0%, transparent 50%);
     pointer-events: none;
   }
-  .featured-img--placeholder {
-    display: flex; align-items: center; justify-content: center; font-size: 5rem;
-  }
+  .featured-img--placeholder { display: flex; align-items: center; justify-content: center; font-size: 5rem; }
 
-  .featured-body   { padding: 1.25rem 1.5rem 1.5rem; display: flex; flex-direction: column; flex: 1; }
-  .featured-name   { font-family: var(--font-display); font-size: 1.3rem; color: var(--burgundy); margin-bottom: 0.2rem; letter-spacing: 0.03em; }
+  .featured-body    { padding: 1.25rem 1.5rem 1.5rem; display: flex; flex-direction: column; flex: 1; }
+  .featured-name    { font-family: var(--font-display); font-size: 1.3rem; color: var(--burgundy); margin-bottom: 0.2rem; letter-spacing: 0.03em; }
   .featured-tagline { font-family: var(--font-body); font-size: 0.9rem; font-style: italic; color: var(--gold-dark); margin-bottom: 0.75rem; }
-  .featured-intro  { font-family: var(--font-ui); font-size: 0.875rem; color: var(--ink-mid); line-height: 1.55; flex: 1; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
-  .featured-cta    { font-family: var(--font-ui); font-size: 0.875rem; font-weight: 600; color: var(--burgundy); margin-top: 1rem; transition: color 180ms ease; }
+  .featured-intro   { font-family: var(--font-ui); font-size: 0.875rem; color: var(--ink-mid); line-height: 1.55; flex: 1; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+  .featured-cta     { font-family: var(--font-ui); font-size: 0.875rem; font-weight: 600; color: var(--burgundy); margin-top: 1rem; transition: color 180ms ease; }
   .featured-card:hover .featured-cta { color: var(--gold-dark); }
 
   /* Remaining grid */
@@ -269,24 +273,15 @@ const sections = [
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
     gap: 1.25rem;
-    /* Hidden state */
-    max-height: 0;
-    overflow: hidden;
-    opacity: 0;
+    max-height: 0; overflow: hidden; opacity: 0;
     transition: max-height 480ms ease, opacity 360ms ease;
     margin-bottom: 0;
   }
-  .remaining-grid.open {
-    max-height: 2000px; /* tall enough for any number of cards */
-    opacity: 1;
-    margin-bottom: 1.5rem;
-  }
+  .remaining-grid.open { max-height: 2000px; opacity: 1; margin-bottom: 1.5rem; }
 
-  /* Shared card styles (remaining) */
   .magician-card {
     display: flex; flex-direction: column;
-    background: white;
-    border: 1px solid var(--cream-dark);
+    background: white; border: 1px solid var(--cream-dark);
     border-radius: 6px; overflow: hidden;
     text-decoration: none; color: var(--ink);
     transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease;
@@ -296,35 +291,24 @@ const sections = [
   .card-image img { width: 100%; height: 100%; object-fit: cover; transition: transform 300ms ease; }
   .magician-card:hover .card-image img { transform: scale(1.03); }
   .card-image--placeholder { display: flex; align-items: center; justify-content: center; font-size: 4rem; }
-  .card-body   { padding: 1rem 1.25rem 1.25rem; display: flex; flex-direction: column; flex: 1; }
-  .card-title  { font-family: var(--font-display); font-size: 1.1rem; color: var(--burgundy); margin-bottom: 0.2rem; letter-spacing: 0.03em; }
-  .card-years  { font-family: var(--font-ui); font-size: 0.75rem; color: var(--grey); margin-bottom: 0.35rem; }
+  .card-body    { padding: 1rem 1.25rem 1.25rem; display: flex; flex-direction: column; flex: 1; }
+  .card-title   { font-family: var(--font-display); font-size: 1.1rem; color: var(--burgundy); margin-bottom: 0.2rem; letter-spacing: 0.03em; }
+  .card-years   { font-family: var(--font-ui); font-size: 0.75rem; color: var(--grey); margin-bottom: 0.35rem; }
   .card-tagline { font-family: var(--font-body); font-size: 0.875rem; font-style: italic; color: var(--gold-dark); margin-bottom: 0.65rem; }
-  .card-intro  { font-family: var(--font-ui); font-size: 0.85rem; color: var(--ink-mid); line-height: 1.55; flex: 1; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
-  .card-cta    { font-family: var(--font-ui); font-size: 0.85rem; font-weight: 600; color: var(--burgundy); margin-top: 0.9rem; transition: color 180ms ease; }
+  .card-intro   { font-family: var(--font-ui); font-size: 0.85rem; color: var(--ink-mid); line-height: 1.55; flex: 1; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+  .card-cta     { font-family: var(--font-ui); font-size: 0.85rem; font-weight: 600; color: var(--burgundy); margin-top: 0.9rem; transition: color 180ms ease; }
   .magician-card:hover .card-cta { color: var(--gold-dark); }
 
   /* See all button */
-  .see-all-wrap {
-    display: flex; justify-content: center;
-    margin: 0.5rem 0 2.5rem;
-  }
+  .see-all-wrap { display: flex; justify-content: center; margin: 0.5rem 0 2.5rem; }
   .see-all-btn {
     display: inline-flex; align-items: center; gap: 0.6rem;
     font-family: var(--font-ui); font-size: 0.875rem; font-weight: 600;
-    color: var(--burgundy);
-    border: 1px solid var(--cream-dark);
-    background: white;
-    padding: 0.6rem 1.5rem;
-    border-radius: 2rem;
+    color: var(--burgundy); border: 1px solid var(--cream-dark);
+    background: white; padding: 0.6rem 1.5rem; border-radius: 2rem;
     transition: border-color 180ms ease, color 180ms ease, box-shadow 180ms ease;
-    cursor: pointer;
   }
-  .see-all-btn:hover {
-    border-color: var(--gold);
-    color: var(--gold-dark);
-    box-shadow: 0 2px 12px rgba(212,168,67,0.18);
-  }
+  .see-all-btn:hover { border-color: var(--gold); color: var(--gold-dark); box-shadow: 0 2px 12px rgba(212,168,67,0.18); }
   .see-all-icon { font-size: 1rem; transition: transform 180ms ease; }
   .see-all-btn[aria-expanded="true"] .see-all-icon { transform: rotate(180deg); }
 
@@ -333,64 +317,37 @@ const sections = [
 
   /* ── COMING SECTIONS ── */
   .coming-section { padding-bottom: 1rem; }
-
   .sections-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 1.25rem;
-    margin-top: 2rem;
+    display: grid; grid-template-columns: repeat(2, 1fr);
+    gap: 1.25rem; margin-top: 2rem;
   }
-
   .section-card {
     display: flex; align-items: flex-start; gap: 1.25rem;
-    background: white;
-    border: 1px solid var(--cream-dark);
-    border-radius: 6px;
-    padding: 1.5rem;
-    position: relative;
+    background: white; border: 1px solid var(--cream-dark);
+    border-radius: 6px; padding: 1.5rem; position: relative;
     transition: border-color 180ms ease, box-shadow 180ms ease;
   }
-  .section-card:not(.section-card--soon):hover {
-    border-color: var(--gold-light);
-    box-shadow: var(--shadow);
-  }
+  .section-card:not(.section-card--soon):hover { border-color: var(--gold-light); box-shadow: var(--shadow); }
   .section-card--soon { opacity: 0.72; }
-
-  .section-card-icon {
-    font-size: 2rem; line-height: 1;
-    flex-shrink: 0; margin-top: 0.1rem;
-  }
-  .section-card-body   { flex: 1; }
-  .section-card-label  { font-family: var(--font-ui); font-size: 0.68rem; font-weight: 600; letter-spacing: 0.18em; text-transform: uppercase; color: var(--gold-dark); margin-bottom: 0.2rem; }
-  .section-card-title  { font-family: var(--font-display); font-size: 1.1rem; color: var(--burgundy); margin-bottom: 0.4rem; letter-spacing: 0.03em; }
-  .section-card-desc   { font-family: var(--font-ui); font-size: 0.875rem; color: var(--ink-mid); line-height: 1.55; }
-
-  .section-card-link {
-    display: inline-block; margin-top: 0.9rem;
-    font-family: var(--font-ui); font-size: 0.85rem; font-weight: 600;
-    color: var(--burgundy); transition: color 180ms ease;
-  }
+  .section-card-icon  { font-size: 2rem; line-height: 1; flex-shrink: 0; margin-top: 0.1rem; }
+  .section-card-body  { flex: 1; }
+  .section-card-label { font-family: var(--font-ui); font-size: 0.68rem; font-weight: 600; letter-spacing: 0.18em; text-transform: uppercase; color: var(--gold-dark); margin-bottom: 0.2rem; }
+  .section-card-title { font-family: var(--font-display); font-size: 1.1rem; color: var(--burgundy); margin-bottom: 0.4rem; letter-spacing: 0.03em; }
+  .section-card-desc  { font-family: var(--font-ui); font-size: 0.875rem; color: var(--ink-mid); line-height: 1.55; }
+  .section-card-link  { display: inline-block; margin-top: 0.9rem; font-family: var(--font-ui); font-size: 0.85rem; font-weight: 600; color: var(--burgundy); transition: color 180ms ease; }
   .section-card-link:hover { color: var(--gold-dark); }
-
-  .section-card-soon {
-    display: inline-block; margin-top: 0.9rem;
-    font-family: var(--font-ui); font-size: 0.75rem; font-weight: 600;
-    letter-spacing: 0.1em; text-transform: uppercase;
-    color: var(--grey);
-    border: 1px solid var(--grey-light);
-    padding: 0.2rem 0.65rem; border-radius: 2rem;
-  }
+  .section-card-soon  { display: inline-block; margin-top: 0.9rem; font-family: var(--font-ui); font-size: 0.75rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--grey); border: 1px solid var(--grey-light); padding: 0.2rem 0.65rem; border-radius: 2rem; }
 
   /* ── BOTTOM PAD ── */
   .section-bottom-pad { height: 5rem; }
 
   /* ── RESPONSIVE ── */
   @media (max-width: 900px) {
-    .featured-grid    { grid-template-columns: repeat(2, 1fr); }
-    .sections-grid    { grid-template-columns: 1fr; }
+    .featured-grid { grid-template-columns: repeat(2, 1fr); }
+    .sections-grid { grid-template-columns: 1fr; }
   }
   @media (max-width: 600px) {
-    .featured-grid    { grid-template-columns: 1fr; }
-    .remaining-grid   { grid-template-columns: 1fr; }
+    .featured-grid  { grid-template-columns: 1fr; }
+    .remaining-grid { grid-template-columns: 1fr; }
   }
 </style>

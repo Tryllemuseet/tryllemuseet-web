@@ -1,12 +1,30 @@
 // src/lib/sanity.ts
 import { createClient } from '@sanity/client'
+import imageUrlBuilder from '@sanity/image-url'
+import type { SanityImageSource } from '@sanity/image-url/lib/types/types'
+
+// "production" i Vercel prod-miljø, "preview" i preview-bygg, undefined lokalt
+const isProd = import.meta.env.PUBLIC_VERCEL_ENV === 'production'
 
 export const sanityClient = createClient({
-  projectId: import.meta.env.PUBLIC_SANITY_PROJECT_ID ?? 'n2ynpgty',
-  dataset:   import.meta.env.PUBLIC_SANITY_DATASET   ?? 'production',
-  apiVersion: '2024-01-01',
-  useCdn:    false,
+  projectId:   import.meta.env.PUBLIC_SANITY_PROJECT_ID ?? 'n2ynpgty',
+  dataset:     import.meta.env.PUBLIC_SANITY_DATASET   ?? 'production',
+  apiVersion:  '2024-01-01',
+  useCdn:      isProd,
+  perspective: isProd ? 'published' : 'previewDrafts',
+  token:       isProd ? undefined : (import.meta.env.SANITY_PREVIEW_TOKEN ?? undefined),
 })
+
+// ── Bildebygger ──────────────────────────────────────────────────
+const builder = imageUrlBuilder(sanityClient)
+
+/**
+ * Bygg en optimalisert bilde-URL fra et Sanity-bildeobjekt.
+ * Eksempel: urlFor(image).width(800).format('webp').url()
+ */
+export function urlFor(source: SanityImageSource) {
+  return builder.image(source)
+}
 
 // ── Typer ────────────────────────────────────────────────────────
 
@@ -19,7 +37,7 @@ export interface Magician {
   years:          string
   tagline:        string
   mobileIntro:    string
-  posterImage?:   { asset: { url: string }; alt: string }
+  posterImage?:   { asset: { _ref: string; url: string }; alt: string }
   adultText?:     any[]
   childText?:     string
   childActivity?: string
@@ -36,8 +54,29 @@ export interface Event {
   price?:     string
   excerpt?:   string
   featured?:  boolean
-  image?:     { asset: { url: string }; alt: string }
+  image?:     { asset: { _ref: string; url: string }; alt: string }
   bookingUrl?: string
+}
+
+export interface Artifact {
+  _id:          string
+  title:        string
+  slug:         string
+  description?: string
+  year?:        number
+  yearNote?:    string
+  origin?:      string
+  category?:    string
+  material?:    string
+  dimensions?:  string
+  condition?:   string
+  provenance?:  string
+  featured?:    boolean
+  order?:       number
+  mainImage?:   { asset: { _ref: string; url: string }; alt?: string }
+  gallery?:     { asset: { _ref: string; url: string }; alt?: string; caption?: string }[]
+  tags?:        string[]
+  notes?:       any[]
 }
 
 // ── Spørringer ───────────────────────────────────────────────────
@@ -48,7 +87,7 @@ export async function getAllMagicians(): Promise<Magician[]> {
     *[_type == "magician"] | order(order asc) {
       _id, title, "slug": slug.current,
       order, qrNumber, years, tagline, mobileIntro,
-      posterImage { asset->{ url }, alt }
+      posterImage { asset->{ _ref, url }, alt }
     }
   `)
 }
@@ -59,7 +98,7 @@ export async function getMagicianBySlug(slug: string): Promise<Magician | null> 
     *[_type == "magician" && slug.current == $slug][0] {
       _id, title, "slug": slug.current,
       order, qrNumber, years, tagline,
-      posterImage { asset->{ url }, alt },
+      posterImage { asset->{ _ref, url }, alt },
       adultText, childText, childActivity,
       mobileIntro,
       mobileSections[] { heading, body },
@@ -83,7 +122,7 @@ export async function getUpcomingEvents(limit = 3): Promise<Event[]> {
     *[_type == "event" && date >= now()] | order(date asc) [0...$limit] {
       _id, title, "slug": slug.current,
       date, ageGroup, price, excerpt, featured,
-      image { asset->{ url }, alt },
+      image { asset->{ _ref, url }, alt },
       bookingUrl
     }
   `, { limit })
@@ -96,8 +135,45 @@ export async function getStaticPaths() {
     .map(m => ({ params: { slug: String(m.slug) } }))
 }
 
-// ── Legg til i src/lib/sanity.ts ────────────────────────────────
-// Kopier alt under denne linjen og lim inn på slutten av sanity.ts
+// ── Spørringer: Artefakter ───────────────────────────────────────
+
+// Alle artefakter sortert — til oversiktssiden
+export async function getAllArtifacts(): Promise<Artifact[]> {
+  return sanityClient.fetch(`
+    *[_type == "artifact"] | order(coalesce(order, 9999) asc, title asc) {
+      _id, title, "slug": slug.current,
+      description, year, yearNote, origin,
+      category, material, dimensions, condition,
+      featured, order, tags,
+      mainImage { asset->{ _ref, url }, alt }
+    }
+  `)
+}
+
+// Én artefakt via slug — til detaljsiden
+export async function getArtifactBySlug(slug: string): Promise<Artifact | null> {
+  return sanityClient.fetch(`
+    *[_type == "artifact" && slug.current == $slug][0] {
+      _id, title, "slug": slug.current,
+      description, year, yearNote, origin,
+      category, material, dimensions, condition,
+      provenance, featured, order, tags, notes,
+      mainImage { asset->{ _ref, url }, alt },
+      gallery[] { asset->{ _ref, url }, alt, caption }
+    }
+  `, { slug })
+}
+
+// Fremhevede artefakter — til forsiden / portalen
+export async function getFeaturedArtifacts(limit = 6): Promise<Artifact[]> {
+  return sanityClient.fetch(`
+    *[_type == "artifact" && featured == true] | order(coalesce(order, 9999) asc) [0...$limit] {
+      _id, title, "slug": slug.current,
+      description, year, category,
+      mainImage { asset->{ _ref, url }, alt }
+    }
+  `, { limit })
+}
 
 // ── Typer: Bok ───────────────────────────────────────────────────
 export interface BookAuthor {
@@ -135,7 +211,6 @@ export interface Book {
 }
 
 // ── Spørringer: Bok ──────────────────────────────────────────────
-// Alle bøker sortert på år — til boklistesiden
 export async function getAllBooks(): Promise<Book[]> {
   return sanityClient.fetch(`
     *[_type == "book"] | order(year asc) {
@@ -158,7 +233,6 @@ export async function getAllBooks(): Promise<Book[]> {
   `)
 }
 
-// Kun public domain — til biblioteksiden
 export async function getPublicDomainBooks(): Promise<Book[]> {
   return sanityClient.fetch(`
     *[_type == "book" && bookType == "publicDomain"] | order(year asc) {
@@ -172,7 +246,6 @@ export async function getPublicDomainBooks(): Promise<Book[]> {
   `)
 }
 
-// Kun norske bøker
 export async function getNorwegianBooks(): Promise<Book[]> {
   return sanityClient.fetch(`
     *[_type == "book" && bookType == "norwegian"] | order(year asc) {
@@ -186,7 +259,6 @@ export async function getNorwegianBooks(): Promise<Book[]> {
   `)
 }
 
-// Bøker av én magiker — til magiker-profilsiden
 export async function getBooksByMagician(magicianId: string): Promise<Book[]> {
   return sanityClient.fetch(`
     *[_type == "book" && references($magicianId)] | order(year asc) {
@@ -198,7 +270,6 @@ export async function getBooksByMagician(magicianId: string): Promise<Book[]> {
   `, { magicianId })
 }
 
-// Fremhevede bøker — til forsiden
 export async function getFeaturedBooks(): Promise<Book[]> {
   return sanityClient.fetch(`
     *[_type == "book" && featured == true] | order(year asc) {
@@ -211,6 +282,7 @@ export async function getFeaturedBooks(): Promise<Book[]> {
     }
   `)
 }
+
 // ── Typer: Biografi (Hvem er hvem) ──────────────────────────────
 export interface Biography {
   _id:          string
@@ -224,55 +296,36 @@ export interface Biography {
   tags?:        string[]
   shortBio?:    string
   fullBio?:     any[]
-  mainImage?:   { asset: { url: string }; alt?: string }
-  gallery?:     { asset: { url: string }; alt?: string; caption?: string }[]
+  mainImage?:   { asset: { _ref: string; url: string }; alt?: string }
+  gallery?:     { asset: { _ref: string; url: string }; alt?: string; caption?: string }[]
   links?:       { label: string; url: string; type?: string }[]
 }
 
 // ── Spørringer: Biografi ─────────────────────────────────────────
-
-// Alle biografier sortert alfabetisk — til oversiktssiden
 export async function getAllBiographies(): Promise<Biography[]> {
   return sanityClient.fetch(`
     *[_type == "biography"] | order(name asc) {
-      _id,
-      name,
-      "slug": slug.current,
-      artistName,
-      aliases,
-      nationality,
-      years,
-      featured,
-      tags,
-      shortBio,
-      mainImage { asset->{ url }, alt }
+      _id, name, "slug": slug.current,
+      artistName, aliases, nationality, years,
+      featured, tags, shortBio,
+      mainImage { asset->{ _ref, url }, alt }
     }
   `)
 }
 
-// En biografi via slug — til detaljsiden
 export async function getBiographyBySlug(slug: string): Promise<Biography | null> {
   return sanityClient.fetch(`
     *[_type == "biography" && slug.current == $slug][0] {
-      _id,
-      name,
-      "slug": slug.current,
-      artistName,
-      aliases,
-      nationality,
-      years,
-      featured,
-      tags,
-      shortBio,
-      fullBio,
-      mainImage { asset->{ url }, alt },
-      gallery[] { asset->{ url }, alt, caption },
+      _id, name, "slug": slug.current,
+      artistName, aliases, nationality, years,
+      featured, tags, shortBio, fullBio,
+      mainImage { asset->{ _ref, url }, alt },
+      gallery[] { asset->{ _ref, url }, alt, caption },
       links[] { label, url, type }
     }
   `, { slug })
 }
 
-// Soke — matcher pa fullt navn, kunstnernavn og alle aliases
 export async function searchBiographies(query: string): Promise<Biography[]> {
   return sanityClient.fetch(`
     *[_type == "biography" && (
@@ -280,14 +333,9 @@ export async function searchBiographies(query: string): Promise<Biography[]> {
       artistName match $pattern ||
       $query in aliases[]
     )] | order(name asc) {
-      _id,
-      name,
-      "slug": slug.current,
-      artistName,
-      aliases,
-      years,
-      shortBio,
-      mainImage { asset->{ url }, alt }
+      _id, name, "slug": slug.current,
+      artistName, aliases, years, shortBio,
+      mainImage { asset->{ _ref, url }, alt }
     }
   `, { pattern: `*${query}*`, query })
 }
@@ -302,7 +350,7 @@ export interface Homepage {
     cta1Href:   string
     cta2Label:  string
     cta2Href:   string
-    bgImage?:   { asset: { url: string }; hotspot: any }
+    bgImage?:   { asset: { _ref: string; url: string }; hotspot: any }
   }
   infoBadges:       { label: string }[]
   utstillingsFokus: { eraLabel: string; heading: string }
@@ -326,14 +374,13 @@ export interface Homepage {
   }
 }
 
-// ── Spørring: Forside ────────────────────────────────────────────
 export async function getHomepage(): Promise<Homepage | null> {
   return sanityClient.fetch(`
     *[_type == "homepage"][0] {
       hero {
         heading, headingEm, ingress,
         cta1Label, cta1Href, cta2Label, cta2Href,
-        bgImage { asset->{ url }, hotspot }
+        bgImage { asset->{ _ref, url }, hotspot }
       },
       infoBadges[] { label },
       utstillingsFokus { eraLabel, heading },
@@ -346,6 +393,7 @@ export async function getHomepage(): Promise<Homepage | null> {
     }
   `)
 }
+
 // ── Typer: Barn & unge ───────────────────────────────────────────
 export interface BarnPage {
   hero: {
@@ -379,7 +427,6 @@ export interface OmOssPage {
   partnere: { heading: string; liste: { navn: string; beskrivelse: string; url?: string }[] }
 }
 
-// ── Spørring: Barn & unge ────────────────────────────────────────
 export async function getBarnPage(): Promise<BarnPage | null> {
   return sanityClient.fetch(`
     *[_type == "barnPage"][0] {
@@ -392,7 +439,6 @@ export async function getBarnPage(): Promise<BarnPage | null> {
   `)
 }
 
-// ── Spørring: Om oss ─────────────────────────────────────────────
 export async function getOmOssPage(): Promise<OmOssPage | null> {
   return sanityClient.fetch(`
     *[_type == "omOssPage"][0] {
@@ -430,7 +476,6 @@ export interface SiteConfig {
   seoDescription:    string
 }
 
-// ── Spørring: SiteConfig ─────────────────────────────────────────
 export async function getSiteConfig(): Promise<SiteConfig> {
   const config = await sanityClient.fetch(`
     *[_type == "siteConfig"][0] {
@@ -442,7 +487,6 @@ export async function getSiteConfig(): Promise<SiteConfig> {
       seoDescription
     }
   `)
-  // Fallback om Sanity er tom
   return config ?? {
     siteName:          'Tryllemuseet',
     siteTagline:       'Norges minste, merkeligste og mest magiske museum',
@@ -459,4 +503,3 @@ export async function getSiteConfig(): Promise<SiteConfig> {
     seoDescription:    'Norges minste, merkeligste og mest magiske museum. Besøk oss på Årvoll gård i Oslo — søndager 12–15. Gratis inngang.',
   }
 }
-
