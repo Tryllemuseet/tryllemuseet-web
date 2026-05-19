@@ -24,9 +24,17 @@ export const biography = defineType({
     }),
     defineField({
       name: 'artistName',
-      title: 'Kunstnernavn',
+      title: 'Kunstnernavn / scenenavn',
       type: 'string',
-      description: 'Kun kunstnernavnet isolert, f.eks. "Chriss Chrissel"',
+      description: 'Kun kunstnernavnet isolert, f.eks. "Chriss Chrissel" eller "Egelo"',
+    }),
+
+    defineField({
+      name: 'aliases',
+      title: 'Andre navn / pseudonymer',
+      type: 'array',
+      of: [{ type: 'string' }],
+      description: 'Alle alternative navn denne personen er kjent under. Brukes i søk og indeks. F.eks. ["Egil Berg", "Egelo", "Herman Berthelsen (samarbeider)"]',
     }),
     defineField({
       name: 'nationality',

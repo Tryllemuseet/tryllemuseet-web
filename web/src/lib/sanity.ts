@@ -120,6 +120,8 @@ export interface Book {
   availability?:  'inPrint' | 'freeDownload' | 'checkAvailability' | 'rare'
   externalUrl?:   string
   sourceLabel?:   string
+  sourceReference?:    string
+  sourceReferenceUrl?: string
   thumbnailUrl?:  string
   coverImage?:    string
   coverImageAlt?: string
@@ -140,6 +142,7 @@ export async function getAllBooks(): Promise<Book[]> {
       _id, title, subtitle, year, yearNote,
       language, languageNote, bookType, section,
       availability, externalUrl, sourceLabel,
+      sourceReference, sourceReferenceUrl,
       thumbnailUrl,
       "coverImage": coverImage.asset->url,
       "coverImageAlt": coverImage.alt,
@@ -208,6 +211,87 @@ export async function getFeaturedBooks(): Promise<Book[]> {
     }
   `)
 }
+// ── Typer: Biografi (Hvem er hvem) ──────────────────────────────
+export interface Biography {
+  _id:          string
+  name:         string
+  slug:         string
+  artistName?:  string
+  aliases?:     string[]
+  nationality?: string
+  years?:       string
+  featured?:    boolean
+  tags?:        string[]
+  shortBio?:    string
+  fullBio?:     any[]
+  mainImage?:   { asset: { url: string }; alt?: string }
+  gallery?:     { asset: { url: string }; alt?: string; caption?: string }[]
+  links?:       { label: string; url: string; type?: string }[]
+}
+
+// ── Spørringer: Biografi ─────────────────────────────────────────
+
+// Alle biografier sortert alfabetisk — til oversiktssiden
+export async function getAllBiographies(): Promise<Biography[]> {
+  return sanityClient.fetch(`
+    *[_type == "biography"] | order(name asc) {
+      _id,
+      name,
+      "slug": slug.current,
+      artistName,
+      aliases,
+      nationality,
+      years,
+      featured,
+      tags,
+      shortBio,
+      mainImage { asset->{ url }, alt }
+    }
+  `)
+}
+
+// En biografi via slug — til detaljsiden
+export async function getBiographyBySlug(slug: string): Promise<Biography | null> {
+  return sanityClient.fetch(`
+    *[_type == "biography" && slug.current == $slug][0] {
+      _id,
+      name,
+      "slug": slug.current,
+      artistName,
+      aliases,
+      nationality,
+      years,
+      featured,
+      tags,
+      shortBio,
+      fullBio,
+      mainImage { asset->{ url }, alt },
+      gallery[] { asset->{ url }, alt, caption },
+      links[] { label, url, type }
+    }
+  `, { slug })
+}
+
+// Soke — matcher pa fullt navn, kunstnernavn og alle aliases
+export async function searchBiographies(query: string): Promise<Biography[]> {
+  return sanityClient.fetch(`
+    *[_type == "biography" && (
+      name match $pattern ||
+      artistName match $pattern ||
+      $query in aliases[]
+    )] | order(name asc) {
+      _id,
+      name,
+      "slug": slug.current,
+      artistName,
+      aliases,
+      years,
+      shortBio,
+      mainImage { asset->{ url }, alt }
+    }
+  `, { pattern: `*${query}*`, query })
+}
+
 // ── Typer: Forside ───────────────────────────────────────────────
 export interface Homepage {
   hero: {
