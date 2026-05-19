@@ -8,6 +8,7 @@ const biographies = await sanityClient.fetch(`
     _id,
     name,
     artistName,
+    aliases,
     years,
     nationality,
     shortBio,
@@ -57,7 +58,7 @@ const total = biographies.length
         <input
           type="search"
           id="bio-search"
-          placeholder="Søk på navn eller kunstnernavn…"
+          placeholder="Søk på navn, kunstnernavn eller pseudonym…"
           aria-label="Søk i Magiens Hvem er Hvem"
           autocomplete="off"
           autocorrect="off"
@@ -106,6 +107,7 @@ const total = biographies.length
               class="bio-card"
               data-name={bio.name.toLowerCase()}
               data-artist={bio.artistName?.toLowerCase() ?? ''}
+              data-aliases={(bio.aliases ?? []).join(' ').toLowerCase()}
             >
               <a href={`/tryllehistorie/magiens-hvem-er-hvem/${bio.slug}`} class="bio-card-link">
 
@@ -125,6 +127,9 @@ const total = biographies.length
 
                 <div class="bio-info">
                   <h3 class="bio-name">{bio.name}</h3>
+                  {bio.artistName && bio.artistName !== bio.name && (
+                    <p class="bio-artist">«{bio.artistName}»</p>
+                  )}
                   {bio.years && <p class="bio-years">{bio.years}</p>}
                   {bio.shortBio && (
                     <p class="bio-excerpt">{bio.shortBio}</p>
@@ -170,9 +175,10 @@ const total = biographies.length
     let totalVisible = 0
 
     cards.forEach(card => {
-      const name   = card.dataset.name   ?? ''
-      const artist = card.dataset.artist ?? ''
-      const match  = !q || name.includes(q) || artist.includes(q)
+      const name    = card.dataset.name    ?? ''
+      const artist  = card.dataset.artist  ?? ''
+      const aliases = card.dataset.aliases ?? ''
+      const match   = !q || name.includes(q) || artist.includes(q) || aliases.includes(q)
       card.hidden  = !match
       if (match) totalVisible++
     })
@@ -432,6 +438,14 @@ const total = biographies.length
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+  }
+
+  .bio-artist {
+    font-family: var(--font-ui);
+    font-size: 0.75rem;
+    color: var(--gold-dark);
+    font-style: italic;
+    margin-bottom: 0.1rem;
   }
 
   .bio-years {
