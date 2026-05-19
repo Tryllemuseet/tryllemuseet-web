@@ -1,0 +1,215 @@
+---
+// src/pages/utstillingen/artefakter.astro
+import BaseLayout from '../../layouts/BaseLayout.astro'
+import { getAllArtifacts, urlFor } from '../../lib/sanity'
+
+const artifacts = await getAllArtifacts()
+
+const categoryLabels: Record<string, string> = {
+  rekvisitt:  'Rekvisitt',
+  plakat:     'Plakat / trykk',
+  bok:        'Bøker / trykksak',
+  kostyme:    'Kostyme',
+  instrument: 'Instrument',
+  foto:       'Foto / portrett',
+  effekt:     'Personlig effekt',
+  annet:      'Annet',
+}
+---
+
+<BaseLayout
+  title="Artefakter — Tryllemuseet"
+  description="Sjeldne rekvisitter, historiske gjenstander og mysterier fra Tryllemuseets samling."
+>
+
+  <section class="hero container">
+    <p class="section-label">Samlingen</p>
+    <h1 class="display-title hero-title">Artefakter</h1>
+    <p class="hero-intro">
+      Sjeldne rekvisitter, historiske gjenstander og kuriositeter
+      fra tryllekunstens verden — samlet på ett sted.
+    </p>
+    <hr class="gold-rule" />
+  </section>
+
+  <section class="container grid-section">
+    {artifacts.length === 0 ? (
+      <p class="empty">Ingen artefakter er lagt inn ennå.</p>
+    ) : (
+      <div class="artifacts-grid">
+        {artifacts.map((a) => {
+          const imgUrl = a.mainImage?.asset
+            ? urlFor(a.mainImage).width(600).height(600).format('webp').fit('crop').url()
+            : null
+
+          const meta = [
+            a.category ? categoryLabels[a.category] ?? a.category : null,
+            a.yearNote ?? (a.year ? String(a.year) : null),
+            a.origin ?? null,
+          ].filter(Boolean).join(' · ')
+
+          return (
+            <div class="artifact-card">
+              <div class="card-img-wrap">
+                {imgUrl ? (
+                  <img
+                    src={imgUrl}
+                    alt={a.mainImage?.alt ?? a.title}
+                    width="600"
+                    height="600"
+                    loading="lazy"
+                  />
+                ) : (
+                  <div class="card-img-placeholder">🎩</div>
+                )}
+                <div class="card-overlay">
+                  <h2 class="overlay-title">{a.title}</h2>
+                  {meta && <p class="overlay-meta">{meta}</p>}
+                  {a.description && <p class="overlay-desc">{a.description}</p>}
+                </div>
+              </div>
+              <div class="card-foot">
+                <h2 class="card-title">{a.title}</h2>
+                {meta && <p class="card-meta">{meta}</p>}
+              </div>
+            </div>
+          )
+        })}
+      </div>
+    )}
+  </section>
+
+  <div class="bottom-pad" />
+
+</BaseLayout>
+
+<style>
+  /* ── HERO ── */
+  .hero       { padding: 4rem 0 2rem; }
+  .hero-title { font-size: clamp(2rem, 4vw, 3rem); margin: 0.4rem 0 1.25rem; }
+  .hero-intro { font-family: var(--font-ui); font-size: 1.05rem; color: var(--ink-mid); max-width: 600px; line-height: 1.7; }
+
+  /* ── GRID ── */
+  .grid-section { padding-bottom: 1rem; }
+
+  .artifacts-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 1.5rem;
+    margin-top: 1rem;
+  }
+
+  /* ── KORT ── */
+  .artifact-card {
+    display: flex;
+    flex-direction: column;
+    border-radius: 6px;
+    overflow: hidden;
+    background: white;
+    border: 1px solid var(--cream-dark);
+    transition: box-shadow 200ms ease, border-color 200ms ease;
+  }
+  .artifact-card:hover {
+    box-shadow: var(--shadow-lg);
+    border-color: var(--gold-light);
+  }
+
+  /* Bilde + overlay */
+  .card-img-wrap {
+    position: relative;
+    aspect-ratio: 1 / 1;
+    overflow: hidden;
+    background: var(--cream-dark);
+  }
+  .card-img-wrap img {
+    width: 100%; height: 100%;
+    object-fit: cover;
+    transition: transform 320ms ease;
+    display: block;
+  }
+  .artifact-card:hover .card-img-wrap img {
+    transform: scale(1.04);
+  }
+  .card-img-placeholder {
+    width: 100%; height: 100%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 4rem;
+  }
+
+  /* Overlay */
+  .card-overlay {
+    position: absolute; inset: 0;
+    background: linear-gradient(
+      to top,
+      rgba(26,18,8,0.88) 0%,
+      rgba(26,18,8,0.55) 50%,
+      rgba(26,18,8,0.0)  100%
+    );
+    padding: 1.25rem;
+    display: flex; flex-direction: column; justify-content: flex-end;
+    opacity: 0;
+    transition: opacity 220ms ease;
+  }
+  .artifact-card:hover .card-overlay { opacity: 1; }
+
+  .overlay-title {
+    font-family: var(--font-display);
+    font-size: 1rem;
+    color: var(--gold-light);
+    letter-spacing: 0.04em;
+    margin-bottom: 0.3rem;
+  }
+  .overlay-meta {
+    font-family: var(--font-ui);
+    font-size: 0.75rem;
+    color: var(--cream);
+    opacity: 0.8;
+    margin-bottom: 0.4rem;
+    letter-spacing: 0.03em;
+  }
+  .overlay-desc {
+    font-family: var(--font-ui);
+    font-size: 0.8rem;
+    color: var(--cream);
+    opacity: 0.85;
+    line-height: 1.5;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  /* Kortbunn — alltid synlig */
+  .card-foot {
+    padding: 0.9rem 1rem 1rem;
+  }
+  .card-title {
+    font-family: var(--font-display);
+    font-size: 0.95rem;
+    color: var(--burgundy);
+    letter-spacing: 0.03em;
+    margin-bottom: 0.2rem;
+  }
+  .card-meta {
+    font-family: var(--font-ui);
+    font-size: 0.75rem;
+    color: var(--grey);
+    letter-spacing: 0.02em;
+  }
+
+  .empty {
+    font-family: var(--font-ui);
+    color: var(--grey);
+    padding: 3rem 0;
+  }
+
+  .bottom-pad { height: 5rem; }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 600px) {
+    .artifacts-grid { grid-template-columns: repeat(2, 1fr); gap: 0.75rem; }
+  }
+  @media (max-width: 380px) {
+    .artifacts-grid { grid-template-columns: 1fr; }
+  }
+</style>
