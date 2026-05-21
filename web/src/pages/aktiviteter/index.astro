@@ -1,0 +1,198 @@
+---
+// src/pages/aktiviteter/index.astro
+import BaseLayout from '../../layouts/BaseLayout.astro'
+---
+
+<BaseLayout
+  title="Aktiviteter — Tryllemuseet"
+  description="Kurs, arrangementer og magiske opplevelser for barn og voksne på Tryllemuseet."
+>
+
+  <section class="hero">
+    <div class="container">
+      <p class="section-label">Tryllemuseet</p>
+      <h1 class="display-title">Aktiviteter</h1>
+      <p class="hero-sub">
+        Kurs, arrangementer og magiske opplevelser for barn og voksne.
+      </p>
+    </div>
+  </section>
+
+  <div class="container page-body">
+
+    <div class="coming-soon-card">
+      <div class="card-icon" aria-hidden="true">🎩</div>
+      <h2>Siden er under utvikling</h2>
+      <p>
+        Her vil du snart finne oversikt over alle aktiviteter på Tryllemuseet —
+        tryllekurs, familiedager, foredrag og mye mer.
+      </p>
+      <p>
+        I mellomtiden kan du ta kontakt med oss direkte for å høre om
+        kommende arrangementer.
+      </p>
+      <div class="card-actions">
+        <a href="/kontakt" class="btn-primary">Ta kontakt</a>
+        <a href="/barn" class="btn-secondary">Barn &amp; unge →</a>
+      </div>
+    </div>
+
+    <div class="teaser-grid">
+      <div class="teaser-item">
+        <div class="teaser-icon" aria-hidden="true">🪄</div>
+        <h3>Tryllekurs</h3>
+        <p>Lær de grunnleggende triksene fra profesjonelle tryllekunstnere.</p>
+      </div>
+      <div class="teaser-item">
+        <div class="teaser-icon" aria-hidden="true">🎪</div>
+        <h3>Familiedager</h3>
+        <p>Magiske opplevelser for hele familien i museets lokaler.</p>
+      </div>
+      <div class="teaser-item">
+        <div class="teaser-icon" aria-hidden="true">📚</div>
+        <h3>Foredrag</h3>
+        <p>Dykk ned i magiens fascinerende historie og hemmeligheter.</p>
+      </div>
+    </div>
+
+  </div>
+
+</BaseLayout>
+
+<style>
+  /* ── HERO ──────────────────────────────────────────────────────── */
+  .hero {
+    background: var(--burgundy-dk);
+    padding: 3.5rem 0 2.5rem;
+    border-bottom: 2px solid var(--gold-dark);
+    color: var(--cream);
+  }
+  .hero h1 {
+    font-size: clamp(2rem, 5vw, 3rem);
+    color: var(--cream);
+    margin: 0.5rem 0 0.75rem;
+  }
+  .hero-sub {
+    font-family: var(--font-ui);
+    font-size: 1rem;
+    opacity: 0.8;
+    max-width: 520px;
+  }
+
+  /* ── PAGE BODY ─────────────────────────────────────────────────── */
+  .page-body {
+    padding: 3rem 1.5rem 5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 3rem;
+  }
+
+  /* ── COMING SOON CARD ──────────────────────────────────────────── */
+  .coming-soon-card {
+    background: white;
+    border: 1px solid var(--cream-dark);
+    border-top: 4px solid var(--gold);
+    border-radius: 8px;
+    padding: 2.5rem 2rem;
+    max-width: 640px;
+    margin: 0 auto;
+    text-align: center;
+  }
+  .card-icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    display: block;
+  }
+  .coming-soon-card h2 {
+    font-family: var(--font-display);
+    font-size: 1.4rem;
+    color: var(--burgundy);
+    letter-spacing: 0.04em;
+    margin-bottom: 1rem;
+  }
+  .coming-soon-card p {
+    font-family: var(--font-body);
+    font-size: 1rem;
+    color: var(--ink-mid);
+    line-height: 1.7;
+    margin-bottom: 0.75rem;
+    max-width: 480px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  .card-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-top: 1.75rem;
+  }
+  .btn-primary {
+    font-family: var(--font-ui);
+    font-size: 0.875rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--burgundy);
+    background: var(--gold);
+    padding: 0.6rem 1.5rem;
+    border-radius: var(--radius);
+    text-decoration: none;
+    transition: background 150ms;
+  }
+  .btn-primary:hover { background: var(--gold-light); }
+  .btn-secondary {
+    font-family: var(--font-ui);
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--burgundy);
+    border: 1.5px solid var(--gold-dark);
+    padding: 0.6rem 1.5rem;
+    border-radius: var(--radius);
+    text-decoration: none;
+    transition: background 150ms;
+  }
+  .btn-secondary:hover { background: var(--cream); }
+
+  /* ── TEASER GRID ───────────────────────────────────────────────── */
+  .teaser-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 1.5rem;
+    max-width: 800px;
+    margin: 0 auto;
+    width: 100%;
+  }
+  .teaser-item {
+    background: white;
+    border: 1px solid var(--cream-dark);
+    border-radius: 6px;
+    padding: 1.5rem 1.25rem;
+    text-align: center;
+    opacity: 0.7;
+  }
+  .teaser-icon {
+    font-size: 2rem;
+    margin-bottom: 0.75rem;
+    display: block;
+  }
+  .teaser-item h3 {
+    font-family: var(--font-display);
+    font-size: 0.95rem;
+    color: var(--burgundy);
+    letter-spacing: 0.04em;
+    margin-bottom: 0.5rem;
+  }
+  .teaser-item p {
+    font-family: var(--font-ui);
+    font-size: 0.825rem;
+    color: var(--ink-mid);
+    line-height: 1.6;
+  }
+
+  @media (max-width: 560px) {
+    .page-body { padding: 2rem 1rem 3rem; }
+    .coming-soon-card { padding: 2rem 1.25rem; }
+    .teaser-grid { grid-template-columns: 1fr; }
+  }
+</style>
