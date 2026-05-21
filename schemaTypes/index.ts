@@ -9,6 +9,8 @@ import { book }           from './book'
 import { homepage }       from './homepage'
 import { barnPage }       from './barnPage'
 import { omOssPage }      from './omOssPage'
+import artifact           from './artifact'
+import { tvAppearance }   from './tvAppearance'
 
 export const schemaTypes = [
   // Sidetyper
@@ -18,8 +20,10 @@ export const schemaTypes = [
   // Dokumenttyper
   magician,
   biography,
+  tvAppearance,
   book,
   event,
+  artifact,
   siteConfig,
   // Objekttyper
   contentSection,

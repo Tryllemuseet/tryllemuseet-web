@@ -61,17 +61,23 @@ export const biography = defineType({
       of: [{ type: 'string' }],
       options: {
         list: [
-          { title: 'Norsk',          value: 'norsk'          },
-          { title: 'Internasjonal',  value: 'internasjonal'  },
-          { title: 'Profesjonell',   value: 'profesjonell'   },
-          { title: 'Amatør',        value: 'amatør'         },
-          { title: 'Illusjonist',    value: 'illusjonist'    },
-          { title: 'Escapist',       value: 'escapist'       },
-          { title: 'Mentalist',      value: 'mentalist'      },
-          { title: 'Buktaler',       value: 'buktaler'       },
-          { title: 'Close-up',       value: 'close-up'       },
-          { title: 'Barneshowet',    value: 'barneshow'      },
-          { title: 'NM-vinner',      value: 'nm-vinner'      },
+          { title: 'Norsk',                value: 'norsk'          },
+          { title: 'Internasjonal',        value: 'internasjonal'  },
+          { title: 'Profesjonell',         value: 'profesjonell'   },
+          { title: 'Amatør',              value: 'amatør'         },
+          { title: 'Illusjonist',          value: 'illusjonist'    },
+          { title: 'Escapist',             value: 'escapist'       },
+          { title: 'Mentalist',            value: 'mentalist'      },
+          { title: 'Buktaler',             value: 'buktaler'       },
+          { title: 'Close-up',             value: 'close-up'       },
+          { title: 'Barneshow',            value: 'barneshow'      },
+          { title: 'NM-vinner',            value: 'nm-vinner'      },
+          { title: 'TV — Norge',           value: 'tv-norge'       },
+          { title: 'TV — Sverige',         value: 'tv-sverige'     },
+          { title: 'TV — Danmark',         value: 'tv-danmark'     },
+          { title: 'TV — Finland',         value: 'tv-finland'     },
+          { title: 'Fool Us',              value: 'fool-us'        },
+          { title: 'Got Talent',           value: 'got-talent'     },
         ],
         layout: 'tags',
       },
@@ -105,8 +111,8 @@ export const biography = defineType({
         type: 'image',
         options: { hotspot: true },
         fields: [
-          defineField({ name: 'alt',     title: 'Alt-tekst',   type: 'string' }),
-          defineField({ name: 'caption', title: 'Bildetekst',  type: 'string' }),
+          defineField({ name: 'alt',     title: 'Alt-tekst',  type: 'string' }),
+          defineField({ name: 'caption', title: 'Bildetekst', type: 'string' }),
         ],
       }],
     }),
@@ -133,7 +139,7 @@ export const biography = defineType({
       name: 'links',
       title: 'Lenker',
       type: 'array',
-      description: 'Wikipedia, egen nettside, YouTube, Facebook osv.',
+      description: 'Wikipedia, egen nettside, YouTube, Facebook, interne TV-opptredener osv.',
       of: [{
         type: 'object',
         name: 'link',
@@ -143,13 +149,7 @@ export const biography = defineType({
             name: 'label',
             title: 'Lenketekst',
             type: 'string',
-            description: 'F.eks. "Wikipedia", "Offisiell nettside", "YouTube-kanal"',
-            validation: R => R.required(),
-          }),
-          defineField({
-            name: 'url',
-            title: 'URL',
-            type: 'url',
+            description: 'F.eks. "Wikipedia", "Offisiell nettside", "Fool Us 2023"',
             validation: R => R.required(),
           }),
           defineField({
@@ -158,18 +158,60 @@ export const biography = defineType({
             type: 'string',
             options: {
               list: [
-                { title: 'Wikipedia',       value: 'wikipedia'  },
-                { title: 'Nettside',        value: 'website'    },
-                { title: 'YouTube',         value: 'youtube'    },
-                { title: 'Facebook',        value: 'facebook'   },
-                { title: 'Instagram',       value: 'instagram'  },
-                { title: 'Annet',           value: 'other'      },
+                { title: 'Wikipedia',              value: 'wikipedia'  },
+                { title: 'Nettside',               value: 'website'    },
+                { title: 'YouTube',                value: 'youtube'    },
+                { title: 'Facebook',               value: 'facebook'   },
+                { title: 'Instagram',              value: 'instagram'  },
+                { title: 'TV-opptreden (intern)',   value: 'article'    },
+                { title: 'Annet',                  value: 'other'      },
               ],
             },
           }),
+          defineField({
+            name: 'url',
+            title: 'URL (ekstern)',
+            type: 'url',
+            description: 'Brukes for alle eksterne lenker',
+            hidden: ({ parent }) => parent?.type === 'article',
+            validation: R =>
+              R.custom((url, context) => {
+                const parent = context.parent as { type?: string } | undefined
+                if (parent?.type !== 'article' && !url) return 'URL er påkrevd for eksterne lenker'
+                return true
+              }),
+          }),
+          defineField({
+            name: 'internalRef',
+            title: 'Koble til TV-opptreden',
+            type: 'reference',
+            to: [{ type: 'tvAppearance' }],
+            description: 'Velg opptredenen dette lenker til',
+            hidden: ({ parent }) => parent?.type !== 'article',
+          }),
         ],
         preview: {
-          select: { title: 'label', subtitle: 'url' },
+          select: {
+            title:    'label',
+            subtitle: 'url',
+            type:     'type',
+          },
+          prepare({ title, subtitle, type }: { title?: string; subtitle?: string; type?: string }) {
+            const typeEmoji: Record<string, string> = {
+              wikipedia:  '📖',
+              website:    '🌐',
+              youtube:    '▶️',
+              facebook:   '👤',
+              instagram:  '📷',
+              article:    '🔗',
+              other:      '🔗',
+            }
+            const emoji = type ? (typeEmoji[type] ?? '🔗') : '🔗'
+            return {
+              title:    `${emoji} ${title ?? '(uten tekst)'}`,
+              subtitle: subtitle ?? '(intern referanse)',
+            }
+          },
         },
       }],
     }),
@@ -221,12 +263,17 @@ export const biography = defineType({
 
   preview: {
     select: {
-      title:    'name',
+      title:  'name',
       subtitle: 'years',
-      media:    'mainImage',
-      needs:    'needsUpdate',
+      media:  'mainImage',
+      needs:  'needsUpdate',
     },
-    prepare({ title, subtitle, media, needs }) {
+    prepare({ title, subtitle, media, needs }: {
+      title?: string
+      subtitle?: string
+      media?: unknown
+      needs?: boolean
+    }) {
       return {
         title:    (needs ? '⚠️ ' : '') + (title ?? '(uten navn)'),
         subtitle: subtitle ?? '',
