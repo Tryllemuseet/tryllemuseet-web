@@ -1,0 +1,525 @@
+---
+// src/pages/tryllehistorie/nordisk-tv-magi/[slug].astro
+import BaseLayout from '../../../layouts/BaseLayout.astro'
+import { sanityClient, showLabels, resultLabels } from '../../../lib/sanity'
+import { PortableText } from 'astro-portabletext'
+
+export async function getStaticPaths() {
+  const slugs = await sanityClient.fetch(`
+    *[_type == "tvAppearance"] { "slug": slug.current }
+  `)
+  return slugs
+    .filter((s: any) => s.slug)
+    .map((s: any) => ({ params: { slug: s.slug } }))
+}
+
+const { slug } = Astro.params
+
+const a = await sanityClient.fetch(`
+  *[_type == "tvAppearance" && slug.current == $slug][0] {
+    _id,
+    "slug": slug.current,
+    show, showCountry, year, season, episode, episodeTitle,
+    result, description, videoUrl,
+    featuredImage { asset->{ url }, alt, caption },
+    magician-> {
+      _id, name, "slug": slug.current,
+      artistName, nationality, years, shortBio,
+      tags,
+      mainImage { asset->{ url }, alt },
+      links[] {
+        label, type, url,
+        "internalSlug": internalRef->slug.current
+      }
+    }
+  }
+`, { slug })
+
+if (!a) return Astro.redirect('/tryllehistorie/nordisk-tv-magi')
+
+// Alle andre opptredener av samme magiker
+const otherAppearances = await sanityClient.fetch(`
+  *[_type == "tvAppearance" && slug.current != $slug && magician._ref == $magicianId] | order(year asc) {
+    "slug": slug.current,
+    show, year, result,
+    featuredImage { asset->{ url }, alt }
+  }
+`, { slug, magicianId: a.magician._id })
+
+const showLabel   = showLabels[a.show]   ?? a.show
+const resultLabel = resultLabels[a.result] ?? a.result
+const pageTitle   = `${a.magician?.artistName ?? a.magician?.name} — ${showLabel} ${a.year}`
+
+// YouTube embed
+function youtubeEmbedUrl(url: string): string | null {
+  const m = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&?]+)/)
+  return m ? `https://www.youtube.com/embed/${m[1]}` : null
+}
+const embedUrl = a.videoUrl ? youtubeEmbedUrl(a.videoUrl) : null
+---
+
+<BaseLayout
+  title={`${pageTitle} — Tryllemuseet`}
+  description={`${a.magician?.name} i ${showLabel} ${a.year}. ${resultLabel}.`}
+>
+
+  <!-- BREADCRUMB ─────────────────────────────────────────────────── -->
+  <nav class="breadcrumb container" aria-label="Brødsmulesti">
+    <a href="/tryllehistorie">Tryllehistorie</a>
+    <span aria-hidden="true">›</span>
+    <a href="/tryllehistorie/nordisk-tv-magi">Nordiske magikere på TV</a>
+    <span aria-hidden="true">›</span>
+    <span aria-current="page">{a.magician?.artistName ?? a.magician?.name}</span>
+  </nav>
+
+  <!-- HERO ──────────────────────────────────────────────────────── -->
+  <section class="detail-hero">
+    {(a.featuredImage?.asset?.url || a.magician?.mainImage?.asset?.url) && (
+      <div class="hero-img-wrap" aria-hidden="true">
+        <img
+          src={a.featuredImage?.asset?.url ?? a.magician?.mainImage?.asset?.url}
+          alt={a.featuredImage?.alt ?? a.magician?.mainImage?.alt ?? ''}
+          class="hero-img"
+        />
+        <div class="hero-img-overlay"></div>
+      </div>
+    )}
+    <div class="container hero-content">
+      <p class="section-label hero-show">{showLabel}</p>
+      <h1 class="display-title hero-title">
+        {a.magician?.artistName ?? a.magician?.name}
+      </h1>
+      {a.magician?.artistName && a.magician?.name !== a.magician?.artistName && (
+        <p class="hero-fullname">{a.magician.name}</p>
+      )}
+      <div class="hero-meta">
+        <span class="result-pill" data-result={a.result}>{resultLabel}</span>
+        {a.year && <span class="meta-item">{a.year}</span>}
+        {a.magician?.nationality && <span class="meta-item">{a.magician.nationality}</span>}
+        {a.season && <span class="meta-item">Sesong {a.season}</span>}
+        {a.episode && <span class="meta-item">Episode {a.episode}</span>}
+      </div>
+      {a.episodeTitle && (
+        <p class="hero-episode">«{a.episodeTitle}»</p>
+      )}
+    </div>
+  </section>
+
+  <!-- INNHOLD ────────────────────────────────────────────────────── -->
+  <div class="container detail-body">
+    <div class="detail-main">
+
+      <!-- Beskrivelse -->
+      {a.description && a.description.length > 0 && (
+        <section class="detail-section">
+          <h2 class="detail-heading">Om opptredenen</h2>
+          <div class="prose">
+            <PortableText value={a.description} />
+          </div>
+        </section>
+      )}
+
+      <!-- Video -->
+      {embedUrl && (
+        <section class="detail-section">
+          <h2 class="detail-heading">Se opptredenen</h2>
+          <div class="video-wrap">
+            <iframe
+              src={embedUrl}
+              title={`${a.magician?.name} — ${showLabel} ${a.year}`}
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowfullscreen
+              loading="lazy"
+            ></iframe>
+          </div>
+        </section>
+      )}
+
+      {!embedUrl && a.videoUrl && (
+        <section class="detail-section">
+          <a href={a.videoUrl} class="video-link" target="_blank" rel="noopener">
+            ▶ Se opptredenen ↗
+          </a>
+        </section>
+      )}
+
+      <!-- Andre opptredener av samme magiker -->
+      {otherAppearances.length > 0 && (
+        <section class="detail-section">
+          <h2 class="detail-heading">
+            Andre opptredener av {a.magician?.artistName ?? a.magician?.name}
+          </h2>
+          <ul class="other-list">
+            {otherAppearances.map((o: any) => (
+              <li>
+                <a href={`/tryllehistorie/nordisk-tv-magi/${o.slug}`} class="other-link">
+                  <span class="other-show">{showLabels[o.show] ?? o.show}</span>
+                  <span class="other-year">{o.year}</span>
+                  <span class="other-result">{resultLabels[o.result] ?? o.result}</span>
+                  <span class="other-arrow" aria-hidden="true">→</span>
+                </a>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
+    </div>
+
+    <!-- SIDEBAR: Magiker-info ────────────────────────────────────── -->
+    <aside class="detail-sidebar">
+
+      {a.magician?.mainImage?.asset?.url && (
+        <div class="sidebar-img-wrap">
+          <img
+            src={a.magician.mainImage.asset.url}
+            alt={a.magician.mainImage.alt ?? a.magician.name}
+            class="sidebar-img"
+          />
+        </div>
+      )}
+
+      <div class="sidebar-card">
+        <h2 class="sidebar-name">
+          {a.magician?.artistName ?? a.magician?.name}
+        </h2>
+        {a.magician?.artistName && a.magician?.name !== a.magician?.artistName && (
+          <p class="sidebar-fullname">{a.magician.name}</p>
+        )}
+        {a.magician?.nationality && (
+          <p class="sidebar-meta">{a.magician.nationality}{a.magician?.years ? ` · ${a.magician.years}` : ''}</p>
+        )}
+        {a.magician?.shortBio && (
+          <p class="sidebar-bio">{a.magician.shortBio}</p>
+        )}
+
+        <!-- Tags -->
+        {a.magician?.tags && a.magician.tags.length > 0 && (
+          <div class="sidebar-tags">
+            {a.magician.tags.map((tag: string) => (
+              <span class="sidebar-tag">{tag}</span>
+            ))}
+          </div>
+        )}
+
+        <!-- Lenker -->
+        {a.magician?.links && a.magician.links.length > 0 && (
+          <ul class="sidebar-links">
+            {a.magician.links.map((link: any) => {
+              const href = link.type === 'article' && link.internalSlug
+                ? `/tryllehistorie/nordisk-tv-magi/${link.internalSlug}`
+                : link.url
+              return href ? (
+                <li>
+                  <a
+                    href={href}
+                    class="sidebar-link"
+                    target={link.type !== 'article' ? '_blank' : undefined}
+                    rel={link.type !== 'article' ? 'noopener' : undefined}
+                  >
+                    {link.label}
+                    {link.type !== 'article' && <span aria-hidden="true"> ↗</span>}
+                  </a>
+                </li>
+              ) : null
+            })}
+          </ul>
+        )}
+
+        <a
+          href={`/tryllehistorie/magiens-hvem-er-hvem/${a.magician?.slug}`}
+          class="sidebar-profile-link"
+        >
+          Se full profil →
+        </a>
+      </div>
+
+    </aside>
+  </div>
+
+  <!-- NAVIGASJON ─────────────────────────────────────────────────── -->
+  <div class="container back-nav">
+    <a href="/tryllehistorie/nordisk-tv-magi">← Tilbake til oversikten</a>
+  </div>
+
+</BaseLayout>
+
+<style>
+  /* ── BREADCRUMB ────────────────────────────────────────────────── */
+  .breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    flex-wrap: wrap;
+    padding-top: 1rem;
+    padding-bottom: 0;
+    font-family: var(--font-ui);
+    font-size: 0.78rem;
+    color: var(--grey);
+  }
+  .breadcrumb a { color: var(--grey); text-decoration: none; transition: color 150ms; }
+  .breadcrumb a:hover { color: var(--burgundy); }
+  .breadcrumb span[aria-current] { color: var(--ink-mid); }
+
+  /* ── HERO ──────────────────────────────────────────────────────── */
+  .detail-hero {
+    position: relative;
+    background: var(--burgundy-dk);
+    color: var(--cream);
+    padding: 3rem 0 2.5rem;
+    border-bottom: 2px solid var(--gold-dark);
+    overflow: hidden;
+  }
+  .hero-img-wrap {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+  }
+  .hero-img {
+    width: 100%; height: 100%;
+    object-fit: cover;
+    object-position: top center;
+    opacity: 0.22;
+  }
+  .hero-img-overlay {
+    position: absolute; inset: 0;
+    background: linear-gradient(to right, var(--burgundy-dk) 40%, transparent 100%);
+  }
+  .hero-content { position: relative; z-index: 1; max-width: 680px; }
+  .hero-show { color: var(--gold); margin-bottom: 0.5rem; }
+  .hero-title { font-size: clamp(2rem, 5vw, 3.2rem); color: var(--cream); margin-bottom: 0.25rem; }
+  .hero-fullname { font-family: var(--font-ui); font-size: 1rem; opacity: 0.7; margin-bottom: 0.75rem; }
+  .hero-meta {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+  }
+  .result-pill {
+    font-family: var(--font-ui);
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    padding: 0.25rem 0.75rem;
+    border-radius: 99px;
+    background: rgba(212,168,67,0.2);
+    color: var(--gold-light);
+    border: 1px solid rgba(212,168,67,0.35);
+  }
+  .result-pill[data-result="fooled"]        { background: rgba(22,101,52,0.3);  color: #86efac; border-color: rgba(22,101,52,0.5); }
+  .result-pill[data-result="winner"]        { background: rgba(161,128,0,0.3);  color: #fef08a; border-color: rgba(161,128,0,0.5); }
+  .result-pill[data-result="golden-buzzer"] { background: rgba(161,128,0,0.3);  color: #fef08a; border-color: rgba(161,128,0,0.5); }
+  .meta-item {
+    font-family: var(--font-ui);
+    font-size: 0.8rem;
+    color: var(--cream);
+    opacity: 0.7;
+  }
+  .meta-item + .meta-item::before { content: '·'; margin-right: 0.5rem; opacity: 0.4; }
+  .hero-episode {
+    font-family: var(--font-body);
+    font-size: 0.9rem;
+    font-style: italic;
+    opacity: 0.75;
+  }
+
+  /* ── LAYOUT ────────────────────────────────────────────────────── */
+  .detail-body {
+    display: grid;
+    grid-template-columns: 1fr 300px;
+    gap: 3rem;
+    padding-top: 2.5rem;
+    padding-bottom: 4rem;
+    align-items: start;
+  }
+
+  /* ── HOVEDDEL ──────────────────────────────────────────────────── */
+  .detail-section { margin-bottom: 2.5rem; }
+  .detail-heading {
+    font-family: var(--font-display);
+    font-size: 1.1rem;
+    color: var(--burgundy);
+    letter-spacing: 0.04em;
+    margin-bottom: 1rem;
+    padding-bottom: 0.4rem;
+    border-bottom: 1px solid var(--cream-dark);
+  }
+
+  /* Portable text prose */
+  .prose { font-family: var(--font-body); font-size: 1rem; line-height: 1.75; color: var(--ink-mid); }
+  .prose p { margin-bottom: 0.75rem; }
+  .prose strong { color: var(--ink); }
+
+  /* Video */
+  .video-wrap {
+    position: relative;
+    aspect-ratio: 16/9;
+    border-radius: 6px;
+    overflow: hidden;
+    background: var(--burgundy-dk);
+  }
+  .video-wrap iframe {
+    position: absolute; inset: 0;
+    width: 100%; height: 100%;
+    border: none;
+  }
+  .video-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-family: var(--font-ui);
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--burgundy);
+    border: 1.5px solid var(--gold-dark);
+    padding: 0.6rem 1.25rem;
+    border-radius: 6px;
+    transition: background 150ms;
+  }
+  .video-link:hover { background: var(--cream); }
+
+  /* Andre opptredener */
+  .other-list { list-style: none; display: flex; flex-direction: column; gap: 1px; background: var(--cream-dark); border: 1px solid var(--cream-dark); border-radius: 6px; overflow: hidden; }
+  .other-link {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+    background: white;
+    text-decoration: none;
+    color: var(--ink);
+    font-family: var(--font-ui);
+    font-size: 0.875rem;
+    transition: background 150ms;
+  }
+  .other-link:hover { background: var(--cream); }
+  .other-show { font-weight: 600; color: var(--burgundy); flex: 1; }
+  .other-year { color: var(--grey); }
+  .other-result { color: var(--gold-dark); font-size: 0.8rem; }
+  .other-arrow { color: var(--gold-dark); margin-left: auto; transition: transform 150ms; }
+  .other-link:hover .other-arrow { transform: translateX(3px); }
+
+  /* ── SIDEBAR ───────────────────────────────────────────────────── */
+  .sidebar-img-wrap {
+    border-radius: 6px;
+    overflow: hidden;
+    aspect-ratio: 3/4;
+    margin-bottom: 1rem;
+  }
+  .sidebar-img {
+    width: 100%; height: 100%;
+    object-fit: cover;
+  }
+  .sidebar-card {
+    background: white;
+    border: 1px solid var(--cream-dark);
+    border-radius: 6px;
+    padding: 1.25rem;
+  }
+  .sidebar-name {
+    font-family: var(--font-display);
+    font-size: 1.1rem;
+    color: var(--burgundy);
+    letter-spacing: 0.03em;
+    margin-bottom: 0.15rem;
+  }
+  .sidebar-fullname {
+    font-family: var(--font-ui);
+    font-size: 0.8rem;
+    color: var(--grey);
+    font-style: italic;
+    margin-bottom: 0.25rem;
+  }
+  .sidebar-meta {
+    font-family: var(--font-ui);
+    font-size: 0.8rem;
+    color: var(--grey);
+    margin-bottom: 0.75rem;
+  }
+  .sidebar-bio {
+    font-family: var(--font-body);
+    font-size: 0.875rem;
+    color: var(--ink-mid);
+    line-height: 1.6;
+    margin-bottom: 0.75rem;
+  }
+  .sidebar-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+    margin-bottom: 1rem;
+  }
+  .sidebar-tag {
+    font-family: var(--font-ui);
+    font-size: 0.65rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    background: var(--cream-dark);
+    color: var(--ink-mid);
+    padding: 0.1rem 0.4rem;
+    border-radius: 2px;
+  }
+  .sidebar-links {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    margin-bottom: 1rem;
+    border-top: 1px solid var(--cream-dark);
+    padding-top: 0.75rem;
+  }
+  .sidebar-link {
+    font-family: var(--font-ui);
+    font-size: 0.8rem;
+    color: var(--burgundy);
+    text-decoration: none;
+    padding: 0.2rem 0;
+    transition: color 150ms;
+  }
+  .sidebar-link:hover { color: var(--gold-dark); }
+  .sidebar-profile-link {
+    display: block;
+    text-align: center;
+    font-family: var(--font-ui);
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--cream);
+    background: var(--burgundy);
+    padding: 0.6rem 1rem;
+    border-radius: 4px;
+    text-decoration: none;
+    transition: background 150ms;
+    margin-top: 0.5rem;
+  }
+  .sidebar-profile-link:hover { background: var(--burgundy-dk); }
+
+  /* ── BACK NAV ──────────────────────────────────────────────────── */
+  .back-nav {
+    padding: 0 0 3rem;
+    font-family: var(--font-ui);
+    font-size: 0.875rem;
+  }
+  .back-nav a {
+    color: var(--grey);
+    text-decoration: none;
+    border: 1px solid var(--cream-dark);
+    padding: 0.4rem 1rem;
+    border-radius: var(--radius);
+    transition: color 150ms, border-color 150ms;
+  }
+  .back-nav a:hover { color: var(--burgundy); border-color: var(--gold); }
+
+  /* ── RESPONSIVE ────────────────────────────────────────────────── */
+  @media (max-width: 900px) {
+    .detail-body { grid-template-columns: 1fr; gap: 2rem; }
+    .detail-sidebar { order: -1; display: grid; grid-template-columns: 160px 1fr; gap: 1rem; align-items: start; }
+    .sidebar-img-wrap { margin-bottom: 0; aspect-ratio: 3/4; }
+  }
+  @media (max-width: 560px) {
+    .detail-sidebar { grid-template-columns: 1fr; }
+    .sidebar-img-wrap { display: none; }
+    .hero-title { font-size: 2rem; }
+  }
+</style>

@@ -503,3 +503,121 @@ export async function getSiteConfig(): Promise<SiteConfig> {
     seoDescription:    'Norges minste, merkeligste og mest magiske museum. Besøk oss på Årvoll gård i Oslo — søndager 12–15. Gratis inngang.',
   }
 }
+
+// ── Legg til på slutten av src/lib/sanity.ts ────────────────────
+
+// ── Typer: TV-opptreden ──────────────────────────────────────────
+export interface TvAppearance {
+  _id:           string
+  slug:          string
+  show:          string
+  showCountry?:  string
+  year:          number
+  season?:       number
+  episode?:      number
+  episodeTitle?: string
+  result:        string
+  description?:  any[]
+  videoUrl?:     string
+  featuredImage?: { asset: { _ref: string; url: string }; alt?: string; caption?: string }
+  magician: {
+    _id:         string
+    name:        string
+    slug:        string
+    artistName?: string
+    nationality?: string
+    years?:      string
+    shortBio?:   string
+    mainImage?:  { asset: { _ref: string; url: string }; alt?: string }
+  }
+}
+
+// ── Hjelpefunksjoner ─────────────────────────────────────────────
+export const showLabels: Record<string, string> = {
+  'norske-talenter':    'Norske Talenter',
+  'talang':             'Talang',
+  'fool-us':            'Penn & Teller: Fool Us',
+  'danmark-har-talent': 'Danmark har Talent',
+  'talent-suomi':       'Talent Suomi',
+  'bgt':                "Britain's Got Talent",
+  'das-supertalent':    'Das Supertalent',
+  'annet':              'Annet',
+}
+
+export const resultLabels: Record<string, string> = {
+  'fooled':         '✅ Fooled Us',
+  'winner':         '🥇 Vinner',
+  'second':         '🥈 2. plass',
+  'third':          '🥉 3. plass',
+  'finalist':       '🏅 Finalist',
+  'golden-buzzer':  '⭐ Gullknapp',
+  'semifinalist':   '🎯 Semifinalist',
+  'not_fooled':     '✖️ Not Fooled',
+  'participant':    '📋 Deltaker',
+}
+
+// ── Spørringer: TV-opptreden ─────────────────────────────────────
+
+// Alle opptredener — til oversiktssiden
+export async function getAllTvAppearances(): Promise<TvAppearance[]> {
+  return sanityClient.fetch(`
+    *[_type == "tvAppearance"] | order(year desc, show asc) {
+      _id,
+      "slug": slug.current,
+      show, showCountry, year, season, episode, episodeTitle,
+      result,
+      featuredImage { asset->{ _ref, url }, alt },
+      magician-> {
+        _id, name, "slug": slug.current,
+        artistName, nationality, years, shortBio,
+        mainImage { asset->{ _ref, url }, alt }
+      }
+    }
+  `)
+}
+
+// Én opptreden via slug — til detaljsiden
+export async function getTvAppearanceBySlug(slug: string): Promise<TvAppearance | null> {
+  return sanityClient.fetch(`
+    *[_type == "tvAppearance" && slug.current == $slug][0] {
+      _id,
+      "slug": slug.current,
+      show, showCountry, year, season, episode, episodeTitle,
+      result, description, videoUrl,
+      featuredImage { asset->{ _ref, url }, alt, caption },
+      magician-> {
+        _id, name, "slug": slug.current,
+        artistName, nationality, years, shortBio,
+        mainImage { asset->{ _ref, url }, alt },
+        tags,
+        links[] {
+          label, type, url,
+          "internalSlug": internalRef->slug.current
+        }
+      }
+    }
+  `, { slug })
+}
+
+// Alle opptredener for én magiker — brukes på biography-detaljsiden
+export async function getTvAppearancesByMagician(magicianId: string): Promise<TvAppearance[]> {
+  return sanityClient.fetch(`
+    *[_type == "tvAppearance" && magician._ref == $magicianId] | order(year asc) {
+      _id,
+      "slug": slug.current,
+      show, year, season, episode, episodeTitle,
+      result,
+      featuredImage { asset->{ _ref, url }, alt }
+    }
+  `, { magicianId })
+}
+
+// Statiske stier for [slug].astro
+export async function getTvAppearancePaths() {
+  const appearances = await sanityClient.fetch(`
+    *[_type == "tvAppearance"] { "slug": slug.current }
+  `)
+  return appearances
+    .filter((a: { slug?: string }) => a.slug)
+    .map((a: { slug: string }) => ({ params: { slug: a.slug } }))
+}
