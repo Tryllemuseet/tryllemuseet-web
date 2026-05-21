@@ -101,6 +101,7 @@ const isActive = (href: string) =>
               <li><a href="/bibliotek" class="dropdown-link">Bibliotek</a></li>
               <li><a href="/tryllehistorie/magiens-hvem-er-hvem" class="dropdown-link">Hvem er hvem</a></li>
               <li><a href="/ressurser/magiske-oyeblikk" class="dropdown-link dropdown-link--soon">Magiske øyeblikk</a></li>
+			  <li><a href="/tryllehistorie/nordisk-tv-magi" class="dropdown-link">Nordiske magikere på TV</a></li>
             </ul>
           </li>
 
@@ -303,21 +304,32 @@ const isActive = (href: string) =>
 
   .dropdown {
     position: absolute;
-    top: calc(100% + 8px);
+    top: calc(100% + 2px);
     left: 50%;
     transform: translateX(-50%);
-    min-width: 210px;
+    min-width: 220px;
     background: var(--burgundy-dk);
     border: 1px solid var(--gold-dark);
     border-radius: 6px;
     box-shadow: 0 8px 32px rgba(0,0,0,0.35);
-    padding: 0.4rem 0;
+    padding: 0.5rem 0;
     /* Hidden by default */
     opacity: 0;
     visibility: hidden;
     pointer-events: none;
     transform: translateX(-50%) translateY(-6px);
-    transition: opacity 160ms ease, transform 160ms ease, visibility 160ms ease;
+    /* Åpner raskt, lukker med 120ms forsinkelse så musen rekker å nå menyen */
+    transition: opacity 160ms ease, transform 160ms ease,
+                visibility 0ms 120ms;
+  }
+
+  /* Usynlig bro mellom nav-lenke og dropdown — hindrer at menyen forsvinner i gapet */
+  .dropdown::after {
+    content: '';
+    position: absolute;
+    top: -14px;
+    left: 0; right: 0;
+    height: 14px;
   }
 
   /* Arrow tip */
@@ -337,6 +349,9 @@ const isActive = (href: string) =>
     visibility: visible;
     pointer-events: auto;
     transform: translateX(-50%) translateY(0);
+    /* Ingen forsinkelse ved åpning */
+    transition: opacity 160ms ease, transform 160ms ease,
+                visibility 0ms 0ms;
   }
 
   .dropdown-link {
