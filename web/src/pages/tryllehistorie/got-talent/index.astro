@@ -1,0 +1,218 @@
+---
+// src/pages/tryllehistorie/got-talent/index.astro
+import BaseLayout from '../../../layouts/BaseLayout.astro'
+import { sanityClient, showLabels, resultLabels } from '../../../lib/sanity'
+
+const appearances = await sanityClient.fetch(`
+  *[_type == "tvAppearance" && category == "got_talent"] | order(year desc, show asc) {
+    _id,
+    "slug": slug.current,
+    show, showCountry, year, season, episode, episodeTitle,
+    result,
+    featuredImage { asset->{ url }, alt },
+    magician-> {
+      _id, name, "slug": slug.current,
+      artistName, nationality,
+      mainImage { asset->{ url }, alt }
+    }
+  }
+`)
+
+const shows     = [...new Set(appearances.map((a: any) => a.show))].filter(Boolean).sort()
+const countries = [...new Set(appearances.map((a: any) => a.magician?.nationality))].filter(Boolean).sort()
+const total     = appearances.length
+---
+
+<BaseLayout
+  title="Got Talent — Nordiske magikere — Tryllemuseet"
+  description={`${total} opptredener av nordiske tryllekunstnere i Got Talent-formater — Norske Talenter, Talang, Danmark har Talent og Talent Suomi.`}
+>
+
+  <section class="hero">
+    <div class="container">
+      <p class="section-label"><a href="/tryllehistorie" class="breadcrumb-link">Tryllehistorie</a></p>
+      <h1 class="display-title hero-title">Got Talent</h1>
+      <p class="hero-sub">
+        {total} nordiske opptredener i Norske Talenter, Talang, Danmark har Talent og Talent Suomi.
+      </p>
+    </div>
+  </section>
+
+  <div class="filter-bar-wrap">
+    <div class="container filter-bar-inner">
+      <div class="filter-group">
+        <label class="filter-label" for="filter-show">Program</label>
+        <select id="filter-show" class="filter-select">
+          <option value="">Alle programmer</option>
+          {shows.map((s: string) => (
+            <option value={s}>{showLabels[s] ?? s}</option>
+          ))}
+        </select>
+      </div>
+      <div class="filter-group">
+        <label class="filter-label" for="filter-country">Land</label>
+        <select id="filter-country" class="filter-select">
+          <option value="">Alle land</option>
+          {countries.map((c: string) => (
+            <option value={c}>{c}</option>
+          ))}
+        </select>
+      </div>
+      <div class="filter-group">
+        <label class="filter-label" for="filter-result">Resultat</label>
+        <select id="filter-result" class="filter-select">
+          <option value="">Alle resultater</option>
+          <option value="winner">🥇 Vinner</option>
+          <option value="golden-buzzer">⭐ Gullknapp</option>
+          <option value="finalist">🏅 Finalist</option>
+          <option value="semifinalist">🎯 Semifinalist</option>
+          <option value="participant">📋 Deltaker</option>
+        </select>
+      </div>
+      <button class="filter-reset" id="filter-reset">Nullstill</button>
+    </div>
+  </div>
+
+  <div class="container">
+    <p class="result-count" id="result-count">Viser {total} opptredener</p>
+  </div>
+
+  <main class="container appearances-grid" id="appearances-grid">
+    {appearances.map((a: any) => (
+      <article
+        class="appearance-card"
+        data-show={a.show}
+        data-country={a.magician?.nationality ?? ''}
+        data-result={a.result}
+      >
+        <a href={`/tryllehistorie/got-talent/${a.slug}`} class="card-link">
+          <div class="card-img">
+            {a.featuredImage?.asset?.url ? (
+              <img src={a.featuredImage.asset.url} alt={a.featuredImage.alt ?? ''} loading="lazy" />
+            ) : a.magician?.mainImage?.asset?.url ? (
+              <img src={a.magician.mainImage.asset.url} alt={a.magician.mainImage.alt ?? ''} loading="lazy" />
+            ) : (
+              <div class="card-img-placeholder" aria-hidden="true">🏆</div>
+            )}
+            <div class="card-img-overlay" aria-hidden="true"></div>
+            <span class="result-badge" data-result={a.result}>
+              {resultLabels[a.result] ?? a.result}
+            </span>
+          </div>
+          <div class="card-body">
+            <p class="card-show">
+              {showLabels[a.show] ?? a.show}
+              {a.year && <span class="card-year">{a.year}</span>}
+            </p>
+            <h2 class="card-name">{a.magician?.artistName ?? a.magician?.name ?? '(ukjent)'}</h2>
+            {a.magician?.artistName && a.magician.name !== a.magician.artistName && (
+              <p class="card-fullname">{a.magician.name}</p>
+            )}
+            {a.magician?.nationality && <p class="card-nationality">{a.magician.nationality}</p>}
+            <span class="card-arrow" aria-hidden="true">Les mer →</span>
+          </div>
+        </a>
+      </article>
+    ))}
+  </main>
+
+  <div class="container no-results" id="no-results" hidden>
+    <p>Ingen opptredener matcher filteret.</p>
+    <button class="filter-reset-inline" id="filter-reset-2">Nullstill filter</button>
+  </div>
+
+  <div class="container page-nav">
+    <a href="/tryllehistorie/fool-us">Penn &amp; Teller: Fool Us →</a>
+    <a href="/tryllehistorie/historiske-opptak">Historiske opptak →</a>
+    <a href="/tryllehistorie">← Tryllehistorie</a>
+  </div>
+
+</BaseLayout>
+
+<script>
+  const cards      = Array.from(document.querySelectorAll<HTMLElement>('.appearance-card'))
+  const noResults  = document.getElementById('no-results')!
+  const countEl    = document.getElementById('result-count')!
+  const selShow    = document.getElementById('filter-show')    as HTMLSelectElement
+  const selCountry = document.getElementById('filter-country') as HTMLSelectElement
+  const selResult  = document.getElementById('filter-result')  as HTMLSelectElement
+  const btnReset   = document.getElementById('filter-reset')!
+  const btnReset2  = document.getElementById('filter-reset-2')!
+
+  function applyFilters() {
+    const show = selShow.value, country = selCountry.value, result = selResult.value
+    let visible = 0
+    cards.forEach(card => {
+      const match =
+        (!show    || card.dataset.show    === show)    &&
+        (!country || card.dataset.country === country) &&
+        (!result  || card.dataset.result  === result)
+      card.hidden = !match
+      if (match) visible++
+    })
+    noResults.hidden = visible > 0
+    countEl.textContent = `Viser ${visible} opptreden${visible !== 1 ? 'er' : ''}`
+  }
+  function resetFilters() {
+    selShow.value = ''; selCountry.value = ''; selResult.value = ''
+    applyFilters()
+  }
+  selShow.addEventListener('change', applyFilters)
+  selCountry.addEventListener('change', applyFilters)
+  selResult.addEventListener('change', applyFilters)
+  btnReset.addEventListener('click', resetFilters)
+  btnReset2.addEventListener('click', resetFilters)
+</script>
+
+<style>
+  .hero { background: var(--burgundy-dk); padding: 3.5rem 0 2.5rem; border-bottom: 2px solid var(--gold-dark); color: var(--cream); }
+  .breadcrumb-link { color: var(--gold); text-decoration: none; font-size: 0.7rem; font-weight: 600; letter-spacing: 0.2em; text-transform: uppercase; }
+  .breadcrumb-link:hover { color: var(--gold-light); }
+  .hero-title { font-size: clamp(1.8rem, 5vw, 3rem); color: var(--cream); margin: 0.5rem 0 0.75rem; }
+  .hero-sub   { font-family: var(--font-ui); font-size: 1rem; opacity: 0.8; max-width: 600px; }
+
+  .filter-bar-wrap { position: sticky; top: var(--header-h); z-index: 50; background: white; border-bottom: 1px solid var(--cream-dark); box-shadow: 0 2px 12px rgba(26,18,8,0.06); }
+  .filter-bar-inner { display: flex; flex-wrap: wrap; gap: 0.75rem; align-items: flex-end; padding: 0.75rem 1.5rem; }
+  .filter-group { display: flex; flex-direction: column; gap: 0.2rem; }
+  .filter-label { font-family: var(--font-ui); font-size: 0.65rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; color: var(--grey); }
+  .filter-select { font-family: var(--font-ui); font-size: 0.875rem; color: var(--ink); background: var(--cream); border: 1.5px solid var(--cream-dark); border-radius: 6px; padding: 0.45rem 0.75rem; cursor: pointer; min-width: 180px; }
+  .filter-select:focus { outline: none; border-color: var(--gold); }
+  .filter-reset { font-family: var(--font-ui); font-size: 0.8rem; font-weight: 600; color: var(--grey); border: 1.5px solid var(--cream-dark); border-radius: 6px; padding: 0.45rem 0.9rem; background: white; cursor: pointer; align-self: flex-end; }
+  .filter-reset:hover { color: var(--burgundy); border-color: var(--gold); }
+
+  .result-count { font-family: var(--font-ui); font-size: 0.8rem; color: var(--grey); padding: 0.75rem 0 0.25rem; }
+
+  .appearances-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 1.5rem; padding-bottom: 1rem; }
+  .appearance-card { border-radius: 6px; overflow: hidden; border: 1px solid var(--cream-dark); background: white; transition: transform 220ms ease, box-shadow 220ms ease, border-color 220ms ease; }
+  .appearance-card:hover { transform: translateY(-4px); box-shadow: 0 8px 28px rgba(107,15,26,0.14); border-color: var(--gold-light); }
+  .card-link { display: flex; flex-direction: column; text-decoration: none; color: var(--ink); height: 100%; }
+
+  .card-img { position: relative; aspect-ratio: 3/2; overflow: hidden; background: var(--burgundy-dk); flex-shrink: 0; }
+  .card-img img { width: 100%; height: 100%; object-fit: cover; transition: transform 400ms ease; }
+  .appearance-card:hover .card-img img { transform: scale(1.04); }
+  .card-img-placeholder { display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; font-size: 3rem; background: linear-gradient(160deg, var(--burgundy-dk), #2a1208); }
+  .card-img-overlay { position: absolute; inset: 0; background: linear-gradient(to bottom, transparent 50%, rgba(26,18,8,0.5) 100%); pointer-events: none; }
+
+  .result-badge { position: absolute; top: 0.6rem; right: 0.6rem; font-family: var(--font-ui); font-size: 0.65rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; padding: 0.2rem 0.5rem; border-radius: 3px; background: rgba(26,18,8,0.75); color: var(--cream); backdrop-filter: blur(4px); }
+  .result-badge[data-result="winner"]        { background: rgba(161,128,0,0.85); color: #fef08a; }
+  .result-badge[data-result="golden-buzzer"] { background: rgba(161,128,0,0.85); color: #fef08a; }
+
+  .card-body { padding: 1rem 1.1rem 1.2rem; display: flex; flex-direction: column; gap: 0.15rem; flex: 1; }
+  .card-show { font-family: var(--font-ui); font-size: 0.7rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; color: var(--gold-dark); display: flex; align-items: center; gap: 0.4rem; }
+  .card-year { font-weight: 400; color: var(--grey); letter-spacing: 0; }
+  .card-name { font-family: var(--font-display); font-size: 1rem; color: var(--burgundy); letter-spacing: 0.02em; line-height: 1.25; }
+  .card-fullname { font-family: var(--font-ui); font-size: 0.75rem; color: var(--grey); font-style: italic; }
+  .card-nationality { font-family: var(--font-ui); font-size: 0.75rem; color: var(--grey); }
+  .card-arrow { font-family: var(--font-ui); font-size: 0.72rem; font-weight: 700; color: var(--gold-dark); margin-top: auto; padding-top: 0.6rem; opacity: 0; transition: opacity 180ms; }
+  .appearance-card:hover .card-arrow { opacity: 1; }
+
+  .no-results { padding: 3rem 0; text-align: center; font-family: var(--font-ui); color: var(--ink-mid); }
+  .filter-reset-inline { margin-top: 0.75rem; font-family: var(--font-ui); font-size: 0.875rem; font-weight: 600; color: var(--burgundy); background: none; border: 1px solid var(--gold-dark); border-radius: 6px; padding: 0.45rem 1rem; cursor: pointer; }
+
+  .page-nav { display: flex; flex-wrap: wrap; gap: 0.75rem; padding: 1.5rem 0 3rem; font-family: var(--font-ui); font-size: 0.875rem; }
+  .page-nav a { color: var(--grey); text-decoration: none; border: 1px solid var(--cream-dark); padding: 0.4rem 1rem; border-radius: var(--radius); transition: color 150ms, border-color 150ms; }
+  .page-nav a:hover { color: var(--burgundy); border-color: var(--gold); }
+
+  @media (max-width: 700px) { .appearances-grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 1rem; } }
+  @media (max-width: 480px) { .appearances-grid { grid-template-columns: 1fr 1fr; } }
+</style>

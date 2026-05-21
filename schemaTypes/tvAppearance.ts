@@ -1,3 +1,4 @@
+// schemaTypes/tvAppearance.ts
 import { defineType, defineField } from 'sanity'
 
 export const tvAppearance = defineType({
@@ -35,7 +36,23 @@ export const tvAppearance = defineType({
       validation: R => R.required(),
     }),
 
-    // ── 2. PROGRAM ────────────────────────────────────────────────
+    // ── 2. KATEGORI ───────────────────────────────────────────────
+    defineField({
+      name: 'category',
+      title: 'Kategori',
+      type: 'string',
+      options: {
+        list: [
+          { title: '🏆 Got Talent (talentkonkurranse)', value: 'got_talent' },
+          { title: '🎯 Penn & Teller: Fool Us',         value: 'fool_us'   },
+        ],
+        layout: 'radio',
+      },
+      validation: R => R.required(),
+      description: 'Avgjør hvilken underseksjon opptredenen vises i.',
+    }),
+
+    // ── 3. PROGRAM ────────────────────────────────────────────────
     defineField({
       name: 'show',
       title: 'TV-program',
@@ -102,7 +119,7 @@ export const tvAppearance = defineType({
       description: "F.eks. \"We've Got a Raccoon Problem\"",
     }),
 
-    // ── 3. RESULTAT ───────────────────────────────────────────────
+    // ── 4. RESULTAT ───────────────────────────────────────────────
     defineField({
       name: 'result',
       title: 'Resultat',
@@ -124,7 +141,7 @@ export const tvAppearance = defineType({
       validation: R => R.required(),
     }),
 
-    // ── 4. INNHOLD ────────────────────────────────────────────────
+    // ── 5. INNHOLD ────────────────────────────────────────────────
     defineField({
       name: 'description',
       title: 'Beskrivelse av opptredenen',
@@ -139,16 +156,8 @@ export const tvAppearance = defineType({
       type: 'image',
       options: { hotspot: true },
       fields: [
-        defineField({
-          name: 'alt',
-          title: 'Alt-tekst',
-          type: 'string',
-        }),
-        defineField({
-          name: 'caption',
-          title: 'Bildetekst',
-          type: 'string',
-        }),
+        defineField({ name: 'alt',     title: 'Alt-tekst',  type: 'string' }),
+        defineField({ name: 'caption', title: 'Bildetekst', type: 'string' }),
       ],
     }),
 
@@ -159,7 +168,7 @@ export const tvAppearance = defineType({
       description: 'YouTube, NRK eller annen videolenke',
     }),
 
-    // ── 5. REDAKSJONELT ───────────────────────────────────────────
+    // ── 6. REDAKSJONELT ──────────────────────────────────────────
     defineField({
       name: 'editorNote',
       title: 'Redaksjonell merknad (intern)',
@@ -189,30 +198,22 @@ export const tvAppearance = defineType({
       show:         'show',
       year:         'year',
       result:       'result',
+      category:     'category',
       media:        'featuredImage',
     },
-    prepare({ magicianName, show, year, result, media }: {
-      magicianName?: string
-      show?: string
-      year?: number
-      result?: string
-      media?: unknown
+    prepare({ magicianName, show, year, result, category, media }: {
+      magicianName?: string; show?: string; year?: number
+      result?: string; category?: string; media?: unknown
     }) {
       const resultEmoji: Record<string, string> = {
-        fooled:           '✅',
-        winner:           '🥇',
-        second:           '🥈',
-        third:            '🥉',
-        finalist:         '🏅',
-        'golden-buzzer':  '⭐',
-        semifinalist:     '🎯',
-        not_fooled:       '✖️',
-        participant:      '📋',
+        fooled: '✅', winner: '🥇', second: '🥈', third: '🥉',
+        finalist: '🏅', 'golden-buzzer': '⭐', semifinalist: '🎯',
+        not_fooled: '✖️', participant: '📋',
       }
-      const emoji = result ? (resultEmoji[result] ?? '') : ''
+      const catEmoji = category === 'fool_us' ? '🎯' : '🏆'
       return {
-        title:    `${magicianName ?? '(ukjent)'} — ${show ?? ''}`,
-        subtitle: `${year ?? ''} ${emoji}`,
+        title:    `${catEmoji} ${magicianName ?? '(ukjent)'} — ${show ?? ''}`,
+        subtitle: `${year ?? ''} ${resultEmoji[result ?? ''] ?? ''}`,
         media,
       }
     },

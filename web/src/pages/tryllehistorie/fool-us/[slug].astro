@@ -1,0 +1,253 @@
+---
+// src/pages/tryllehistorie/fool-us/[slug].astro
+import BaseLayout from '../../../layouts/BaseLayout.astro'
+import { sanityClient, showLabels, resultLabels } from '../../../lib/sanity'
+import { PortableText } from 'astro-portabletext'
+
+export async function getStaticPaths() {
+  const slugs = await sanityClient.fetch(`
+    *[_type == "tvAppearance" && category == "fool_us"] { "slug": slug.current }
+  `)
+  return slugs.filter((s: any) => s.slug).map((s: any) => ({ params: { slug: s.slug } }))
+}
+
+const { slug } = Astro.params
+
+const a = await sanityClient.fetch(`
+  *[_type == "tvAppearance" && category == "fool_us" && slug.current == $slug][0] {
+    _id, "slug": slug.current,
+    show, showCountry, year, season, episode, episodeTitle,
+    result, description, videoUrl,
+    featuredImage { asset->{ url }, alt, caption },
+    magician-> {
+      _id, name, "slug": slug.current,
+      artistName, nationality, years, shortBio, tags,
+      mainImage { asset->{ url }, alt },
+      links[] { label, type, url, "internalSlug": internalRef->slug.current }
+    }
+  }
+`, { slug })
+
+if (!a) return Astro.redirect('/tryllehistorie/fool-us')
+
+const otherAppearances = await sanityClient.fetch(`
+  *[_type == "tvAppearance" && slug.current != $slug && magician._ref == $magicianId] | order(year asc) {
+    "slug": slug.current, category, show, year, result
+  }
+`, { slug, magicianId: a.magician._id })
+
+function youtubeEmbedUrl(url: string): string | null {
+  const m = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&?]+)/)
+  return m ? `https://www.youtube.com/embed/${m[1]}` : null
+}
+const embedUrl    = a.videoUrl ? youtubeEmbedUrl(a.videoUrl) : null
+const showLabel   = showLabels[a.show]   ?? a.show
+const resultLabel = resultLabels[a.result] ?? a.result
+const fooled      = a.result === 'fooled'
+---
+
+<BaseLayout
+  title={`${a.magician?.artistName ?? a.magician?.name} — Fool Us S${a.season}E${a.episode} ${a.year} — Tryllemuseet`}
+  description={`${a.magician?.name} i Penn & Teller: Fool Us sesong ${a.season}, episode ${a.episode} (${a.year}). ${resultLabel}.`}
+>
+
+  <nav class="breadcrumb container">
+    <a href="/tryllehistorie">Tryllehistorie</a>
+    <span>›</span>
+    <a href="/tryllehistorie/fool-us">Penn &amp; Teller: Fool Us</a>
+    <span>›</span>
+    <span aria-current="page">{a.magician?.artistName ?? a.magician?.name}</span>
+  </nav>
+
+  <section class="detail-hero" class:list={[{ 'hero--fooled': fooled }]}>
+    {(a.featuredImage?.asset?.url || a.magician?.mainImage?.asset?.url) && (
+      <div class="hero-img-wrap">
+        <img src={a.featuredImage?.asset?.url ?? a.magician?.mainImage?.asset?.url} alt="" class="hero-img" />
+        <div class="hero-img-overlay"></div>
+      </div>
+    )}
+    <div class="container hero-content">
+      <p class="section-label hero-show">Penn &amp; Teller: Fool Us</p>
+      <h1 class="display-title hero-title">{a.magician?.artistName ?? a.magician?.name}</h1>
+      {a.magician?.artistName && a.magician.name !== a.magician.artistName && (
+        <p class="hero-fullname">{a.magician.name}</p>
+      )}
+      <div class="hero-meta">
+        <span class="result-pill" data-result={a.result}>{resultLabel}</span>
+        {a.year && <span class="meta-item">{a.year}</span>}
+        {a.season && <span class="meta-item">Sesong {a.season}</span>}
+        {a.episode && <span class="meta-item">Episode {a.episode}</span>}
+        {a.magician?.nationality && <span class="meta-item">{a.magician.nationality}</span>}
+      </div>
+      {a.episodeTitle && <p class="hero-episode">«{a.episodeTitle}»</p>}
+    </div>
+  </section>
+
+  <div class="container detail-body">
+    <div class="detail-main">
+
+      {a.description?.length > 0 && (
+        <section class="detail-section">
+          <h2 class="detail-heading">Om opptredenen</h2>
+          <div class="prose"><PortableText value={a.description} /></div>
+        </section>
+      )}
+
+      {embedUrl && (
+        <section class="detail-section">
+          <h2 class="detail-heading">Se opptredenen</h2>
+          <div class="video-wrap">
+            <iframe src={embedUrl} title={`${a.magician?.name} — Fool Us S${a.season}E${a.episode}`}
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowfullscreen loading="lazy"></iframe>
+          </div>
+        </section>
+      )}
+      {!embedUrl && a.videoUrl && (
+        <section class="detail-section">
+          <a href={a.videoUrl} class="video-link" target="_blank" rel="noopener">▶ Se opptredenen ↗</a>
+        </section>
+      )}
+
+      {otherAppearances.length > 0 && (
+        <section class="detail-section">
+          <h2 class="detail-heading">Andre opptredener av {a.magician?.artistName ?? a.magician?.name}</h2>
+          <ul class="other-list">
+            {otherAppearances.map((o: any) => {
+              const href = o.category === 'got_talent'
+                ? `/tryllehistorie/got-talent/${o.slug}`
+                : `/tryllehistorie/fool-us/${o.slug}`
+              return (
+                <li>
+                  <a href={href} class="other-link">
+                    <span class="other-show">{showLabels[o.show] ?? o.show}</span>
+                    <span class="other-year">{o.year}</span>
+                    <span class="other-result">{resultLabels[o.result] ?? o.result}</span>
+                    <span class="other-arrow">→</span>
+                  </a>
+                </li>
+              )
+            })}
+          </ul>
+        </section>
+      )}
+    </div>
+
+    <aside class="detail-sidebar">
+      {a.magician?.mainImage?.asset?.url && (
+        <div class="sidebar-img-wrap">
+          <img src={a.magician.mainImage.asset.url} alt={a.magician.mainImage.alt ?? a.magician.name} class="sidebar-img" />
+        </div>
+      )}
+      <div class="sidebar-card">
+        <h2 class="sidebar-name">{a.magician?.artistName ?? a.magician?.name}</h2>
+        {a.magician?.artistName && a.magician.name !== a.magician.artistName && (
+          <p class="sidebar-fullname">{a.magician.name}</p>
+        )}
+        {a.magician?.nationality && (
+          <p class="sidebar-meta">{a.magician.nationality}{a.magician?.years ? ` · ${a.magician.years}` : ''}</p>
+        )}
+        {a.magician?.shortBio && <p class="sidebar-bio">{a.magician.shortBio}</p>}
+        {a.magician?.tags?.length > 0 && (
+          <div class="sidebar-tags">
+            {a.magician.tags.map((tag: string) => <span class="sidebar-tag">{tag}</span>)}
+          </div>
+        )}
+        {a.magician?.links?.length > 0 && (
+          <ul class="sidebar-links">
+            {a.magician.links.map((link: any) => {
+              const href = link.type === 'article' && link.internalSlug
+                ? `/tryllehistorie/fool-us/${link.internalSlug}`
+                : link.url
+              return href ? (
+                <li>
+                  <a href={href} class="sidebar-link"
+                    target={link.type !== 'article' ? '_blank' : undefined}
+                    rel={link.type !== 'article' ? 'noopener' : undefined}>
+                    {link.label}{link.type !== 'article' ? ' ↗' : ''}
+                  </a>
+                </li>
+              ) : null
+            })}
+          </ul>
+        )}
+        <a href={`/tryllehistorie/magiens-hvem-er-hvem/${a.magician?.slug}`} class="sidebar-profile-link">
+          Se full profil →
+        </a>
+      </div>
+    </aside>
+  </div>
+
+  <div class="container back-nav">
+    <a href="/tryllehistorie/fool-us">← Tilbake til Fool Us</a>
+  </div>
+
+</BaseLayout>
+
+<style>
+  .breadcrumb { display: flex; align-items: center; gap: 0.4rem; flex-wrap: wrap; padding-top: 1rem; font-family: var(--font-ui); font-size: 0.78rem; color: var(--grey); }
+  .breadcrumb a { color: var(--grey); text-decoration: none; } .breadcrumb a:hover { color: var(--burgundy); }
+
+  .detail-hero { position: relative; background: var(--burgundy-dk); color: var(--cream); padding: 3rem 0 2.5rem; border-bottom: 2px solid var(--gold-dark); overflow: hidden; }
+  .hero--fooled { border-bottom-color: #166534; }
+  .hero-img-wrap { position: absolute; inset: 0; z-index: 0; }
+  .hero-img { width: 100%; height: 100%; object-fit: cover; object-position: top center; opacity: 0.22; }
+  .hero-img-overlay { position: absolute; inset: 0; background: linear-gradient(to right, var(--burgundy-dk) 40%, transparent 100%); }
+  .hero-content { position: relative; z-index: 1; max-width: 680px; }
+  .hero-show { color: var(--gold); margin-bottom: 0.5rem; }
+  .hero-title { font-size: clamp(2rem, 5vw, 3.2rem); color: var(--cream); margin-bottom: 0.25rem; }
+  .hero-fullname { font-family: var(--font-ui); font-size: 1rem; opacity: 0.7; }
+  .hero-meta { display: flex; align-items: center; flex-wrap: wrap; gap: 0.5rem; margin: 0.75rem 0; }
+  .result-pill { font-family: var(--font-ui); font-size: 0.75rem; font-weight: 700; padding: 0.25rem 0.75rem; border-radius: 99px; background: rgba(212,168,67,0.2); color: var(--gold-light); border: 1px solid rgba(212,168,67,0.35); }
+  .result-pill[data-result="fooled"]    { background: rgba(22,101,52,0.3); color: #86efac; border-color: rgba(22,101,52,0.5); }
+  .result-pill[data-result="not_fooled"]{ background: rgba(26,18,8,0.3); color: var(--cream); opacity: 0.7; border-color: transparent; }
+  .meta-item { font-family: var(--font-ui); font-size: 0.8rem; color: var(--cream); opacity: 0.7; }
+  .hero-episode { font-family: var(--font-body); font-size: 0.9rem; font-style: italic; opacity: 0.75; }
+
+  .detail-body { display: grid; grid-template-columns: 1fr 300px; gap: 3rem; padding: 2.5rem 0 4rem; align-items: start; }
+  .detail-section { margin-bottom: 2.5rem; }
+  .detail-heading { font-family: var(--font-display); font-size: 1.1rem; color: var(--burgundy); letter-spacing: 0.04em; margin-bottom: 1rem; padding-bottom: 0.4rem; border-bottom: 1px solid var(--cream-dark); }
+  .prose { font-family: var(--font-body); font-size: 1rem; line-height: 1.75; color: var(--ink-mid); }
+  .prose p { margin-bottom: 0.75rem; }
+
+  .video-wrap { position: relative; aspect-ratio: 16/9; border-radius: 6px; overflow: hidden; background: var(--burgundy-dk); }
+  .video-wrap iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: none; }
+  .video-link { display: inline-flex; align-items: center; gap: 0.4rem; font-family: var(--font-ui); font-size: 0.9rem; font-weight: 600; color: var(--burgundy); border: 1.5px solid var(--gold-dark); padding: 0.6rem 1.25rem; border-radius: 6px; text-decoration: none; }
+
+  .other-list { list-style: none; display: flex; flex-direction: column; gap: 1px; background: var(--cream-dark); border: 1px solid var(--cream-dark); border-radius: 6px; overflow: hidden; }
+  .other-link { display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; background: white; text-decoration: none; color: var(--ink); font-family: var(--font-ui); font-size: 0.875rem; transition: background 150ms; }
+  .other-link:hover { background: var(--cream); }
+  .other-show { font-weight: 600; color: var(--burgundy); flex: 1; }
+  .other-year { color: var(--grey); }
+  .other-result { color: var(--gold-dark); font-size: 0.8rem; }
+  .other-arrow { color: var(--gold-dark); margin-left: auto; }
+
+  .sidebar-img-wrap { border-radius: 6px; overflow: hidden; aspect-ratio: 3/4; margin-bottom: 1rem; }
+  .sidebar-img { width: 100%; height: 100%; object-fit: cover; }
+  .sidebar-card { background: white; border: 1px solid var(--cream-dark); border-radius: 6px; padding: 1.25rem; }
+  .sidebar-name { font-family: var(--font-display); font-size: 1.1rem; color: var(--burgundy); letter-spacing: 0.03em; margin-bottom: 0.15rem; }
+  .sidebar-fullname { font-family: var(--font-ui); font-size: 0.8rem; color: var(--grey); font-style: italic; }
+  .sidebar-meta { font-family: var(--font-ui); font-size: 0.8rem; color: var(--grey); margin-bottom: 0.75rem; }
+  .sidebar-bio { font-family: var(--font-body); font-size: 0.875rem; color: var(--ink-mid); line-height: 1.6; margin-bottom: 0.75rem; }
+  .sidebar-tags { display: flex; flex-wrap: wrap; gap: 0.3rem; margin-bottom: 1rem; }
+  .sidebar-tag { font-family: var(--font-ui); font-size: 0.65rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; background: var(--cream-dark); color: var(--ink-mid); padding: 0.1rem 0.4rem; border-radius: 2px; }
+  .sidebar-links { list-style: none; display: flex; flex-direction: column; gap: 0.25rem; margin-bottom: 1rem; border-top: 1px solid var(--cream-dark); padding-top: 0.75rem; }
+  .sidebar-link { font-family: var(--font-ui); font-size: 0.8rem; color: var(--burgundy); text-decoration: none; }
+  .sidebar-link:hover { color: var(--gold-dark); }
+  .sidebar-profile-link { display: block; text-align: center; font-family: var(--font-ui); font-size: 0.8rem; font-weight: 600; color: var(--cream); background: var(--burgundy); padding: 0.6rem 1rem; border-radius: 4px; text-decoration: none; margin-top: 0.5rem; }
+  .sidebar-profile-link:hover { background: var(--burgundy-dk); }
+
+  .back-nav { padding: 0 0 3rem; font-family: var(--font-ui); font-size: 0.875rem; }
+  .back-nav a { color: var(--grey); text-decoration: none; border: 1px solid var(--cream-dark); padding: 0.4rem 1rem; border-radius: var(--radius); }
+  .back-nav a:hover { color: var(--burgundy); border-color: var(--gold); }
+
+  @media (max-width: 900px) {
+    .detail-body { grid-template-columns: 1fr; gap: 2rem; }
+    .detail-sidebar { order: -1; display: grid; grid-template-columns: 160px 1fr; gap: 1rem; }
+    .sidebar-img-wrap { margin-bottom: 0; }
+  }
+  @media (max-width: 560px) {
+    .detail-sidebar { grid-template-columns: 1fr; }
+    .sidebar-img-wrap { display: none; }
+  }
+</style>

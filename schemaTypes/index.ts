@@ -11,6 +11,7 @@ import { barnPage }       from './barnPage'
 import { omOssPage }      from './omOssPage'
 import artifact           from './artifact'
 import { tvAppearance }   from './tvAppearance'
+import { historicalClip } from './historicalClip'
 
 export const schemaTypes = [
   // Sidetyper
@@ -21,6 +22,7 @@ export const schemaTypes = [
   magician,
   biography,
   tvAppearance,
+  historicalClip,
   book,
   event,
   artifact,

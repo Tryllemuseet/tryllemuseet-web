@@ -1,0 +1,218 @@
+---
+// src/pages/tryllehistorie/historiske-opptak/index.astro
+import BaseLayout from '../../../layouts/BaseLayout.astro'
+import { sanityClient } from '../../../lib/sanity'
+
+const clips = await sanityClient.fetch(`
+  *[_type == "historicalClip"] | order(year asc) {
+    _id,
+    "slug": slug.current,
+    title, year, broadcaster, show, category,
+    featuredImage { asset->{ url }, alt },
+    magician-> {
+      _id, name, "slug": slug.current,
+      artistName, nationality,
+      mainImage { asset->{ url }, alt }
+    }
+  }
+`)
+
+const broadcasters = [...new Set(clips.map((c: any) => c.broadcaster))].filter(Boolean).sort()
+const magicians    = [...new Set(clips.map((c: any) => c.magician?.artistName ?? c.magician?.name))].filter(Boolean).sort()
+const total        = clips.length
+
+const categoryLabels: Record<string, string> = {
+  tv_show:      'TV-opptreden',
+  entertainment:'Underholdningsprogram',
+  children:     'Barneprogram',
+  news:         'Nyheter / reportasje',
+  competition:  'Mesterskap',
+  historical:   'Historisk begivenhet',
+  show:         'Konsert / show',
+}
+
+const broadcasterLabels: Record<string, string> = {
+  nrk:        'NRK',
+  tv2:        'TV 2',
+  filmavisen: 'Filmavisen',
+  annet:      'Annet',
+  ukjent:     'Ukjent',
+}
+---
+
+<BaseLayout
+  title="Historiske TV-opptak — Norsk tryllekunst — Tryllemuseet"
+  description={`${total} historiske TV-opptak av norske tryllekunstnere fra NRK, Filmavisen og andre arkiver.`}
+>
+
+  <section class="hero">
+    <div class="container">
+      <p class="section-label"><a href="/tryllehistorie" class="breadcrumb-link">Tryllehistorie</a></p>
+      <h1 class="display-title hero-title">Historiske TV-opptak</h1>
+      <p class="hero-sub">
+        {total} opptak fra NRK, Filmavisen og private arkiver — norsk tryllekunst
+        dokumentert på film fra 1955 til i dag.
+      </p>
+      <p class="hero-credit">
+        Mange opptak er digitalisert og bevart av <strong>Egil «Egelo» Berg</strong>
+        via <a href="https://www.youtube.com/@Egelosvideosamling" target="_blank" rel="noopener" class="hero-link">@Egelosvideosamling</a>.
+      </p>
+    </div>
+  </section>
+
+  <div class="filter-bar-wrap">
+    <div class="container filter-bar-inner">
+      <div class="filter-group">
+        <label class="filter-label" for="filter-broadcaster">Kanal</label>
+        <select id="filter-broadcaster" class="filter-select">
+          <option value="">Alle kanaler</option>
+          {broadcasters.map((b: string) => (
+            <option value={b}>{broadcasterLabels[b] ?? b}</option>
+          ))}
+        </select>
+      </div>
+      <div class="filter-group">
+        <label class="filter-label" for="filter-magician">Magiker</label>
+        <select id="filter-magician" class="filter-select">
+          <option value="">Alle magikere</option>
+          {magicians.map((m: string) => <option value={m}>{m}</option>)}
+        </select>
+      </div>
+      <button class="filter-reset" id="filter-reset">Nullstill</button>
+    </div>
+  </div>
+
+  <div class="container">
+    <p class="result-count" id="result-count">Viser {total} opptak</p>
+  </div>
+
+  <main class="container clips-list" id="clips-grid">
+    {clips.map((c: any) => (
+      <article
+        class="clip-row"
+        data-broadcaster={c.broadcaster ?? ''}
+        data-magician={c.magician?.artistName ?? c.magician?.name ?? ''}
+      >
+        <a href={`/tryllehistorie/historiske-opptak/${c.slug}`} class="row-link">
+
+          <div class="row-img">
+            {c.featuredImage?.asset?.url ? (
+              <img src={c.featuredImage.asset.url} alt={c.featuredImage.alt ?? ''} loading="lazy" />
+            ) : c.magician?.mainImage?.asset?.url ? (
+              <img src={c.magician.mainImage.asset.url} alt="" loading="lazy" />
+            ) : (
+              <div class="row-img-placeholder" aria-hidden="true">📼</div>
+            )}
+          </div>
+
+          <div class="row-body">
+            <p class="row-meta">
+              {c.year && <span class="row-year">{c.year}</span>}
+              {c.broadcaster && <span>{broadcasterLabels[c.broadcaster] ?? c.broadcaster}</span>}
+              {c.category && <span class="row-cat">{categoryLabels[c.category] ?? c.category}</span>}
+            </p>
+            <h2 class="row-title">{c.title}</h2>
+            {c.show && <p class="row-show">{c.show}</p>}
+            {c.magician && (
+              <p class="row-magician">{c.magician.artistName ?? c.magician.name}</p>
+            )}
+          </div>
+
+          <span class="row-arrow" aria-hidden="true">→</span>
+        </a>
+      </article>
+    ))}
+  </main>
+
+  <div class="container no-results" id="no-results" hidden>
+    <p>Ingen opptak matcher filteret.</p>
+    <button class="filter-reset-inline" id="filter-reset-2">Nullstill filter</button>
+  </div>
+
+  <div class="container page-nav">
+    <a href="/tryllehistorie/got-talent">Got Talent →</a>
+    <a href="/tryllehistorie/fool-us">Fool Us →</a>
+    <a href="/tryllehistorie">← Tryllehistorie</a>
+  </div>
+
+</BaseLayout>
+
+<script>
+  const rows     = Array.from(document.querySelectorAll<HTMLElement>('.clip-row'))
+  const noRes    = document.getElementById('no-results')!
+  const countEl  = document.getElementById('result-count')!
+  const selBcast = document.getElementById('filter-broadcaster') as HTMLSelectElement
+  const selMag   = document.getElementById('filter-magician')    as HTMLSelectElement
+  const btnReset = document.getElementById('filter-reset')!
+  const btnReset2= document.getElementById('filter-reset-2')!
+
+  function applyFilters() {
+    const bc = selBcast.value, mag = selMag.value
+    let visible = 0
+    rows.forEach(row => {
+      const match =
+        (!bc  || row.dataset.broadcaster === bc) &&
+        (!mag || row.dataset.magician    === mag)
+      row.hidden = !match
+      if (match) visible++
+    })
+    noRes.hidden = visible > 0
+    countEl.textContent = `Viser ${visible} opptak`
+  }
+  function resetFilters() { selBcast.value = ''; selMag.value = ''; applyFilters() }
+  selBcast.addEventListener('change', applyFilters)
+  selMag.addEventListener('change', applyFilters)
+  btnReset.addEventListener('click', resetFilters)
+  btnReset2.addEventListener('click', resetFilters)
+</script>
+
+<style>
+  .hero { background: var(--burgundy-dk); padding: 3.5rem 0 2.5rem; border-bottom: 2px solid var(--gold-dark); color: var(--cream); }
+  .breadcrumb-link { color: var(--gold); text-decoration: none; font-size: 0.7rem; font-weight: 600; letter-spacing: 0.2em; text-transform: uppercase; }
+  .hero-title { font-size: clamp(1.8rem, 5vw, 3rem); color: var(--cream); margin: 0.5rem 0 0.75rem; }
+  .hero-sub { font-family: var(--font-ui); font-size: 1rem; opacity: 0.8; max-width: 600px; margin-bottom: 0.5rem; }
+  .hero-credit { font-family: var(--font-ui); font-size: 0.85rem; opacity: 0.65; }
+  .hero-credit strong { color: var(--gold-light); opacity: 1; font-weight: 600; }
+  .hero-link { color: var(--gold-light); }
+
+  .filter-bar-wrap { position: sticky; top: var(--header-h); z-index: 50; background: white; border-bottom: 1px solid var(--cream-dark); box-shadow: 0 2px 12px rgba(26,18,8,0.06); }
+  .filter-bar-inner { display: flex; flex-wrap: wrap; gap: 0.75rem; align-items: flex-end; padding: 0.75rem 1.5rem; }
+  .filter-group { display: flex; flex-direction: column; gap: 0.2rem; }
+  .filter-label { font-family: var(--font-ui); font-size: 0.65rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; color: var(--grey); }
+  .filter-select { font-family: var(--font-ui); font-size: 0.875rem; color: var(--ink); background: var(--cream); border: 1.5px solid var(--cream-dark); border-radius: 6px; padding: 0.45rem 0.75rem; cursor: pointer; min-width: 180px; }
+  .filter-reset { font-family: var(--font-ui); font-size: 0.8rem; font-weight: 600; color: var(--grey); border: 1.5px solid var(--cream-dark); border-radius: 6px; padding: 0.45rem 0.9rem; background: white; cursor: pointer; align-self: flex-end; }
+  .filter-reset:hover { color: var(--burgundy); border-color: var(--gold); }
+
+  .result-count { font-family: var(--font-ui); font-size: 0.8rem; color: var(--grey); padding: 0.75rem 0 0.25rem; }
+
+  .clips-list { display: flex; flex-direction: column; gap: 1px; background: var(--cream-dark); border: 1px solid var(--cream-dark); border-radius: 8px; overflow: hidden; margin-bottom: 1rem; }
+  .clip-row { background: white; transition: background 150ms; }
+  .clip-row:hover { background: var(--cream); }
+
+  .row-link { display: grid; grid-template-columns: 80px 1fr auto; align-items: center; gap: 1rem; padding: 0.875rem 1rem; text-decoration: none; color: var(--ink); }
+  .row-img { width: 80px; height: 60px; border-radius: 4px; overflow: hidden; background: var(--burgundy-dk); flex-shrink: 0; }
+  .row-img img { width: 100%; height: 100%; object-fit: cover; }
+  .row-img-placeholder { display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; font-size: 1.5rem; background: linear-gradient(160deg, var(--burgundy-dk), #2a1208); }
+
+  .row-meta { font-family: var(--font-ui); font-size: 0.7rem; color: var(--grey); display: flex; gap: 0.4rem; flex-wrap: wrap; margin-bottom: 0.2rem; }
+  .row-year { font-weight: 700; color: var(--gold-dark); }
+  .row-cat { font-style: italic; }
+  .row-title { font-family: var(--font-display); font-size: 0.95rem; color: var(--burgundy); letter-spacing: 0.02em; line-height: 1.3; }
+  .row-show { font-family: var(--font-ui); font-size: 0.78rem; color: var(--ink-mid); font-style: italic; }
+  .row-magician { font-family: var(--font-ui); font-size: 0.75rem; color: var(--grey); margin-top: 0.1rem; }
+
+  .row-arrow { font-size: 0.85rem; color: var(--gold-dark); opacity: 0; transition: opacity 150ms, transform 150ms; }
+  .clip-row:hover .row-arrow { opacity: 1; transform: translateX(3px); }
+
+  .no-results { padding: 3rem 0; text-align: center; font-family: var(--font-ui); color: var(--ink-mid); }
+  .filter-reset-inline { margin-top: 0.75rem; font-family: var(--font-ui); font-size: 0.875rem; font-weight: 600; color: var(--burgundy); background: none; border: 1px solid var(--gold-dark); border-radius: 6px; padding: 0.45rem 1rem; cursor: pointer; }
+
+  .page-nav { display: flex; flex-wrap: wrap; gap: 0.75rem; padding: 1.5rem 0 3rem; font-family: var(--font-ui); font-size: 0.875rem; }
+  .page-nav a { color: var(--grey); text-decoration: none; border: 1px solid var(--cream-dark); padding: 0.4rem 1rem; border-radius: var(--radius); transition: color 150ms, border-color 150ms; }
+  .page-nav a:hover { color: var(--burgundy); border-color: var(--gold); }
+
+  @media (max-width: 560px) {
+    .row-link { grid-template-columns: 60px 1fr; }
+    .row-arrow { display: none; }
+  }
+</style>

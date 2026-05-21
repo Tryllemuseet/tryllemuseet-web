@@ -1,17 +1,16 @@
 ---
 // src/pages/index.astro
 import BaseLayout from '../layouts/BaseLayout.astro'
-import { getAllMagicians, getUpcomingEvents, getHomepage } from '../lib/sanity'
+import { getAllMagicians, getUpcomingEvents, getHomepage, getSiteConfig, urlFor } from '../lib/sanity'
 
-const [magicians, events, hp] = await Promise.all([
+const [magicians, events, hp, config] = await Promise.all([
   getAllMagicians(),
   getUpcomingEvents(3),
   getHomepage(),
+  getSiteConfig(),
 ])
 
-const featuredMagicians = magicians.slice(0, 3)
-
-// Fallback-verdier om Sanity-dokumentet mangler felt
+// ── Fallback-verdier ─────────────────────────────────────────────
 const hero = hp?.hero ?? {
   heading:   'Stedet der det',
   headingEm: 'umulige er mulig',
@@ -27,6 +26,34 @@ const infoBadges = hp?.infoBadges ?? [
 const utstilling = hp?.utstillingsFokus ?? {
   eraLabel: 'Gullalderen 1845–1930',
   heading:  'Møt mesterne',
+}
+// Ibsen — hentes fra hp?.ibsenSeksjon når feltet legges til i homepage.ts
+const ibsen = (hp as any)?.ibsenSeksjon ?? {
+  heading:    'Henrik Ibsen var tryllekunstner',
+  ingress:    'Det som få vet, er at lille Henrik som barn hadde trylling som hobby. Han ga forestillinger der han kunne få et ur til å forsvinne fra lommen på én mann og dukke opp hos en annen.',
+  sitat:      'Enkelte søndagsaftener fik han lov til at optræde som tryllekunstner i et af husets værelser, og alle omkringboende naboer blev indbudte til at overvære forestillingen.',
+  sitatKilde: '— Hedvig Stousland, Ibsens søster, i brev til Henrik Jæger',
+  lenkLabel:  'Les mer tryllehistorie',
+  lenkHref:   '/tryllehistorie',
+}
+// Kurs — hentes fra hp?.kursSeksjon når feltet legges til i homepage.ts
+const kurs = (hp as any)?.kursSeksjon ?? {
+  heading:    'Tryllekurs for barn',
+  ingress:    'Du lærer triks som er enkle å utføre, men som virker meget imponerende. Kursene går over tre ettermiddager annenhver uke.',
+  detaljer:   [
+    'Aldersgrupper: 6–8 år (kl. 17) · 9–12 år (kl. 18.30) · 13+ år (kl. 20)',
+    'Kun 14 plasser per kurs — «først til mølla»',
+    'Inkluderer kursmateriell og tryllerekvisitter',
+  ],
+  pris:       'kr 50',
+  prisLabel:  'per kurs',
+  fondsBadge: 'Støttet av Oslo kommunes Regionalt kulturfond',
+  knappLabel: 'Se kommende kurs',
+  knappHref:  '/arrangementer',
+}
+const kursSitat = (hp as any)?.kursSitat ?? {
+  tekst:  'Vil bare takke for et utrolig gøyalt tryllekurs — han koste seg!',
+  kilde:  'Mor til kursdeltaker, 8 år · Januar 2026',
 }
 const barn = hp?.barnSeksjon ?? {
   heading:  'Magi du kan ta på og prøve',
@@ -44,21 +71,14 @@ const medlem = hp?.medlemSeksjon ?? {
   knappUrl:   'https://blimedlem.tryllemuseet.no',
 }
 const om = hp?.omMuseet ?? {
-  heading:    'Norges minste, merkeligste museum',
-  tekst:      'Tryllemuseet er et frivilligdrevet museum viet til tryllekunstens historie — fra begerspillet i Egypt for 4000 år siden til gullalderens store scenemagikere og norske tryllekunstnere i dag.\n\nVi holder til på Årvoll i Oslo og er åpne søndager 12–15. Gratis inngang for alle.',
+  heading:    'Fra Munkedamsveien til Årvoll gård',
+  tekst:      'Den 9. desember 2001 åpnet daværende Oslo-ordfører Albert Nordengen dørene til Norsk Tryllemuseum i Munkedamsveien. Etter flere flyttinger og mange år på lager ble museet gjenåpnet på Årvoll gård 1. desember 2024 — takket være frivillige ildsjeler som holdt magien i live.\n\nI 2025 feirer Tryllemuseet ett år på Årvoll gård og hele 24 år som museum. Vi holder til i låven, vegg i vegg med kaféen og Fjøset.',
   sitat:      'Det umulige er bare det vi ikke har lært å gjøre ennå.',
   sitatKilde: '— Robert-Houdin',
 }
 
-function formatDate(d: string) {
-  return new Date(d).toLocaleDateString('nb-NO', {
-    day: 'numeric', month: 'long', year: 'numeric'
-  })
-}
 function formatTime(d: string) {
-  return new Date(d).toLocaleTimeString('nb-NO', {
-    hour: '2-digit', minute: '2-digit'
-  })
+  return new Date(d).toLocaleTimeString('nb-NO', { hour: '2-digit', minute: '2-digit' })
 }
 ---
 
@@ -71,41 +91,28 @@ function formatTime(d: string) {
   <section class="hero" aria-label="Velkommen til Tryllemuseet">
     <div class="hero-bg" aria-hidden="true">
       {hero.bgImage?.asset?.url ? (
-        <img
-          src={hero.bgImage.asset.url}
-          alt=""
-          class="hero-bg-img"
-        />
+        <img src={hero.bgImage.asset.url} alt="" class="hero-bg-img" />
       ) : (
         <div class="hero-stars" id="stars"></div>
       )}
       <div class="hero-vignette"></div>
     </div>
-
     <div class="container hero-inner">
-      <p class="section-label hero-label">Årvollveien 35 · Oslo · Søndager 12–15</p>
-
+      <p class="section-label hero-label">{config.addressShort} · {config.openingHoursShort}</p>
       <h1 class="display-title hero-title">
         {hero.heading}<br/>
         <em class="hero-accent">{hero.headingEm}</em>
       </h1>
-
       <p class="hero-sub">{hero.ingress}</p>
-
       <div class="hero-actions">
         <a href={hero.cta1Href} class="btn-primary">{hero.cta1Label}</a>
         <a href={hero.cta2Href} class="btn-ghost">{hero.cta2Label}</a>
       </div>
-
       <div class="hero-facts" aria-label="Fakta om museet">
         {infoBadges.map((badge, i) => (
           <>
-            <div class="fact">
-              <span class="fact-label">{badge.label}</span>
-            </div>
-            {i < infoBadges.length - 1 && (
-              <div class="fact-divider" aria-hidden="true">✦</div>
-            )}
+            <div class="fact"><span class="fact-label">{badge.label}</span></div>
+            {i < infoBadges.length - 1 && <div class="fact-divider" aria-hidden="true">✦</div>}
           </>
         ))}
       </div>
@@ -117,12 +124,12 @@ function formatTime(d: string) {
     <div class="container visit-strip-inner">
       <a href="/besok#apningstider" class="visit-item">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-        <div><strong>Åpningstider</strong><span>Søndager 12:00–15:00</span></div>
+        <div><strong>Åpningstider</strong><span>{config.openingHoursShort}</span></div>
       </a>
       <div class="visit-divider" aria-hidden="true"></div>
       <a href="/besok#adresse" class="visit-item">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-        <div><strong>Adresse</strong><span>Årvollveien 35, Oslo</span></div>
+        <div><strong>Adresse</strong><span>{config.addressShort}</span></div>
       </a>
       <div class="visit-divider" aria-hidden="true"></div>
       <a href="/besok#priser" class="visit-item">
@@ -130,9 +137,9 @@ function formatTime(d: string) {
         <div><strong>Inngang</strong><span>Gratis for alle</span></div>
       </a>
       <div class="visit-divider" aria-hidden="true"></div>
-      <a href="/arrangementer" class="visit-item visit-item--highlight">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-        <div><strong>Kommende kurs</strong><span>Se alle arrangementer →</span></div>
+      <a href={config.facebook} target="_blank" rel="noopener noreferrer" class="visit-item visit-item--highlight">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>
+        <div><strong>Følg oss</strong><span>Facebook for oppdateringer →</span></div>
       </a>
     </div>
   </section>
@@ -143,22 +150,17 @@ function formatTime(d: string) {
       <div class="section-header">
         <div>
           <p class="section-label">Kalender</p>
-          <h2 class="display-title section-title" id="events-heading">
-            Kommende arrangementer
-          </h2>
+          <h2 class="display-title section-title" id="events-heading">Kommende arrangementer</h2>
         </div>
         <a href="/arrangementer" class="btn-outline">Se alle</a>
       </div>
-
       {events.length > 0 ? (
         <div class="events-grid">
           {events.map((event) => (
             <article class="event-card">
               <div class="event-date-block">
                 <span class="event-day">{new Date(event.date).getDate()}</span>
-                <span class="event-month">
-                  {new Date(event.date).toLocaleDateString('nb-NO', { month: 'short' })}
-                </span>
+                <span class="event-month">{new Date(event.date).toLocaleDateString('nb-NO', { month: 'short' })}</span>
               </div>
               <div class="event-body">
                 <div class="event-meta">
@@ -166,21 +168,12 @@ function formatTime(d: string) {
                   <span class="event-time">{formatTime(event.date)}</span>
                   {event.price && <span class="event-price">{event.price}</span>}
                 </div>
-                <h3 class="event-title">
-                  <a href="/arrangementer">{event.title}</a>
-                </h3>
+                <h3 class="event-title"><a href="/arrangementer">{event.title}</a></h3>
                 {event.excerpt && <p class="event-excerpt">{event.excerpt}</p>}
               </div>
               {event.bookingUrl && (
-                <a
-                  href={event.bookingUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  class="event-book"
-                  aria-label={`Meld deg på ${event.title}`}
-                >
-                  Meld på →
-                </a>
+                <a href={event.bookingUrl} target="_blank" rel="noopener noreferrer"
+                   class="event-book" aria-label={`Meld deg på ${event.title}`}>Meld på →</a>
               )}
             </article>
           ))}
@@ -188,7 +181,7 @@ function formatTime(d: string) {
       ) : (
         <div class="no-events">
           <p>Ingen kommende arrangementer akkurat nå. Følg oss på
-            <a href="https://www.facebook.com/tryllemuseet" target="_blank" rel="noopener noreferrer">Facebook</a> for oppdateringer.
+            <a href={config.facebook} target="_blank" rel="noopener noreferrer">Facebook</a> for oppdateringer.
           </p>
         </div>
       )}
@@ -197,46 +190,119 @@ function formatTime(d: string) {
 
   <hr class="gold-rule container" />
 
-  <!-- ══ UTSTILLINGEN ════════════════════════════════════════════ -->
-  <section class="section exhibition-section" aria-labelledby="exhibition-heading">
+  <!-- ══ MØT MAGIKERNE — horisontal scroll-karusell ══════════════ -->
+  <section class="section magikerne-section" aria-labelledby="magikerne-heading">
     <div class="container">
       <div class="section-header">
         <div>
           <p class="section-label">{utstilling.eraLabel}</p>
-          <h2 class="display-title section-title" id="exhibition-heading">
-            {utstilling.heading}
-          </h2>
+          <h2 class="display-title section-title" id="magikerne-heading">{utstilling.heading}</h2>
         </div>
         <a href="/utstillingen" class="btn-outline">Hele utstillingen</a>
       </div>
-
-      <div class="magicians-grid">
-        {featuredMagicians.map((m) => (
-          <a href={`/utstillingen/${m.slug}`} class="magician-card">
-            {m.posterImage?.asset?.url ? (
-              <div class="magician-poster">
-                <img
-                  src={m.posterImage.asset.url}
-                  alt={m.posterImage.alt ?? m.title}
-                  loading="lazy"
-                />
+    </div>
+    <div class="carousel-viewport" aria-label="Magikere i utstillingen">
+      <div class="carousel-track" id="carousel-track">
+        {magicians.map((m) => {
+          const imgUrl = m.posterImage?.asset?._ref
+            ? urlFor(m.posterImage.asset).width(600).height(800).fit('crop').format('webp').url()
+            : (m.posterImage?.asset?.url ?? null)
+          return (
+            <a href={`/utstillingen/${m.slug}`} class="magiker-card" aria-label={`Les mer om ${m.title}`}>
+              <div class="magiker-img">
+                {imgUrl
+                  ? <img src={imgUrl} alt={m.posterImage?.alt ?? m.title} loading="lazy" />
+                  : <div class="magiker-img-placeholder" aria-hidden="true">🎩</div>
+                }
+                <div class="magiker-overlay" aria-hidden="true"></div>
               </div>
-            ) : (
-              <div class="magician-poster magician-poster--placeholder" aria-hidden="true">🎩</div>
-            )}
-            <div class="magician-info">
-              <h3 class="magician-name">{m.title}</h3>
-              {m.years && <span class="magician-years">{m.years}</span>}
-              {m.tagline && <p class="magician-tagline">{m.tagline}</p>}
-            </div>
-            <span class="magician-arrow" aria-hidden="true">→</span>
-          </a>
-        ))}
+              <div class="magiker-caption">
+                {m.years && <span class="magiker-years">{m.years}</span>}
+                <h3 class="magiker-name">{m.title}</h3>
+                {m.tagline && <p class="magiker-tagline">«{m.tagline}»</p>}
+                <span class="magiker-link-hint">Les mer →</span>
+              </div>
+            </a>
+          )
+        })}
       </div>
+      <button class="carousel-btn carousel-btn--prev" id="carousel-prev" aria-label="Forrige">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><polyline points="15 18 9 12 15 6"/></svg>
+      </button>
+      <button class="carousel-btn carousel-btn--next" id="carousel-next" aria-label="Neste">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg>
+      </button>
+    </div>
+    <div class="carousel-fade carousel-fade--left"  aria-hidden="true"></div>
+    <div class="carousel-fade carousel-fade--right" aria-hidden="true"></div>
+  </section>
 
-      <div class="exhibition-more">
-        <p>Pluss {magicians.length - 3} flere felt — inkludert plasma-kulen og filmene</p>
-        <a href="/utstillingen" class="btn-primary">Se alle {magicians.length} felt</a>
+  <hr class="gold-rule container" />
+
+  <!-- ══ IBSEN ═══════════════════════════════════════════════════ -->
+  <section class="section ibsen-section" aria-labelledby="ibsen-heading">
+    <div class="container ibsen-inner">
+      <div class="ibsen-text">
+        <p class="section-label">Visste du at…</p>
+        <h2 class="display-title section-title" id="ibsen-heading">{ibsen.heading}</h2>
+        <p class="ibsen-ingress">{ibsen.ingress}</p>
+        <blockquote class="ibsen-quote">
+          <p>«{ibsen.sitat}»</p>
+          <cite>{ibsen.sitatKilde}</cite>
+        </blockquote>
+        <a href={ibsen.lenkHref} class="btn-outline" style="margin-top:1.5rem;display:inline-block">
+          {ibsen.lenkLabel}
+        </a>
+      </div>
+      <div class="ibsen-portrait" aria-hidden="true">
+        <svg viewBox="0 0 240 360" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M90 360 L80 265 L68 195 L74 152 L120 134 L166 152 L172 195 L160 265 L150 360Z" fill="rgba(107,15,26,0.15)" stroke="rgba(212,168,67,0.3)" stroke-width="1"/>
+          <path d="M100 155 L120 185 L140 155" stroke="rgba(212,168,67,0.25)" stroke-width="1" fill="none"/>
+          <ellipse cx="120" cy="112" rx="28" ry="34" fill="rgba(107,15,26,0.2)" stroke="rgba(212,168,67,0.35)" stroke-width="1"/>
+          <rect x="90" y="80" width="60" height="7" rx="2" fill="rgba(212,168,67,0.45)" stroke="rgba(212,168,67,0.5)" stroke-width="1"/>
+          <rect x="96" y="44" width="48" height="38" rx="2" fill="rgba(107,15,26,0.25)" stroke="rgba(212,168,67,0.4)" stroke-width="1"/>
+          <path d="M94 118 Q104 124 112 122" stroke="rgba(212,168,67,0.4)" stroke-width="1.5" stroke-linecap="round"/>
+          <path d="M128 122 Q136 124 146 118" stroke="rgba(212,168,67,0.4)" stroke-width="1.5" stroke-linecap="round"/>
+          <path d="M115 147 L120 165 L125 147" fill="rgba(212,168,67,0.2)" stroke="rgba(212,168,67,0.3)" stroke-width="1"/>
+          <path d="M150 210 L174 345 Q176 352 173 355" stroke="rgba(212,168,67,0.3)" stroke-width="2" stroke-linecap="round"/>
+          <circle cx="74" cy="52" r="1.5" fill="rgba(212,168,67,0.5)"/>
+          <circle cx="166" cy="38" r="2"   fill="rgba(212,168,67,0.45)"/>
+          <circle cx="80" cy="32" r="1"   fill="rgba(212,168,67,0.3)"/>
+          <circle cx="158" cy="60" r="1"  fill="rgba(212,168,67,0.3)"/>
+        </svg>
+        <p class="ibsen-portrait-caption">Henrik Ibsen · 1828–1906</p>
+      </div>
+    </div>
+  </section>
+
+  <hr class="gold-rule container" />
+
+  <!-- ══ KURS ════════════════════════════════════════════════════ -->
+  <section class="section kurs-section" aria-labelledby="kurs-heading">
+    <div class="container kurs-inner">
+      <div class="kurs-text">
+        <p class="section-label">Aktuelt nå</p>
+        <h2 class="display-title section-title" id="kurs-heading">{kurs.heading}</h2>
+        <p class="kurs-ingress">{kurs.ingress}</p>
+        <ul class="kurs-list">
+          {kurs.detaljer.map((d: string) => (
+            <li><span aria-hidden="true">✦</span> {d}</li>
+          ))}
+        </ul>
+        <div class="kurs-pris">
+          <span class="kurs-pris-tall">{kurs.pris}</span>
+          <span class="kurs-pris-label">{kurs.prisLabel}</span>
+        </div>
+        <a href={kurs.knappHref} class="btn-primary" style="display:inline-block;margin-top:0.25rem">
+          {kurs.knappLabel}
+        </a>
+        <p class="kurs-fonds">{kurs.fondsBadge}</p>
+      </div>
+      <div class="kurs-sitat-wrap">
+        <div class="kurs-sitat">
+          <p class="kurs-sitat-tekst">«{kursSitat.tekst}»</p>
+          <p class="kurs-sitat-kilde">— {kursSitat.kilde}</p>
+        </div>
       </div>
     </div>
   </section>
@@ -248,20 +314,17 @@ function formatTime(d: string) {
     <div class="container kids-inner">
       <div class="kids-text">
         <p class="section-label">For de minste</p>
-        <h2 class="display-title section-title" id="kids-heading">
-          {barn.heading}
-        </h2>
+        <h2 class="display-title section-title" id="kids-heading">{barn.heading}</h2>
         <p class="kids-sub">{barn.ingress}</p>
         <ul class="kids-list">
           {barn.features.map((f) => (
             <li><span aria-hidden="true">✦</span> {f}</li>
           ))}
         </ul>
-        <a href="/barn" class="btn-primary" style="margin-top:1.5rem; display:inline-block">
+        <a href="/barn" class="btn-primary" style="margin-top:1.5rem;display:inline-block">
           Les mer for barn og unge
         </a>
       </div>
-
       <div class="kids-cards">
         {barn.sitater.map((s, i) => (
           <div class:list={['kids-card', { 'kids-card--offset': i % 2 !== 0 }]}>
@@ -281,17 +344,10 @@ function formatTime(d: string) {
     <div class="container member-inner">
       <div class="member-text">
         <p class="section-label">Støtt museet</p>
-        <h2 class="display-title section-title" id="member-heading">
-          {medlem.heading}
-        </h2>
+        <h2 class="display-title section-title" id="member-heading">{medlem.heading}</h2>
         <p class="member-sub">{medlem.tekst}</p>
       </div>
-      <a
-        href={medlem.knappUrl}
-        target="_blank"
-        rel="noopener noreferrer"
-        class="btn-member"
-      >
+      <a href={config.membershipUrl} target="_blank" rel="noopener noreferrer" class="btn-member">
         {medlem.knappLabel}
       </a>
     </div>
@@ -302,9 +358,7 @@ function formatTime(d: string) {
     <div class="container about-inner">
       <div class="about-text">
         <p class="section-label">Om Tryllemuseet</p>
-        <h2 class="display-title section-title" id="about-heading">
-          {om.heading}
-        </h2>
+        <h2 class="display-title section-title" id="about-heading">{om.heading}</h2>
         {om.tekst.split('\n\n').map((avsnitt) => (
           <p>{avsnitt}</p>
         ))}
@@ -325,6 +379,7 @@ function formatTime(d: string) {
 </BaseLayout>
 
 <script>
+  // ── Stjernefelt ─────────────────────────────────────────────────
   const container = document.getElementById('stars')
   if (container) {
     for (let i = 0; i < 65; i++) {
@@ -334,6 +389,31 @@ function formatTime(d: string) {
       s.style.cssText = `left:${Math.random()*100}%;top:${Math.random()*100}%;width:${size}px;height:${size}px;animation-delay:${Math.random()*4}s;animation-duration:${Math.random()*3+2}s;`
       container.appendChild(s)
     }
+  }
+
+  // ── Karusell ────────────────────────────────────────────────────
+  const track   = document.getElementById('carousel-track') as HTMLElement | null
+  const btnPrev = document.getElementById('carousel-prev') as HTMLButtonElement | null
+  const btnNext = document.getElementById('carousel-next') as HTMLButtonElement | null
+
+  if (track && btnPrev && btnNext) {
+    const getScrollAmount = () => {
+      const card = track.querySelector('.magiker-card') as HTMLElement | null
+      return card ? card.offsetWidth + 20 : 280
+    }
+    btnNext.addEventListener('click', () => track.scrollBy({ left:  getScrollAmount(), behavior: 'smooth' }))
+    btnPrev.addEventListener('click', () => track.scrollBy({ left: -getScrollAmount(), behavior: 'smooth' }))
+
+    const updateBtns = () => {
+      const atStart = track.scrollLeft <= 8
+      const atEnd   = track.scrollLeft + track.clientWidth >= track.scrollWidth - 8
+      btnPrev.style.opacity       = atStart ? '0.25' : '1'
+      btnPrev.style.pointerEvents = atStart ? 'none' : 'auto'
+      btnNext.style.opacity       = atEnd   ? '0.25' : '1'
+      btnNext.style.pointerEvents = atEnd   ? 'none' : 'auto'
+    }
+    track.addEventListener('scroll', updateBtns, { passive: true })
+    updateBtns()
   }
 </script>
 
@@ -405,21 +485,62 @@ function formatTime(d: string) {
   .no-events { padding:2rem; text-align:center; background:white; border:1px solid var(--cream-dark); border-radius:6px; font-family:var(--font-ui); font-size:0.95rem; color:var(--ink-mid); }
   .no-events a { color:var(--burgundy); text-decoration:underline; }
 
-  /* ── EXHIBITION ─────────────────────────────────────────────────── */
-  .magicians-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:1rem; margin-bottom:1.5rem; }
-  .magician-card { display:flex; flex-direction:column; background:white; border:1px solid var(--cream-dark); border-radius:6px; overflow:hidden; text-decoration:none; color:var(--ink); transition:transform 180ms,box-shadow 180ms,border-color 180ms; }
-  .magician-card:hover { transform:translateY(-2px); box-shadow:var(--shadow-lg); border-color:var(--gold-light); }
-  .magician-poster { aspect-ratio:3/4; max-height:220px; overflow:hidden; background:var(--cream-dark); }
-  .magician-poster img { width:100%; height:100%; object-fit:cover; transition:transform 300ms; }
-  .magician-card:hover .magician-poster img { transform:scale(1.03); }
-  .magician-poster--placeholder { display:flex; align-items:center; justify-content:center; font-size:3rem; }
-  .magician-info { padding:1rem 1.25rem; flex:1; }
-  .magician-name { font-family:var(--font-display); font-size:0.95rem; color:var(--burgundy); letter-spacing:0.03em; margin-bottom:0.15rem; }
-  .magician-years { font-family:var(--font-ui); font-size:0.72rem; color:var(--grey); display:block; margin-bottom:0.25rem; }
-  .magician-tagline { font-family:var(--font-body); font-size:0.82rem; font-style:italic; color:var(--gold-dark); }
-  .magician-arrow { display:none; }
-  .exhibition-more { display:flex; align-items:center; justify-content:space-between; gap:1.5rem; padding:1.25rem 1.5rem; background:var(--cream-dark); border-radius:6px; flex-wrap:wrap; }
-  .exhibition-more p { font-family:var(--font-ui); font-size:0.875rem; color:var(--ink-mid); font-style:italic; }
+  /* ── KARUSELL ──────────────────────────────────────────────────── */
+  .magikerne-section { background:white; overflow:hidden; }
+  .magikerne-section .container { padding-bottom:0; }
+  .carousel-viewport { position:relative; margin-top:0.5rem; }
+  .carousel-track { display:flex; gap:20px; overflow-x:auto; scroll-snap-type:x mandatory; -webkit-overflow-scrolling:touch; padding:0.5rem 2.5rem 1.5rem; scrollbar-width:none; }
+  .carousel-track::-webkit-scrollbar { display:none; }
+  .magiker-card { flex:0 0 220px; scroll-snap-align:start; text-decoration:none; color:var(--ink); border-radius:4px; overflow:hidden; background:var(--cream-dark); border:1px solid var(--cream-dark); transition:transform 220ms ease,box-shadow 220ms ease,border-color 220ms ease; display:flex; flex-direction:column; }
+  .magiker-card:hover { transform:translateY(-4px); box-shadow:0 8px 28px rgba(107,15,26,0.14); border-color:var(--gold-light); }
+  .magiker-img { position:relative; aspect-ratio:3/4; overflow:hidden; background:var(--burgundy-dk); flex-shrink:0; }
+  .magiker-img img { width:100%; height:100%; object-fit:cover; transition:transform 400ms ease; }
+  .magiker-card:hover .magiker-img img { transform:scale(1.04); }
+  .magiker-img-placeholder { display:flex; align-items:center; justify-content:center; width:100%; height:100%; font-size:3.5rem; background:linear-gradient(160deg,var(--burgundy-dk),#2a1208); }
+  .magiker-overlay { position:absolute; inset:0; background:linear-gradient(to bottom,transparent 40%,rgba(26,18,8,0.72) 100%); pointer-events:none; }
+  .magiker-caption { padding:0.9rem 1rem 1.1rem; display:flex; flex-direction:column; gap:0.18rem; flex:1; background:white; }
+  .magiker-years { font-family:var(--font-ui); font-size:0.68rem; text-transform:uppercase; letter-spacing:0.1em; color:var(--grey); }
+  .magiker-name { font-family:var(--font-display); font-size:0.95rem; color:var(--burgundy); letter-spacing:0.03em; line-height:1.25; }
+  .magiker-tagline { font-family:var(--font-body); font-size:0.78rem; font-style:italic; color:var(--gold-dark); line-height:1.45; margin-top:0.1rem; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+  .magiker-link-hint { font-family:var(--font-ui); font-size:0.72rem; font-weight:700; color:var(--gold-dark); margin-top:0.5rem; letter-spacing:0.04em; opacity:0; transform:translateX(-4px); transition:opacity 180ms,transform 180ms; }
+  .magiker-card:hover .magiker-link-hint { opacity:1; transform:translateX(0); }
+  .carousel-btn { position:absolute; top:50%; transform:translateY(-50%); width:40px; height:40px; border-radius:50%; border:1.5px solid var(--cream-dark); background:white; box-shadow:0 2px 12px rgba(0,0,0,0.12); display:flex; align-items:center; justify-content:center; cursor:pointer; transition:opacity 200ms,background 180ms,border-color 180ms; z-index:10; }
+  .carousel-btn svg { width:16px; height:16px; color:var(--ink-mid); }
+  .carousel-btn:hover { background:var(--gold); border-color:var(--gold); }
+  .carousel-btn:hover svg { color:var(--burgundy-dk); }
+  .carousel-btn--prev { left:0.5rem; }
+  .carousel-btn--next { right:0.5rem; }
+  .carousel-fade { position:absolute; top:0; bottom:0; width:60px; pointer-events:none; z-index:5; }
+  .carousel-fade--left { left:0; background:linear-gradient(to right,white,transparent); }
+  .carousel-fade--right { right:0; background:linear-gradient(to left,white,transparent); }
+
+  /* ── IBSEN ─────────────────────────────────────────────────────── */
+  .ibsen-section { background:var(--cream); }
+  .ibsen-inner { display:grid; grid-template-columns:1fr 280px; gap:4rem; align-items:center; }
+  .ibsen-ingress { font-family:var(--font-ui); font-size:1rem; color:var(--ink-mid); line-height:1.7; margin:1rem 0; }
+  .ibsen-quote { margin:1.5rem 0 0; padding:1.25rem 1.5rem; border-left:3px solid var(--gold); background:white; border-radius:0 4px 4px 0; box-shadow:var(--shadow); }
+  .ibsen-quote p { font-family:var(--font-body); font-size:0.98rem; font-style:italic; color:var(--ink); line-height:1.7; margin-bottom:0.5rem; }
+  .ibsen-quote cite { font-family:var(--font-ui); font-size:0.72rem; letter-spacing:0.1em; text-transform:uppercase; color:var(--gold-dark); font-style:normal; }
+  .ibsen-portrait { display:flex; flex-direction:column; align-items:center; }
+  .ibsen-portrait svg { width:100%; max-width:220px; filter:drop-shadow(0 4px 24px rgba(107,15,26,0.18)); }
+  .ibsen-portrait-caption { font-family:var(--font-ui); font-size:0.7rem; letter-spacing:0.1em; text-transform:uppercase; color:var(--grey); margin-top:0.75rem; text-align:center; }
+
+  /* ── KURS ──────────────────────────────────────────────────────── */
+  .kurs-section { background:white; }
+  .kurs-inner { display:grid; grid-template-columns:1fr 1fr; gap:4rem; align-items:center; }
+  .kurs-ingress { font-family:var(--font-ui); font-size:1rem; color:var(--ink-mid); line-height:1.7; margin:1rem 0; }
+  .kurs-list { list-style:none; display:flex; flex-direction:column; gap:0.55rem; margin-bottom:1.5rem; }
+  .kurs-list li { display:flex; align-items:flex-start; gap:0.6rem; font-family:var(--font-ui); font-size:0.92rem; color:var(--ink-mid); }
+  .kurs-list span { color:var(--gold); font-size:0.7rem; margin-top:0.3rem; flex-shrink:0; }
+  .kurs-pris { display:flex; align-items:baseline; gap:0.4rem; margin-bottom:1.25rem; }
+  .kurs-pris-tall { font-family:var(--font-display); font-size:2.2rem; color:var(--burgundy); line-height:1; }
+  .kurs-pris-label { font-family:var(--font-ui); font-size:0.85rem; color:var(--grey); }
+  .kurs-fonds { font-family:var(--font-ui); font-size:0.75rem; color:var(--grey); margin-top:1rem; font-style:italic; }
+  .kurs-sitat-wrap { display:flex; align-items:center; justify-content:center; }
+  .kurs-sitat { padding:2.5rem; background:var(--burgundy); border-radius:6px; position:relative; max-width:380px; }
+  .kurs-sitat::before { content:'\201C'; position:absolute; top:-0.5rem; left:1.25rem; font-family:var(--font-display); font-size:5rem; color:var(--gold); line-height:1; opacity:0.35; }
+  .kurs-sitat-tekst { font-family:var(--font-body); font-size:1.1rem; font-style:italic; color:var(--cream); line-height:1.7; position:relative; z-index:1; }
+  .kurs-sitat-kilde { font-family:var(--font-ui); font-size:0.78rem; letter-spacing:0.08em; color:var(--gold); margin-top:1rem; }
 
   /* ── KIDS ───────────────────────────────────────────────────────── */
   .kids-section { background:var(--cream); }
@@ -456,7 +577,10 @@ function formatTime(d: string) {
 
   /* ── RESPONSIVE ────────────────────────────────────────────────── */
   @media (max-width:900px) {
-    .magicians-grid { grid-template-columns:1fr; }
+    .magiker-card { flex:0 0 180px; }
+    .ibsen-inner { grid-template-columns:1fr; gap:2rem; }
+    .ibsen-portrait { display:none; }
+    .kurs-inner { grid-template-columns:1fr; gap:2rem; }
     .kids-inner { grid-template-columns:1fr; gap:2rem; }
     .kids-card--offset { margin-left:0; }
     .about-inner { grid-template-columns:1fr; gap:2rem; }
@@ -469,7 +593,8 @@ function formatTime(d: string) {
     .hero { padding:5rem 0 3.5rem; }
     .hero-title { font-size:2.2rem; }
     .event-excerpt { display:none; }
-    .exhibition-more { flex-direction:column; align-items:flex-start; }
     .section-header { flex-direction:column; align-items:flex-start; }
+    .magiker-card { flex:0 0 160px; }
+    .carousel-track { padding:0.5rem 1.2rem 1.5rem; gap:12px; }
   }
 </style>
