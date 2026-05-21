@@ -210,9 +210,21 @@ export const tvAppearance = defineType({
         finalist: '🏅', 'golden-buzzer': '⭐', semifinalist: '🎯',
         not_fooled: '✖️', participant: '📋',
       }
+      const showLabels: Record<string, string> = {
+        'norske-talenter':    'Norske Talenter',
+        'talang':             'Talang',
+        'fool-us':            'Penn & Teller: Fool Us',
+        'danmark-har-talent': 'Danmark har Talent',
+        'talent-suomi':       'Talent Suomi',
+        'bgt':                "Britain's Got Talent",
+        'das-supertalent':    'Das Supertalent',
+        'annet':              'Annet',
+      }
       const catEmoji = category === 'fool_us' ? '🎯' : '🏆'
+      const showLabel = show ? (showLabels[show] ?? show) : '?'
+      const nameLabel = magicianName ?? '(ikke koblet)'
       return {
-        title:    `${catEmoji} ${magicianName ?? '(ukjent)'} — ${show ?? ''}`,
+        title:    `${catEmoji} ${nameLabel} — ${showLabel}`,
         subtitle: `${year ?? ''} ${resultEmoji[result ?? ''] ?? ''}`,
         media,
       }
