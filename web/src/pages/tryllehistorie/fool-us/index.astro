@@ -4,7 +4,7 @@ import BaseLayout from '../../../layouts/BaseLayout.astro'
 import { sanityClient, resultLabels } from '../../../lib/sanity'
 
 const appearances = await sanityClient.fetch(`
-  *[_type == "tvAppearance" && category == "fool_us"] | order(year desc, season asc, episode asc) {
+  *[_type == "tvAppearance" && show == "fool-us"] | order(year desc, season asc, episode asc) {
     _id,
     "slug": slug.current,
     year, season, episode, episodeTitle,
