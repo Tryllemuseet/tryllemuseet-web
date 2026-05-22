@@ -19,13 +19,14 @@ const appearances = await sanityClient.fetch(`
 `)
 
 const countries = [...new Set(appearances.map((a: any) => a.magician?.nationality))].filter(Boolean).sort()
-const total = appearances.length
-const fooled = appearances.filter((a: any) => a.result === 'fooled').length
+const total   = appearances.length
+const fooled  = appearances.filter((a: any) => a.result === 'fooled').length
+const notFooled = appearances.filter((a: any) => a.result === 'not_fooled').length
 ---
 
 <BaseLayout
   title="Penn & Teller: Fool Us — Nordiske magikere — Tryllemuseet"
-  description={`${total} nordiske opptredener i Penn & Teller: Fool Us. ${fooled} klarte å lure duoen.`}
+  description={`${total} nordiske opptredener i den prestisjetunge fagduellen fra Las Vegas. ${fooled} klarte å lure Penn & Teller fullstendig.`}
 >
 
   <section class="hero">
@@ -33,22 +34,14 @@ const fooled = appearances.filter((a: any) => a.result === 'fooled').length
       <p class="section-label"><a href="/tryllehistorie" class="breadcrumb-link">Tryllehistorie</a></p>
       <h1 class="display-title hero-title">Penn &amp; Teller: Fool Us</h1>
       <p class="hero-sub">
-        {total} nordiske opptredener i den prestisjetunge fagduellen fra Las Vegas.
-        {fooled} klarte å lure Penn &amp; Teller fullstendig.
+        {total} nordiske opptredener i den prestisjetunge fagduellen fra Las Vegas. {fooled} klarte å lure Penn &amp; Teller fullstendig.
       </p>
     </div>
-    <div class="container hero-stats">
-      <div class="stat">
-        <span class="stat-num">{total}</span>
-        <span class="stat-label">Opptredener</span>
-      </div>
-      <div class="stat">
-        <span class="stat-num" style="color: #86efac">{fooled}</span>
-        <span class="stat-label">Fooled Us ✅</span>
-      </div>
-      <div class="stat">
-        <span class="stat-num">{total - fooled}</span>
-        <span class="stat-label">Not Fooled</span>
+    <div class="hero-stats">
+      <div class="container hero-stats-inner">
+        <div class="stat"><span class="stat-num">{total}</span><span class="stat-label">Opptredener</span></div>
+        <div class="stat"><span class="stat-num">{fooled}</span><span class="stat-label">Fooled Us ✅</span></div>
+        <div class="stat"><span class="stat-num">{notFooled}</span><span class="stat-label">Not Fooled</span></div>
       </div>
     </div>
   </section>
@@ -59,7 +52,9 @@ const fooled = appearances.filter((a: any) => a.result === 'fooled').length
         <label class="filter-label" for="filter-country">Land</label>
         <select id="filter-country" class="filter-select">
           <option value="">Alle land</option>
-          {countries.map((c: string) => <option value={c}>{c}</option>)}
+          {countries.map((c: string) => (
+            <option value={c}>{c}</option>
+          ))}
         </select>
       </div>
       <div class="filter-group">
@@ -68,6 +63,16 @@ const fooled = appearances.filter((a: any) => a.result === 'fooled').length
           <option value="">Alle resultater</option>
           <option value="fooled">✅ Fooled Us</option>
           <option value="not_fooled">✖️ Not Fooled</option>
+          <option value="participant">📋 Deltaker</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <label class="filter-label" for="sort-select">Sortering</label>
+        <select id="sort-select" class="filter-select">
+          <option value="year-desc">År (nyest først)</option>
+          <option value="season-desc">Sesong/episode (nyest)</option>
+          <option value="result-best">Resultat (Fooled Us først)</option>
+          <option value="name-asc">Tryllekunstner (A–Å)</option>
         </select>
       </div>
       <button class="filter-reset" id="filter-reset">Nullstill</button>
@@ -78,46 +83,45 @@ const fooled = appearances.filter((a: any) => a.result === 'fooled').length
     <p class="result-count" id="result-count">Viser {total} opptredener</p>
   </div>
 
-  <main class="container appearances-list" id="appearances-grid">
+  <main class="container appearances-grid" id="appearances-grid">
     {appearances.map((a: any) => (
       <article
-        class="appearance-row"
+        class="appearance-card"
         data-country={a.magician?.nationality ?? ''}
         data-result={a.result}
+        data-year={a.year ?? 0}
+        data-season={a.season ?? 0}
+        data-episode={a.episode ?? 0}
+        data-name={(a.magician?.artistName ?? a.magician?.name ?? '').toLowerCase()}
       >
-        <a href={`/tryllehistorie/fool-us/${a.slug}`} class="row-link">
-
-          <div class="row-img">
+        <a href={`/tryllehistorie/fool-us/${a.slug}`} class="card-link">
+          <div class="card-img">
             {a.featuredImage?.asset?.url ? (
               <img src={a.featuredImage.asset.url} alt={a.featuredImage.alt ?? ''} loading="lazy" />
             ) : a.magician?.mainImage?.asset?.url ? (
-              <img src={a.magician.mainImage.asset.url} alt="" loading="lazy" />
+              <img src={a.magician.mainImage.asset.url} alt={a.magician.mainImage.alt ?? ''} loading="lazy" />
             ) : (
-              <div class="row-img-placeholder" aria-hidden="true">🎯</div>
+              <div class="card-img-placeholder" aria-hidden="true">🎯</div>
             )}
-          </div>
-
-          <div class="row-body">
-            <p class="row-meta">
-              {a.year && <span>Sesong {a.season ?? '?'}</span>}
-              {a.episode && <span>Ep. {a.episode}</span>}
-              {a.year && <span>{a.year}</span>}
-              {a.magician?.nationality && <span>{a.magician.nationality}</span>}
-            </p>
-            <h2 class="row-name">{a.magician?.artistName ?? a.magician?.name ?? '(ukjent)'}</h2>
-            {a.magician?.artistName && a.magician.name !== a.magician.artistName && (
-              <p class="row-fullname">{a.magician.name}</p>
-            )}
-            {a.episodeTitle && <p class="row-episode">«{a.episodeTitle}»</p>}
-          </div>
-
-          <div class="row-result">
-            <span class="result-pill" data-result={a.result}>
+            <div class="card-img-overlay" aria-hidden="true"></div>
+            <span class="result-badge" data-result={a.result}>
               {resultLabels[a.result] ?? a.result}
             </span>
-            <span class="row-arrow" aria-hidden="true">→</span>
           </div>
-
+          <div class="card-body">
+            <p class="card-show">
+              {a.season && a.episode
+                ? `Sesong ${a.season} · Ep. ${a.episode}`
+                : a.season ? `Sesong ${a.season}` : 'Fool Us'}
+              {a.year && <span class="card-year">{a.year}</span>}
+            </p>
+            <h2 class="card-name">{a.magician?.artistName ?? a.magician?.name ?? '(ukjent)'}</h2>
+            {a.magician?.artistName && a.magician.name !== a.magician.artistName && (
+              <p class="card-fullname">{a.magician.name}</p>
+            )}
+            {a.magician?.nationality && <p class="card-nationality">{a.magician.nationality}</p>}
+            <span class="card-arrow" aria-hidden="true">Les mer →</span>
+          </div>
         </a>
       </article>
     ))}
@@ -129,7 +133,7 @@ const fooled = appearances.filter((a: any) => a.result === 'fooled').length
   </div>
 
   <div class="container page-nav">
-    <a href="/tryllehistorie/got-talent">Got Talent →</a>
+    <a href="/tryllehistorie/got-talent">← Got Talent</a>
     <a href="/tryllehistorie/historiske-opptak">Historiske opptak →</a>
     <a href="/tryllehistorie">← Tryllehistorie</a>
   </div>
@@ -137,75 +141,107 @@ const fooled = appearances.filter((a: any) => a.result === 'fooled').length
 </BaseLayout>
 
 <script>
-  const rows       = Array.from(document.querySelectorAll<HTMLElement>('.appearance-row'))
+  const grid       = document.getElementById('appearances-grid')!
+  const cards      = Array.from(document.querySelectorAll<HTMLElement>('.appearance-card'))
   const noResults  = document.getElementById('no-results')!
   const countEl    = document.getElementById('result-count')!
   const selCountry = document.getElementById('filter-country') as HTMLSelectElement
   const selResult  = document.getElementById('filter-result')  as HTMLSelectElement
+  const selSort    = document.getElementById('sort-select')    as HTMLSelectElement
   const btnReset   = document.getElementById('filter-reset')!
   const btnReset2  = document.getElementById('filter-reset-2')!
 
+  const resultOrder: Record<string, number> = { fooled: 0, not_fooled: 1, participant: 2 }
+
   function applyFilters() {
-    const country = selCountry.value, result = selResult.value
+    const country = selCountry.value, result = selResult.value, sort = selSort.value
     let visible = 0
-    rows.forEach(row => {
+
+    cards.forEach(card => {
       const match =
-        (!country || row.dataset.country === country) &&
-        (!result  || row.dataset.result  === result)
-      row.hidden = !match
+        (!country || card.dataset.country === country) &&
+        (!result  || card.dataset.result  === result)
+      card.hidden = !match
       if (match) visible++
     })
+
+    const sorted = [...cards].sort((a, b) => {
+      switch (sort) {
+        case 'season-desc': {
+          const sd = Number(b.dataset.season) - Number(a.dataset.season)
+          return sd !== 0 ? sd : Number(b.dataset.episode) - Number(a.dataset.episode)
+        }
+        case 'result-best':
+          return (resultOrder[a.dataset.result ?? ''] ?? 9) - (resultOrder[b.dataset.result ?? ''] ?? 9)
+        case 'name-asc':
+          return (a.dataset.name ?? '').localeCompare(b.dataset.name ?? '', 'no')
+        default: // year-desc
+          return Number(b.dataset.year) - Number(a.dataset.year)
+      }
+    })
+    sorted.forEach(card => grid.appendChild(card))
+
     noResults.hidden = visible > 0
     countEl.textContent = `Viser ${visible} opptreden${visible !== 1 ? 'er' : ''}`
   }
-  function resetFilters() { selCountry.value = ''; selResult.value = ''; applyFilters() }
+
+  function resetFilters() {
+    selCountry.value = ''; selResult.value = ''; selSort.value = 'year-desc'
+    applyFilters()
+  }
   selCountry.addEventListener('change', applyFilters)
   selResult.addEventListener('change', applyFilters)
+  selSort.addEventListener('change', applyFilters)
   btnReset.addEventListener('click', resetFilters)
   btnReset2.addEventListener('click', resetFilters)
 </script>
 
 <style>
-  .hero { background: var(--burgundy-dk); padding: 3rem 0 2rem; border-bottom: 2px solid var(--gold-dark); color: var(--cream); }
+  .hero { background: var(--burgundy-dk); padding: 3.5rem 0 0; border-bottom: 2px solid var(--gold-dark); color: var(--cream); }
   .breadcrumb-link { color: var(--gold); text-decoration: none; font-size: 0.7rem; font-weight: 600; letter-spacing: 0.2em; text-transform: uppercase; }
+  .breadcrumb-link:hover { color: var(--gold-light); }
   .hero-title { font-size: clamp(1.8rem, 5vw, 3rem); color: var(--cream); margin: 0.5rem 0 0.75rem; }
-  .hero-sub { font-family: var(--font-ui); font-size: 1rem; opacity: 0.8; max-width: 600px; margin-bottom: 1.5rem; }
-  .hero-stats { display: flex; gap: 2rem; padding-bottom: 2rem; }
-  .stat { display: flex; flex-direction: column; gap: 0.1rem; }
-  .stat-num { font-family: var(--font-display); font-size: 2rem; color: var(--gold); letter-spacing: 0.04em; line-height: 1; }
-  .stat-label { font-family: var(--font-ui); font-size: 0.7rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; color: var(--cream); opacity: 0.6; }
+  .hero-sub   { font-family: var(--font-ui); font-size: 1rem; opacity: 0.8; max-width: 600px; padding-bottom: 2rem; }
+
+  .hero-stats { background: rgba(0,0,0,0.25); border-top: 1px solid rgba(212,168,67,0.25); padding: 1rem 0; }
+  .hero-stats-inner { display: flex; gap: 2.5rem; }
+  .stat { display: flex; flex-direction: column; }
+  .stat-num { font-family: var(--font-display); font-size: 2rem; color: var(--gold); line-height: 1; }
+  .stat-label { font-family: var(--font-ui); font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.12em; color: var(--cream); opacity: 0.7; margin-top: 0.15rem; }
 
   .filter-bar-wrap { position: sticky; top: var(--header-h); z-index: 50; background: white; border-bottom: 1px solid var(--cream-dark); box-shadow: 0 2px 12px rgba(26,18,8,0.06); }
   .filter-bar-inner { display: flex; flex-wrap: wrap; gap: 0.75rem; align-items: flex-end; padding: 0.75rem 1.5rem; }
   .filter-group { display: flex; flex-direction: column; gap: 0.2rem; }
   .filter-label { font-family: var(--font-ui); font-size: 0.65rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; color: var(--grey); }
   .filter-select { font-family: var(--font-ui); font-size: 0.875rem; color: var(--ink); background: var(--cream); border: 1.5px solid var(--cream-dark); border-radius: 6px; padding: 0.45rem 0.75rem; cursor: pointer; min-width: 180px; }
+  .filter-select:focus { outline: none; border-color: var(--gold); }
   .filter-reset { font-family: var(--font-ui); font-size: 0.8rem; font-weight: 600; color: var(--grey); border: 1.5px solid var(--cream-dark); border-radius: 6px; padding: 0.45rem 0.9rem; background: white; cursor: pointer; align-self: flex-end; }
   .filter-reset:hover { color: var(--burgundy); border-color: var(--gold); }
 
   .result-count { font-family: var(--font-ui); font-size: 0.8rem; color: var(--grey); padding: 0.75rem 0 0.25rem; }
 
-  /* Liste-layout for Fool Us — mer kompakt enn grid */
-  .appearances-list { display: flex; flex-direction: column; gap: 1px; background: var(--cream-dark); border: 1px solid var(--cream-dark); border-radius: 8px; overflow: hidden; margin-bottom: 1rem; }
-  .appearance-row { background: white; transition: background 150ms; }
-  .appearance-row:hover { background: var(--cream); }
+  .appearances-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 1.5rem; padding-bottom: 1rem; }
+  .appearance-card { border-radius: 6px; overflow: hidden; border: 1px solid var(--cream-dark); background: white; transition: transform 220ms ease, box-shadow 220ms ease, border-color 220ms ease; }
+  .appearance-card:hover { transform: translateY(-4px); box-shadow: 0 8px 28px rgba(107,15,26,0.14); border-color: var(--gold-light); }
+  .card-link { display: flex; flex-direction: column; text-decoration: none; color: var(--ink); height: 100%; }
 
-  .row-link { display: grid; grid-template-columns: 72px 1fr auto; align-items: center; gap: 1rem; padding: 0.875rem 1rem; text-decoration: none; color: var(--ink); }
-  .row-img { width: 72px; height: 56px; border-radius: 4px; overflow: hidden; background: var(--burgundy-dk); flex-shrink: 0; }
-  .row-img img { width: 100%; height: 100%; object-fit: cover; }
-  .row-img-placeholder { display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; font-size: 1.5rem; }
+  .card-img { position: relative; aspect-ratio: 3/2; overflow: hidden; background: var(--burgundy-dk); flex-shrink: 0; }
+  .card-img img { width: 100%; height: 100%; object-fit: cover; transition: transform 400ms ease; }
+  .appearance-card:hover .card-img img { transform: scale(1.04); }
+  .card-img-placeholder { display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; font-size: 3rem; background: linear-gradient(160deg, var(--burgundy-dk), #2a1208); }
+  .card-img-overlay { position: absolute; inset: 0; background: linear-gradient(to bottom, transparent 50%, rgba(26,18,8,0.5) 100%); pointer-events: none; }
 
-  .row-meta { font-family: var(--font-ui); font-size: 0.7rem; color: var(--grey); display: flex; gap: 0.4rem; flex-wrap: wrap; margin-bottom: 0.2rem; }
-  .row-meta span + span::before { content: '·'; margin-right: 0.4rem; }
-  .row-name { font-family: var(--font-display); font-size: 0.95rem; color: var(--burgundy); letter-spacing: 0.02em; }
-  .row-fullname { font-family: var(--font-ui); font-size: 0.75rem; color: var(--grey); font-style: italic; }
-  .row-episode { font-family: var(--font-body); font-size: 0.78rem; font-style: italic; color: var(--ink-mid); margin-top: 0.15rem; }
+  .result-badge { position: absolute; top: 0.6rem; right: 0.6rem; font-family: var(--font-ui); font-size: 0.65rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; padding: 0.2rem 0.5rem; border-radius: 3px; background: rgba(26,18,8,0.75); color: var(--cream); backdrop-filter: blur(4px); }
+  .result-badge[data-result="fooled"] { background: rgba(22,101,52,0.85); color: #bbf7d0; }
 
-  .row-result { display: flex; flex-direction: column; align-items: flex-end; gap: 0.5rem; flex-shrink: 0; }
-  .result-pill { font-family: var(--font-ui); font-size: 0.7rem; font-weight: 700; padding: 0.2rem 0.6rem; border-radius: 99px; white-space: nowrap; background: rgba(26,18,8,0.08); color: var(--ink-mid); }
-  .result-pill[data-result="fooled"] { background: rgba(22,101,52,0.15); color: #166534; }
-  .row-arrow { font-size: 0.85rem; color: var(--gold-dark); opacity: 0; transition: opacity 150ms, transform 150ms; }
-  .appearance-row:hover .row-arrow { opacity: 1; transform: translateX(3px); }
+  .card-body { padding: 1rem 1.1rem 1.2rem; display: flex; flex-direction: column; gap: 0.15rem; flex: 1; }
+  .card-show { font-family: var(--font-ui); font-size: 0.7rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; color: var(--gold-dark); display: flex; align-items: center; gap: 0.4rem; }
+  .card-year { font-weight: 400; color: var(--grey); letter-spacing: 0; }
+  .card-name { font-family: var(--font-display); font-size: 1rem; color: var(--burgundy); letter-spacing: 0.02em; line-height: 1.25; }
+  .card-fullname { font-family: var(--font-ui); font-size: 0.75rem; color: var(--grey); font-style: italic; }
+  .card-nationality { font-family: var(--font-ui); font-size: 0.75rem; color: var(--grey); }
+  .card-arrow { font-family: var(--font-ui); font-size: 0.72rem; font-weight: 700; color: var(--gold-dark); margin-top: auto; padding-top: 0.6rem; opacity: 0; transition: opacity 180ms; }
+  .appearance-card:hover .card-arrow { opacity: 1; }
 
   .no-results { padding: 3rem 0; text-align: center; font-family: var(--font-ui); color: var(--ink-mid); }
   .filter-reset-inline { margin-top: 0.75rem; font-family: var(--font-ui); font-size: 0.875rem; font-weight: 600; color: var(--burgundy); background: none; border: 1px solid var(--gold-dark); border-radius: 6px; padding: 0.45rem 1rem; cursor: pointer; }
@@ -214,10 +250,6 @@ const fooled = appearances.filter((a: any) => a.result === 'fooled').length
   .page-nav a { color: var(--grey); text-decoration: none; border: 1px solid var(--cream-dark); padding: 0.4rem 1rem; border-radius: var(--radius); transition: color 150ms, border-color 150ms; }
   .page-nav a:hover { color: var(--burgundy); border-color: var(--gold); }
 
-  @media (max-width: 560px) {
-    .row-link { grid-template-columns: 56px 1fr; }
-    .row-result { display: none; }
-    .hero-stats { gap: 1.25rem; }
-    .stat-num { font-size: 1.5rem; }
-  }
+  @media (max-width: 700px) { .appearances-grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 1rem; } }
+  @media (max-width: 480px) { .appearances-grid { .appearances-grid { grid-template-columns: 1fr 1fr; } } }
 </style>
