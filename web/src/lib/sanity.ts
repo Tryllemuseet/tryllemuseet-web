@@ -511,7 +511,6 @@ export interface TvAppearance {
   _id:           string
   slug:          string
   show:          string
-  showCountry?:  string
   year:          number
   season?:       number
   episode?:      number
@@ -533,16 +532,29 @@ export interface TvAppearance {
 }
 
 // ── Hjelpefunksjoner ─────────────────────────────────────────────
-export const showLabels: Record<string, string> = {
-  'norske-talenter':    'Norske Talenter',
-  'talang':             'Talang',
-  'fool-us':            'Penn & Teller: Fool Us',
-  'danmark-har-talent': 'Danmark har Talent',
-  'talent-suomi':       'Talent Suomi',
-  'bgt':                "Britain's Got Talent",
-  'das-supertalent':    'Das Supertalent',
-  'annet':              'Annet',
+
+export interface ShowMeta {
+  label:    string
+  category: 'got_talent' | 'fool_us' | 'other'
+  country:  string
 }
+
+/** Utleder kategori og programland fra show-slug — ingen redundante felt i skjemaet. */
+export const showMeta: Record<string, ShowMeta> = {
+  'norske-talenter':    { label: 'Norske Talenter',        category: 'got_talent', country: 'Norsk'      },
+  'talang':             { label: 'Talang',                  category: 'got_talent', country: 'Svensk'     },
+  'fool-us':            { label: 'Penn & Teller: Fool Us',  category: 'fool_us',    country: 'Amerikansk' },
+  'danmark-har-talent': { label: 'Danmark har Talent',      category: 'got_talent', country: 'Dansk'      },
+  'talent-suomi':       { label: 'Talent Suomi',            category: 'got_talent', country: 'Finsk'      },
+  'bgt':                { label: "Britain's Got Talent",    category: 'got_talent', country: 'Britisk'    },
+  'das-supertalent':    { label: 'Das Supertalent',         category: 'got_talent', country: 'Tysk'       },
+  'annet':              { label: 'Annet',                   category: 'other',      country: ''           },
+}
+
+/** Bakoverkompatibel snarvei — brukes der bare etiketten trengs. */
+export const showLabels: Record<string, string> = Object.fromEntries(
+  Object.entries(showMeta).map(([k, v]) => [k, v.label])
+)
 
 export const resultLabels: Record<string, string> = {
   'fooled':         '✅ Fooled Us',
@@ -564,7 +576,7 @@ export async function getAllTvAppearances(): Promise<TvAppearance[]> {
     *[_type == "tvAppearance"] | order(year desc, show asc) {
       _id,
       "slug": slug.current,
-      show, showCountry, year, season, episode, episodeTitle,
+      show, year, season, episode, episodeTitle,
       result,
       featuredImage { asset->{ _ref, url }, alt },
       magician-> {
@@ -582,7 +594,7 @@ export async function getTvAppearanceBySlug(slug: string): Promise<TvAppearance 
     *[_type == "tvAppearance" && slug.current == $slug][0] {
       _id,
       "slug": slug.current,
-      show, showCountry, year, season, episode, episodeTitle,
+      show, year, season, episode, episodeTitle,
       result, description, videoUrl,
       featuredImage { asset->{ _ref, url }, alt, caption },
       magician-> {

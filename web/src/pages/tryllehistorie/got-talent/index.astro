@@ -3,11 +3,13 @@
 import BaseLayout from '../../../layouts/BaseLayout.astro'
 import { sanityClient, showLabels, resultLabels } from '../../../lib/sanity'
 
+const GOT_TALENT_SHOWS = ['norske-talenter', 'talang', 'danmark-har-talent', 'talent-suomi', 'bgt', 'das-supertalent']
+
 const appearances = await sanityClient.fetch(`
-  *[_type == "tvAppearance" && category == "got_talent"] | order(year desc, show asc) {
+  *[_type == "tvAppearance" && show in $shows] | order(year desc, show asc) {
     _id,
     "slug": slug.current,
-    show, showCountry, year, season, episode, episodeTitle,
+    show, year, season, episode, episodeTitle,
     result,
     featuredImage { asset->{ url }, alt },
     magician-> {
@@ -16,7 +18,7 @@ const appearances = await sanityClient.fetch(`
       mainImage { asset->{ url }, alt }
     }
   }
-`)
+`, { shows: GOT_TALENT_SHOWS })
 
 const shows     = [...new Set(appearances.map((a: any) => a.show))].filter(Boolean).sort()
 const countries = [...new Set(appearances.map((a: any) => a.magician?.nationality))].filter(Boolean).sort()
