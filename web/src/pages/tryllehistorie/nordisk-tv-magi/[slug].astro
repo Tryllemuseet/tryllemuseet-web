@@ -37,18 +37,18 @@ const a = await sanityClient.fetch(`
 
 if (!a) return Astro.redirect('/tryllehistorie/nordisk-tv-magi')
 
-// Alle andre opptredener av samme magiker
-const otherAppearances = await sanityClient.fetch(`
+// Alle andre opptredener av samme magiker (bare hvis magiker er koblet)
+const otherAppearances = a.magician?._id ? await sanityClient.fetch(`
   *[_type == "tvAppearance" && slug.current != $slug && magician._ref == $magicianId] | order(year asc) {
     "slug": slug.current,
     show, year, result,
     featuredImage { asset->{ url }, alt }
   }
-`, { slug, magicianId: a.magician._id })
+`, { slug, magicianId: a.magician._id }) : []
 
 const showLabel   = showLabels[a.show]   ?? a.show
 const resultLabel = resultLabels[a.result] ?? a.result
-const pageTitle   = `${a.magician?.artistName ?? a.magician?.name} — ${showLabel} ${a.year}`
+const pageTitle   = `${a.magician?.artistName ?? a.magician?.name ?? '(ukjent)'} — ${showLabel} ${a.year}`
 
 // YouTube embed
 function youtubeEmbedUrl(url: string): string | null {
