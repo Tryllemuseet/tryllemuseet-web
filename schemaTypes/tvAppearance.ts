@@ -36,23 +36,7 @@ export const tvAppearance = defineType({
       validation: R => R.required(),
     }),
 
-    // ── 2. KATEGORI ───────────────────────────────────────────────
-    defineField({
-      name: 'category',
-      title: 'Kategori',
-      type: 'string',
-      options: {
-        list: [
-          { title: '🏆 Got Talent (talentkonkurranse)', value: 'got_talent' },
-          { title: '🎯 Penn & Teller: Fool Us',         value: 'fool_us'   },
-        ],
-        layout: 'radio',
-      },
-      validation: R => R.required(),
-      description: 'Avgjør hvilken underseksjon opptredenen vises i.',
-    }),
-
-    // ── 3. PROGRAM ────────────────────────────────────────────────
+    // ── 2. PROGRAM ────────────────────────────────────────────────
     defineField({
       name: 'show',
       title: 'TV-program',
@@ -71,24 +55,6 @@ export const tvAppearance = defineType({
         layout: 'radio',
       },
       validation: R => R.required(),
-    }),
-
-    defineField({
-      name: 'showCountry',
-      title: 'Programland',
-      type: 'string',
-      options: {
-        list: [
-          { title: 'Norge',         value: 'norge'         },
-          { title: 'Sverige',       value: 'sverige'       },
-          { title: 'Danmark',       value: 'danmark'       },
-          { title: 'Finland',       value: 'finland'       },
-          { title: 'USA',           value: 'usa'           },
-          { title: 'Storbritannia', value: 'storbritannia' },
-          { title: 'Tyskland',      value: 'tyskland'      },
-          { title: 'Annet',         value: 'annet'         },
-        ],
-      },
     }),
 
     defineField({
@@ -198,12 +164,11 @@ export const tvAppearance = defineType({
       show:         'show',
       year:         'year',
       result:       'result',
-      category:     'category',
       media:        'featuredImage',
     },
-    prepare({ magicianName, show, year, result, category, media }: {
+    prepare({ magicianName, show, year, result, media }: {
       magicianName?: string; show?: string; year?: number
-      result?: string; category?: string; media?: unknown
+      result?: string; media?: unknown
     }) {
       const resultEmoji: Record<string, string> = {
         fooled: '✅', winner: '🥇', second: '🥈', third: '🥉',
@@ -220,7 +185,7 @@ export const tvAppearance = defineType({
         'das-supertalent':    'Das Supertalent',
         'annet':              'Annet',
       }
-      const catEmoji = category === 'fool_us' ? '🎯' : '🏆'
+      const catEmoji = show === 'fool-us' ? '🎯' : '🏆'
       const showLabel = show ? (showLabels[show] ?? show) : '?'
       const nameLabel = magicianName ?? '(ikke koblet)'
       return {
