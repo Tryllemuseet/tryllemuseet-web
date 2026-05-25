@@ -1,16 +1,24 @@
 ---
 // src/pages/tryllehistorie/nordisk-tv-magi/[slug].astro
-// Redirect til riktig seksjon basert på slug
+import { sanityClient } from '../../../lib/sanity'
+
+export async function getStaticPaths() {
+  const docs = await sanityClient.fetch(`
+    *[_type == "tvAppearance"] {
+      "slug": slug.current,
+      show
+    }
+  `)
+  return docs.map((d: { slug: string; show: string }) => ({
+    params: { slug: d.slug },
+    props:  { show: d.show },
+  }))
+}
+
+const { show } = Astro.props
 const { slug } = Astro.params
 
-// Hent show-type fra Sanity for å sende til riktig underseksjon
-import { sanityClient } from '../../../lib/sanity'
-const doc = await sanityClient.fetch(
-  `*[_type == "tvAppearance" && slug.current == $slug][0]{ show }`,
-  { slug }
-)
-
-const base = doc?.show === 'fool-us'
+const base = show === 'fool-us'
   ? '/tryllehistorie/fool-us'
   : '/tryllehistorie/got-talent'
 
