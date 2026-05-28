@@ -72,10 +72,15 @@ const isActive = (href: string) =>
             </ul>
           </li>
 
-          <li>
-            <a href="/aktiviteter" class:list={['nav-link', { active: isActive('/aktiviteter') || isActive('/arrangementer') }]}>
-              Aktiviteter
+          <!-- Aktiviteter med dropdown -->
+          <li class="has-dropdown">
+            <a href="/aktiviteter" class:list={['nav-link', { active: isActive('/aktiviteter') || isActive('/arrangementer') || isActive('/barn') }]}>
+              Aktiviteter <span class="nav-chevron">▾</span>
             </a>
+            <ul class="dropdown" role="list">
+              <li><a href="/aktiviteter" class="dropdown-link">Oversikt</a></li>
+              <li><a href="/barn" class="dropdown-link">Barn &amp; unge</a></li>
+            </ul>
           </li>
 
         </ul>
@@ -141,8 +146,13 @@ const isActive = (href: string) =>
           </ul>
         </li>
 
-        <li><a href="/aktiviteter" class:list={['mobile-nav-link', { active: isActive('/aktiviteter') }]}>Aktiviteter</a></li>
-        <li><a href="/barn"        class:list={['mobile-nav-link', { active: isActive('/barn') }]}>Barn & unge</a></li>
+        <li class="mobile-section">
+          <a href="/aktiviteter" class:list={['mobile-nav-link', { active: isActive('/aktiviteter') || isActive('/barn') }]}>Aktiviteter</a>
+          <ul class="mobile-sub">
+            <li><a href="/aktiviteter" class="mobile-sub-link">Oversikt</a></li>
+            <li><a href="/barn"        class="mobile-sub-link">Barn &amp; unge</a></li>
+          </ul>
+        </li>
 
         <li class="mobile-section">
           <a href="/ressurser"     class:list={['mobile-nav-link', { active: isActive('/ressurser') }]}>Ressurser</a>
