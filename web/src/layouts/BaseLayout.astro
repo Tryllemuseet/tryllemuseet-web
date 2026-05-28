@@ -100,8 +100,10 @@ const isActive = (href: string) =>
               <li><a href="/ressurser/kunstnere" class="dropdown-link dropdown-link--soon">Tryllekunstnere</a></li>
               <li><a href="/bibliotek" class="dropdown-link">Bibliotek</a></li>
               <li><a href="/tryllehistorie/magiens-hvem-er-hvem" class="dropdown-link">Hvem er hvem</a></li>
+              <li><a href="/tryllehistorie/got-talent" class="dropdown-link">Norske talenter på TV</a></li>
+              <li><a href="/tryllehistorie/fool-us" class="dropdown-link">Penn &amp; Teller: Fool Us</a></li>
+              <li><a href="/tryllehistorie/historiske-opptak" class="dropdown-link">Historiske opptak</a></li>
               <li><a href="/ressurser/magiske-oyeblikk" class="dropdown-link dropdown-link--soon">Magiske øyeblikk</a></li>
-			  <li><a href="/tryllehistorie/nordisk-tv-magi" class="dropdown-link">Nordiske magikere på TV</a></li>
             </ul>
           </li>
 
@@ -132,10 +134,10 @@ const isActive = (href: string) =>
         <li class="mobile-section">
           <a href="/utstillingen"  class:list={['mobile-nav-link', { active: isActive('/utstillingen') }]}>Utstillingen</a>
           <ul class="mobile-sub">
-            <li><a href="/utstillingen/norske-legender"  class="mobile-sub-link">Norske legender</a></li>
-            <li><a href="/utstillingen/artefakter"       class="mobile-sub-link">Artefakter</a></li>
-            <li><a href="/utstillingen/trylleforeningene" class="mobile-sub-link">Trylleforeningene</a></li>
-            <li><a href="/utstillingen/tryllebutikken"   class="mobile-sub-link">Tryllebutikken</a></li>
+            <li><a href="/utstillingen/norske-legender"   class="mobile-sub-link mobile-sub-link--soon">Norske legender</a></li>
+            <li><a href="/utstillingen/artefakter"        class="mobile-sub-link">Artefakter</a></li>
+            <li><a href="/utstillingen/trylleforeningene" class="mobile-sub-link mobile-sub-link--soon">Trylleforeningene</a></li>
+            <li><a href="/utstillingen/tryllebutikken"    class="mobile-sub-link mobile-sub-link--soon">Tryllebutikken</a></li>
           </ul>
         </li>
 
@@ -146,8 +148,13 @@ const isActive = (href: string) =>
           <a href="/ressurser"     class:list={['mobile-nav-link', { active: isActive('/ressurser') }]}>Ressurser</a>
           <ul class="mobile-sub">
             <li><a href="https://www.magiskecirkel.no/tryllekatalogen" class="mobile-sub-link" target="_blank" rel="noopener">Tryllekatalogen ↗</a></li>
+            <li><a href="/ressurser/kunstnere"                         class="mobile-sub-link mobile-sub-link--soon">Tryllekunstnere</a></li>
             <li><a href="/bibliotek"                                    class="mobile-sub-link">Bibliotek</a></li>
             <li><a href="/tryllehistorie/magiens-hvem-er-hvem"         class="mobile-sub-link">Hvem er hvem</a></li>
+            <li><a href="/tryllehistorie/got-talent"                   class="mobile-sub-link">Norske talenter på TV</a></li>
+            <li><a href="/tryllehistorie/fool-us"                      class="mobile-sub-link">Penn &amp; Teller: Fool Us</a></li>
+            <li><a href="/tryllehistorie/historiske-opptak"            class="mobile-sub-link">Historiske opptak</a></li>
+            <li><a href="/ressurser/magiske-oyeblikk"                  class="mobile-sub-link mobile-sub-link--soon">Magiske øyeblikk</a></li>
           </ul>
         </li>
 
@@ -394,6 +401,7 @@ const isActive = (href: string) =>
   .mobile-sub { padding: 0.1rem 0 0.3rem 1.25rem; display: flex; flex-direction: column; gap: 0; }
   .mobile-sub-link { display: block; font-family: var(--font-ui); font-size: 0.875rem; color: var(--cream); opacity: 0.7; padding: 0.35rem 0.75rem; border-radius: var(--radius); transition: opacity var(--transition), color var(--transition); }
   .mobile-sub-link:hover { opacity: 1; color: var(--gold-light); }
+  .mobile-sub-link--soon { opacity: 0.35; pointer-events: none; }
 
   /* ── FOOTER ── */
   .site-footer { background: var(--burgundy-dk); border-top: 2px solid var(--gold-dark); color: var(--cream); margin-top: auto; }
