@@ -283,62 +283,7 @@ export async function getFeaturedBooks(): Promise<Book[]> {
   `)
 }
 
-// ── Typer: Biografi (Hvem er hvem) ──────────────────────────────
-export interface Biography {
-  _id:          string
-  name:         string
-  slug:         string
-  artistName?:  string
-  aliases?:     string[]
-  nationality?: string
-  years?:       string
-  featured?:    boolean
-  tags?:        string[]
-  shortBio?:    string
-  fullBio?:     any[]
-  mainImage?:   { asset: { _ref: string; url: string }; alt?: string }
-  gallery?:     { asset: { _ref: string; url: string }; alt?: string; caption?: string }[]
-  links?:       { label: string; url: string; type?: string }[]
-}
 
-// ── Spørringer: Biografi ─────────────────────────────────────────
-export async function getAllBiographies(): Promise<Biography[]> {
-  return sanityClient.fetch(`
-    *[_type == "biography"] | order(name asc) {
-      _id, name, "slug": slug.current,
-      artistName, aliases, nationality, years,
-      featured, tags, shortBio,
-      mainImage { asset->{ _ref, url }, alt }
-    }
-  `)
-}
-
-export async function getBiographyBySlug(slug: string): Promise<Biography | null> {
-  return sanityClient.fetch(`
-    *[_type == "biography" && slug.current == $slug][0] {
-      _id, name, "slug": slug.current,
-      artistName, aliases, nationality, years,
-      featured, tags, shortBio, fullBio,
-      mainImage { asset->{ _ref, url }, alt },
-      gallery[] { asset->{ _ref, url }, alt, caption },
-      links[] { label, url, type }
-    }
-  `, { slug })
-}
-
-export async function searchBiographies(query: string): Promise<Biography[]> {
-  return sanityClient.fetch(`
-    *[_type == "biography" && (
-      name match $pattern ||
-      artistName match $pattern ||
-      $query in aliases[]
-    )] | order(name asc) {
-      _id, name, "slug": slug.current,
-      artistName, aliases, years, shortBio,
-      mainImage { asset->{ _ref, url }, alt }
-    }
-  `, { pattern: `*${query}*`, query })
-}
 
 // ── Typer: Forside ───────────────────────────────────────────────
 export interface Homepage {
