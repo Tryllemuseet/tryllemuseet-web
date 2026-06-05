@@ -16,13 +16,13 @@ const metaDescription = description ?? site.seoDescription
 
 // Flat liste for footer og mobil
 const allNavLinks = [
-  { href: '/besok',          label: 'Besøk oss'     },
-  { href: '/utstillingen',   label: 'Utstillingen'  },
-  { href: '/aktiviteter',    label: 'Aktiviteter'   },
-  { href: '/barn',           label: 'Barn & unge'   },
-  { href: '/ressurser',      label: 'Ressurser'     },
-  { href: '/tryllehistorie', label: 'Tryllehistorie'},
-  { href: '/om-oss',         label: 'Om oss'        },
+  { href: '/besok',                         label: 'Besøk oss'           },
+  { href: '/utstillingen',                  label: 'Utstillingen'        },
+  { href: '/aktiviteter',                   label: 'Aktiviteter'         },
+  { href: '/aktiviteter/tryllekunstnere',   label: 'Bestill tryllekunstner' },
+  { href: '/tryllehistorie/got-talent',     label: 'Opptredener'         },
+  { href: '/tryllehistorie',                label: 'Arkivet'             },
+  { href: '/om-oss',                        label: 'Om oss'              },
 ]
 
 const currentPath = Astro.url.pathname
@@ -65,7 +65,6 @@ const isActive = (href: string) =>
             </a>
             <ul class="dropdown" role="list">
               <li><a href="/utstillingen" class="dropdown-link">Oversikt</a></li>
-              <li><a href="/utstillingen/norske-legender" class="dropdown-link dropdown-link--soon">Norske legender</a></li>
               <li><a href="/utstillingen/artefakter" class="dropdown-link">Artefakter</a></li>
               <li><a href="/utstillingen/trylleforeningene" class="dropdown-link dropdown-link--soon">Trylleforeningene</a></li>
               <li><a href="/utstillingen/tryllebutikken" class="dropdown-link dropdown-link--soon">Tryllebutikken</a></li>
@@ -80,6 +79,19 @@ const isActive = (href: string) =>
             <ul class="dropdown" role="list">
               <li><a href="/aktiviteter" class="dropdown-link">Oversikt</a></li>
               <li><a href="/barn" class="dropdown-link">Barn &amp; unge</a></li>
+              <li><a href="/aktiviteter/tryllekunstnere" class="dropdown-link">Bestill tryllekunstner</a></li>
+            </ul>
+          </li>
+
+          <!-- Opptredener med dropdown -->
+          <li class="has-dropdown">
+            <a href="/tryllehistorie/got-talent" class:list={['nav-link', { active: isActive('/tryllehistorie/got-talent') || isActive('/tryllehistorie/fool-us') || isActive('/tryllehistorie/historiske-opptak') }]}>
+              Opptredener <span class="nav-chevron">▾</span>
+            </a>
+            <ul class="dropdown" role="list">
+              <li><a href="/tryllehistorie/got-talent" class="dropdown-link">Got Talent</a></li>
+              <li><a href="/tryllehistorie/fool-us" class="dropdown-link">Penn &amp; Teller: Fool Us</a></li>
+              <li><a href="/tryllehistorie/historiske-opptak" class="dropdown-link">Historiske opptak</a></li>
             </ul>
           </li>
 
@@ -95,21 +107,15 @@ const isActive = (href: string) =>
       <nav class="main-nav main-nav--right" aria-label="Hovednavigasjon høyre">
         <ul>
 
-          <!-- Ressurser med dropdown -->
+          <!-- Arkivet med dropdown -->
           <li class="has-dropdown">
-            <a href="/ressurser" class:list={['nav-link', { active: isActive('/ressurser') || isActive('/bibliotek') || isActive('/tryllehistorie') }]}>
-              Ressurser <span class="nav-chevron">▾</span>
+            <a href="/tryllehistorie" class:list={['nav-link', { active: isActive('/tryllehistorie') || isActive('/bibliotek') }]}>
+              Arkivet <span class="nav-chevron">▾</span>
             </a>
             <ul class="dropdown" role="list">
-              <li><a href="https://www.magiskecirkel.no/tryllekatalogen" class="dropdown-link" target="_blank" rel="noopener">Tryllekatalogen ↗</a></li>
-              <li><a href="/ressurser/kunstnere" class="dropdown-link dropdown-link--soon">Tryllekunstnere</a></li>
-              <li><a href="/bibliotek" class="dropdown-link">Bibliotek</a></li>
               <li><a href="/tryllehistorie/magiens-hvem-er-hvem" class="dropdown-link">Hvem er hvem</a></li>
               <li><a href="/tryllehistorie/norske-legender" class="dropdown-link">Norske legender</a></li>
-              <li><a href="/tryllehistorie/got-talent" class="dropdown-link">Norske talenter på TV</a></li>
-              <li><a href="/tryllehistorie/fool-us" class="dropdown-link">Penn &amp; Teller: Fool Us</a></li>
-              <li><a href="/tryllehistorie/historiske-opptak" class="dropdown-link">Historiske opptak</a></li>
-              <li><a href="/ressurser/magiske-oyeblikk" class="dropdown-link dropdown-link--soon">Magiske øyeblikk</a></li>
+              <li><a href="/bibliotek" class="dropdown-link">Bibliotek</a></li>
             </ul>
           </li>
 
@@ -138,9 +144,8 @@ const isActive = (href: string) =>
         <li><a href="/besok"       class:list={['mobile-nav-link', { active: isActive('/besok') }]}>Besøk oss</a></li>
 
         <li class="mobile-section">
-          <a href="/utstillingen"  class:list={['mobile-nav-link', { active: isActive('/utstillingen') }]}>Utstillingen</a>
+          <a href="/utstillingen" class:list={['mobile-nav-link', { active: isActive('/utstillingen') }]}>Utstillingen</a>
           <ul class="mobile-sub">
-            <li><a href="/utstillingen/norske-legender"   class="mobile-sub-link mobile-sub-link--soon">Norske legender</a></li>
             <li><a href="/utstillingen/artefakter"        class="mobile-sub-link">Artefakter</a></li>
             <li><a href="/utstillingen/trylleforeningene" class="mobile-sub-link mobile-sub-link--soon">Trylleforeningene</a></li>
             <li><a href="/utstillingen/tryllebutikken"    class="mobile-sub-link mobile-sub-link--soon">Tryllebutikken</a></li>
@@ -150,23 +155,27 @@ const isActive = (href: string) =>
         <li class="mobile-section">
           <a href="/aktiviteter" class:list={['mobile-nav-link', { active: isActive('/aktiviteter') || isActive('/barn') }]}>Aktiviteter</a>
           <ul class="mobile-sub">
-            <li><a href="/aktiviteter" class="mobile-sub-link">Oversikt</a></li>
-            <li><a href="/barn"        class="mobile-sub-link">Barn &amp; unge</a></li>
+            <li><a href="/aktiviteter"                      class="mobile-sub-link">Oversikt</a></li>
+            <li><a href="/barn"                             class="mobile-sub-link">Barn &amp; unge</a></li>
+            <li><a href="/aktiviteter/tryllekunstnere"      class="mobile-sub-link">Bestill tryllekunstner</a></li>
           </ul>
         </li>
 
         <li class="mobile-section">
-          <a href="/ressurser"     class:list={['mobile-nav-link', { active: isActive('/ressurser') }]}>Ressurser</a>
+          <a href="/tryllehistorie/got-talent" class:list={['mobile-nav-link', { active: isActive('/tryllehistorie/got-talent') || isActive('/tryllehistorie/fool-us') || isActive('/tryllehistorie/historiske-opptak') }]}>Opptredener</a>
           <ul class="mobile-sub">
-            <li><a href="https://www.magiskecirkel.no/tryllekatalogen" class="mobile-sub-link" target="_blank" rel="noopener">Tryllekatalogen ↗</a></li>
-            <li><a href="/ressurser/kunstnere"                         class="mobile-sub-link mobile-sub-link--soon">Tryllekunstnere</a></li>
-            <li><a href="/bibliotek"                                    class="mobile-sub-link">Bibliotek</a></li>
-            <li><a href="/tryllehistorie/magiens-hvem-er-hvem"         class="mobile-sub-link">Hvem er hvem</a></li>
-            <li><a href="/tryllehistorie/norske-legender"                   class="mobile-sub-link">Norske legender</a></li>
-            <li><a href="/tryllehistorie/got-talent"                   class="mobile-sub-link">Norske talenter på TV</a></li>
-            <li><a href="/tryllehistorie/fool-us"                      class="mobile-sub-link">Penn &amp; Teller: Fool Us</a></li>
-            <li><a href="/tryllehistorie/historiske-opptak"            class="mobile-sub-link">Historiske opptak</a></li>
-            <li><a href="/ressurser/magiske-oyeblikk"                  class="mobile-sub-link mobile-sub-link--soon">Magiske øyeblikk</a></li>
+            <li><a href="/tryllehistorie/got-talent"        class="mobile-sub-link">Got Talent</a></li>
+            <li><a href="/tryllehistorie/fool-us"           class="mobile-sub-link">Penn &amp; Teller: Fool Us</a></li>
+            <li><a href="/tryllehistorie/historiske-opptak" class="mobile-sub-link">Historiske opptak</a></li>
+          </ul>
+        </li>
+
+        <li class="mobile-section">
+          <a href="/tryllehistorie" class:list={['mobile-nav-link', { active: isActive('/tryllehistorie') || isActive('/bibliotek') }]}>Arkivet</a>
+          <ul class="mobile-sub">
+            <li><a href="/tryllehistorie/magiens-hvem-er-hvem" class="mobile-sub-link">Hvem er hvem</a></li>
+            <li><a href="/tryllehistorie/norske-legender"      class="mobile-sub-link">Norske legender</a></li>
+            <li><a href="/bibliotek"                           class="mobile-sub-link">Bibliotek</a></li>
           </ul>
         </li>
 

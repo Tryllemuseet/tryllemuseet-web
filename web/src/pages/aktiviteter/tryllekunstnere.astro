@@ -1,0 +1,71 @@
+---
+// src/pages/aktiviteter/tryllekunstnere.astro
+import BaseLayout from '../../layouts/BaseLayout.astro'
+---
+
+<BaseLayout
+  title="Bestill tryllekunstner — Tryllemuseet"
+  description="Finn og bestill norske tryllekunstnere via Tryllekatalogen — oversikt over profesjonelle og amatørartister i Norge."
+>
+
+  <section class="tk-hero">
+    <div class="container">
+      <p class="section-label"><a href="/aktiviteter" class="breadcrumb-link">Aktiviteter</a></p>
+      <h1 class="display-title tk-title">Bestill tryllekunstner</h1>
+      <p class="tk-sub">
+        Tryllekatalogen er Magiske Cirkel Norges oversikt over norske tryllekunstnere —
+        profesjonelle og amatører som er tilgjengelige for oppdrag.
+      </p>
+    </div>
+  </section>
+
+  <div class="tk-frame-wrap">
+    <iframe
+      src="https://www.magiskecirkel.no/tryllekatalogen"
+      title="Tryllekatalogen — oversikt over norske tryllekunstnere"
+      class="tk-frame"
+      loading="lazy"
+    ></iframe>
+  </div>
+
+  <div class="container tk-footer">
+    <p>
+      Tryllekatalogen drives av <a href="https://www.magiskecirkel.no" target="_blank" rel="noopener">Magiske Cirkel Norge</a>.
+      Tryllemuseet er ikke ansvarlig for innholdet i katalogen.
+    </p>
+  </div>
+
+</BaseLayout>
+
+<style>
+  .tk-hero {
+    background: var(--burgundy-dk);
+    padding: 3rem 0 2rem;
+    border-bottom: 2px solid var(--gold-dark);
+    color: var(--cream);
+  }
+  .breadcrumb-link { color: var(--gold); text-decoration: none; font-size: 0.7rem; font-weight: 600; letter-spacing: 0.2em; text-transform: uppercase; }
+  .tk-title { font-size: clamp(1.6rem, 4vw, 2.5rem); color: var(--cream); margin: 0.5rem 0 0.75rem; }
+  .tk-sub { font-family: var(--font-ui); font-size: 1rem; opacity: 0.8; max-width: 580px; line-height: 1.6; }
+
+  .tk-frame-wrap {
+    width: 100%;
+    height: calc(100vh - 72px - 80px);
+    min-height: 600px;
+  }
+
+  .tk-frame {
+    width: 100%;
+    height: 100%;
+    border: none;
+    display: block;
+  }
+
+  .tk-footer {
+    padding: 1rem 0 2rem;
+    font-family: var(--font-ui);
+    font-size: 0.8rem;
+    color: var(--grey);
+  }
+  .tk-footer a { color: var(--burgundy); text-decoration: underline; }
+</style>
