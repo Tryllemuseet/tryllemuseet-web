@@ -227,11 +227,62 @@ const isActive = (href: string) =>
     </div>
   </footer>
 
+  <!-- LIGHTBOX ─────────────────────────────────────────────────── -->
+  <div id="lightbox" class="lightbox" role="dialog" aria-modal="true" aria-label="Forstørret bilde" hidden>
+    <button class="lightbox-close" id="lightbox-close" aria-label="Lukk">✕</button>
+    <figure class="lightbox-figure">
+      <img id="lightbox-img" src="" alt="" />
+      <figcaption id="lightbox-caption" class="lightbox-caption"></figcaption>
+    </figure>
+  </div>
+
 </body>
 </html>
 
 <script>
-  // Hamburger
+  // ── Lightbox ──────────────────────────────────────────────────
+  const lightbox  = document.getElementById('lightbox') as HTMLElement
+  const lbImg     = document.getElementById('lightbox-img') as HTMLImageElement
+  const lbCaption = document.getElementById('lightbox-caption') as HTMLElement
+  const lbClose   = document.getElementById('lightbox-close') as HTMLButtonElement
+
+  function openLightbox(src: string, alt: string, caption: string) {
+    lbImg.src = src
+    lbImg.alt = alt
+    lbCaption.textContent = caption
+    lbCaption.hidden = !caption
+    lightbox.hidden = false
+    document.body.style.overflow = 'hidden'
+    lbClose.focus()
+  }
+
+  function closeLightbox() {
+    lightbox.hidden = true
+    lbImg.src = ''
+    document.body.style.overflow = ''
+  }
+
+  // Click on images inside .prose, .gallery-grid, .gallery-fig, .sidebar-portrett
+  document.addEventListener('click', (e) => {
+    const target = e.target as HTMLElement
+    if (target.tagName !== 'IMG') return
+    const parent = target.closest('.prose, .gallery-grid, .gallery-fig, .sidebar-portrett, .gallery-section, .gallery-seksjon')
+    if (!parent) return
+    const caption = target.closest('figure')?.querySelector('figcaption')?.textContent ?? ''
+    openLightbox(target.src, target.alt, caption)
+  })
+
+  // Close on overlay click, button click, or Escape
+  lightbox.addEventListener('click', (e) => {
+    if (e.target === lightbox) closeLightbox()
+  })
+  lbClose.addEventListener('click', closeLightbox)
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && !lightbox.hidden) closeLightbox()
+  })
+
+  // ── Hamburger
+
   const toggle = document.getElementById('menu-toggle');
   const menu   = document.getElementById('mobile-menu');
   toggle?.addEventListener('click', () => {
@@ -453,4 +504,68 @@ const isActive = (href: string) =>
     .footer-inner { grid-template-columns: 1fr; padding: 2rem 1rem 1.5rem; gap: 1.5rem; }
     .footer-brand { grid-column: auto; }
   }
+  /* ── LIGHTBOX ── */
+  .lightbox {
+    position: fixed;
+    inset: 0;
+    z-index: 999;
+    background: rgba(10,5,2,0.92);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1.5rem;
+    cursor: zoom-out;
+  }
+  .lightbox[hidden] { display: none; }
+
+  .lightbox-figure {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    max-width: min(90vw, 1000px);
+    max-height: 90vh;
+    cursor: default;
+  }
+
+  .lightbox-figure img {
+    max-width: 100%;
+    max-height: calc(90vh - 60px);
+    object-fit: contain;
+    border-radius: 3px;
+    box-shadow: 0 8px 48px rgba(0,0,0,0.6);
+    display: block;
+  }
+
+  .lightbox-caption {
+    font-family: var(--font-ui);
+    font-size: 0.85rem;
+    color: rgba(251,247,239,0.7);
+    text-align: center;
+    margin-top: 0.75rem;
+    max-width: 600px;
+    line-height: 1.5;
+  }
+
+  .lightbox-close {
+    position: fixed;
+    top: 1.25rem;
+    right: 1.5rem;
+    font-size: 1.25rem;
+    color: var(--cream);
+    opacity: 0.7;
+    padding: 0.4rem 0.7rem;
+    border-radius: 3px;
+    transition: opacity 150ms, background 150ms;
+    z-index: 1000;
+    cursor: pointer;
+  }
+  .lightbox-close:hover { opacity: 1; background: rgba(255,255,255,0.1); }
+
+  /* Make lightbox-triggerable images show pointer cursor */
+  .prose img,
+  .gallery-grid img,
+  .gallery-fig img,
+  .sidebar-portrett img,
+  .gallery-section img,
+  .gallery-seksjon img { cursor: zoom-in; }
 </style>
