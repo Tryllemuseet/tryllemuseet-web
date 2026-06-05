@@ -3,12 +3,20 @@
 import BaseLayout from '../../../layouts/BaseLayout.astro'
 import { sanityClient } from '../../../lib/sanity'
 
+
+function ytThumb(url?: string): string | null {
+  if (!url) return null
+  const m = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&?]+)/)
+  return m ? `https://img.youtube.com/vi/${m[1]}/hqdefault.jpg` : null
+}
+
 const clips = await sanityClient.fetch(`
   *[_type == "historicalClip"] | order(year asc) {
     _id,
     "slug": slug.current,
     title, year, broadcaster, show, category,
     featuredImage { asset->{ url }, alt },
+    videoUrl,
     magician-> {
       _id, name, "slug": slug.current,
       artistName, nationality,
@@ -97,6 +105,8 @@ const broadcasterLabels: Record<string, string> = {
           <div class="card-img">
             {c.featuredImage?.asset?.url ? (
               <img src={c.featuredImage.asset.url} alt={c.featuredImage.alt ?? ''} loading="lazy" />
+            ) : ytThumb(c.videoUrl) ? (
+              <img src={ytThumb(c.videoUrl)!} alt="" loading="lazy" />
             ) : c.magician?.mainImage?.asset?.url ? (
               <img src={c.magician.mainImage.asset.url} alt="" loading="lazy" />
             ) : (

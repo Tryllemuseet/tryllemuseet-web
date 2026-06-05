@@ -3,6 +3,13 @@
 import BaseLayout from '../../../layouts/BaseLayout.astro'
 import { sanityClient, resultLabels } from '../../../lib/sanity'
 
+
+function ytThumb(url?: string): string | null {
+  if (!url) return null
+  const m = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&?]+)/)
+  return m ? `https://img.youtube.com/vi/${m[1]}/hqdefault.jpg` : null
+}
+
 const appearances = await sanityClient.fetch(`
   *[_type == "tvAppearance" && show == "fool-us"] | order(year desc, season asc, episode asc) {
     _id,
@@ -10,6 +17,7 @@ const appearances = await sanityClient.fetch(`
     year, season, episode, episodeTitle,
     result,
     featuredImage { asset->{ url }, alt },
+    videoUrl,
     magician-> {
       _id, name, "slug": slug.current,
       artistName, nationality,
@@ -98,6 +106,8 @@ const notFooled = appearances.filter((a: any) => a.result === 'not_fooled').leng
           <div class="card-img">
             {a.featuredImage?.asset?.url ? (
               <img src={a.featuredImage.asset.url} alt={a.featuredImage.alt ?? ''} loading="lazy" />
+            ) : ytThumb(a.videoUrl) ? (
+              <img src={ytThumb(a.videoUrl)!} alt="" loading="lazy" />
             ) : a.magician?.mainImage?.asset?.url ? (
               <img src={a.magician.mainImage.asset.url} alt={a.magician.mainImage.alt ?? ''} loading="lazy" />
             ) : (
