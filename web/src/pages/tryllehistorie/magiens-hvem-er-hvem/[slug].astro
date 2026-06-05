@@ -1,34 +1,30 @@
 ---
 // src/pages/tryllehistorie/magiens-hvem-er-hvem/[slug].astro
 import BaseLayout from '../../../layouts/BaseLayout.astro'
-import { sanityClient } from '../../../lib/sanity'
-import { toHTML } from '@portabletext/to-html'
+import { getBiographyBySlug, getBiographyPaths, portableTextToHtml, urlFor } from '../../../lib/sanity'
 
 export async function getStaticPaths() {
-  const bios = await sanityClient.fetch(`
-    *[_type == "biography"] { "slug": slug.current }
-  `)
-  return bios
-    .filter((b: any) => b.slug && typeof b.slug === 'string')
-    .map((b: any) => ({ params: { slug: String(b.slug) } }))
+  return getBiographyPaths()
 }
 
 const { slug } = Astro.params
-const bio = await sanityClient.fetch(`
-  *[_type == "biography" && slug.current == $slug][0] {
-    name, artistName, years, nationality,
-    shortBio, fullBio,
-    mainImage { asset->{ url }, alt, caption },
-    gallery[]{ asset->{ url }, alt, caption },
-    links[] { label, url, type },
-    sources[] { label, url },
-    tags, lastVerified, needsUpdate
-  }
-`, { slug })
+const bio = await getBiographyBySlug(slug!)
 
 if (!bio) return Astro.redirect('/tryllehistorie/magiens-hvem-er-hvem', 301)
 
-const fullBioHtml = bio.fullBio ? toHTML(bio.fullBio) : ''
+const fullBioHtml = portableTextToHtml(bio.fullBio)
+
+// Aldersberegning
+function calcAge(birth: string, death?: string): string {
+  const b = new Date(birth)
+  const d = death ? new Date(death) : new Date()
+  const age = d.getFullYear() - b.getFullYear() -
+    (d < new Date(d.getFullYear(), b.getMonth(), b.getDate()) ? 1 : 0)
+  if (death) return `${b.getFullYear()}–${new Date(death).getFullYear()} (${age} år)`
+  return `f. ${b.getFullYear()} (${age} år)`
+}
+
+const ageStr = bio.birthDate ? calcAge(bio.birthDate, bio.deathDate ?? undefined) : (bio.years ?? '')
 
 const linkIcons: Record<string, string> = {
   wikipedia: '📖',
@@ -37,6 +33,10 @@ const linkIcons: Record<string, string> = {
   facebook:  '👥',
   instagram: '📷',
   other:     '🔗',
+}
+
+const videoTypeLabel: Record<string, string> = {
+  tv: '📺 TV-opptreden', intervju: '🎙️ Intervju', opptreden: '🎩 Opptreden', annet: '🔗',
 }
 ---
 
@@ -51,7 +51,7 @@ const linkIcons: Record<string, string> = {
 
       {bio.mainImage?.asset?.url && (
         <figure class="hero-image">
-          <img src={bio.mainImage.asset.url} alt={bio.mainImage.alt ?? bio.name} />
+          <img src={urlFor(bio.mainImage).width(320).format('webp').url()} alt={bio.mainImage.alt ?? bio.name} />
           {bio.mainImage.caption && <figcaption>{bio.mainImage.caption}</figcaption>}
         </figure>
       )}
@@ -62,7 +62,8 @@ const linkIcons: Record<string, string> = {
         </p>
         <h1 class="display-title hero-name">{bio.name}</h1>
         {bio.artistName && <p class="hero-artist">Kunstnernavn: <em>{bio.artistName}</em></p>}
-        {bio.years && <p class="hero-years">{bio.years}</p>}
+        {ageStr && <p class="hero-years">{ageStr}</p>}
+        {bio.years && bio.birthDate && <p class="hero-years">Aktiv: {bio.years}</p>}
 
         {bio.tags && bio.tags.length > 0 && (
           <div class="hero-tags">
@@ -70,6 +71,12 @@ const linkIcons: Record<string, string> = {
               <span class="bio-tag">{tag}</span>
             ))}
           </div>
+        )}
+
+        {bio.legendRef?.slug && (
+          <a href={`/tryllehistorie/norske-legender/${bio.legendRef.slug}`} class="legend-lenke">
+            ⭐ Les artikkel om {bio.artistName ?? bio.name} i Norske legender →
+          </a>
         )}
       </div>
     </div>
@@ -97,11 +104,32 @@ const linkIcons: Record<string, string> = {
         <div class="gallery-grid">
           {bio.gallery.filter((img: any) => img?.asset?.url).map((img: any) => (
             <figure class="gallery-item">
-              <img src={img.asset.url} alt={img.alt ?? bio.name} loading="lazy" />
+              <img src={urlFor(img).width(400).format('webp').url()} alt={img.alt ?? bio.name} loading="lazy" />
               {img.caption && <figcaption>{img.caption}</figcaption>}
             </figure>
           ))}
         </div>
+      </section>
+    )}
+
+    <!-- VIDEOER ─────────────────────────────────────────────────── -->
+    {bio.videos && bio.videos.length > 0 && (
+      <section class="links-section">
+        <h2 class="section-heading">Videoer</h2>
+        <ul class="links-list">
+          {bio.videos.map((v: any) => (
+            <li>
+              <a href={v.url} target="_blank" rel="noopener noreferrer">
+                <span class="link-icon" aria-hidden="true">{videoTypeLabel[v.type ?? 'annet'] ?? '🔗'}</span>
+                {v.title}
+                {v.year && <span class="video-year">({v.year})</span>}
+                <svg class="ext-icon" viewBox="0 0 12 12" fill="none" aria-label="Åpnes i ny fane">
+                  <path d="M2 10L10 2M10 2H5M10 2V7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                </svg>
+              </a>
+            </li>
+          ))}
+        </ul>
       </section>
     )}
 
@@ -112,15 +140,22 @@ const linkIcons: Record<string, string> = {
         <ul class="links-list">
           {bio.links.map((link: any) => (
             <li>
-              <a href={link.url} target="_blank" rel="noopener noreferrer">
-                <span class="link-icon" aria-hidden="true">
-                  {linkIcons[link.type ?? 'other']}
-                </span>
-                {link.label}
-                <svg class="ext-icon" viewBox="0 0 12 12" fill="none" aria-label="Åpnes i ny fane">
-                  <path d="M2 10L10 2M10 2H5M10 2V7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-                </svg>
-              </a>
+              {link.internalSlug ? (
+                <a href={`/tryllehistorie/magiens-hvem-er-hvem/${link.internalSlug}`}>
+                  <span class="link-icon" aria-hidden="true">🔗</span>
+                  {link.label}
+                </a>
+              ) : link.url ? (
+                <a href={link.url} target="_blank" rel="noopener noreferrer">
+                  <span class="link-icon" aria-hidden="true">{linkIcons[link.type ?? 'other']}</span>
+                  {link.label}
+                  <svg class="ext-icon" viewBox="0 0 12 12" fill="none" aria-label="Åpnes i ny fane">
+                    <path d="M2 10L10 2M10 2H5M10 2V7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                  </svg>
+                </a>
+              ) : (
+                <span>{link.label}</span>
+              )}
             </li>
           ))}
         </ul>
@@ -147,7 +182,6 @@ const linkIcons: Record<string, string> = {
           ))}
         </ul>
 
-        <!-- Disclaimer -->
         <p class="source-disclaimer">
           Denne biografien er basert på <em>«Magiens Hvem er Hvem»</em> av Terje Nordheim (2005)
           og dekker perioden frem til ca. år 2000.
@@ -208,9 +242,9 @@ const linkIcons: Record<string, string> = {
 
   .hero-name   { font-size: clamp(1.5rem, 4vw, 2.5rem); color: var(--cream); margin: 0.5rem 0 0.3rem; }
   .hero-artist { font-family: var(--font-ui); font-size: 0.9rem; color: var(--gold-light); margin-bottom: 0.2rem; }
-  .hero-years  { font-family: var(--font-ui); font-size: 0.85rem; color: var(--gold-light); opacity: 0.7; margin-bottom: 0.75rem; }
+  .hero-years  { font-family: var(--font-ui); font-size: 0.85rem; color: var(--gold-light); opacity: 0.7; margin-bottom: 0.4rem; }
 
-  .hero-tags { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+  .hero-tags { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.5rem; }
 
   .bio-tag {
     font-family: var(--font-ui);
@@ -224,6 +258,21 @@ const linkIcons: Record<string, string> = {
     padding: 0.15rem 0.5rem;
     border-radius: 3px;
   }
+
+  .legend-lenke {
+    display: inline-block;
+    margin-top: 1rem;
+    font-family: var(--font-ui);
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--gold);
+    text-decoration: none;
+    border: 1px solid rgba(212,168,67,0.4);
+    padding: 0.4em 0.9em;
+    border-radius: 3px;
+    transition: background 150ms;
+  }
+  .legend-lenke:hover { background: rgba(212,168,67,0.1); }
 
   .section-label a { color: var(--gold-light); opacity: 0.7; text-decoration: underline; }
 
@@ -257,8 +306,13 @@ const linkIcons: Record<string, string> = {
   }
 
   .prose { font-family: var(--font-body); font-size: 1rem; line-height: 1.75; color: var(--ink); }
-  .prose p { margin-bottom: 1rem; }
-  .prose p:last-child { margin-bottom: 0; }
+  .prose :global(p) { margin-bottom: 1rem; }
+  .prose :global(h2) { font-family: var(--font-display); font-size: 1.2rem; color: var(--burgundy); margin: 1.5rem 0 0.5rem; }
+  .prose :global(strong) { font-weight: 700; }
+  .prose :global(em) { font-style: italic; }
+  .prose :global(a) { color: var(--burgundy); text-decoration: underline; }
+  .prose :global(ul), .prose :global(ol) { padding-left: 1.5em; margin-bottom: 1em; }
+  .prose :global(blockquote) { border-left: 3px solid var(--gold); padding-left: 1em; font-style: italic; color: #555; }
 
   /* GALLERY */
   .gallery-grid {
@@ -282,7 +336,7 @@ const linkIcons: Record<string, string> = {
     text-align: center;
   }
 
-  /* LINKS */
+  /* LINKS & VIDEOS */
   .links-list {
     list-style: none;
     display: flex;
@@ -302,9 +356,8 @@ const linkIcons: Record<string, string> = {
     transition: color 150ms;
   }
   .links-list a:hover { color: var(--burgundy); }
-
   .link-icon { font-size: 1rem; }
-
+  .video-year { font-size: 0.8rem; color: var(--grey); text-decoration: none; }
   .ext-icon { width: 10px; height: 10px; opacity: 0.5; flex-shrink: 0; }
 
   /* SOURCES */
