@@ -86,39 +86,36 @@ const broadcasterLabels: Record<string, string> = {
     <p class="result-count" id="result-count">Viser {total} opptak</p>
   </div>
 
-  <main class="container clips-list" id="clips-grid">
+  <main class="container appearances-grid" id="clips-grid">
     {clips.map((c: any) => (
       <article
-        class="clip-row"
+        class="appearance-card"
         data-broadcaster={c.broadcaster ?? ''}
         data-magician={c.magician?.artistName ?? c.magician?.name ?? ''}
       >
-        <a href={`/tryllehistorie/historiske-opptak/${c.slug}`} class="row-link">
-
-          <div class="row-img">
+        <a href={`/tryllehistorie/historiske-opptak/${c.slug}`} class="card-link">
+          <div class="card-img">
             {c.featuredImage?.asset?.url ? (
               <img src={c.featuredImage.asset.url} alt={c.featuredImage.alt ?? ''} loading="lazy" />
             ) : c.magician?.mainImage?.asset?.url ? (
               <img src={c.magician.mainImage.asset.url} alt="" loading="lazy" />
             ) : (
-              <div class="row-img-placeholder" aria-hidden="true">📼</div>
+              <div class="card-img-placeholder" aria-hidden="true">📼</div>
             )}
+            <div class="card-img-overlay" aria-hidden="true"></div>
+            {c.year && <span class="card-year-badge">{c.year}</span>}
           </div>
-
-          <div class="row-body">
-            <p class="row-meta">
-              {c.year && <span class="row-year">{c.year}</span>}
+          <div class="card-body">
+            <p class="card-meta">
               {c.broadcaster && <span>{broadcasterLabels[c.broadcaster] ?? c.broadcaster}</span>}
-              {c.category && <span class="row-cat">{categoryLabels[c.category] ?? c.category}</span>}
+              {c.category && <span class="card-cat">{categoryLabels[c.category] ?? c.category}</span>}
             </p>
-            <h2 class="row-title">{c.title}</h2>
-            {c.show && <p class="row-show">{c.show}</p>}
+            <h2 class="card-title">{c.title}</h2>
             {c.magician && (
-              <p class="row-magician">{c.magician.artistName ?? c.magician.name}</p>
+              <p class="card-magician">{c.magician.artistName ?? c.magician.name}</p>
             )}
+            <span class="card-arrow" aria-hidden="true">Se opptak →</span>
           </div>
-
-          <span class="row-arrow" aria-hidden="true">→</span>
         </a>
       </article>
     ))}
@@ -185,24 +182,25 @@ const broadcasterLabels: Record<string, string> = {
 
   .result-count { font-family: var(--font-ui); font-size: 0.8rem; color: var(--grey); padding: 0.75rem 0 0.25rem; }
 
-  .clips-list { display: flex; flex-direction: column; gap: 1px; background: var(--cream-dark); border: 1px solid var(--cream-dark); border-radius: 8px; overflow: hidden; margin-bottom: 1rem; }
-  .clip-row { background: white; transition: background 150ms; }
-  .clip-row:hover { background: var(--cream); }
+  .appearances-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 1.5rem; padding-bottom: 1rem; }
+  .appearance-card { border-radius: 6px; overflow: hidden; border: 1px solid var(--cream-dark); background: white; transition: transform 220ms ease, box-shadow 220ms ease, border-color 220ms ease; }
+  .appearance-card:hover { transform: translateY(-4px); box-shadow: 0 8px 28px rgba(107,15,26,0.14); border-color: var(--gold-light); }
+  .card-link { display: flex; flex-direction: column; text-decoration: none; color: var(--ink); height: 100%; }
 
-  .row-link { display: grid; grid-template-columns: 80px 1fr auto; align-items: center; gap: 1rem; padding: 0.875rem 1rem; text-decoration: none; color: var(--ink); }
-  .row-img { width: 80px; height: 60px; border-radius: 4px; overflow: hidden; background: var(--burgundy-dk); flex-shrink: 0; }
-  .row-img img { width: 100%; height: 100%; object-fit: cover; }
-  .row-img-placeholder { display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; font-size: 1.5rem; background: linear-gradient(160deg, var(--burgundy-dk), #2a1208); }
+  .card-img { position: relative; aspect-ratio: 3/2; overflow: hidden; background: var(--burgundy-dk); flex-shrink: 0; }
+  .card-img img { width: 100%; height: 100%; object-fit: cover; transition: transform 400ms ease; }
+  .appearance-card:hover .card-img img { transform: scale(1.04); }
+  .card-img-placeholder { display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; font-size: 3rem; background: linear-gradient(160deg, var(--burgundy-dk), #2a1208); }
+  .card-img-overlay { position: absolute; inset: 0; background: linear-gradient(to bottom, transparent 50%, rgba(26,18,8,0.5) 100%); pointer-events: none; }
+  .card-year-badge { position: absolute; top: 0.6rem; right: 0.6rem; font-family: var(--font-display); font-size: 0.75rem; font-weight: 700; letter-spacing: 0.06em; padding: 0.2rem 0.5rem; border-radius: 3px; background: rgba(26,18,8,0.75); color: var(--gold-light); backdrop-filter: blur(4px); }
 
-  .row-meta { font-family: var(--font-ui); font-size: 0.7rem; color: var(--grey); display: flex; gap: 0.4rem; flex-wrap: wrap; margin-bottom: 0.2rem; }
-  .row-year { font-weight: 700; color: var(--gold-dark); }
-  .row-cat { font-style: italic; }
-  .row-title { font-family: var(--font-display); font-size: 0.95rem; color: var(--burgundy); letter-spacing: 0.02em; line-height: 1.3; }
-  .row-show { font-family: var(--font-ui); font-size: 0.78rem; color: var(--ink-mid); font-style: italic; }
-  .row-magician { font-family: var(--font-ui); font-size: 0.75rem; color: var(--grey); margin-top: 0.1rem; }
-
-  .row-arrow { font-size: 0.85rem; color: var(--gold-dark); opacity: 0; transition: opacity 150ms, transform 150ms; }
-  .clip-row:hover .row-arrow { opacity: 1; transform: translateX(3px); }
+  .card-body { padding: 1rem 1.1rem 1.2rem; display: flex; flex-direction: column; gap: 0.15rem; flex: 1; }
+  .card-meta { font-family: var(--font-ui); font-size: 0.7rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; color: var(--gold-dark); display: flex; gap: 0.4rem; flex-wrap: wrap; }
+  .card-cat { font-weight: 400; font-style: italic; color: var(--grey); text-transform: none; letter-spacing: 0; }
+  .card-title { font-family: var(--font-display); font-size: 1rem; color: var(--burgundy); letter-spacing: 0.02em; line-height: 1.25; }
+  .card-magician { font-family: var(--font-ui); font-size: 0.75rem; color: var(--grey); }
+  .card-arrow { font-family: var(--font-ui); font-size: 0.72rem; font-weight: 700; color: var(--gold-dark); margin-top: auto; padding-top: 0.6rem; opacity: 0; transition: opacity 180ms; }
+  .appearance-card:hover .card-arrow { opacity: 1; }
 
   .no-results { padding: 3rem 0; text-align: center; font-family: var(--font-ui); color: var(--ink-mid); }
   .filter-reset-inline { margin-top: 0.75rem; font-family: var(--font-ui); font-size: 0.875rem; font-weight: 600; color: var(--burgundy); background: none; border: 1px solid var(--gold-dark); border-radius: 6px; padding: 0.45rem 1rem; cursor: pointer; }
@@ -211,8 +209,5 @@ const broadcasterLabels: Record<string, string> = {
   .page-nav a { color: var(--grey); text-decoration: none; border: 1px solid var(--cream-dark); padding: 0.4rem 1rem; border-radius: var(--radius); transition: color 150ms, border-color 150ms; }
   .page-nav a:hover { color: var(--burgundy); border-color: var(--gold); }
 
-  @media (max-width: 560px) {
-    .row-link { grid-template-columns: 60px 1fr; }
-    .row-arrow { display: none; }
-  }
+  @media (max-width: 700px) { .appearances-grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 1rem; } }
 </style>

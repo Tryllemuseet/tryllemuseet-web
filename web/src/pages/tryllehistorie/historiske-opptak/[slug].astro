@@ -1,8 +1,7 @@
 ---
 // src/pages/tryllehistorie/historiske-opptak/[slug].astro
 import BaseLayout from '../../../layouts/BaseLayout.astro'
-import { sanityClient } from '../../../lib/sanity'
-import { PortableText } from 'astro-portabletext'
+import { sanityClient, portableTextToHtml } from '../../../lib/sanity'
 
 export async function getStaticPaths() {
   const slugs = await sanityClient.fetch(`
@@ -86,7 +85,7 @@ const broadcasterLabels: Record<string, string> = {
       {c.description?.length > 0 && (
         <section class="detail-section">
           <h2 class="detail-heading">Om opptaket</h2>
-          <div class="prose"><PortableText value={c.description} /></div>
+          <div class="prose" set:html={portableTextToHtml(c.description)} />
         </section>
       )}
 
