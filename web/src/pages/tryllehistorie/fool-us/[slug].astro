@@ -1,12 +1,11 @@
 ---
 // src/pages/tryllehistorie/fool-us/[slug].astro
 import BaseLayout from '../../../layouts/BaseLayout.astro'
-import { sanityClient, showLabels, resultLabels } from '../../../lib/sanity'
-import { PortableText } from 'astro-portabletext'
+import { sanityClient, showLabels, showMeta, resultLabels, portableTextToHtml } from '../../../lib/sanity'
 
 export async function getStaticPaths() {
   const slugs = await sanityClient.fetch(`
-    *[_type == "tvAppearance" && category == "fool_us"] { "slug": slug.current }
+    *[_type == "tvAppearance" && show == "fool-us"] { "slug": slug.current }
   `)
   return slugs.filter((s: any) => s.slug).map((s: any) => ({ params: { slug: s.slug } }))
 }
@@ -14,9 +13,9 @@ export async function getStaticPaths() {
 const { slug } = Astro.params
 
 const a = await sanityClient.fetch(`
-  *[_type == "tvAppearance" && category == "fool_us" && slug.current == $slug][0] {
+  *[_type == "tvAppearance" && show == "fool-us" && slug.current == $slug][0] {
     _id, "slug": slug.current,
-    show, showCountry, year, season, episode, episodeTitle,
+    show, year, season, episode, episodeTitle,
     result, description, videoUrl,
     featuredImage { asset->{ url }, alt, caption },
     magician-> {
@@ -32,7 +31,7 @@ if (!a) return Astro.redirect('/tryllehistorie/fool-us')
 
 const otherAppearances = await sanityClient.fetch(`
   *[_type == "tvAppearance" && slug.current != $slug && magician._ref == $magicianId] | order(year asc) {
-    "slug": slug.current, category, show, year, result
+    "slug": slug.current, show, year, result
   }
 `, { slug, magicianId: a.magician._id })
 
@@ -89,7 +88,7 @@ const fooled      = a.result === 'fooled'
       {a.description?.length > 0 && (
         <section class="detail-section">
           <h2 class="detail-heading">Om opptredenen</h2>
-          <div class="prose"><PortableText value={a.description} /></div>
+          <div class="prose" set:html={portableTextToHtml(a.description)} />
         </section>
       )}
 
@@ -114,7 +113,8 @@ const fooled      = a.result === 'fooled'
           <h2 class="detail-heading">Andre opptredener av {a.magician?.artistName ?? a.magician?.name}</h2>
           <ul class="other-list">
             {otherAppearances.map((o: any) => {
-              const href = o.category === 'got_talent'
+              const meta = showMeta[o.show]
+              const href = meta?.category === 'got_talent'
                 ? `/tryllehistorie/got-talent/${o.slug}`
                 : `/tryllehistorie/fool-us/${o.slug}`
               return (
