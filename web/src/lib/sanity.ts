@@ -1,6 +1,6 @@
 // src/lib/sanity.ts
 import { createClient } from '@sanity/client'
-import imageUrlBuilder from '@sanity/image-url'
+import { createImageUrlBuilder } from '@sanity/image-url'
 import type { SanityImageSource } from '@sanity/image-url/lib/types/types'
 
 // "production" i Vercel prod-miljø, "preview" i preview-bygg, undefined lokalt
@@ -11,12 +11,12 @@ export const sanityClient = createClient({
   dataset:     import.meta.env.PUBLIC_SANITY_DATASET   ?? 'production',
   apiVersion:  '2024-01-01',
   useCdn:      isProd,
-  perspective: isProd ? 'published' : 'previewDrafts',
+  perspective: isProd ? 'published' : 'drafts',
   token:       isProd ? undefined : (import.meta.env.SANITY_PREVIEW_TOKEN ?? undefined),
 })
 
 // ── Bildebygger ──────────────────────────────────────────────────
-const builder = imageUrlBuilder(sanityClient)
+const builder = createImageUrlBuilder(sanityClient)
 
 /**
  * Bygg en optimalisert bilde-URL fra et Sanity-bildeobjekt.
