@@ -633,3 +633,193 @@ export async function getTvAppearancePaths() {
     .filter((a: { slug?: string }) => a.slug)
     .map((a: { slug: string }) => ({ params: { slug: a.slug } }))
 }
+
+// ── PortableText → HTML ──────────────────────────────────────────
+import { toHTML } from '@portabletext/to-html'
+import type { PortableTextBlock } from '@portabletext/types'
+
+/**
+ * Converts Sanity PortableText (any[]) to an HTML string.
+ * Usage:  const html = portableTextToHtml(doc.fullBio)
+ * In .astro: <div set:html={html} />
+ *
+ * Handles: paragraphs, headings (h2–h4), bold, italic,
+ * underline, links, bullet lists, numbered lists, blockquotes.
+ */
+export function portableTextToHtml(blocks: PortableTextBlock[] | undefined | null): string {
+  if (!blocks?.length) return ''
+  return toHTML(blocks, {
+    components: {
+      marks: {
+        link: ({ children, value }) =>
+          `<a href="${value?.href ?? '#'}" target="_blank" rel="noopener noreferrer">${children}</a>`,
+      },
+    },
+  })
+}
+
+// ── Typer: Biography ─────────────────────────────────────────────
+
+export interface BiographyVideo {
+  title:        string
+  url:          string
+  type?:        'tv' | 'intervju' | 'opptreden' | 'annet'
+  year?:        number
+}
+
+export interface BiographyLink {
+  label:         string
+  type?:         string
+  url?:          string
+  internalSlug?: string
+}
+
+export interface BiographyImage {
+  asset:    { _ref: string; url: string }
+  alt?:     string
+  caption?: string
+}
+
+export interface Biography {
+  _id:         string
+  name:        string
+  slug:        string
+  artistName?: string
+  aliases?:    string[]
+  nationality?: string
+  birthDate?:  string
+  deathDate?:  string
+  years?:      string
+  collection?: string[]
+  featured?:   boolean
+  tags?:       string[]
+  mainImage?:  BiographyImage
+  gallery?:    BiographyImage[]
+  shortBio?:   string
+  fullBio?:    any[]
+  videos?:     BiographyVideo[]
+  links?:      BiographyLink[]
+  legendRef?:  { _ref: string; slug: string }
+  sources?:    { label: string; url?: string }[]
+}
+
+// ── Typer: Legend ────────────────────────────────────────────────
+
+export interface Legend {
+  _id:          string
+  title:        string
+  slug:         string
+  excerpt?:     string
+  biographyRef?: {
+    _id:         string
+    name:        string
+    slug:        string
+    artistName?: string
+    birthDate?:  string
+    deathDate?:  string
+    years?:      string
+    mainImage?:  BiographyImage
+  }
+  mainImage?:   BiographyImage
+  gallery?:     BiographyImage[]
+  content?:     any[]
+  videos?:      BiographyVideo[]
+  tags?:        string[]
+  sources?:     { label: string; url?: string }[]
+}
+
+// ── Spørringer: Biography ────────────────────────────────────────
+
+// Alle biografier i HEH-oversikten
+export async function getAllBiographies(): Promise<Biography[]> {
+  return sanityClient.fetch(`
+    *[_type == "biography"] | order(name asc) {
+      _id, name, "slug": slug.current,
+      artistName, nationality, years,
+      birthDate, deathDate,
+      collection, featured, tags,
+      shortBio,
+      mainImage { asset->{ _ref, url }, alt }
+    }
+  `)
+}
+
+// Én biografi via slug — til profilsiden
+export async function getBiographyBySlug(slug: string): Promise<Biography | null> {
+  return sanityClient.fetch(`
+    *[_type == "biography" && slug.current == $slug][0] {
+      _id, name, "slug": slug.current,
+      artistName, aliases, nationality,
+      birthDate, deathDate, years,
+      collection, featured, tags,
+      mainImage { asset->{ _ref, url }, alt, caption },
+      gallery[] { asset->{ _ref, url }, alt, caption },
+      shortBio, fullBio,
+      videos[] { title, url, type, year },
+      links[] {
+        label, type, url,
+        "internalSlug": internalRef->slug.current
+      },
+      "legendRef": legendRef-> { "slug": slug.current },
+      sources[] { label, url }
+    }
+  `, { slug })
+}
+
+// Statiske stier for biography [slug].astro
+export async function getBiographyPaths() {
+  const bios = await sanityClient.fetch(`
+    *[_type == "biography"] { "slug": slug.current }
+  `)
+  return bios
+    .filter((b: { slug?: string }) => b.slug)
+    .map((b: { slug: string }) => ({ params: { slug: b.slug } }))
+}
+
+// ── Spørringer: Legend ───────────────────────────────────────────
+
+// Alle legender — til oversiktssiden
+export async function getAllLegends(): Promise<Legend[]> {
+  return sanityClient.fetch(`
+    *[_type == "legend"] | order(title asc) {
+      _id, title, "slug": slug.current,
+      excerpt, tags,
+      mainImage { asset->{ _ref, url }, alt },
+      biographyRef-> {
+        _id, name, "slug": slug.current,
+        artistName, birthDate, deathDate, years,
+        mainImage { asset->{ _ref, url }, alt }
+      }
+    }
+  `)
+}
+
+// Én legende via slug — til artikkelsiden
+export async function getLegendBySlug(slug: string): Promise<Legend | null> {
+  return sanityClient.fetch(`
+    *[_type == "legend" && slug.current == $slug][0] {
+      _id, title, "slug": slug.current,
+      excerpt, tags,
+      mainImage { asset->{ _ref, url }, alt, caption },
+      gallery[] { asset->{ _ref, url }, alt, caption },
+      content,
+      videos[] { title, url, type, year },
+      sources[] { label, url },
+      biographyRef-> {
+        _id, name, "slug": slug.current,
+        artistName, birthDate, deathDate, years,
+        mainImage { asset->{ _ref, url }, alt }
+      }
+    }
+  `, { slug })
+}
+
+// Statiske stier for legend [slug].astro
+export async function getLegendPaths() {
+  const legends = await sanityClient.fetch(`
+    *[_type == "legend"] { "slug": slug.current }
+  `)
+  return legends
+    .filter((l: { slug?: string }) => l.slug)
+    .map((l: { slug: string }) => ({ params: { slug: l.slug } }))
+}

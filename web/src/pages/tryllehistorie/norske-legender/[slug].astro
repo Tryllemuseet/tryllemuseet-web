@@ -1,0 +1,252 @@
+---
+// src/pages/tryllehistorie/norske-legender/[slug].astro
+import BaseLayout from '../../../layouts/BaseLayout.astro'
+import { getLegendBySlug, getLegendPaths, portableTextToHtml, urlFor } from '../../../lib/sanity'
+import type { Legend } from '../../../lib/sanity'
+
+export async function getStaticPaths() {
+  const paths = await getLegendPaths()
+  return paths
+}
+
+const { slug } = Astro.params
+const leg = await getLegendBySlug(slug!) as Legend | null
+
+if (!leg) return Astro.redirect('/tryllehistorie/norske-legender')
+
+const bio = leg.biographyRef
+const img = leg.mainImage ?? bio?.mainImage
+const contentHtml = portableTextToHtml(leg.content)
+
+// Aldersberegning
+function calcAge(birth: string, death?: string): string {
+  const b = new Date(birth)
+  const d = death ? new Date(death) : new Date()
+  const age = d.getFullYear() - b.getFullYear() -
+    (d < new Date(d.getFullYear(), b.getMonth(), b.getDate()) ? 1 : 0)
+  if (death) {
+    return `${b.getFullYear()}–${new Date(death).getFullYear()} (${age} år)`
+  }
+  return `f. ${b.getFullYear()} (${age} år)`
+}
+
+const ageStr = bio?.birthDate ? calcAge(bio.birthDate, bio.deathDate ?? undefined) : (bio?.years ?? '')
+
+const videoTypeLabel: Record<string, string> = {
+  tv: '📺 TV-opptreden', intervju: '🎙️ Intervju', opptreden: '🎩 Opptreden', annet: '🔗',
+}
+---
+
+<BaseLayout
+  title={`${leg.title} — Tryllemuseet`}
+  description={leg.excerpt ?? `Les om ${bio?.name ?? leg.title} på Tryllemuseet.`}
+>
+
+  <!-- HERO ──────────────────────────────────────────────────────── -->
+  <section class="legend-hero">
+    <div class="legend-hero-bg">
+      {img?.asset?.url && (
+        <img src={img.asset.url} alt="" aria-hidden="true" class="hero-bg-img" />
+      )}
+      <div class="hero-bg-overlay"></div>
+    </div>
+    <div class="container legend-hero-inner">
+      <nav class="breadcrumb">
+        <a href="/tryllehistorie">Tryllehistorie</a>
+        <span>›</span>
+        <a href="/tryllehistorie/norske-legender">Norske legender</a>
+      </nav>
+      <h1 class="legend-hero-title">{leg.title}</h1>
+      {leg.excerpt && <p class="legend-hero-ingress">{leg.excerpt}</p>}
+      {ageStr && <p class="legend-hero-years">{ageStr}</p>}
+    </div>
+  </section>
+
+  <div class="container article-layout">
+
+    <!-- ARTIKKELTEKST ──────────────────────────────────────────── -->
+    <main class="article-main">
+
+      {contentHtml ? (
+        <div class="prose" set:html={contentHtml} />
+      ) : (
+        <p class="no-content">Artikkelinnhold er under arbeid. Kom tilbake snart.</p>
+      )}
+
+      <!-- Bildegalleri ── -->
+      {leg.gallery && leg.gallery.length > 0 && (
+        <section class="gallery-seksjon">
+          <h2 class="section-heading">Bilder</h2>
+          <div class="gallery-grid">
+            {leg.gallery.map((img: any) => (
+              <figure class="gallery-fig">
+                <img
+                  src={urlFor(img).width(600).format('webp').url()}
+                  alt={img.alt ?? ''}
+                  loading="lazy"
+                />
+                {img.caption && <figcaption>{img.caption}</figcaption>}
+              </figure>
+            ))}
+          </div>
+        </section>
+      )}
+
+      <!-- Videoer ── -->
+      {leg.videos && leg.videos.length > 0 && (
+        <section class="video-seksjon">
+          <h2 class="section-heading">Videoer</h2>
+          <ul class="video-liste">
+            {leg.videos.map((v: any) => (
+              <li class="video-rad">
+                <span class="video-type">{videoTypeLabel[v.type ?? 'annet'] ?? '🔗'}</span>
+                <div class="video-info">
+                  <a href={v.url} target="_blank" rel="noopener noreferrer" class="video-tittel">
+                    {v.title}
+                  </a>
+                  {v.year && <span class="video-year">{v.year}</span>}
+                </div>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
+    </main>
+
+    <!-- SIDEBAR ────────────────────────────────────────────────── -->
+    <aside class="article-sidebar">
+
+      <!-- Portrettbilde ── -->
+      {img?.asset?.url && (
+        <div class="sidebar-portrett">
+          <img
+            src={urlFor(img).width(400).format('webp').url()}
+            alt={img.alt ?? bio?.name ?? leg.title}
+          />
+          {img.caption && <p class="portrett-caption">{img.caption}</p>}
+        </div>
+      )}
+
+      <!-- Faktaboks ── -->
+      {bio && (
+        <div class="faktaboks">
+          <h3 class="faktaboks-heading">Om personen</h3>
+          <dl>
+            {bio.name && <><dt>Navn</dt><dd>{bio.name}</dd></>}
+            {bio.artistName && <><dt>Kunstnernavn</dt><dd>«{bio.artistName}»</dd></>}
+            {ageStr && <><dt>{bio.deathDate ? 'Leveår' : 'Alder'}</dt><dd>{ageStr}</dd></>}
+            {bio.years && <><dt>Aktiv</dt><dd>{bio.years}</dd></>}
+          </dl>
+          <a
+            href={`/tryllehistorie/magiens-hvem-er-hvem/${bio.slug}`}
+            class="bio-lenke"
+          >
+            Se profil i Hvem er hvem →
+          </a>
+        </div>
+      )}
+
+      <!-- Kilder ── -->
+      {leg.sources && leg.sources.length > 0 && (
+        <div class="kilder-boks">
+          <h3 class="faktaboks-heading">Kilder</h3>
+          <ul class="kilder-liste">
+            {leg.sources.map((s: any) => (
+              <li>
+                {s.url
+                  ? <a href={s.url} target="_blank" rel="noopener noreferrer">{s.label}</a>
+                  : <span>{s.label}</span>
+                }
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+    </aside>
+  </div>
+
+  <!-- NAVIGASJON ─────────────────────────────────────────────────── -->
+  <div class="container page-nav">
+    <a href="/tryllehistorie/norske-legender">← Norske legender</a>
+    <a href="/tryllehistorie">← Tryllehistorie</a>
+  </div>
+
+</BaseLayout>
+
+<style>
+  /* ── Hero ── */
+  .legend-hero { position: relative; min-height: 340px; display: flex; align-items: flex-end; padding-bottom: 3rem; color: var(--cream); overflow: hidden; }
+  .legend-hero-bg { position: absolute; inset: 0; }
+  .hero-bg-img { width: 100%; height: 100%; object-fit: cover; object-position: top center; }
+  .hero-bg-overlay { position: absolute; inset: 0; background: linear-gradient(to bottom, rgba(10,5,2,0.4) 0%, rgba(10,5,2,0.85) 100%); }
+  .legend-hero-inner { position: relative; z-index: 1; }
+  .breadcrumb { display: flex; gap: 0.5rem; align-items: center; font-family: var(--font-ui); font-size: 0.7rem; font-weight: 600; letter-spacing: 0.15em; text-transform: uppercase; margin-bottom: 1rem; }
+  .breadcrumb a { color: var(--gold); text-decoration: none; }
+  .breadcrumb a:hover { text-decoration: underline; }
+  .breadcrumb span { color: rgba(251,247,239,0.4); }
+  .legend-hero-title { font-family: var(--font-display); font-size: clamp(1.8rem, 5vw, 3rem); color: var(--cream); line-height: 1.2; margin-bottom: 0.75rem; }
+  .legend-hero-ingress { font-family: var(--font-body); font-size: 1.05rem; opacity: 0.85; max-width: 620px; line-height: 1.6; margin-bottom: 0.4rem; }
+  .legend-hero-years { font-family: var(--font-ui); font-size: 0.8rem; color: var(--gold); letter-spacing: 0.1em; }
+
+  /* ── Layout ── */
+  .article-layout { display: grid; grid-template-columns: 1fr 280px; gap: 3.5rem; align-items: start; padding-block: 3rem; }
+  @media (max-width: 768px) { .article-layout { grid-template-columns: 1fr; } }
+
+  /* ── Prose ── */
+  .prose :global(p)          { font-family: var(--font-body); font-size: 1rem; color: #333; line-height: 1.8; margin-bottom: 1.1em; }
+  .prose :global(h2)         { font-family: var(--font-display); font-size: 1.3rem; color: var(--burgundy); margin: 2rem 0 0.75rem; }
+  .prose :global(h3)         { font-family: var(--font-display); font-size: 1.1rem; color: var(--burgundy); margin: 1.5rem 0 0.5rem; }
+  .prose :global(strong)     { font-weight: 700; color: var(--ink); }
+  .prose :global(em)         { font-style: italic; }
+  .prose :global(a)          { color: var(--burgundy); text-decoration: underline; }
+  .prose :global(a:hover)    { color: var(--gold-dark); }
+  .prose :global(ul), .prose :global(ol) { padding-left: 1.5em; margin-bottom: 1em; }
+  .prose :global(li)         { font-family: var(--font-body); font-size: 1rem; color: #333; line-height: 1.7; margin-bottom: 0.3em; }
+  .prose :global(blockquote) { border-left: 3px solid var(--gold); padding-left: 1.25em; margin: 1.5em 0; font-style: italic; color: #555; }
+
+  .no-content { font-family: var(--font-ui); color: var(--grey); font-style: italic; padding: 2rem 0; }
+
+  /* ── Galleri ── */
+  .section-heading { font-family: var(--font-display); font-size: 1.1rem; color: var(--burgundy); border-bottom: 1px solid var(--cream-dark); padding-bottom: 0.5rem; margin: 2.5rem 0 1.25rem; }
+  .gallery-seksjon { margin-top: 2rem; }
+  .gallery-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1rem; }
+  .gallery-fig { margin: 0; }
+  .gallery-fig img { width: 100%; aspect-ratio: 4/3; object-fit: cover; border-radius: 4px; }
+  .gallery-fig figcaption { font-family: var(--font-ui); font-size: 0.75rem; color: var(--grey); margin-top: 0.3rem; text-align: center; }
+
+  /* ── Videoer ── */
+  .video-seksjon { margin-top: 2rem; }
+  .video-liste { list-style: none; padding: 0; display: flex; flex-direction: column; gap: 0.75rem; }
+  .video-rad { display: flex; align-items: flex-start; gap: 0.75rem; padding: 0.75rem 1rem; background: var(--cream); border-radius: 4px; border: 1px solid var(--cream-dark); }
+  .video-type { font-size: 0.8rem; white-space: nowrap; padding-top: 0.1rem; }
+  .video-info { display: flex; flex-direction: column; gap: 0.15rem; }
+  .video-tittel { font-family: var(--font-ui); font-size: 0.9rem; color: var(--burgundy); text-decoration: none; font-weight: 600; }
+  .video-tittel:hover { text-decoration: underline; }
+  .video-year { font-family: var(--font-ui); font-size: 0.75rem; color: var(--grey); }
+
+  /* ── Sidebar ── */
+  .sidebar-portrett { margin-bottom: 1.5rem; border-radius: 6px; overflow: hidden; box-shadow: 0 4px 16px rgba(26,18,8,0.12); }
+  .sidebar-portrett img { width: 100%; display: block; }
+  .portrett-caption { font-family: var(--font-ui); font-size: 0.75rem; color: var(--grey); text-align: center; padding: 0.4rem 0.75rem; background: var(--cream); }
+
+  .faktaboks { background: var(--cream); border: 1px solid rgba(107,15,26,0.1); border-top: 3px solid var(--gold); padding: 1.5rem; border-radius: 2px; margin-bottom: 1.5rem; }
+  .faktaboks-heading { font-family: var(--font-display); font-size: 0.8rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--burgundy); margin-bottom: 1rem; }
+  .faktaboks dl { margin: 0; }
+  .faktaboks dt { font-family: var(--font-ui); font-size: 0.65rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--gold-dark); margin-top: 0.75rem; }
+  .faktaboks dt:first-of-type { margin-top: 0; }
+  .faktaboks dd { font-family: var(--font-ui); font-size: 0.875rem; color: #333; margin: 0.1rem 0 0; }
+  .bio-lenke { display: block; margin-top: 1.25rem; font-family: var(--font-ui); font-size: 0.8rem; font-weight: 600; color: var(--burgundy); text-decoration: none; border-top: 1px solid rgba(107,15,26,0.1); padding-top: 1rem; }
+  .bio-lenke:hover { color: var(--gold-dark); }
+
+  .kilder-boks { background: var(--cream); border: 1px solid var(--cream-dark); padding: 1.25rem 1.5rem; border-radius: 2px; }
+  .kilder-liste { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 0.5rem; }
+  .kilder-liste a { font-family: var(--font-ui); font-size: 0.8rem; color: var(--burgundy); text-decoration: underline; word-break: break-all; }
+  .kilder-liste span { font-family: var(--font-ui); font-size: 0.8rem; color: var(--grey); }
+
+  /* ── Navigasjon ── */
+  .page-nav { display: flex; flex-wrap: wrap; gap: 0.75rem; padding: 1.5rem 0 3rem; font-family: var(--font-ui); font-size: 0.875rem; }
+  .page-nav a { color: var(--grey); text-decoration: none; border: 1px solid var(--cream-dark); padding: 0.4rem 1rem; border-radius: var(--radius); transition: color 150ms, border-color 150ms; }
+  .page-nav a:hover { color: var(--burgundy); border-color: var(--gold); }
+</style>
