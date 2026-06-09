@@ -768,3 +768,25 @@ export async function getLegendPaths() {
     .filter((l: { slug?: string }) => l.slug)
     .map((l: { slug: string }) => ({ params: { slug: l.slug } }))
 }
+
+// ── Typer: Partner ───────────────────────────────────────────────
+
+export interface Partner {
+  _id:       string
+  name:      string
+  category:  'public' | 'private' | 'org'
+  url?:      string
+  logo?:     { asset: { _ref: string; url: string } }
+  order?:    number
+}
+
+// ── Spørringer: Partner ──────────────────────────────────────────
+
+export async function getAllPartners(): Promise<Partner[]> {
+  return sanityClient.fetch(`
+    *[_type == "partner"] | order(coalesce(order, 99) asc, name asc) {
+      _id, name, category, url, order,
+      logo { asset->{ _ref, url } }
+    }
+  `)
+}

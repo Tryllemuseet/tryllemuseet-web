@@ -1,13 +1,14 @@
 ---
 // src/pages/index.astro
 import BaseLayout from '../layouts/BaseLayout.astro'
-import { getAllMagicians, getUpcomingEvents, getHomepage, getSiteConfig, urlFor } from '../lib/sanity'
+import { getAllMagicians, getUpcomingEvents, getHomepage, getSiteConfig, getAllPartners, urlFor } from '../lib/sanity'
 
-const [magicians, events, hp, config] = await Promise.all([
+const [magicians, events, hp, config, partners] = await Promise.all([
   getAllMagicians(),
   getUpcomingEvents(3),
   getHomepage(),
   getSiteConfig(),
+  getAllPartners(),
 ])
 
 // ── Fallback-verdier ─────────────────────────────────────────────
@@ -307,6 +308,46 @@ function formatTime(d: string) {
     </div>
   </section>
 
+<!-- ══ SPONSORER ═══════════════════════════════════════════════ -->
+{partners.length > 0 && (
+  <section class="sponsors-section" aria-label="Støttespillere">
+    <div class="container sponsors-inner">
+      <div class="sponsors-groups">
+        {(['public', 'private', 'org'] as const)
+          .map(cat => {
+            const gruppe = partners.filter(p => p.category === cat)
+            if (!gruppe.length) return null
+            const labels = { public: 'Offentlig støtte', private: 'Privat støtte', org: 'Faglig samarbeid' }
+            return (
+              <div class="sponsors-group">
+                <p class="sponsors-label">{labels[cat]}</p>
+                <div class="sponsors-logos">
+                  {gruppe.map(p => (
+                    p.url
+                      ? <a href={p.url} target="_blank" rel="noopener noreferrer" class="sponsor-item" aria-label={p.name}>
+                          {p.logo?.asset?.url
+                            ? <img src={p.logo.asset.url} alt={p.name} class="sponsor-logo" loading="lazy" />
+                            : <span class="sponsor-name">{p.name}</span>
+                          }
+                        </a>
+                      : <div class="sponsor-item" aria-label={p.name}>
+                          {p.logo?.asset?.url
+                            ? <img src={p.logo.asset.url} alt={p.name} class="sponsor-logo" loading="lazy" />
+                            : <span class="sponsor-name">{p.name}</span>
+                          }
+                        </div>
+                  ))}
+                </div>
+              </div>
+            )
+          })
+        }
+      </div>
+    </div>
+  </section>
+)}
+
+
   <hr class="gold-rule container" />
 
   <!-- ══ FOR BARN ════════════════════════════════════════════════ -->
@@ -597,4 +638,20 @@ function formatTime(d: string) {
     .magiker-card { flex:0 0 160px; }
     .carousel-track { padding:0.5rem 1.2rem 1.5rem; gap:12px; }
   }
+  
+  /* ── SPONSORER ─────────────────────────────────────────────────── */
+    .sponsors-section { background:var(--burgundy-dk); padding:2rem 0; border-top:1px solid rgba(212,168,67,0.15); }
+    .sponsors-inner { display:flex; justify-content:center; }
+    .sponsors-groups { display:flex; gap:3rem; align-items:center; flex-wrap:wrap; justify-content:center; }
+    .sponsors-group { display:flex; flex-direction:column; align-items:center; gap:0.75rem; }
+    .sponsors-label { font-family:var(--font-ui); font-size:0.65rem; text-transform:uppercase; letter-spacing:0.14em; color:var(--gold); opacity:0.6; text-align:center; }
+    .sponsors-logos { display:flex; align-items:center; gap:1.5rem; flex-wrap:wrap; justify-content:center; }
+    .sponsor-item { display:flex; align-items:center; opacity:0.65; transition:opacity 200ms; text-decoration:none; }
+    .sponsor-item { display:flex; align-items:center; opacity:0.65; transition:opacity 200ms; text-decoration:none; }
+    .sponsor-item:hover { opacity:1; }
+    .sponsor-logo { height:32px; width:auto; max-width:120px; filter:brightness(0) invert(1); object-fit:contain; }
+    .sponsor-name { font-family:var(--font-ui); font-size:0.8rem; font-weight:600; color:var(--cream); letter-spacing:0.05em; white-space:nowrap; }
+    @media (max-width:600px) {
+      .sponsors-groups { flex-direction:column; gap:2rem; }
+}
 </style>
