@@ -8,6 +8,15 @@ export const legend = defineType({
   icon: () => '🌟',
   fields: [
 
+    // ── SYNLIGHET ─────────────────────────────────────────────────
+    defineField({
+      name:         'isVisible',
+      title:        'Vis på nettsted',
+      type:         'boolean',
+      initialValue: true,
+      description:  'Skjul innholdet fra nettsiden uten å slette det. Standard: på.',
+    }),
+
     // ── 1. IDENTITET ──────────────────────────────────────────────
     defineField({
       name: 'title',

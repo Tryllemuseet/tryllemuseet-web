@@ -183,6 +183,17 @@ Update TypeScript interfaces in sanity.ts when schema changes.
 - **Web**: Static site deployable to any static host (Vercel, Netlify, etc.)
   - PUBLIC_VERCEL_ENV controls CDN usage in production
 
+## Visibility / Unpublish Convention
+
+All content document types (`magician`, `biography`, `legend`, `event`, `tvAppearance`, `historicalClip`, `book`, `artifact`, `partner`) have a boolean field `isVisible` with `initialValue: true`.
+
+**Rules:**
+- Default is always `true` — new documents are visible automatically
+- Setting `isVisible` to `false` hides the document from the website without deleting it
+- All GROQ queries must include `&& isVisible != false` (not `== true`, so existing docs without the field are still shown)
+- When adding a new queryable document type, add `isVisible` as the first field and add the filter to every query for that type
+- `getStaticPaths()` calls must also filter by `isVisible != false` so hidden documents do not get their own static pages
+
 ## Common Gotchas
 
 1. **Schema Changes**: After editing schema files, redeploy the studio for changes to appear in editor UI and API

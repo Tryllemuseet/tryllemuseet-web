@@ -84,7 +84,7 @@ export interface Artifact {
 // Alle magikere sortert — til oversiktssiden
 export async function getAllMagicians(): Promise<Magician[]> {
   return sanityClient.fetch(`
-    *[_type == "magician"] | order(order asc) {
+    *[_type == "magician" && isVisible != false] | order(order asc) {
       _id, title, "slug": slug.current,
       order, qrNumber, years, tagline, mobileIntro,
       posterImage { asset->{ _ref, url }, alt }
@@ -95,7 +95,7 @@ export async function getAllMagicians(): Promise<Magician[]> {
 // Én magiker via slug — til detaljsiden
 export async function getMagicianBySlug(slug: string): Promise<Magician | null> {
   return sanityClient.fetch(`
-    *[_type == "magician" && slug.current == $slug][0] {
+    *[_type == "magician" && slug.current == $slug && isVisible != false][0] {
       _id, title, "slug": slug.current,
       order, qrNumber, years, tagline,
       posterImage { asset->{ _ref, url }, alt },
@@ -119,7 +119,7 @@ export async function getMagicianByQR(qrNumber: number): Promise<Magician | null
 // Kommende arrangementer
 export async function getUpcomingEvents(limit = 3): Promise<Event[]> {
   return sanityClient.fetch(`
-    *[_type == "event" && date >= now()] | order(date asc) [0...$limit] {
+    *[_type == "event" && date >= now() && isVisible != false] | order(date asc) [0...$limit] {
       _id, title, "slug": slug.current,
       date, ageGroup, price, excerpt, featured,
       image { asset->{ _ref, url }, alt },
@@ -131,7 +131,7 @@ export async function getUpcomingEvents(limit = 3): Promise<Event[]> {
 // Alle arrangementer (kommende og tidligere) — til aktivitetssiden
 export async function getAllEvents(): Promise<Event[]> {
   return sanityClient.fetch(`
-    *[_type == "event"] | order(date asc) {
+    *[_type == "event" && isVisible != false] | order(date asc) {
       _id, title, "slug": slug.current,
       date, ageGroup, price, excerpt, featured,
       image { asset->{ _ref, url }, alt },
@@ -141,7 +141,7 @@ export async function getAllEvents(): Promise<Event[]> {
 }
 
 export async function getStaticPaths() {
-  const magicians = await getAllMagicians()
+  const magicians = await getAllMagicians() // getAllMagicians already filters isVisible != false
   return magicians
     .filter(m => m.slug && typeof m.slug === 'string')
     .map(m => ({ params: { slug: String(m.slug) } }))
@@ -152,7 +152,7 @@ export async function getStaticPaths() {
 // Alle artefakter sortert — til oversiktssiden
 export async function getAllArtifacts(): Promise<Artifact[]> {
   return sanityClient.fetch(`
-    *[_type == "artifact"] | order(coalesce(order, 9999) asc, title asc) {
+    *[_type == "artifact" && isVisible != false] | order(coalesce(order, 9999) asc, title asc) {
       _id, title, "slug": slug.current,
       description, year, yearNote, origin,
       category, material, dimensions, condition,
@@ -165,7 +165,7 @@ export async function getAllArtifacts(): Promise<Artifact[]> {
 // Én artefakt via slug — til detaljsiden
 export async function getArtifactBySlug(slug: string): Promise<Artifact | null> {
   return sanityClient.fetch(`
-    *[_type == "artifact" && slug.current == $slug][0] {
+    *[_type == "artifact" && slug.current == $slug && isVisible != false][0] {
       _id, title, "slug": slug.current,
       description, year, yearNote, origin,
       category, material, dimensions, condition,
@@ -179,7 +179,7 @@ export async function getArtifactBySlug(slug: string): Promise<Artifact | null> 
 // Fremhevede artefakter — til forsiden / portalen
 export async function getFeaturedArtifacts(limit = 6): Promise<Artifact[]> {
   return sanityClient.fetch(`
-    *[_type == "artifact" && featured == true] | order(coalesce(order, 9999) asc) [0...$limit] {
+    *[_type == "artifact" && featured == true && isVisible != false] | order(coalesce(order, 9999) asc) [0...$limit] {
       _id, title, "slug": slug.current,
       description, year, category,
       mainImage { asset->{ _ref, url }, alt }
@@ -225,7 +225,7 @@ export interface Book {
 // ── Spørringer: Bok ──────────────────────────────────────────────
 export async function getAllBooks(): Promise<Book[]> {
   return sanityClient.fetch(`
-    *[_type == "book"] | order(year asc) {
+    *[_type == "book" && isVisible != false] | order(year asc) {
       _id, title, subtitle, year, yearNote,
       language, languageNote, bookType, section,
       availability, externalUrl, sourceLabel,
@@ -247,7 +247,7 @@ export async function getAllBooks(): Promise<Book[]> {
 
 export async function getPublicDomainBooks(): Promise<Book[]> {
   return sanityClient.fetch(`
-    *[_type == "book" && bookType == "publicDomain"] | order(year asc) {
+    *[_type == "book" && bookType == "publicDomain" && isVisible != false] | order(year asc) {
       _id, title, year, yearNote, section,
       externalUrl, sourceLabel, thumbnailUrl, tags,
       "authors": authors[] {
@@ -260,7 +260,7 @@ export async function getPublicDomainBooks(): Promise<Book[]> {
 
 export async function getNorwegianBooks(): Promise<Book[]> {
   return sanityClient.fetch(`
-    *[_type == "book" && bookType == "norwegian"] | order(year asc) {
+    *[_type == "book" && bookType == "norwegian" && isVisible != false] | order(year asc) {
       _id, title, subtitle, year, publisher, tags,
       "authors": authors[] {
         "name": coalesce(personRef->title, nameText),
@@ -273,7 +273,7 @@ export async function getNorwegianBooks(): Promise<Book[]> {
 
 export async function getBooksByMagician(magicianId: string): Promise<Book[]> {
   return sanityClient.fetch(`
-    *[_type == "book" && references($magicianId)] | order(year asc) {
+    *[_type == "book" && references($magicianId) && isVisible != false] | order(year asc) {
       _id, title, year, yearNote, bookType,
       availability, externalUrl, thumbnailUrl,
       "coverImage": coverImage.asset->url,
@@ -284,7 +284,7 @@ export async function getBooksByMagician(magicianId: string): Promise<Book[]> {
 
 export async function getFeaturedBooks(): Promise<Book[]> {
   return sanityClient.fetch(`
-    *[_type == "book" && featured == true] | order(year asc) {
+    *[_type == "book" && featured == true && isVisible != false] | order(year asc) {
       _id, title, year, bookType,
       thumbnailUrl,
       "coverImage": coverImage.asset->url,
@@ -530,7 +530,7 @@ export const resultLabels: Record<string, string> = {
 // Alle opptredener — til oversiktssiden
 export async function getAllTvAppearances(): Promise<TvAppearance[]> {
   return sanityClient.fetch(`
-    *[_type == "tvAppearance"] | order(year desc, show asc) {
+    *[_type == "tvAppearance" && isVisible != false] | order(year desc, show asc) {
       _id,
       "slug": slug.current,
       show, year, season, episode, episodeTitle,
@@ -548,7 +548,7 @@ export async function getAllTvAppearances(): Promise<TvAppearance[]> {
 // Én opptreden via slug — til detaljsiden
 export async function getTvAppearanceBySlug(slug: string): Promise<TvAppearance | null> {
   return sanityClient.fetch(`
-    *[_type == "tvAppearance" && slug.current == $slug][0] {
+    *[_type == "tvAppearance" && slug.current == $slug && isVisible != false][0] {
       _id,
       "slug": slug.current,
       show, year, season, episode, episodeTitle,
@@ -571,7 +571,7 @@ export async function getTvAppearanceBySlug(slug: string): Promise<TvAppearance 
 // Alle opptredener for én magiker — brukes på biography-detaljsiden
 export async function getTvAppearancesByMagician(magicianId: string): Promise<TvAppearance[]> {
   return sanityClient.fetch(`
-    *[_type == "tvAppearance" && magician._ref == $magicianId] | order(year asc) {
+    *[_type == "tvAppearance" && magician._ref == $magicianId && isVisible != false] | order(year asc) {
       _id,
       "slug": slug.current,
       show, year, season, episode, episodeTitle,
@@ -584,7 +584,7 @@ export async function getTvAppearancesByMagician(magicianId: string): Promise<Tv
 // Statiske stier for [slug].astro
 export async function getTvAppearancePaths() {
   const appearances = await sanityClient.fetch(`
-    *[_type == "tvAppearance"] { "slug": slug.current }
+    *[_type == "tvAppearance" && isVisible != false] { "slug": slug.current }
   `)
   return appearances
     .filter((a: { slug?: string }) => a.slug)
@@ -690,7 +690,7 @@ export interface Legend {
 // Alle biografier i HEH-oversikten
 export async function getAllBiographies(): Promise<Biography[]> {
   return sanityClient.fetch(`
-    *[_type == "biography"] | order(name asc) {
+    *[_type == "biography" && isVisible != false] | order(name asc) {
       _id, name, "slug": slug.current,
       artistName, nationality, years,
       birthDate, deathDate,
@@ -704,7 +704,7 @@ export async function getAllBiographies(): Promise<Biography[]> {
 // Én biografi via slug — til profilsiden
 export async function getBiographyBySlug(slug: string): Promise<Biography | null> {
   return sanityClient.fetch(`
-    *[_type == "biography" && slug.current == $slug][0] {
+    *[_type == "biography" && slug.current == $slug && isVisible != false][0] {
       _id, name, "slug": slug.current,
       artistName, aliases, nationality,
       birthDate, deathDate, years,
@@ -726,7 +726,7 @@ export async function getBiographyBySlug(slug: string): Promise<Biography | null
 // Statiske stier for biography [slug].astro
 export async function getBiographyPaths() {
   const bios = await sanityClient.fetch(`
-    *[_type == "biography"] { "slug": slug.current }
+    *[_type == "biography" && isVisible != false] { "slug": slug.current }
   `)
   return bios
     .filter((b: { slug?: string }) => b.slug)
@@ -738,7 +738,7 @@ export async function getBiographyPaths() {
 // Alle legender — til oversiktssiden
 export async function getAllLegends(): Promise<Legend[]> {
   return sanityClient.fetch(`
-    *[_type == "legend"] | order(title asc) {
+    *[_type == "legend" && isVisible != false] | order(title asc) {
       _id, title, "slug": slug.current,
       excerpt, tags,
       mainImage { asset->{ _ref, url }, alt },
@@ -754,7 +754,7 @@ export async function getAllLegends(): Promise<Legend[]> {
 // Én legende via slug — til artikkelsiden
 export async function getLegendBySlug(slug: string): Promise<Legend | null> {
   return sanityClient.fetch(`
-    *[_type == "legend" && slug.current == $slug][0] {
+    *[_type == "legend" && slug.current == $slug && isVisible != false][0] {
       _id, title, "slug": slug.current,
       excerpt, tags,
       mainImage { asset->{ _ref, url }, alt, caption },
@@ -774,7 +774,7 @@ export async function getLegendBySlug(slug: string): Promise<Legend | null> {
 // Statiske stier for legend [slug].astro
 export async function getLegendPaths() {
   const legends = await sanityClient.fetch(`
-    *[_type == "legend"] { "slug": slug.current }
+    *[_type == "legend" && isVisible != false] { "slug": slug.current }
   `)
   return legends
     .filter((l: { slug?: string }) => l.slug)
@@ -797,7 +797,7 @@ export interface Partner {
 
 export async function getAllPartners(): Promise<Partner[]> {
   return sanityClient.fetch(`
-    *[_type == "partner"] | order(coalesce(order, 99) asc, name asc) {
+    *[_type == "partner" && isVisible != false] | order(coalesce(order, 99) asc, name asc) {
       _id, name, category, url, order, description,
       logo { asset->{ _ref, url } }
     }
