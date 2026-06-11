@@ -5,6 +5,13 @@ export const partner = {
   type:  'document',
   fields: [
     {
+      name:         'isVisible',
+      title:        'Vis på nettsted',
+      type:         'boolean',
+      initialValue: true,
+      description:  'Skjul innholdet fra nettsiden uten å slette det. Standard: på.',
+    },
+    {
       name:       'name',
       title:      'Navn',
       type:       'string',

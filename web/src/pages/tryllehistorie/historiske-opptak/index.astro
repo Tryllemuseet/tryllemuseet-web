@@ -11,7 +11,7 @@ function ytThumb(url?: string): string | null {
 }
 
 const clips = await sanityClient.fetch(`
-  *[_type == "historicalClip"] | order(year asc) {
+  *[_type == "historicalClip" && isVisible != false] | order(year asc) {
     _id,
     "slug": slug.current,
     title, year, broadcaster, show, category,
