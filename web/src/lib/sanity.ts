@@ -1,7 +1,8 @@
 // src/lib/sanity.ts
 import { createClient } from '@sanity/client'
 import { createImageUrlBuilder } from '@sanity/image-url'
-import type { SanityImageSource } from '@sanity/image-url/lib/types/types'
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type SanityImageSource = any
 
 // "production" i Vercel prod-miljø, "preview" i preview-bygg, undefined lokalt
 const isProd = import.meta.env.PUBLIC_VERCEL_ENV === 'production'
@@ -656,8 +657,10 @@ export interface Biography {
   fullBio?:    any[]
   videos?:     BiographyVideo[]
   links?:      BiographyLink[]
-  legendRef?:  { _ref: string; slug: string }
-  sources?:    { label: string; url?: string }[]
+  legendRef?:    { _ref: string; slug: string }
+  sources?:      { label: string; url?: string }
+  lastVerified?: string
+  needsUpdate?:  boolean[]
 }
 
 // ── Typer: Legend ────────────────────────────────────────────────
@@ -718,7 +721,8 @@ export async function getBiographyBySlug(slug: string): Promise<Biography | null
         "internalSlug": internalRef->slug.current
       },
       "legendRef": legendRef-> { "slug": slug.current },
-      sources[] { label, url }
+      sources[] { label, url },
+      lastVerified, needsUpdate
     }
   `, { slug })
 }

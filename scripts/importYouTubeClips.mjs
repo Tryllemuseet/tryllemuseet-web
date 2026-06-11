@@ -66,7 +66,7 @@ function ytFetch(url) {
   return new Promise((resolve, reject) => {
     get(url, res => {
       if (res.statusCode !== 200) {
-        reject(new Error(`YouTube API svarte ${res.statusCode} for ${url}`))
+        reject(new Error(`YouTube API svarte ${res.statusCode}`))
         res.resume()
         return
       }

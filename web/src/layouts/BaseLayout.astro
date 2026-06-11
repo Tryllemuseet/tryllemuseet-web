@@ -277,8 +277,9 @@ const isActive = (href: string) =>
     if (target.tagName !== 'IMG') return
     const parent = target.closest('.prose, .gallery-grid, .gallery-fig, .sidebar-portrett, .gallery-section, .gallery-seksjon')
     if (!parent) return
+    const img = target as HTMLImageElement
     const caption = target.closest('figure')?.querySelector('figcaption')?.textContent ?? ''
-    openLightbox(target.src, target.alt, caption)
+    openLightbox(img.src, img.alt, caption)
   })
 
   // Close on overlay click, button click, or Escape
