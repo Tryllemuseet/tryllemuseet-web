@@ -340,21 +340,17 @@ function formatTime(d: string) {
               <div class="sponsors-group">
                 <p class="sponsors-label">{labels[cat]}</p>
                 <div class="sponsors-logos">
-                  {gruppe.map(p => (
-                    p.url
-                      ? <a href={p.url} target="_blank" rel="noopener noreferrer" class="sponsor-item" aria-label={p.name}>
-                          {p.logo?.asset?.url
-                            ? <img src={p.logo.asset.url} alt={p.name} class="sponsor-logo" loading="lazy" />
-                            : <span class="sponsor-name">{p.name}</span>
-                          }
-                        </a>
-                      : <div class="sponsor-item" aria-label={p.name}>
-                          {p.logo?.asset?.url
-                            ? <img src={p.logo.asset.url} alt={p.name} class="sponsor-logo" loading="lazy" />
-                            : <span class="sponsor-name">{p.name}</span>
-                          }
-                        </div>
-                  ))}
+                  {gruppe.map(p => {
+                    const innhold = (
+                      <>
+                        {p.logo?.asset?.url && <img src={p.logo.asset.url} alt="" class="sponsor-logo" loading="lazy" />}
+                        <span class="sponsor-name">{p.name}</span>
+                      </>
+                    )
+                    return p.url
+                      ? <a href={p.url} target="_blank" rel="noopener noreferrer" class="sponsor-item" aria-label={p.name}>{innhold}</a>
+                      : <div class="sponsor-item" aria-label={p.name}>{innhold}</div>
+                  })}
                 </div>
               </div>
             )
@@ -677,11 +673,10 @@ function formatTime(d: string) {
     .sponsors-group { display:flex; flex-direction:column; align-items:center; gap:0.75rem; }
     .sponsors-label { font-family:var(--font-ui); font-size:0.65rem; text-transform:uppercase; letter-spacing:0.14em; color:var(--gold); opacity:0.6; text-align:center; }
     .sponsors-logos { display:flex; align-items:center; gap:1.5rem; flex-wrap:wrap; justify-content:center; }
-    .sponsor-item { display:flex; align-items:center; opacity:0.65; transition:opacity 200ms; text-decoration:none; }
-    .sponsor-item { display:flex; align-items:center; opacity:0.65; transition:opacity 200ms; text-decoration:none; }
+    .sponsor-item { display:flex; flex-direction:column; align-items:center; gap:0.35rem; opacity:0.65; transition:opacity 200ms; text-decoration:none; }
     .sponsor-item:hover { opacity:1; }
     .sponsor-logo { height:32px; width:auto; max-width:120px; filter:brightness(0) invert(1); object-fit:contain; }
-    .sponsor-name { font-family:var(--font-ui); font-size:0.8rem; font-weight:600; color:var(--cream); letter-spacing:0.05em; white-space:nowrap; }
+    .sponsor-name { font-family:var(--font-ui); font-size:0.72rem; font-weight:600; color:var(--cream); letter-spacing:0.05em; white-space:nowrap; }
     @media (max-width:600px) {
       .sponsors-groups { flex-direction:column; gap:2rem; }
 }

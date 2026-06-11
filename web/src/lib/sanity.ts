@@ -784,12 +784,13 @@ export async function getLegendPaths() {
 // ── Typer: Partner ───────────────────────────────────────────────
 
 export interface Partner {
-  _id:       string
-  name:      string
-  category:  'public' | 'private' | 'org'
-  url?:      string
-  logo?:     { asset: { _ref: string; url: string } }
-  order?:    number
+  _id:          string
+  name:         string
+  category:     'public' | 'private' | 'org'
+  url?:         string
+  logo?:        { asset: { _ref: string; url: string } }
+  description?: string
+  order?:       number
 }
 
 // ── Spørringer: Partner ──────────────────────────────────────────
@@ -797,7 +798,7 @@ export interface Partner {
 export async function getAllPartners(): Promise<Partner[]> {
   return sanityClient.fetch(`
     *[_type == "partner"] | order(coalesce(order, 99) asc, name asc) {
-      _id, name, category, url, order,
+      _id, name, category, url, order, description,
       logo { asset->{ _ref, url } }
     }
   `)

@@ -18,6 +18,13 @@ export const partner = {
       description: 'Last opp SVG eller PNG med transparent bakgrunn.',
     },
     {
+      name:        'description',
+      title:       'Kort beskrivelse',
+      type:        'text',
+      rows:        2,
+      description: 'Én til to setninger om partneren. Vises på Om oss-siden.',
+    },
+    {
       name:  'url',
       title: 'Nettside',
       type:  'url',
