@@ -38,7 +38,7 @@ jobs:
         env:
           YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
           SANITY_TOKEN:    ${{ secrets.SANITY_TOKEN }}
-          # schedule-kjøringer bruker alltid production;
+          # schedule-kjøringer bruker staging (trygg standard);
           # manuell kjøring bruker valgt dataset
-          SANITY_DATASET: ${{ github.event_name == 'workflow_dispatch' && inputs.dataset || 'production' }}
+          SANITY_DATASET: ${{ github.event_name == 'workflow_dispatch' && inputs.dataset || 'staging' }}
         run: node scripts/importYouTubeClips.mjs
