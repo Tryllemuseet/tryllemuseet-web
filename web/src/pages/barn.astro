@@ -1,6 +1,7 @@
 ---
 // src/pages/barn.astro
 import BaseLayout from '../layouts/BaseLayout.astro'
+import AnimateIn from '../components/AnimateIn.astro'
 import { getBarnPage } from '../lib/sanity'
 
 const bp = await getBarnPage()
@@ -54,7 +55,8 @@ const kurs = bp?.kursBanner ?? {
   {aldersgrupper.length > 0 && (
     <section class="aldersgrupper section-pad">
       <div class="container">
-        <h2 class="section-title">Noe for alle aldre</h2>
+        <AnimateIn direction="up"><h2 class="section-title">Noe for alle aldre</h2></AnimateIn>
+        <AnimateIn direction="up">
         <div class="alder-grid">
           {aldersgrupper.map(a => (
             <div class="alder-kort">
@@ -64,6 +66,7 @@ const kurs = bp?.kursBanner ?? {
             </div>
           ))}
         </div>
+        </AnimateIn>
       </div>
     </section>
   )}
@@ -72,7 +75,8 @@ const kurs = bp?.kursBanner ?? {
   {aktiviteter.length > 0 && (
     <section class="aktiviteter section-pad bg-cream">
       <div class="container">
-        <h2 class="section-title">Hva skjer på museet?</h2>
+        <AnimateIn direction="up"><h2 class="section-title">Hva skjer på museet?</h2></AnimateIn>
+        <AnimateIn direction="up">
         <div class="aktivitet-grid">
           {aktiviteter.map(a => (
             <div class="aktivitet-kort">
@@ -82,6 +86,7 @@ const kurs = bp?.kursBanner ?? {
             </div>
           ))}
         </div>
+        </AnimateIn>
       </div>
     </section>
   )}
@@ -89,6 +94,7 @@ const kurs = bp?.kursBanner ?? {
   <!-- ── SKOLEBESØK ───────────────────────────────────────────── -->
   <section class="skolebesok section-pad">
     <div class="container skolebesok-layout">
+      <AnimateIn direction="left">
       <div class="skolebesok-tekst">
         <span class="etikett">{skole.label}</span>
         <h2>{skole.heading}</h2>
@@ -100,23 +106,30 @@ const kurs = bp?.kursBanner ?? {
         )}
         <a href={skole.knappHref} class="btn btn-primary">{skole.knappLabel}</a>
       </div>
+      </AnimateIn>
+      <AnimateIn direction="right">
       <div class="skolebesok-bilde">
         <div class="bilde-placeholder">
           <span>🎩</span>
           <p>Skolebesøk på Tryllemuseet</p>
         </div>
       </div>
+      </AnimateIn>
     </div>
   </section>
 
   <!-- ── KURSBANNER ───────────────────────────────────────────── -->
   <section class="kurs-banner">
     <div class="container kurs-banner-inner">
-      <div>
-        <h2>{kurs.heading}</h2>
-        <p>{kurs.tekst}</p>
-      </div>
-      <a href={kurs.knappHref} class="btn btn-gold">{kurs.knappLabel}</a>
+      <AnimateIn direction="left">
+        <div>
+          <h2>{kurs.heading}</h2>
+          <p>{kurs.tekst}</p>
+        </div>
+      </AnimateIn>
+      <AnimateIn direction="right">
+        <a href={kurs.knappHref} class="btn btn-gold">{kurs.knappLabel}</a>
+      </AnimateIn>
     </div>
   </section>
 

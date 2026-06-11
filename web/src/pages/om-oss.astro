@@ -1,6 +1,7 @@
 ---
 // src/pages/om-oss.astro
 import BaseLayout from '../layouts/BaseLayout.astro'
+import AnimateIn from '../components/AnimateIn.astro'
 import { getOmOssPage } from '../lib/sanity'
 import { toHTML } from '@portabletext/to-html'
 
@@ -31,20 +32,25 @@ const historieHtml = om.historieTekst?.length ? toHTML(om.historieTekst) : ''
   <section class="om-hero">
     <div class="om-hero-deco"></div>
     <div class="container om-hero-inner">
-      <div class="om-hero-tekst">
-        <span class="etikett">{hero.label}</span>
-        <h1>{hero.heading}<br/><em>{hero.headingEm}</em></h1>
-        <p>{hero.ingress}</p>
-      </div>
-      <div class="om-hero-ornament">
-        <div class="ornament-ring"><span>✦</span></div>
-      </div>
+      <AnimateIn direction="left">
+        <div class="om-hero-tekst">
+          <span class="etikett">{hero.label}</span>
+          <h1>{hero.heading}<br/><em>{hero.headingEm}</em></h1>
+          <p>{hero.ingress}</p>
+        </div>
+      </AnimateIn>
+      <AnimateIn direction="right">
+        <div class="om-hero-ornament">
+          <div class="ornament-ring"><span>✦</span></div>
+        </div>
+      </AnimateIn>
     </div>
   </section>
 
   <!-- ── OM MUSEET ────────────────────────────────────────────── -->
   <section class="om-museet section-pad">
     <div class="container om-tekst-layout">
+      <AnimateIn direction="left">
       <div class="om-tekst-hoved">
         <h2>{om.historieHeading}</h2>
         {historieHtml
@@ -54,6 +60,8 @@ const historieHtml = om.historieTekst?.length ? toHTML(om.historieTekst) : ''
         {om.formalHeading && <h2>{om.formalHeading}</h2>}
         {om.formalTekst && <p>{om.formalTekst}</p>}
       </div>
+      </AnimateIn>
+      <AnimateIn direction="right">
       <aside class="om-fakta-boks">
         <h3>Kort om oss</h3>
         <dl>
@@ -65,6 +73,7 @@ const historieHtml = om.historieTekst?.length ? toHTML(om.historieTekst) : ''
           {fakta.orgnr              && <><dt>Org.nr</dt><dd>{fakta.orgnr}</dd></>}
         </dl>
       </aside>
+      </AnimateIn>
     </div>
   </section>
 
@@ -75,6 +84,7 @@ const historieHtml = om.historieTekst?.length ? toHTML(om.historieTekst) : ''
       {styret.ingress && (
         <p class="section-ingress" set:html={styret.ingress.replace('post@tryllemuseet.no', '<a href="mailto:post@tryllemuseet.no">post@tryllemuseet.no</a>')} />
       )}
+      <AnimateIn direction="up">
       <div class="styre-grid">
         {styret.medlemmer.map(s => (
           <div class="styre-kort">
@@ -84,6 +94,7 @@ const historieHtml = om.historieTekst?.length ? toHTML(om.historieTekst) : ''
           </div>
         ))}
       </div>
+      </AnimateIn>
     </div>
   </section>
 
@@ -94,13 +105,16 @@ const historieHtml = om.historieTekst?.length ? toHTML(om.historieTekst) : ''
       {medlem.ingress && <p class="section-ingress">{medlem.ingress}</p>}
 
       {medlem.motivasjonsTekst && (
+        <AnimateIn direction="up">
         <div class="motivasjon-boks">
           {medlem.motivasjonsTekst.split('\n\n').map(avsnitt => (
             <p>{avsnitt}</p>
           ))}
         </div>
+        </AnimateIn>
       )}
 
+      <AnimateIn direction="up">
       <div class="medlemskap-grid">
         {medlem.nivaaer.map(m => (
           <div class:list={['medlemskap-kort', { anbefalt: m.anbefalt }]}>
@@ -116,6 +130,7 @@ const historieHtml = om.historieTekst?.length ? toHTML(om.historieTekst) : ''
           </div>
         ))}
       </div>
+      </AnimateIn>
 
       {medlem.vippsNummer && (
         <div class="vipps-boks">
@@ -133,6 +148,7 @@ const historieHtml = om.historieTekst?.length ? toHTML(om.historieTekst) : ''
   <!-- ── PRESSE ───────────────────────────────────────────────── -->
   <section class="presse-seksjon section-pad bg-cream">
     <div class="container presse-layout">
+      <AnimateIn direction="left">
       <div>
         {presse.label && <span class="etikett">{presse.label}</span>}
         <h2>{presse.heading}</h2>
@@ -141,6 +157,8 @@ const historieHtml = om.historieTekst?.length ? toHTML(om.historieTekst) : ''
           {presse.knappLabel}
         </a>
       </div>
+      </AnimateIn>
+      <AnimateIn direction="right">
       <div class="logo-nedlasting">
         <h3>Last ned</h3>
         <div class="nedlastings-liste">
@@ -157,6 +175,7 @@ const historieHtml = om.historieTekst?.length ? toHTML(om.historieTekst) : ''
         </div>
         <p class="nedlastings-notat">Filer leveres på forespørsel via e-post</p>
       </div>
+      </AnimateIn>
     </div>
   </section>
 
@@ -164,7 +183,10 @@ const historieHtml = om.historieTekst?.length ? toHTML(om.historieTekst) : ''
   {partnere.liste.length > 0 && (
     <section class="partnere-seksjon section-pad">
       <div class="container">
+        <AnimateIn direction="up">
         <h2 class="section-title">{partnere.heading}</h2>
+      </AnimateIn>
+      <AnimateIn direction="up">
         <div class="partnere-rad">
           {partnere.liste.map(p => (
             <div class="partner-kort">
@@ -178,6 +200,7 @@ const historieHtml = om.historieTekst?.length ? toHTML(om.historieTekst) : ''
             <p><a href="/kontakt">Ta kontakt</a></p>
           </div>
         </div>
+      </AnimateIn>
       </div>
     </section>
   )}

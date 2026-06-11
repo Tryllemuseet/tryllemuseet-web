@@ -1,6 +1,7 @@
 ---
 // src/pages/besok.astro
 import BaseLayout from '../layouts/BaseLayout.astro'
+import AnimateIn from '../components/AnimateIn.astro'
 import { getSiteConfig } from '../lib/sanity'
 
 const site = await getSiteConfig()
@@ -25,6 +26,7 @@ const site = await getSiteConfig()
 
   <!-- HURTIGINFO ── -->
   <section class="quickinfo-strip">
+    <AnimateIn direction="up">
     <div class="container quickinfo-inner">
       <div class="qi-item">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
@@ -46,12 +48,14 @@ const site = await getSiteConfig()
         <div><strong>Forestillinger</strong><span>3 pr. halvår</span></div>
       </div>
     </div>
+    </AnimateIn>
   </section>
 
   <!-- GRID ── -->
   <div class="container besok-grid">
 
     <!-- VENSTRE: Info ── -->
+    <AnimateIn direction="left">
     <div class="besok-info">
 
       <section class="info-card" id="apningstider">
@@ -135,8 +139,10 @@ const site = await getSiteConfig()
       </section>
 
     </div>
+    </AnimateIn>
 
     <!-- HØYRE: Kart ── -->
+    <AnimateIn direction="right">
     <div class="besok-map-col">
 
       <section class="info-card map-card" id="adresse">
@@ -184,6 +190,7 @@ const site = await getSiteConfig()
       </section>
 
     </div>
+    </AnimateIn>
   </div>
 
 </BaseLayout>
