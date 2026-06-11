@@ -7,12 +7,11 @@ on:
   workflow_dispatch:
     inputs:
       dataset:
-        description: 'Sanity-dataset (staging eller production)'
+        description: 'Sanity-dataset'
         required: true
-        default: 'staging'
+        default: 'production'
         type: choice
         options:
-          - staging
           - production
 
 jobs:
@@ -38,7 +37,6 @@ jobs:
         env:
           YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
           SANITY_TOKEN:    ${{ secrets.SANITY_TOKEN }}
-          # schedule-kjøringer bruker staging (trygg standard);
-          # manuell kjøring bruker valgt dataset
-          SANITY_DATASET: ${{ github.event_name == 'workflow_dispatch' && inputs.dataset || 'staging' }}
+          # Alltid production (gratisplan har kun ett datasett)
+          SANITY_DATASET: production
         run: node scripts/importYouTubeClips.mjs
