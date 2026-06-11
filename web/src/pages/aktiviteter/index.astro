@@ -45,7 +45,6 @@ const activities: Activity[] = [
 
 const now = Date.now()
 const upcomingCount = activities.filter(a => new Date(a.date).getTime() >= now).length
-const hasMc = mcEvents.length > 0
 
 const sourceLabels: Record<string, string> = {
   tryllemuseet:  'Tryllemuseet',
@@ -87,16 +86,14 @@ function formatTime(d: string) {
         <button class="filter-tab active" id="tab-upcoming" data-view="upcoming">Kommende</button>
         <button class="filter-tab" id="tab-past" data-view="past">Tidligere</button>
       </div>
-      {hasMc && (
-        <div class="filter-group">
-          <label class="filter-label" for="filter-source">Kilde</label>
-          <select id="filter-source" class="filter-select">
-            <option value="">Alle</option>
-            <option value="tryllemuseet">Tryllemuseet</option>
-            <option value="magiskecirkel">Magiske Cirkel</option>
-          </select>
-        </div>
-      )}
+      <div class="filter-group">
+        <label class="filter-label" for="filter-source">Kilde</label>
+        <select id="filter-source" class="filter-select">
+          <option value="">Alle</option>
+          <option value="tryllemuseet">Tryllemuseet</option>
+          <option value="magiskecirkel">Magiske Cirkel</option>
+        </select>
+      </div>
       <button class="filter-sort" id="sort-toggle" aria-live="polite">Dato ↑</button>
     </div>
   </div>
@@ -113,11 +110,9 @@ function formatTime(d: string) {
         const isPast = new Date(a.date).getTime() < now
         return (
           <article
-            class="activity-row"
+            class:list={['activity-row', { 'is-hidden': isPast }]}
             data-source={a.source}
             data-time={new Date(a.date).getTime()}
-            data-past={String(isPast)}
-            hidden={isPast}
           >
             <div class="row-date">
               <span class="row-day">{new Date(a.date).getDate()}</span>
@@ -217,7 +212,7 @@ function formatTime(d: string) {
       const inView  = (view === 'past') === isPast
       const inSrc   = !src || row.dataset.source === src
       const show    = inView && inSrc
-      row.hidden = !show
+      row.classList.toggle('is-hidden', !show)
       if (show) visible++
     })
 
@@ -273,6 +268,7 @@ function formatTime(d: string) {
     padding: 1.1rem 1.4rem;
     transition: box-shadow 200ms ease, border-color 200ms ease;
   }
+  .activity-row.is-hidden { display: none; }
   .activity-row:hover { box-shadow: var(--shadow); border-color: var(--gold-light); }
 
   .row-date { display: flex; flex-direction: column; align-items: center; min-width: 56px; }
