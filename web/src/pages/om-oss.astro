@@ -2,10 +2,10 @@
 // src/pages/om-oss.astro
 import BaseLayout from '../layouts/BaseLayout.astro'
 import AnimateIn from '../components/AnimateIn.astro'
-import { getOmOssPage } from '../lib/sanity'
+import { getOmOssPage, getAllPartners } from '../lib/sanity'
 import { toHTML } from '@portabletext/to-html'
 
-const p = await getOmOssPage()
+const [p, partnerDocs] = await Promise.all([getOmOssPage(), getAllPartners()])
 
 const hero = p?.hero ?? {
   label: 'Om Tryllemuseet',
@@ -180,26 +180,57 @@ const historieHtml = om.historieTekst?.length ? toHTML(om.historieTekst) : ''
   </section>
 
   <!-- ── PARTNERE ─────────────────────────────────────────────── -->
-  {partnere.liste.length > 0 && (
+  {(partnerDocs.length > 0 || partnere.liste.length > 0) && (
     <section class="partnere-seksjon section-pad">
       <div class="container">
         <AnimateIn direction="up">
         <h2 class="section-title">{partnere.heading}</h2>
       </AnimateIn>
       <AnimateIn direction="up">
-        <div class="partnere-rad">
-          {partnere.liste.map(p => (
-            <div class="partner-kort">
-              <strong>{p.navn}</strong>
-              <p>{p.beskrivelse}</p>
-              {p.url && <a href={p.url} target="_blank" rel="noopener noreferrer">Les mer</a>}
+        {partnerDocs.length > 0 ? (
+          <div class="partnere-grupper">
+            {(['public', 'private', 'org'] as const).map(cat => {
+              const gruppe = partnerDocs.filter(pd => pd.category === cat)
+              if (!gruppe.length) return null
+              const labels = { public: 'Offentlig støtte', private: 'Privat støtte', org: 'Faglig samarbeid' }
+              return (
+                <div class="partner-gruppe">
+                  <p class="partner-gruppe-label">{labels[cat]}</p>
+                  <div class="partnere-rad">
+                    {gruppe.map(pd => {
+                      const innhold = pd.logo?.asset?.url
+                        ? <img src={pd.logo.asset.url} alt={pd.name} class="partner-logo" loading="lazy" />
+                        : <strong>{pd.name}</strong>
+                      return pd.url
+                        ? <a href={pd.url} target="_blank" rel="noopener noreferrer" class="partner-kort" aria-label={pd.name}>{innhold}</a>
+                        : <div class="partner-kort" aria-label={pd.name}>{innhold}</div>
+                    })}
+                  </div>
+                </div>
+              )
+            })}
+            <div class="partnere-rad">
+              <div class="partner-kort partner-graa">
+                <strong>Din organisasjon?</strong>
+                <p><a href="/kontakt">Ta kontakt</a></p>
+              </div>
             </div>
-          ))}
-          <div class="partner-kort partner-graa">
-            <strong>Din organisasjon?</strong>
-            <p><a href="/kontakt">Ta kontakt</a></p>
           </div>
-        </div>
+        ) : (
+          <div class="partnere-rad">
+            {partnere.liste.map(p => (
+              <div class="partner-kort">
+                <strong>{p.navn}</strong>
+                <p>{p.beskrivelse}</p>
+                {p.url && <a href={p.url} target="_blank" rel="noopener noreferrer">Les mer</a>}
+              </div>
+            ))}
+            <div class="partner-kort partner-graa">
+              <strong>Din organisasjon?</strong>
+              <p><a href="/kontakt">Ta kontakt</a></p>
+            </div>
+          </div>
+        )}
       </AnimateIn>
       </div>
     </section>
@@ -333,8 +364,12 @@ const historieHtml = om.historieTekst?.length ? toHTML(om.historieTekst) : ''
   .nedlastings-notat { font-family: var(--font-ui); font-size: 0.8rem; color: #999; font-style: italic; }
 
   /* ── Partnere ── */
+  .partnere-grupper { display: flex; flex-direction: column; gap: 2.5rem; }
+  .partner-gruppe-label { font-family: var(--font-ui); font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.12em; color: var(--gold-dark, #A07820); text-align: center; margin-bottom: 1rem; }
   .partnere-rad { display: flex; justify-content: center; gap: 2rem; flex-wrap: wrap; }
-  .partner-kort { padding: 2rem 2.5rem; border: 1px solid rgba(107,15,26,0.12); border-radius: 4px; text-align: center; background: white; min-width: 200px; }
+  .partner-kort { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 2rem 2.5rem; border: 1px solid rgba(107,15,26,0.12); border-radius: 4px; text-align: center; background: white; min-width: 200px; text-decoration: none; transition: box-shadow 200ms ease, border-color 200ms ease; }
+  a.partner-kort:hover { box-shadow: 0 4px 16px rgba(26,18,8,0.08); border-color: var(--gold, #D4A843); }
+  .partner-logo { max-height: 64px; max-width: 180px; object-fit: contain; }
   .partner-graa { border-style: dashed; background: transparent; }
   .partner-kort strong { display: block; font-family: var(--font-display); font-size: 1rem; color: var(--burgundy); margin-bottom: 0.3rem; }
   .partner-kort p { font-family: var(--font-ui); font-size: 0.85rem; color: #777; margin: 0; }
