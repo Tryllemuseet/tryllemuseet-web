@@ -45,7 +45,6 @@ const activities: Activity[] = [
 
 const now = Date.now()
 const upcomingCount = activities.filter(a => new Date(a.date).getTime() >= now).length
-const hasMc = mcEvents.length > 0
 
 const sourceLabels: Record<string, string> = {
   tryllemuseet:  'Tryllemuseet',
@@ -87,16 +86,14 @@ function formatTime(d: string) {
         <button class="filter-tab active" id="tab-upcoming" data-view="upcoming">Kommende</button>
         <button class="filter-tab" id="tab-past" data-view="past">Tidligere</button>
       </div>
-      {hasMc && (
-        <div class="filter-group">
-          <label class="filter-label" for="filter-source">Kilde</label>
-          <select id="filter-source" class="filter-select">
-            <option value="">Alle</option>
-            <option value="tryllemuseet">Tryllemuseet</option>
-            <option value="magiskecirkel">Magiske Cirkel</option>
-          </select>
-        </div>
-      )}
+      <div class="filter-group">
+        <label class="filter-label" for="filter-source">Kilde</label>
+        <select id="filter-source" class="filter-select">
+          <option value="">Alle</option>
+          <option value="tryllemuseet">Tryllemuseet</option>
+          <option value="magiskecirkel">Magiske Cirkel</option>
+        </select>
+      </div>
       <button class="filter-sort" id="sort-toggle" aria-live="polite">Dato ↑</button>
     </div>
   </div>
@@ -114,10 +111,9 @@ function formatTime(d: string) {
         return (
           <article
             class="activity-row"
+            style={isPast ? 'display:none' : ''}
             data-source={a.source}
             data-time={new Date(a.date).getTime()}
-            data-past={String(isPast)}
-            hidden={isPast}
           >
             <div class="row-date">
               <span class="row-day">{new Date(a.date).getDate()}</span>
@@ -199,6 +195,7 @@ function formatTime(d: string) {
 
   let view: 'upcoming' | 'past' = 'upcoming'
   let ascending = true
+  const now = Date.now()
 
   function apply() {
     const src = selSource?.value ?? ''
@@ -212,10 +209,11 @@ function formatTime(d: string) {
     sorted.forEach(row => list.appendChild(row))
 
     rows.forEach(row => {
-      const inView  = (view === 'past') === (row.dataset.past === 'true')
+      const isPast  = Number(row.dataset.time) < now
+      const inView  = (view === 'past') === isPast
       const inSrc   = !src || row.dataset.source === src
       const show    = inView && inSrc
-      row.hidden = !show
+      row.style.display = show ? '' : 'none'
       if (show) visible++
     })
 
@@ -230,6 +228,8 @@ function formatTime(d: string) {
   tabPast.addEventListener('click', () => { view = 'past';   ascending = false; apply() })
   selSource?.addEventListener('change', apply)
   sortBtn.addEventListener('click', () => { ascending = !ascending; apply() })
+
+  apply()
 </script>
 
 <style>
