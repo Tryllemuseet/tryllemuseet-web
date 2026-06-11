@@ -128,6 +128,18 @@ export async function getUpcomingEvents(limit = 3): Promise<Event[]> {
   `, { limit })
 }
 
+// Alle arrangementer (kommende og tidligere) — til aktivitetssiden
+export async function getAllEvents(): Promise<Event[]> {
+  return sanityClient.fetch(`
+    *[_type == "event"] | order(date asc) {
+      _id, title, "slug": slug.current,
+      date, ageGroup, price, excerpt, featured,
+      image { asset->{ _ref, url }, alt },
+      bookingUrl
+    }
+  `)
+}
+
 export async function getStaticPaths() {
   const magicians = await getAllMagicians()
   return magicians
