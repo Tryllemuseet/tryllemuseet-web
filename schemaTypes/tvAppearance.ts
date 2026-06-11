@@ -134,6 +134,15 @@ export const tvAppearance = defineType({
       description: 'YouTube, NRK eller annen videolenke',
     }),
 
+    defineField({
+      name: 'videoRef',
+      title: 'Videoklipp fra arkivet',
+      type: 'reference',
+      to: [{ type: 'historicalClip' }],
+      weak: true,
+      description: 'Valgfri kobling til et historisk klipp. Dersom satt, brukes dette fremfor direktelenken i videoUrl.',
+    }),
+
     // ── 6. REDAKSJONELT ──────────────────────────────────────────
     defineField({
       name: 'editorNote',

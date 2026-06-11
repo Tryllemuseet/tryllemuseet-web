@@ -290,6 +290,36 @@ const isActive = (href: string) =>
     if (e.key === 'Escape' && !lightbox.hidden) closeLightbox()
   })
 
+  // ── Scroll animations ─────────────────────────────────────────
+  ;(function () {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('visible')
+            observer.unobserve(entry.target)
+          }
+        })
+      },
+      { threshold: 0.15 }
+    )
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        document.querySelectorAll('[data-animate]').forEach(el => {
+          const r = el.getBoundingClientRect()
+          if (r.top < window.innerHeight && r.bottom > 0) {
+            el.classList.add('visible')
+          }
+        })
+        document.documentElement.classList.add('js-animate')
+        document.querySelectorAll('[data-animate]:not(.visible)').forEach(el =>
+          observer.observe(el)
+        )
+      })
+    })
+  })()
+
   // ── Hamburger
 
   const toggle = document.getElementById('menu-toggle');
@@ -578,4 +608,17 @@ const isActive = (href: string) =>
   .sidebar-portrett img,
   .gallery-section img,
   .gallery-seksjon img { cursor: zoom-in; }
+
+  /* ── SCROLL ANIMATIONS ────────────────────────────────────── */
+  .js-animate [data-animate] {
+    opacity: 0;
+    transition: opacity 0.6s ease, transform 0.6s ease;
+  }
+  .js-animate [data-animate][data-direction="left"]  { transform: translateX(-40px); }
+  .js-animate [data-animate][data-direction="right"] { transform: translateX(40px); }
+  .js-animate [data-animate][data-direction="up"]    { transform: translateY(40px); }
+  .js-animate [data-animate].visible {
+    opacity: 1;
+    transform: none;
+  }
 </style>

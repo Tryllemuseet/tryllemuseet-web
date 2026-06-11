@@ -1,6 +1,7 @@
 ---
 // src/pages/arrangementer.astro
 import BaseLayout from '../layouts/BaseLayout.astro'
+import AnimateIn from '../components/AnimateIn.astro'
 import { sanityClient } from '../lib/sanity'
 import { toHTML } from '@portabletext/to-html'
 
@@ -63,9 +64,10 @@ function formatDateShort(d: string) {
         <h2 class="arr-section-title">Kommende arrangementer</h2>
 
         <div class="events-list">
-          {upcoming.map((event: any) => {
+          {upcoming.map((event: any, i: number) => {
             const descHtml = event.description ? toHTML(event.description) : ''
             return (
+              <AnimateIn direction="up">
               <article class:list={['event-card', { 'event-card--featured': event.featured }]}>
 
                 {event.featured && (
@@ -146,6 +148,7 @@ function formatDateShort(d: string) {
                   </div>
                 </div>
               </article>
+              </AnimateIn>
             )
           })}
         </div>
@@ -165,6 +168,7 @@ function formatDateShort(d: string) {
     )}
 
     <!-- INFO-STRIP ───────────────────────────────────────────────── -->
+    <AnimateIn direction="up">
     <aside class="info-strip">
       <div class="info-strip-item">
         <span class="info-strip-icon" aria-hidden="true">🎭</span>
@@ -190,11 +194,13 @@ function formatDateShort(d: string) {
         </div>
       </div>
     </aside>
+    </AnimateIn>
 
     <!-- TIDLIGERE ────────────────────────────────────────────────── -->
     {past.length > 0 && (
       <section class="arr-section past-section">
         <h2 class="arr-section-title arr-section-title--past">Tidligere arrangementer</h2>
+        <AnimateIn direction="up">
         <div class="past-grid">
           {past.map((event: any) => (
             <div class="past-card">
@@ -206,6 +212,7 @@ function formatDateShort(d: string) {
             </div>
           ))}
         </div>
+        </AnimateIn>
       </section>
     )}
 

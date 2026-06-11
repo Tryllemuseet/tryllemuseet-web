@@ -1,6 +1,7 @@
 ---
 // src/pages/kontakt.astro
 import BaseLayout from '../layouts/BaseLayout.astro'
+import AnimateIn from '../components/AnimateIn.astro'
 import { getSiteConfig } from '../lib/sanity'
 
 const site = await getSiteConfig()
@@ -25,6 +26,7 @@ const site = await getSiteConfig()
   <div class="container kontakt-grid">
 
     <!-- VENSTRE: Skjema ── -->
+    <AnimateIn direction="left">
     <div class="form-col">
       <div class="form-card">
         <h2 class="form-heading">Send oss en melding</h2>
@@ -40,8 +42,10 @@ const site = await getSiteConfig()
         </div>
       </div>
     </div>
+    </AnimateIn>
 
     <!-- HØYRE: Info ── -->
+    <AnimateIn direction="right">
     <div class="info-col">
 
       <div class="contact-card">
@@ -115,6 +119,7 @@ const site = await getSiteConfig()
       </div>
 
     </div>
+    </AnimateIn>
   </div>
 
 </BaseLayout>

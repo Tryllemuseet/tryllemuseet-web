@@ -1,0 +1,9 @@
+---
+interface Props {
+  direction?: 'left' | 'right' | 'up';
+}
+const { direction = 'up' } = Astro.props;
+---
+<div data-animate data-direction={direction}>
+  <slot />
+</div>

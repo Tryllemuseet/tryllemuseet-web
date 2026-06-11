@@ -142,6 +142,44 @@ export const historicalClip = defineType({
       description: 'Vises ikke på nettsiden.',
     }),
 
+    // ── 5. YOUTUBE-METADATA ───────────────────────────────────────
+    defineField({
+      name: 'youtubeId',
+      title: 'YouTube video-ID',
+      type: 'string',
+      description: 'Idempotency-nøkkel for automatisk synk (f.eks. "dQw4w9WgXcQ"). Ikke rediger manuelt.',
+    }),
+
+    defineField({
+      name: 'linkStatus',
+      title: 'Tilkoblingsstatus',
+      type: 'string',
+      options: {
+        list: [
+          { title: '⬜ Ikke koblet — ikke sjekket', value: 'unlinked'  },
+          { title: '✅ Koblet til magiker',          value: 'linked'    },
+          { title: '🔍 Gjennomgått og verifisert',   value: 'reviewed'  },
+        ],
+        layout: 'radio',
+      },
+      initialValue: 'unlinked',
+      description: 'Settes til "unlinked" ved import. Endre til "linked" etter at magiker er koblet til.',
+    }),
+
+    defineField({
+      name: 'thumbnailUrl',
+      title: 'Miniatyrbilde-URL (YouTube)',
+      type: 'url',
+      description: 'Settes automatisk ved import. Brukes som fallback der featuredImage mangler.',
+    }),
+
+    defineField({
+      name: 'publishedAt',
+      title: 'Publisert på YouTube',
+      type: 'datetime',
+      description: 'Publiseringsdato fra YouTube API. Settes automatisk ved import.',
+    }),
+
   ],
 
   orderings: [

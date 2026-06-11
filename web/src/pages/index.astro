@@ -1,6 +1,7 @@
 ---
 // src/pages/index.astro
 import BaseLayout from '../layouts/BaseLayout.astro'
+import AnimateIn from '../components/AnimateIn.astro'
 import { getAllMagicians, getUpcomingEvents, getHomepage, getSiteConfig, getAllPartners, urlFor } from '../lib/sanity'
 
 const [magicians, events, hp, config, partners] = await Promise.all([
@@ -148,14 +149,17 @@ function formatTime(d: string) {
   <!-- ══ ARRANGEMENTER ═══════════════════════════════════════════ -->
   <section class="section events-section" aria-labelledby="events-heading">
     <div class="container">
-      <div class="section-header">
-        <div>
-          <p class="section-label">Kalender</p>
-          <h2 class="display-title section-title" id="events-heading">Kommende arrangementer</h2>
+      <AnimateIn direction="up">
+        <div class="section-header">
+          <div>
+            <p class="section-label">Kalender</p>
+            <h2 class="display-title section-title" id="events-heading">Kommende arrangementer</h2>
+          </div>
+          <a href="/arrangementer" class="btn-outline">Se alle</a>
         </div>
-        <a href="/arrangementer" class="btn-outline">Se alle</a>
-      </div>
+      </AnimateIn>
       {events.length > 0 ? (
+        <AnimateIn direction="up">
         <div class="events-grid">
           {events.map((event) => (
             <article class="event-card">
@@ -179,12 +183,15 @@ function formatTime(d: string) {
             </article>
           ))}
         </div>
+        </AnimateIn>
       ) : (
+        <AnimateIn direction="up">
         <div class="no-events">
           <p>Ingen kommende arrangementer akkurat nå. Følg oss på
             <a href={config.facebook} target="_blank" rel="noopener noreferrer">Facebook</a> for oppdateringer.
           </p>
         </div>
+        </AnimateIn>
       )}
     </div>
   </section>
@@ -194,13 +201,15 @@ function formatTime(d: string) {
   <!-- ══ MØT MAGIKERNE — horisontal scroll-karusell ══════════════ -->
   <section class="section magikerne-section" aria-labelledby="magikerne-heading">
     <div class="container">
-      <div class="section-header">
-        <div>
-          <p class="section-label">{utstilling.eraLabel}</p>
-          <h2 class="display-title section-title" id="magikerne-heading">{utstilling.heading}</h2>
+      <AnimateIn direction="up">
+        <div class="section-header">
+          <div>
+            <p class="section-label">{utstilling.eraLabel}</p>
+            <h2 class="display-title section-title" id="magikerne-heading">{utstilling.heading}</h2>
+          </div>
+          <a href="/utstillingen" class="btn-outline">Hele utstillingen</a>
         </div>
-        <a href="/utstillingen" class="btn-outline">Hele utstillingen</a>
-      </div>
+      </AnimateIn>
     </div>
     <div class="carousel-viewport" aria-label="Magikere i utstillingen">
       <div class="carousel-track" id="carousel-track">
@@ -243,6 +252,7 @@ function formatTime(d: string) {
   <!-- ══ IBSEN ═══════════════════════════════════════════════════ -->
   <section class="section ibsen-section" aria-labelledby="ibsen-heading">
     <div class="container ibsen-inner">
+      <AnimateIn direction="left">
       <div class="ibsen-text">
         <p class="section-label">Visste du at…</p>
         <h2 class="display-title section-title" id="ibsen-heading">{ibsen.heading}</h2>
@@ -255,6 +265,8 @@ function formatTime(d: string) {
           {ibsen.lenkLabel}
         </a>
       </div>
+      </AnimateIn>
+      <AnimateIn direction="right">
       <div class="ibsen-portrait" aria-hidden="true">
         <svg viewBox="0 0 240 360" fill="none" xmlns="http://www.w3.org/2000/svg">
           <path d="M90 360 L80 265 L68 195 L74 152 L120 134 L166 152 L172 195 L160 265 L150 360Z" fill="rgba(107,15,26,0.15)" stroke="rgba(212,168,67,0.3)" stroke-width="1"/>
@@ -273,6 +285,7 @@ function formatTime(d: string) {
         </svg>
         <p class="ibsen-portrait-caption">Henrik Ibsen · 1828–1906</p>
       </div>
+      </AnimateIn>
     </div>
   </section>
 
@@ -281,6 +294,7 @@ function formatTime(d: string) {
   <!-- ══ KURS ════════════════════════════════════════════════════ -->
   <section class="section kurs-section" aria-labelledby="kurs-heading">
     <div class="container kurs-inner">
+      <AnimateIn direction="left">
       <div class="kurs-text">
         <p class="section-label">Aktuelt nå</p>
         <h2 class="display-title section-title" id="kurs-heading">{kurs.heading}</h2>
@@ -299,12 +313,15 @@ function formatTime(d: string) {
         </a>
         <p class="kurs-fonds">{kurs.fondsBadge}</p>
       </div>
+      </AnimateIn>
+      <AnimateIn direction="right">
       <div class="kurs-sitat-wrap">
         <div class="kurs-sitat">
           <p class="kurs-sitat-tekst">«{kursSitat.tekst}»</p>
           <p class="kurs-sitat-kilde">— {kursSitat.kilde}</p>
         </div>
       </div>
+      </AnimateIn>
     </div>
   </section>
 
@@ -312,6 +329,7 @@ function formatTime(d: string) {
 {partners.length > 0 && (
   <section class="sponsors-section" aria-label="Støttespillere">
     <div class="container sponsors-inner">
+      <AnimateIn direction="up">
       <div class="sponsors-groups">
         {(['public', 'private', 'org'] as const)
           .map(cat => {
@@ -343,6 +361,7 @@ function formatTime(d: string) {
           })
         }
       </div>
+      </AnimateIn>
     </div>
   </section>
 )}
@@ -353,6 +372,7 @@ function formatTime(d: string) {
   <!-- ══ FOR BARN ════════════════════════════════════════════════ -->
   <section class="section kids-section" aria-labelledby="kids-heading">
     <div class="container kids-inner">
+      <AnimateIn direction="left">
       <div class="kids-text">
         <p class="section-label">For de minste</p>
         <h2 class="display-title section-title" id="kids-heading">{barn.heading}</h2>
@@ -366,6 +386,8 @@ function formatTime(d: string) {
           Les mer for barn og unge
         </a>
       </div>
+      </AnimateIn>
+      <AnimateIn direction="right">
       <div class="kids-cards">
         {barn.sitater.map((s, i) => (
           <div class:list={['kids-card', { 'kids-card--offset': i % 2 !== 0 }]}>
@@ -375,6 +397,7 @@ function formatTime(d: string) {
           </div>
         ))}
       </div>
+      </AnimateIn>
     </div>
   </section>
 
@@ -383,20 +406,25 @@ function formatTime(d: string) {
   <!-- ══ BLI MEDLEM ══════════════════════════════════════════════ -->
   <section class="section member-section" aria-labelledby="member-heading">
     <div class="container member-inner">
-      <div class="member-text">
-        <p class="section-label">Støtt museet</p>
-        <h2 class="display-title section-title" id="member-heading">{medlem.heading}</h2>
-        <p class="member-sub">{medlem.tekst}</p>
-      </div>
-      <a href={config.membershipUrl} target="_blank" rel="noopener noreferrer" class="btn-member">
-        {medlem.knappLabel}
-      </a>
+      <AnimateIn direction="left">
+        <div class="member-text">
+          <p class="section-label">Støtt museet</p>
+          <h2 class="display-title section-title" id="member-heading">{medlem.heading}</h2>
+          <p class="member-sub">{medlem.tekst}</p>
+        </div>
+      </AnimateIn>
+      <AnimateIn direction="right">
+        <a href={config.membershipUrl} target="_blank" rel="noopener noreferrer" class="btn-member">
+          {medlem.knappLabel}
+        </a>
+      </AnimateIn>
     </div>
   </section>
 
   <!-- ══ OM MUSEET ═══════════════════════════════════════════════ -->
   <section class="section about-section" aria-labelledby="about-heading">
     <div class="container about-inner">
+      <AnimateIn direction="left">
       <div class="about-text">
         <p class="section-label">Om Tryllemuseet</p>
         <h2 class="display-title section-title" id="about-heading">{om.heading}</h2>
@@ -408,12 +436,15 @@ function formatTime(d: string) {
           <a href="/kontakt" class="btn-outline">Kontakt oss</a>
         </div>
       </div>
+      </AnimateIn>
+      <AnimateIn direction="right">
       <div class="about-quote">
         <blockquote>
           <p>«{om.sitat}»</p>
           <cite>{om.sitatKilde}</cite>
         </blockquote>
       </div>
+      </AnimateIn>
     </div>
   </section>
 
