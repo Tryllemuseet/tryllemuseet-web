@@ -110,7 +110,8 @@ function formatTime(d: string) {
         const isPast = new Date(a.date).getTime() < now
         return (
           <article
-            class:list={['activity-row', { 'is-hidden': isPast }]}
+            class="activity-row"
+            style={isPast ? 'display:none' : ''}
             data-source={a.source}
             data-time={new Date(a.date).getTime()}
           >
@@ -212,7 +213,7 @@ function formatTime(d: string) {
       const inView  = (view === 'past') === isPast
       const inSrc   = !src || row.dataset.source === src
       const show    = inView && inSrc
-      row.classList.toggle('is-hidden', !show)
+      row.style.display = show ? '' : 'none'
       if (show) visible++
     })
 
@@ -268,7 +269,6 @@ function formatTime(d: string) {
     padding: 1.1rem 1.4rem;
     transition: box-shadow 200ms ease, border-color 200ms ease;
   }
-  .activity-row.is-hidden { display: none; }
   .activity-row:hover { box-shadow: var(--shadow); border-color: var(--gold-light); }
 
   .row-date { display: flex; flex-direction: column; align-items: center; min-width: 56px; }
