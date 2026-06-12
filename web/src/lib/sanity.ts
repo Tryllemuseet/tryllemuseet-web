@@ -1118,6 +1118,57 @@ export async function getPressClippingArchive(): Promise<PressClipping[]> {
   `)
 }
 
+// ── Typer: MediaAppearance ────────────────────────────────────────
+
+export interface MediaAppearance {
+  _id:               string
+  title:             string
+  slug:              string
+  type:              'avis' | 'nettavis' | 'tv' | 'radio' | 'podkast'
+  publishedAt:       string
+  sourceName:        string
+  sourceUrl?:        string
+  image?:            { asset: { _ref: string; url: string }; alt?: string }
+  quote?:            string
+  teaser:            string
+  videoUrl?:         string
+  videoId?:          string
+  featureOnFrontpage?: boolean
+  frontpageUntil?:   string
+}
+
+// ── Spørringer: MediaAppearance ───────────────────────────────────
+
+export async function getMediaAppearances(): Promise<MediaAppearance[]> {
+  return sanityClient.fetch(`
+    *[_type == "mediaAppearance" && isVisible != false] | order(publishedAt desc) {
+      _id, title, "slug": slug.current,
+      type, publishedAt, sourceName, sourceUrl,
+      image { asset->{ _ref, url }, alt },
+      quote, teaser, videoUrl, videoId,
+      featureOnFrontpage, frontpageUntil
+    }
+  `)
+}
+
+// Single featured item for the homepage widget — respects frontpageUntil date
+export async function getFeaturedMediaAppearance(today: string): Promise<MediaAppearance | null> {
+  return sanityClient.fetch(`
+    *[
+      _type == "mediaAppearance" &&
+      isVisible != false &&
+      featureOnFrontpage == true &&
+      (frontpageUntil == null || frontpageUntil >= $today)
+    ] | order(publishedAt desc) [0] {
+      _id, title, "slug": slug.current,
+      type, publishedAt, sourceName, sourceUrl,
+      image { asset->{ _ref, url }, alt },
+      quote, teaser, videoUrl, videoId,
+      featureOnFrontpage, frontpageUntil
+    }
+  `, { today })
+}
+
 // ── Typer: Partner ───────────────────────────────────────────────
 
 export interface Partner {
