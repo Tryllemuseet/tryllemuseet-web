@@ -2,14 +2,15 @@
 // src/pages/index.astro
 import BaseLayout from '../layouts/BaseLayout.astro'
 import AnimateIn from '../components/AnimateIn.astro'
-import { getAllMagicians, getUpcomingEvents, getHomepage, getSiteConfig, getAllPartners, urlFor } from '../lib/sanity'
+import { getAllMagicians, getUpcomingEvents, getHomepage, getSiteConfig, getAllPartners, getLatestPressClipping, urlFor } from '../lib/sanity'
 
-const [magicians, events, hp, config, partners] = await Promise.all([
+const [magicians, events, hp, config, partners, latestClipping] = await Promise.all([
   getAllMagicians(),
   getUpcomingEvents(3),
   getHomepage(),
   getSiteConfig(),
   getAllPartners(),
+  getLatestPressClipping(),
 ])
 
 // ── Fallback-verdier ─────────────────────────────────────────────
@@ -288,6 +289,49 @@ function formatTime(d: string) {
       </AnimateIn>
     </div>
   </section>
+
+  <hr class="gold-rule container" />
+
+  <!-- ══ UKENS HISTORISKE ARTIKKEL ══════════════════════════════ -->
+  {latestClipping && (
+    <section class="section press-section" aria-labelledby="press-heading">
+      <div class="container press-inner">
+        <AnimateIn direction="left">
+        <div class="press-text">
+          <p class="section-label">Ukens historiske artikkel</p>
+          <h2 class="display-title section-title" id="press-heading">{latestClipping.title}</h2>
+          {(latestClipping.sourceName || latestClipping.originalDate) && (
+            <p class="press-meta">
+              {latestClipping.sourceName && <span>{latestClipping.sourceName}</span>}
+              {latestClipping.sourceName && latestClipping.originalDate && <span aria-hidden="true"> · </span>}
+              {latestClipping.originalDate && <span>{new Date(latestClipping.originalDate).toLocaleDateString('nb-NO', { day: 'numeric', month: 'long', year: 'numeric' })}</span>}
+            </p>
+          )}
+          <p class="press-teaser">{latestClipping.teaser}</p>
+          <div class="press-actions">
+            <a href={latestClipping.sourceUrl} target="_blank" rel="noopener" class="btn-primary">
+              Les hos Nasjonalbiblioteket →
+            </a>
+            <a href="/tryllehistorie/historiske-artikler" class="btn-outline">
+              Se arkivet
+            </a>
+          </div>
+        </div>
+        </AnimateIn>
+        {latestClipping.image?.asset?.url && (
+          <AnimateIn direction="right">
+          <div class="press-image">
+            <img
+              src={latestClipping.image.asset.url}
+              alt={latestClipping.image.alt ?? latestClipping.title}
+              loading="lazy"
+            />
+          </div>
+          </AnimateIn>
+        )}
+      </div>
+    </section>
+  )}
 
   <hr class="gold-rule container" />
 
@@ -582,6 +626,16 @@ function formatTime(d: string) {
   .carousel-fade--left { left:0; background:linear-gradient(to right,white,transparent); }
   .carousel-fade--right { right:0; background:linear-gradient(to left,white,transparent); }
 
+  /* ── PRESS CLIPPING ────────────────────────────────────────────── */
+  .press-section { background:white; }
+  .press-inner { display:grid; grid-template-columns:1fr 1fr; gap:4rem; align-items:center; }
+  .press-meta { font-family:var(--font-ui); font-size:0.8rem; text-transform:uppercase; letter-spacing:0.1em; color:var(--gold-dark); font-weight:600; margin:0.6rem 0 0.5rem; }
+  .press-teaser { font-family:var(--font-ui); font-size:1rem; color:var(--ink-mid); line-height:1.7; margin:0.75rem 0 1.5rem; }
+  .press-actions { display:flex; gap:0.75rem; flex-wrap:wrap; }
+  .press-image { border-radius:4px; overflow:hidden; box-shadow:var(--shadow-lg); border:1px solid var(--cream-dark); }
+  .press-image img { width:100%; height:auto; display:block; transition:transform 400ms ease; }
+  .press-inner:hover .press-image img { transform:scale(1.02); }
+
   /* ── IBSEN ─────────────────────────────────────────────────────── */
   .ibsen-section { background:var(--cream); }
   .ibsen-inner { display:grid; grid-template-columns:1fr 280px; gap:4rem; align-items:center; }
@@ -646,6 +700,7 @@ function formatTime(d: string) {
   /* ── RESPONSIVE ────────────────────────────────────────────────── */
   @media (max-width:900px) {
     .magiker-card { flex:0 0 180px; }
+    .press-inner { grid-template-columns:1fr; gap:2rem; }
     .ibsen-inner { grid-template-columns:1fr; gap:2rem; }
     .ibsen-portrait { display:none; }
     .kurs-inner { grid-template-columns:1fr; gap:2rem; }
