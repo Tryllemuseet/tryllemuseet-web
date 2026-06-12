@@ -27,3 +27,7 @@
 
 # Dotenv and similar local-only files
 *.local
+
+# NB.no search result files (local curation output, not for version control)
+/nb-search-results/
+*.ndjson
