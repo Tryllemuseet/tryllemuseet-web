@@ -11,7 +11,8 @@ interface Props {
   magicians?: MagicianRef[]
 }
 
-const { magicians = [] } = Astro.props
+const { magicians: magiciansProp } = Astro.props
+const magicians = magiciansProp ?? []
 ---
 
 {magicians.length > 0 && (
