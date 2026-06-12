@@ -2,11 +2,11 @@
 // src/pages/tryllehistorie/historiske-artikler/index.astro
 import BaseLayout from '../../../layouts/BaseLayout.astro'
 import { getPressClippingArchive } from '../../../lib/sanity'
+import MentionedMagicians from '../../../components/MentionedMagicians.astro'
+import type { PressClipping } from '../../../lib/sanity'
 
 const clippings = await getPressClippingArchive()
-const total = clippings.length
-
-const categories = [...new Set(clippings.map((c: any) => c.category))].filter(Boolean).sort()
+const total     = clippings.length
 
 const categoryLabels: Record<string, string> = {
   artist:       'Artist / tryllekunstner',
@@ -17,11 +17,45 @@ const categoryLabels: Record<string, string> = {
   annet:        'Annet',
 }
 
+const categories = [...new Set(clippings.map((c: PressClipping) => c.category))]
+  .filter(Boolean).sort() as string[]
+
+const sources = [...new Set(clippings.map((c: PressClipping) => c.sourceName))]
+  .filter(Boolean).sort() as string[]
+
+function getDecade(dateStr?: string): string {
+  if (!dateStr) return ''
+  return String(Math.floor(new Date(dateStr).getFullYear() / 10) * 10)
+}
+
+const decades = [...new Set(clippings.map((c: PressClipping) => getDecade(c.originalDate)))]
+  .filter(Boolean).sort() as string[]
+
 function formatDate(dateStr?: string): string {
   if (!dateStr) return ''
-  const d = new Date(dateStr)
-  return d.toLocaleDateString('nb-NO', { day: 'numeric', month: 'long', year: 'numeric' })
+  return new Date(dateStr).toLocaleDateString('nb-NO', { day: 'numeric', month: 'long', year: 'numeric' })
 }
+
+const modalDataRaw = clippings.map((c: PressClipping) => ({
+  id:          c._id,
+  title:       c.title,
+  originalDate: c.originalDate ?? null,
+  sourceName:  c.sourceName ?? null,
+  sourceUrl:   c.sourceUrl,
+  imageUrl:    c.image?.asset?.url ?? null,
+  imageAlt:    c.image?.alt ?? c.title,
+  teaser:      c.teaser,
+  commentary:  c.commentary ?? null,
+  category:    c.category ?? null,
+  magicians:   (c.mentionedMagicians ?? []).map(m => ({
+    name: m.artistName ?? m.name,
+    slug: m.slug,
+  })),
+}))
+
+const escapedJson = JSON.stringify(modalDataRaw)
+  .replace(/<\/script>/gi, '<\\/script>')
+  .replace(/<!--/g, '<\\!--')
 ---
 
 <BaseLayout
@@ -40,30 +74,80 @@ function formatDate(dateStr?: string): string {
     </div>
   </section>
 
+  <!-- ── Filter bar ──────────────────────────────────────────────── -->
   <div class="filter-bar-wrap">
     <div class="container filter-bar-inner">
+
+      <div class="filter-search-group">
+        <label class="filter-label" for="filter-search">Søk</label>
+        <div class="search-wrap">
+          <svg class="search-icon" viewBox="0 0 20 20" fill="none" aria-hidden="true" width="14" height="14">
+            <circle cx="8.5" cy="8.5" r="5.5" stroke="currentColor" stroke-width="1.75"/>
+            <path d="M13 13l3.5 3.5" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"/>
+          </svg>
+          <input
+            id="filter-search"
+            type="search"
+            class="filter-search"
+            placeholder="Tittel, kilde, innhold …"
+            autocomplete="off"
+            spellcheck="false"
+          />
+        </div>
+      </div>
+
       <div class="filter-group">
         <label class="filter-label" for="filter-category">Kategori</label>
         <select id="filter-category" class="filter-select">
           <option value="">Alle kategorier</option>
-          {categories.map((cat: string) => (
+          {categories.map((cat) => (
             <option value={cat}>{categoryLabels[cat] ?? cat}</option>
           ))}
         </select>
       </div>
-      <button class="filter-reset" id="filter-reset">Nullstill</button>
+
+      {sources.length > 1 && (
+        <div class="filter-group">
+          <label class="filter-label" for="filter-source">Avis / kilde</label>
+          <select id="filter-source" class="filter-select">
+            <option value="">Alle aviser</option>
+            {sources.map((src) => (
+              <option value={src}>{src}</option>
+            ))}
+          </select>
+        </div>
+      )}
+
+      {decades.length > 1 && (
+        <div class="filter-group">
+          <label class="filter-label" for="filter-decade">Tiår</label>
+          <select id="filter-decade" class="filter-select">
+            <option value="">Alle tiår</option>
+            {decades.map((d) => (
+              <option value={d}>{d}-tallet</option>
+            ))}
+          </select>
+        </div>
+      )}
+
+      <button class="filter-reset" id="filter-reset" aria-label="Nullstill alle filtre">Nullstill</button>
     </div>
   </div>
 
-  <div class="container">
+  <div class="container result-bar">
     <p class="result-count" id="result-count">Viser {total} artikler</p>
   </div>
 
+  <!-- ── Article grid ────────────────────────────────────────────── -->
   <div class="container articles-grid" id="articles-grid">
-    {clippings.map((c: any) => (
+    {clippings.map((c: PressClipping) => (
       <article
         class="article-card"
+        data-id={c._id}
         data-category={c.category ?? ''}
+        data-source={c.sourceName ?? ''}
+        data-decade={getDecade(c.originalDate)}
+        data-search={[c.title, c.teaser, c.sourceName, c.commentary].filter(Boolean).join(' ').toLowerCase()}
       >
         <div class="card-img">
           {c.image?.asset?.url ? (
@@ -83,31 +167,10 @@ function formatDate(dateStr?: string): string {
           <h2 class="card-title">{c.title}</h2>
           <p class="card-teaser">{c.teaser}</p>
           {c.commentary && <p class="card-commentary">{c.commentary}</p>}
-          {c.mentionedMagicians?.length > 0 && (
-            <div class="card-magicians">
-              <span class="card-magicians-label">Omtalt:</span>
-              {c.mentionedMagicians.map((m: any, i: number) => (
-                <>
-                  <a
-                    href={`/tryllehistorie/magiens-hvem-er-hvem/${m.slug}`}
-                    class="card-magician-link"
-                  >
-                    {m.artistName ?? m.name}
-                  </a>
-                  {i < c.mentionedMagicians.length - 1 && <span aria-hidden="true">, </span>}
-                </>
-              ))}
-            </div>
-          )}
-          <a
-            href={c.sourceUrl}
-            target="_blank"
-            rel="noopener"
-            class="card-link-nb"
-            aria-label={`Les «${c.title}» hos Nasjonalbiblioteket (åpnes i ny fane)`}
-          >
-            Les hos Nasjonalbiblioteket →
-          </a>
+          <MentionedMagicians magicians={c.mentionedMagicians} />
+          <button class="card-open-btn" data-id={c._id} aria-label={`Les mer om «${c.title}»`}>
+            Les mer →
+          </button>
         </div>
       </article>
     ))}
@@ -120,30 +183,146 @@ function formatDate(dateStr?: string): string {
   )}
 
   <div class="container no-results" id="no-results" hidden>
-    <p>Ingen artikler matcher filteret.</p>
+    <p>Ingen artikler matcher søket.</p>
     <button class="filter-reset-inline" id="filter-reset-2">Nullstill filter</button>
   </div>
+
+  <!-- ── Article detail modal ────────────────────────────────────── -->
+  <dialog id="article-modal" class="article-modal">
+    <div class="modal-inner">
+
+      <div class="modal-topbar">
+        <div class="modal-topbar-meta">
+          <span class="modal-cat-badge" id="modal-cat-badge" hidden></span>
+          <span class="modal-source-meta" id="modal-source-meta"></span>
+        </div>
+        <button class="modal-close" id="modal-close" aria-label="Lukk">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" aria-hidden="true">
+            <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
+          </svg>
+        </button>
+      </div>
+
+      <div class="modal-scroll">
+
+        <h2 class="modal-title" id="modal-title"></h2>
+
+        <div class="modal-img-wrap" id="modal-img-wrap" hidden>
+          <img class="modal-img" id="modal-img" src="" alt="" loading="lazy" />
+        </div>
+
+        <p class="modal-teaser" id="modal-teaser"></p>
+
+        <blockquote class="modal-commentary" id="modal-commentary" hidden></blockquote>
+
+        <div class="modal-magicians" id="modal-magicians" hidden>
+          <span class="modal-magicians-label">Omtalt:</span>
+          <span id="modal-magicians-list"></span>
+        </div>
+
+        <div class="modal-nb-section">
+          <div class="modal-nb-actions">
+            <a
+              class="btn-nb-external"
+              id="modal-nb-link"
+              href="#"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <svg viewBox="0 0 20 20" width="14" height="14" fill="none" aria-hidden="true">
+                <path d="M11 3h6v6M17 3l-8 8M8 5H4a1 1 0 00-1 1v10a1 1 0 001 1h10a1 1 0 001-1v-4" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              Åpne hos Nasjonalbiblioteket
+            </a>
+            <button class="btn-nb-embed" id="modal-iframe-btn">
+              <svg viewBox="0 0 20 20" width="14" height="14" fill="none" aria-hidden="true">
+                <rect x="2" y="4" width="16" height="12" rx="1.5" stroke="currentColor" stroke-width="1.75"/>
+                <path d="M7 8l-3 2 3 2M13 8l3 2-3 2" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              Vis innebygd leser
+            </button>
+          </div>
+          <div class="modal-iframe-wrap" id="modal-iframe-wrap" hidden>
+            <div class="modal-iframe-loading" id="modal-iframe-loading">
+              <span class="spinner" aria-hidden="true"></span>
+              Laster Nasjonalbibliotekets leser …
+            </div>
+            <iframe
+              id="modal-iframe"
+              title="Nasjonalbiblioteket — avisleser"
+              sandbox="allow-scripts allow-same-origin allow-popups allow-forms"
+            ></iframe>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </dialog>
 
   <div class="container page-nav">
     <a href="/tryllehistorie/norske-legender">Norske legender →</a>
     <a href="/tryllehistorie">← Tryllehistorie</a>
   </div>
 
+  <script type="application/json" id="modal-data" set:html={escapedJson}></script>
+
 </BaseLayout>
 
 <script>
-  const rows     = Array.from(document.querySelectorAll<HTMLElement>('.article-card'))
-  const noRes    = document.getElementById('no-results')!
-  const countEl  = document.getElementById('result-count')!
-  const selCat   = document.getElementById('filter-category') as HTMLSelectElement
-  const btnReset  = document.getElementById('filter-reset')!
-  const btnReset2 = document.getElementById('filter-reset-2')!
+  // ── Types ──────────────────────────────────────────────────────────
+  interface ModalClipping {
+    id: string
+    title: string
+    originalDate: string | null
+    sourceName: string | null
+    sourceUrl: string
+    imageUrl: string | null
+    imageAlt: string
+    teaser: string
+    commentary: string | null
+    category: string | null
+    magicians: { name: string; slug: string }[]
+  }
 
+  // ── Data ──────────────────────────────────────────────────────────
+  const allClippings: ModalClipping[] = JSON.parse(
+    document.getElementById('modal-data')?.textContent ?? '[]'
+  )
+  const byId = new Map(allClippings.map(c => [c.id, c]))
+
+  const CAT_LABELS: Record<string, string> = {
+    artist:       'Artist / tryllekunstner',
+    forestilling: 'Forestilling',
+    presseomtale: 'Presseomtale',
+    annonse:      'Annonse',
+    kuriosa:      'Kuriosa',
+    annet:        'Annet',
+  }
+
+  // ── Filter refs ───────────────────────────────────────────────────
+  const rows        = Array.from(document.querySelectorAll<HTMLElement>('.article-card'))
+  const noRes       = document.getElementById('no-results')!
+  const countEl     = document.getElementById('result-count')!
+  const inputSearch = document.getElementById('filter-search')  as HTMLInputElement
+  const selCat      = document.getElementById('filter-category') as HTMLSelectElement
+  const selSource   = document.getElementById('filter-source')   as HTMLSelectElement | null
+  const selDecade   = document.getElementById('filter-decade')   as HTMLSelectElement | null
+  const btnReset    = document.getElementById('filter-reset')!
+  const btnReset2   = document.getElementById('filter-reset-2')!
+
+  // ── Filtering ─────────────────────────────────────────────────────
   function applyFilters() {
-    const cat = selCat.value
-    let visible = 0
+    const query  = inputSearch.value.trim().toLowerCase()
+    const cat    = selCat.value
+    const src    = selSource?.value ?? ''
+    const decade = selDecade?.value ?? ''
+    let visible  = 0
     rows.forEach(row => {
-      const match = !cat || row.dataset.category === cat
+      const match =
+        (!cat    || row.dataset.category === cat)    &&
+        (!src    || row.dataset.source   === src)    &&
+        (!decade || row.dataset.decade   === decade) &&
+        (!query  || (row.dataset.search  ?? '').includes(query))
       row.hidden = !match
       if (match) visible++
     })
@@ -151,34 +330,189 @@ function formatDate(dateStr?: string): string {
     countEl.textContent = `Viser ${visible} artikler`
   }
 
-  function resetFilters() { selCat.value = ''; applyFilters() }
+  function resetFilters() {
+    inputSearch.value = ''
+    selCat.value = ''
+    if (selSource) selSource.value = ''
+    if (selDecade) selDecade.value = ''
+    applyFilters()
+  }
 
+  inputSearch.addEventListener('input', applyFilters)
   selCat.addEventListener('change', applyFilters)
+  selSource?.addEventListener('change', applyFilters)
+  selDecade?.addEventListener('change', applyFilters)
   btnReset.addEventListener('click', resetFilters)
   btnReset2.addEventListener('click', resetFilters)
+
+  // ── Modal refs ────────────────────────────────────────────────────
+  const modal           = document.getElementById('article-modal') as HTMLDialogElement
+  const elClose         = document.getElementById('modal-close')!
+  const elCatBadge      = document.getElementById('modal-cat-badge') as HTMLElement
+  const elSourceMeta    = document.getElementById('modal-source-meta')!
+  const elTitle         = document.getElementById('modal-title')!
+  const elImgWrap       = document.getElementById('modal-img-wrap') as HTMLElement
+  const elImg           = document.getElementById('modal-img') as HTMLImageElement
+  const elTeaser        = document.getElementById('modal-teaser')!
+  const elCommentary    = document.getElementById('modal-commentary') as HTMLElement
+  const elMagWrap       = document.getElementById('modal-magicians') as HTMLElement
+  const elMagList       = document.getElementById('modal-magicians-list')!
+  const elNbLink        = document.getElementById('modal-nb-link') as HTMLAnchorElement
+  const elIframeBtn     = document.getElementById('modal-iframe-btn') as HTMLButtonElement
+  const elIframeWrap    = document.getElementById('modal-iframe-wrap') as HTMLElement
+  const elIframeLoading = document.getElementById('modal-iframe-loading')!
+  const elIframe        = document.getElementById('modal-iframe') as HTMLIFrameElement
+
+  // ── Modal open / close ────────────────────────────────────────────
+  function formatDate(s: string | null): string {
+    if (!s) return ''
+    return new Date(s).toLocaleDateString('nb-NO', { day: 'numeric', month: 'long', year: 'numeric' })
+  }
+
+  function openModal(id: string) {
+    const c = byId.get(id)
+    if (!c) return
+
+    // Reset iframe state
+    elIframe.src = ''
+    elIframeWrap.hidden = true
+    elIframeBtn.hidden = false
+    elIframeLoading.hidden = false
+
+    // Category badge
+    if (c.category) {
+      elCatBadge.textContent = CAT_LABELS[c.category] ?? c.category
+      elCatBadge.removeAttribute('hidden')
+    } else {
+      elCatBadge.hidden = true
+    }
+
+    // Source + date meta
+    elSourceMeta.textContent = [c.sourceName, formatDate(c.originalDate)].filter(Boolean).join(' · ')
+
+    // Title
+    elTitle.textContent = c.title
+
+    // Image
+    if (c.imageUrl) {
+      elImg.src = c.imageUrl
+      elImg.alt = c.imageAlt
+      elImgWrap.removeAttribute('hidden')
+    } else {
+      elImgWrap.hidden = true
+    }
+
+    // Teaser
+    elTeaser.textContent = c.teaser
+
+    // Museum commentary
+    if (c.commentary) {
+      elCommentary.textContent = c.commentary
+      elCommentary.removeAttribute('hidden')
+    } else {
+      elCommentary.hidden = true
+    }
+
+    // Mentioned magicians (safe DOM building, no innerHTML with user content)
+    elMagList.innerHTML = ''
+    if (c.magicians.length > 0) {
+      c.magicians.forEach((m, i) => {
+        const a = document.createElement('a')
+        a.href = `/tryllehistorie/magiens-hvem-er-hvem/${encodeURIComponent(m.slug)}`
+        a.className = 'modal-magician-link'
+        a.textContent = m.name
+        elMagList.appendChild(a)
+        if (i < c.magicians.length - 1) {
+          const sep = document.createElement('span')
+          sep.setAttribute('aria-hidden', 'true')
+          sep.textContent = ', '
+          elMagList.appendChild(sep)
+        }
+      })
+      elMagWrap.removeAttribute('hidden')
+    } else {
+      elMagWrap.hidden = true
+    }
+
+    // NB external link
+    elNbLink.href = c.sourceUrl
+
+    // Scroll modal content to top, then open
+    modal.querySelector<HTMLElement>('.modal-scroll')!.scrollTop = 0
+    modal.showModal()
+    document.body.style.overflow = 'hidden'
+  }
+
+  function closeModal() {
+    modal.close()
+    document.body.style.overflow = ''
+    elIframe.src = ''
+  }
+
+  // ── Card click delegation ─────────────────────────────────────────
+  // Whole card is clickable; links inside still navigate normally
+  document.addEventListener('click', (e) => {
+    const target = e.target as HTMLElement
+    if (target.closest('a'))              return  // let links work
+    if (target.closest('#article-modal')) return  // modal handles its own events
+    const card = target.closest<HTMLElement>('.article-card[data-id]')
+    if (card?.dataset.id) openModal(card.dataset.id)
+  })
+
+  // ── Iframe embed toggle ───────────────────────────────────────────
+  elIframeBtn.addEventListener('click', () => {
+    elIframeWrap.removeAttribute('hidden')
+    elIframeBtn.hidden = true
+    elIframeLoading.removeAttribute('hidden')
+    elIframe.src = elNbLink.href
+    elIframe.addEventListener('load', () => {
+      elIframeLoading.hidden = true
+    }, { once: true })
+  })
+
+  // ── Close handlers ────────────────────────────────────────────────
+  elClose.addEventListener('click', closeModal)
+  modal.addEventListener('click', (e) => {
+    if (e.target === modal) closeModal()   // click outside modal-inner
+  })
+  modal.addEventListener('cancel', closeModal)  // ESC key
 </script>
 
 <style>
+  /* ── Hero ──────────────────────────────────────────────────────── */
   .hero { background: var(--burgundy-dk); padding: 3.5rem 0 2.5rem; border-bottom: 2px solid var(--gold-dark); color: var(--cream); }
   .breadcrumb-link { color: var(--gold); text-decoration: none; font-size: 0.7rem; font-weight: 600; letter-spacing: 0.2em; text-transform: uppercase; }
   .hero-title { font-size: clamp(1.8rem, 5vw, 3rem); color: var(--cream); margin: 0.5rem 0 0.75rem; }
   .hero-sub { font-family: var(--font-ui); font-size: 1rem; opacity: 0.8; max-width: 600px; }
   .hero-link { color: var(--gold-light); }
 
+  /* ── Filter bar ────────────────────────────────────────────────── */
   .filter-bar-wrap { position: sticky; top: var(--header-h); z-index: 50; background: white; border-bottom: 1px solid var(--cream-dark); box-shadow: 0 2px 12px rgba(26,18,8,0.06); }
-  .filter-bar-inner { display: flex; flex-wrap: wrap; gap: 0.75rem; align-items: flex-end; padding: 0.75rem 1.5rem; }
-  .filter-group { display: flex; flex-direction: column; gap: 0.2rem; }
-  .filter-label { font-family: var(--font-ui); font-size: 0.65rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; color: var(--grey); }
-  .filter-select { font-family: var(--font-ui); font-size: 0.875rem; color: var(--ink); background: var(--cream); border: 1.5px solid var(--cream-dark); border-radius: 6px; padding: 0.45rem 0.75rem; cursor: pointer; min-width: 200px; }
-  .filter-reset { font-family: var(--font-ui); font-size: 0.8rem; font-weight: 600; color: var(--grey); border: 1.5px solid var(--cream-dark); border-radius: 6px; padding: 0.45rem 0.9rem; background: white; cursor: pointer; align-self: flex-end; }
+  .filter-bar-inner { display: flex; flex-wrap: wrap; gap: 0.5rem 1rem; align-items: flex-end; padding: 0.75rem 1.5rem; }
+  .filter-group, .filter-search-group { display: flex; flex-direction: column; gap: 0.2rem; }
+  .filter-label { font-family: var(--font-ui); font-size: 0.62rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; color: var(--grey); }
+  .filter-select { font-family: var(--font-ui); font-size: 0.875rem; color: var(--ink); background: var(--cream); border: 1.5px solid var(--cream-dark); border-radius: 6px; padding: 0.45rem 0.75rem; cursor: pointer; min-width: 160px; }
+  .filter-select:focus { outline: none; border-color: var(--gold-dark); }
+
+  .search-wrap { position: relative; display: flex; align-items: center; }
+  .search-icon { position: absolute; left: 0.65rem; color: var(--grey); pointer-events: none; flex-shrink: 0; }
+  .filter-search { font-family: var(--font-ui); font-size: 0.875rem; color: var(--ink); background: var(--cream); border: 1.5px solid var(--cream-dark); border-radius: 6px; padding: 0.45rem 0.75rem 0.45rem 2.1rem; min-width: 200px; }
+  .filter-search:focus { outline: none; border-color: var(--gold-dark); }
+  .filter-search::-webkit-search-cancel-button { cursor: pointer; }
+
+  .filter-reset { font-family: var(--font-ui); font-size: 0.8rem; font-weight: 600; color: var(--grey); border: 1.5px solid var(--cream-dark); border-radius: 6px; padding: 0.45rem 0.9rem; background: white; align-self: flex-end; }
   .filter-reset:hover { color: var(--burgundy); border-color: var(--gold); }
 
-  .result-count { font-family: var(--font-ui); font-size: 0.8rem; color: var(--grey); padding: 0.75rem 0 0.25rem; }
+  /* ── Result count ──────────────────────────────────────────────── */
+  .result-bar { padding: 0.65rem 0 0; }
+  .result-count { font-family: var(--font-ui); font-size: 0.8rem; color: var(--grey); }
 
-  .articles-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1.5rem; padding-bottom: 1rem; }
+  /* ── Cards ─────────────────────────────────────────────────────── */
+  .articles-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1.5rem; padding-bottom: 1rem; align-items: stretch; }
 
-  .article-card { border-radius: 6px; overflow: hidden; border: 1px solid var(--cream-dark); background: white; transition: transform 220ms ease, box-shadow 220ms ease, border-color 220ms ease; display: flex; flex-direction: column; }
+  .article-card { border-radius: 6px; overflow: hidden; border: 1px solid var(--cream-dark); background: white; transition: transform 220ms ease, box-shadow 220ms ease, border-color 220ms ease; display: flex; flex-direction: column; cursor: pointer; }
   .article-card:hover { transform: translateY(-4px); box-shadow: 0 8px 28px rgba(107,15,26,0.14); border-color: var(--gold-light); }
+  .article-card:focus-within { border-color: var(--gold); box-shadow: 0 0 0 2px var(--gold-light); }
 
   .card-img { position: relative; aspect-ratio: 4/3; overflow: hidden; background: var(--burgundy-dk); flex-shrink: 0; }
   .card-img img { width: 100%; height: 100%; object-fit: cover; transition: transform 400ms ease; }
@@ -191,23 +525,98 @@ function formatDate(dateStr?: string): string {
   .card-date { font-weight: 400; color: var(--grey); text-transform: none; letter-spacing: 0; }
   .card-title { font-family: var(--font-display); font-size: 1.05rem; color: var(--burgundy); letter-spacing: 0.02em; line-height: 1.25; margin-top: 0.1rem; }
   .card-teaser { font-family: var(--font-ui); font-size: 0.875rem; color: var(--ink-mid); line-height: 1.55; }
-  .card-commentary { font-family: var(--font-body); font-size: 0.8rem; font-style: italic; color: var(--grey); line-height: 1.5; border-left: 2px solid var(--gold-light); padding-left: 0.6rem; margin-top: 0.15rem; }
-  .card-magicians { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.2rem; margin-top: 0.4rem; font-family: var(--font-ui); font-size: 0.75rem; }
-  .card-magicians-label { color: var(--grey); font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; font-size: 0.68rem; margin-right: 0.15rem; }
-  .card-magician-link { color: var(--burgundy); text-decoration: none; border-bottom: 1px solid var(--gold-light); transition: color 150ms, border-color 150ms; }
-  .card-magician-link:hover { color: var(--gold-dark); border-color: var(--gold); }
+  .card-commentary { font-family: var(--font-body); font-size: 0.8rem; font-style: italic; color: var(--grey); line-height: 1.5; border-left: 2px solid var(--gold-light); padding-left: 0.6rem; margin-top: 0.1rem; }
 
-  .card-link-nb { display: inline-block; margin-top: auto; padding-top: 0.75rem; font-family: var(--font-ui); font-size: 0.8rem; font-weight: 700; color: var(--gold-dark); text-decoration: none; transition: color 150ms; }
-  .card-link-nb:hover { color: var(--burgundy); }
+  .card-open-btn { margin-top: auto; padding-top: 0.75rem; font-family: var(--font-ui); font-size: 0.8rem; font-weight: 700; color: var(--gold-dark); background: none; border: none; text-align: left; padding-left: 0; transition: color 150ms; }
+  .card-open-btn:hover { color: var(--burgundy); }
 
+  /* ── Empty / no-results ────────────────────────────────────────── */
   .empty-state { padding: 4rem 0; text-align: center; font-family: var(--font-ui); color: var(--ink-mid); }
-
   .no-results { padding: 3rem 0; text-align: center; font-family: var(--font-ui); color: var(--ink-mid); }
   .filter-reset-inline { margin-top: 0.75rem; font-family: var(--font-ui); font-size: 0.875rem; font-weight: 600; color: var(--burgundy); background: none; border: 1px solid var(--gold-dark); border-radius: 6px; padding: 0.45rem 1rem; cursor: pointer; }
 
+  /* ── Modal ─────────────────────────────────────────────────────── */
+  .article-modal {
+    padding: 0;
+    border: none;
+    border-radius: 10px;
+    box-shadow: 0 24px 64px rgba(26,18,8,0.45);
+    width: min(92vw, 780px);
+    max-height: 90dvh;
+    overflow: hidden;
+    background: white;
+  }
+  .article-modal[open] { display: flex; flex-direction: column; }
+  .article-modal::backdrop { background: rgba(26,18,8,0.72); backdrop-filter: blur(3px); }
+
+  .modal-inner { display: flex; flex-direction: column; overflow: hidden; height: 100%; }
+
+  .modal-topbar { display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; padding: 0.65rem 0.75rem 0.65rem 1.25rem; border-bottom: 1px solid var(--cream-dark); background: white; flex-shrink: 0; }
+  .modal-topbar-meta { display: flex; align-items: center; gap: 0.55rem; flex-wrap: wrap; overflow: hidden; min-width: 0; }
+  .modal-cat-badge { font-family: var(--font-ui); font-size: 0.64rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.09em; padding: 0.18rem 0.5rem; border-radius: 3px; background: var(--burgundy-dk); color: var(--gold-light); white-space: nowrap; flex-shrink: 0; }
+  .modal-source-meta { font-family: var(--font-ui); font-size: 0.78rem; color: var(--grey); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+
+  .modal-close { display: flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 50%; color: var(--ink-mid); background: var(--cream); flex-shrink: 0; transition: background 150ms, color 150ms; }
+  .modal-close:hover { background: var(--cream-dark); color: var(--burgundy); }
+
+  .modal-scroll { overflow-y: auto; flex: 1; padding: 1.5rem 1.5rem 2rem; display: flex; flex-direction: column; gap: 1rem; }
+
+  .modal-title { font-family: var(--font-display); font-size: clamp(1.15rem, 3.5vw, 1.55rem); color: var(--burgundy); letter-spacing: 0.02em; line-height: 1.25; }
+
+  .modal-img-wrap { border-radius: 6px; overflow: hidden; background: var(--burgundy-dk); max-height: 380px; display: flex; align-items: center; justify-content: center; }
+  .modal-img { width: 100%; object-fit: contain; max-height: 380px; }
+
+  .modal-teaser { font-family: var(--font-body); font-size: 1rem; color: var(--ink-mid); line-height: 1.7; }
+
+  .modal-commentary { border-left: 3px solid var(--gold-light); padding: 0.6rem 0 0.6rem 1rem; font-family: var(--font-body); font-size: 0.9rem; font-style: italic; color: var(--grey); line-height: 1.6; margin: 0; }
+
+  .modal-magicians { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.2rem; font-family: var(--font-ui); font-size: 0.8rem; color: var(--ink-mid); }
+  .modal-magicians-label { font-size: 0.67rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--grey); margin-right: 0.1rem; }
+  .modal-magician-link { color: var(--burgundy); border-bottom: 1px solid var(--gold-light); text-decoration: none; transition: color 150ms; }
+  .modal-magician-link:hover { color: var(--gold-dark); }
+
+  .modal-nb-section { border-top: 1px solid var(--cream-dark); padding-top: 1rem; display: flex; flex-direction: column; gap: 0.75rem; }
+  .modal-nb-actions { display: flex; flex-wrap: wrap; gap: 0.55rem; }
+
+  .btn-nb-external { display: inline-flex; align-items: center; gap: 0.4rem; font-family: var(--font-ui); font-size: 0.82rem; font-weight: 700; color: white; background: var(--burgundy); border-radius: 6px; padding: 0.5rem 1rem; text-decoration: none; transition: background 150ms; }
+  .btn-nb-external:hover { background: var(--burgundy-dk); }
+
+  .btn-nb-embed { display: inline-flex; align-items: center; gap: 0.4rem; font-family: var(--font-ui); font-size: 0.82rem; font-weight: 600; color: var(--burgundy); background: white; border: 1.5px solid var(--gold-dark); border-radius: 6px; padding: 0.5rem 1rem; transition: background 150ms; }
+  .btn-nb-embed:hover { background: var(--cream); }
+
+  .modal-iframe-wrap { border-radius: 6px; overflow: hidden; border: 1px solid var(--cream-dark); position: relative; min-height: 520px; background: var(--cream); }
+  .modal-iframe-loading { display: flex; align-items: center; justify-content: center; gap: 0.6rem; position: absolute; inset: 0; font-family: var(--font-ui); font-size: 0.875rem; color: var(--grey); background: var(--cream); }
+  .spinner { display: inline-block; width: 18px; height: 18px; border: 2.5px solid var(--cream-dark); border-top-color: var(--gold-dark); border-radius: 50%; animation: spin 0.8s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  #modal-iframe { width: 100%; height: 520px; border: none; display: block; }
+
+  /* ── Page nav ──────────────────────────────────────────────────── */
   .page-nav { display: flex; flex-wrap: wrap; gap: 0.75rem; padding: 1.5rem 0 3rem; font-family: var(--font-ui); font-size: 0.875rem; }
   .page-nav a { color: var(--grey); text-decoration: none; border: 1px solid var(--cream-dark); padding: 0.4rem 1rem; border-radius: var(--radius); transition: color 150ms, border-color 150ms; }
   .page-nav a:hover { color: var(--burgundy); border-color: var(--gold); }
 
-  @media (max-width: 700px) { .articles-grid { grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 1rem; } }
+  /* ── Mobile ────────────────────────────────────────────────────── */
+  @media (max-width: 599px) {
+    .article-modal {
+      width: 100vw;
+      max-width: 100vw;
+      max-height: 100dvh;
+      border-radius: 0;
+      margin: 0;
+      position: fixed;
+      inset: 0;
+    }
+    .modal-inner { max-height: 100dvh; }
+    .modal-scroll { padding: 1rem 1rem 2rem; }
+    .filter-bar-inner { padding: 0.6rem 1rem; gap: 0.4rem 0.75rem; }
+    .filter-search { min-width: 0; width: 100%; }
+    .filter-select { min-width: 0; }
+    .articles-grid { grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+    #modal-iframe { height: 380px; }
+    .modal-iframe-wrap { min-height: 380px; }
+  }
+
+  @media (max-width: 400px) {
+    .articles-grid { grid-template-columns: 1fr; }
+  }
 </style>
