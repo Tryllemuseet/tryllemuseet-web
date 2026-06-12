@@ -579,6 +579,45 @@ export async function getTryllehistoriePage(): Promise<TryllehistoriePage> {
   }
 }
 
+// ── Typer: Ressurser ─────────────────────────────────────────────
+export interface RessursKort {
+  emoji:       string
+  title:       string
+  beskrivelse: string
+  href:        string
+  soon:        boolean
+}
+
+export interface RessurserPage {
+  hero:      { label: string; heading: string; ingress: string }
+  ressurser: RessursKort[]
+}
+
+export async function getRessurserPage(): Promise<RessurserPage> {
+  const d = await sanityClient.fetch(`
+    *[_type == "ressurserPage"][0] {
+      hero { label, heading, ingress },
+      ressurser[] { emoji, title, beskrivelse, href, soon }
+    }
+  `)
+  return {
+    hero: {
+      label:   d?.hero?.label   ?? 'Tryllemuseet',
+      heading: d?.hero?.heading ?? 'Ressurser',
+      ingress: d?.hero?.ingress ?? 'Tryllekatalog, bibliotek, kunstnerregister og mer.',
+    },
+    ressurser: d?.ressurser ?? [
+      { emoji: '📚', title: 'Bibliotek',                  beskrivelse: 'Norske tryllebøker og faglitteratur om illusjonismens kunst.',                                           href: '/bibliotek',                                            soon: false },
+      { emoji: '🪄', title: 'Hvem er hvem',               beskrivelse: 'Biografiregister over norske og nordiske tryllekunstnere.',                                              href: '/tryllehistorie/magiens-hvem-er-hvem',                  soon: false },
+      { emoji: '📺', title: 'Nordiske magikere på TV',    beskrivelse: 'Oversikt over nordiske tryllekunstnere i Got Talent og Penn & Teller: Fool Us.',                        href: '/tryllehistorie/nordisk-tv-magi',                       soon: false },
+      { emoji: '🎩', title: 'Tryllekatalogen ↗',          beskrivelse: 'Magiske Cirkel Norges katalog over norske tryllekunstnere.',                                            href: 'https://www.magiskecirkel.no/tryllekatalogen',           soon: false },
+      { emoji: '🎭', title: 'Tryllekunstnere',            beskrivelse: 'Register over tryllekunstnere tilknyttet museet og MCN.',                                               href: '',                                                       soon: true  },
+      { emoji: '✨', title: 'Magiske øyeblikk',           beskrivelse: 'Høydepunkter og øyeblikk fra museets liv og arrangementer.',                                            href: '',                                                       soon: true  },
+      { emoji: '📰', title: 'Historiske avisartikler',    beskrivelse: 'Pekere til historiske artikler om norsk tryllekunst fra nb.no og Riksarkivet.',                        href: '',                                                       soon: true  },
+    ],
+  }
+}
+
 // ── Typer: SiteConfig ────────────────────────────────────────────
 export interface SiteConfig {
   siteName:          string
