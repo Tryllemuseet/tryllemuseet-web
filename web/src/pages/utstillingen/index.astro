@@ -1,57 +1,17 @@
 ---
 // src/pages/utstillingen/index.astro
 import BaseLayout from '../../layouts/BaseLayout.astro'
-import { getAllMagicians, urlFor } from '../../lib/sanity'
+import { getAllMagicians, getUtstillingPage, urlFor } from '../../lib/sanity'
 
-const magicians = await getAllMagicians()
+const [magicians, page] = await Promise.all([getAllMagicians(), getUtstillingPage()])
 
-// Featured slugs — hardcoded for now, move to Sanity featured-field later
-const FEATURED_SLUGS = ['robert-houdin', 'alexander', 'houdini']
+const featured  = magicians.filter(m => page.fremhevedeSlugs.includes(m.slug))
+const remaining = magicians.filter(m => !page.fremhevedeSlugs.includes(m.slug))
 
-const featured  = magicians.filter(m => FEATURED_SLUGS.includes(m.slug))
-const remaining = magicians.filter(m => !FEATURED_SLUGS.includes(m.slug))
-
-// Build optimised image URLs at build time
 function posterUrl(image: any, width: number) {
   if (!image?.asset) return null
   return urlFor(image).width(width).height(Math.round(width * 4 / 3)).format('webp').fit('crop').url()
 }
-
-// Coming-soon sections
-const sections = [
-  {
-    slug:        'norske-legender',
-    label:       'Norsk tryllekunst',
-    title:       'Norske legender',
-    description: 'Fra Arnardo til Finn Jon — tryllekunstnerne som skapte norsk magi.',
-    icon:        '🇳🇴',
-    ready:       false,
-  },
-  {
-    slug:        'artefakter',
-    label:       'Samlingen',
-    title:       'Artefakter',
-    description: 'Sjeldne rekvisitter, historiske gjenstander og mysterier fra museets samling.',
-    icon:        '🎩',
-    ready:       false,
-  },
-  {
-    slug:        'trylleforeningene',
-    label:       'Organisasjonene',
-    title:       'Trylleforeningene',
-    description: 'Magisk Cirkel Norge og Det Magiske Råd — fellesskapet bak kunsten.',
-    icon:        '♣',
-    ready:       false,
-  },
-  {
-    slug:        'tryllebutikken',
-    label:       'Butikken',
-    title:       'Tryllebutikken',
-    description: 'Bøker, rekvisitter og kuriositeter for den nysgjerrige.',
-    icon:        '🛍',
-    ready:       false,
-  },
-]
 ---
 
 <BaseLayout
@@ -61,13 +21,9 @@ const sections = [
 
   <!-- ── HERO ──────────────────────────────────────────────────────── -->
   <section class="hero container">
-    <p class="section-label">1845 – 1930</p>
-    <h1 class="display-title hero-title">Utstillingen</h1>
-    <p class="hero-intro">
-      Tryllekunsten har en rik og fascinerende historie. Her møter du magikerne
-      som formet verden — fra teatersalene i Paris til de store scenene i Amerika.
-      Utforsk gullalderen, norske legender, og museets unike samling.
-    </p>
+    <p class="section-label">{page.hero.eraLabel}</p>
+    <h1 class="display-title hero-title">{page.hero.heading}</h1>
+    <p class="hero-intro">{page.hero.ingress}</p>
     <hr class="gold-rule" />
   </section>
 
@@ -75,12 +31,9 @@ const sections = [
   <section class="container gullalder-section">
     <div class="section-header">
       <div>
-        <p class="section-label">Fremhevet</p>
-        <h2 class="display-title section-title">Tryllingens gullalder</h2>
-        <p class="section-intro">
-          Tre ikoner som definerte en epoke. I det fysiske museet bærer
-          filmene og den mystiske kula vitnesbyrd om gullalderens storhet.
-        </p>
+        <p class="section-label">{page.gullalderSeksjon.label}</p>
+        <h2 class="display-title section-title">{page.gullalderSeksjon.heading}</h2>
+        <p class="section-intro">{page.gullalderSeksjon.ingress}</p>
       </div>
     </div>
 
@@ -168,12 +121,12 @@ const sections = [
 
   <!-- ── KOMMENDE SEKSJONER ────────────────────────────────────────── -->
   <section class="container coming-section">
-    <p class="section-label">Mer å utforske</p>
-    <h2 class="display-title section-title">I utstillingen</h2>
+    <p class="section-label">{page.kommerSnartSeksjon.label}</p>
+    <h2 class="display-title section-title">{page.kommerSnartSeksjon.heading}</h2>
 
     <div class="sections-grid">
-      {sections.map((s) => (
-        <div class={`section-card ${s.ready ? '' : 'section-card--soon'}`}>
+      {page.seksjoner.map((s) => (
+        <div class:list={['section-card', { 'section-card--soon': !s.ready }]}>
           <div class="section-card-icon">{s.icon}</div>
           <div class="section-card-body">
             <p class="section-card-label">{s.label}</p>

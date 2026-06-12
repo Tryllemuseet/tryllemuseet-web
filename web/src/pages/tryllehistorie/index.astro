@@ -1,89 +1,29 @@
 ---
 // src/pages/tryllehistorie/index.astro
 import BaseLayout from '../../layouts/BaseLayout.astro'
+import { getTryllehistoriePage } from '../../lib/sanity'
 
-const sections = [
-  {
-    href:    '/tryllehistorie/magiens-hvem-er-hvem',
-    emoji:   '📖',
-    title:   'Magiens Hvem er Hvem',
-    sub:     'Norske tryllekunstnere',
-    desc:    '173 biografier over norske tryllekunstnere fra Terje Nordheims standardverk. Søk på navn, kunstnernavn og spesialitet.',
-    badge:   '173 biografier',
-  },
-  {
-    href:    '/utstillingen',
-    emoji:   '🎩',
-    title:   'Gullalderen 1845–1930',
-    sub:     'Internasjonal tryllehistorie',
-    desc:    'Robert-Houdin, Herrmann, Kellar, Thurston og Houdini — magikerne som forandret verden og skapte scenetryllingens gylne epoke.',
-    badge:   '7 utstillingsfelt',
-  },
-  {
-    href:    '/tryllehistorie/norske-legender/henrik-ibsen',
-    emoji:   '🎭',
-    title:   'Henrik Ibsen som tryllekunstner',
-    sub:     'Norsk kulturhistorie',
-    desc:    'Visste du at Henrik Ibsen tryllet? Den store dramatikeren hadde en ukjent side som tryllekunstner i sin ungdom.',
-    badge:   'Artikkel',
-  },
-  {
-    href:    '/tryllehistorie/begerspillet',
-    emoji:   '🏺',
-    title:   'Begerspillet',
-    sub:     'Magiens opprinnelse',
-    desc:    'Verdens eldste kjente trylletriks — avbildet i Egypt for over 4000 år siden. Historien om magiens aller første triks.',
-    badge:   'Kommer snart',
-    soon:    true,
-  },
-  {
-    href:    '/tryllehistorie/norske-legender',
-    emoji:   '⭐',
-    title:   'Norske legender',
-    sub:     'Portretter',
-    desc:    'Egelo, Jan Crosby, Davido, Arnardo og andre norske tryllekunstnere som har satt spor. Dyptgående portretter.',
-    badge:   '7 artikler',
-  },
-  {
-    href:    '/tryllehistorie/got-talent',
-    emoji:   '🏆',
-    title:   'Got Talent',
-    sub:     'Nordisk TV-magi',
-    desc:    'Norske, svenske, danske og finske tryllekunstnere i Norske Talenter, Talang, Danmark har Talent og Talent Suomi.',
-    badge:   '35 opptredener',
-  },
-  {
-    href:    '/tryllehistorie/fool-us',
-    emoji:   '🎯',
-    title:   'Penn & Teller: Fool Us',
-    sub:     'Nordisk TV-magi',
-    desc:    'Nordiske magikere som har møtt Penn & Teller i den prestisjetunge fagduellen fra Las Vegas. 7 klarte å lure dem.',
-    badge:   '12 opptredener',
-  },
-]
+const page = await getTryllehistoriePage()
 ---
 
 <BaseLayout
   title="Tryllehistorie — Tryllemuseet"
-  description="Utforsk tryllekunstens historie — fra begerspillet i Egypt for 4000 år siden til norske tryllekunstnere i dag."
+  description={page.hero.ingress}
 >
 
   <!-- HERO ──────────────────────────────────────────────────────── -->
   <section class="th-hero">
     <div class="container">
-      <p class="section-label">Tryllemuseet</p>
-      <h1 class="display-title th-title">Tryllehistorie</h1>
-      <p class="th-sub">
-        Fra begerspillet i Egypt for 4000 år siden til gullalderens store
-        scenemagikere og norske tryllekunstnere i dag — magiens lange historie.
-      </p>
+      <p class="section-label">{page.hero.label}</p>
+      <h1 class="display-title th-title">{page.hero.heading}</h1>
+      <p class="th-sub">{page.hero.ingress}</p>
     </div>
   </section>
 
   <!-- SEKSJONER ───────────────────────────────────────────────────── -->
   <main class="container th-grid-wrap">
     <div class="th-grid">
-      {sections.map(s => (
+      {page.seksjoner.map(s => (
         <a
           href={s.soon ? undefined : s.href}
           class:list={['th-card', { 'th-card--soon': s.soon }]}
@@ -111,44 +51,14 @@ const sections = [
 
     <!-- TIDSLINJE-TEASER ────────────────────────────────────────── -->
     <aside class="timeline-teaser">
-      <h2 class="display-title timeline-title">4000 år med magi</h2>
+      <h2 class="display-title timeline-title">{page.tidslinjeHeading}</h2>
       <div class="timeline">
-        <div class="tl-item">
-          <span class="tl-year">ca. 2000 f.Kr.</span>
-          <span class="tl-event">Begerspillet avbildes i Egypt — verdens eldste kjente trylletriks</span>
-        </div>
-        <div class="tl-item">
-          <span class="tl-year">1845</span>
-          <span class="tl-event">Robert-Houdin åpner sitt teater i Paris — den moderne scenetryllingens fødsel</span>
-        </div>
-        <div class="tl-item">
-          <span class="tl-year">1856</span>
-          <span class="tl-event">Robert-Houdin stopper et opprør i Algerie — med tryllekunst</span>
-        </div>
-        <div class="tl-item">
-          <span class="tl-year">1885</span>
-          <span class="tl-event">Henrik Ibsen opptrer som tryllekunstner i Christiania</span>
-        </div>
-        <div class="tl-item">
-          <span class="tl-year">1896</span>
-          <span class="tl-event">Adelaide Herrmann overtar showet etter sin manns død — blir «The Queen of Magic»</span>
-        </div>
-        <div class="tl-item">
-          <span class="tl-year">1908</span>
-          <span class="tl-event">Kellar overrekker tittelen til Thurston — gullalderens store kroningsseremoni</span>
-        </div>
-        <div class="tl-item">
-          <span class="tl-year">1926</span>
-          <span class="tl-event">Houdini dør på Halloween — gullalderens slutt</span>
-        </div>
-        <div class="tl-item">
-          <span class="tl-year">1940</span>
-          <span class="tl-event">Magiske Cirkel Norge stiftes — norsk trylleorganisasjon etableres</span>
-        </div>
-        <div class="tl-item tl-item--last">
-          <span class="tl-year">I dag</span>
-          <span class="tl-event">Tryllemuseet på Årvoll holder historien levende</span>
-        </div>
+        {page.tidslinje.map(item => (
+          <div class:list={['tl-item', { 'tl-item--last': item.siste }]}>
+            <span class="tl-year">{item.aar}</span>
+            <span class="tl-event">{item.hendelse}</span>
+          </div>
+        ))}
       </div>
     </aside>
 

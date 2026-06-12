@@ -26,7 +26,7 @@ const appearances = await sanityClient.fetch(`
   }
 `)
 
-const countries = [...new Set(appearances.map((a: any) => a.magician?.nationality))].filter(Boolean).sort()
+const countries = [...new Set(appearances.map((a: any) => a.magician?.nationality))].filter(Boolean).sort() as string[]
 const total   = appearances.length
 const fooled  = appearances.filter((a: any) => a.result === 'fooled').length
 const notFooled = appearances.filter((a: any) => a.result === 'not_fooled').length

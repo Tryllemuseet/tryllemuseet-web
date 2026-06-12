@@ -25,8 +25,8 @@ const clips = await sanityClient.fetch(`
   }
 `)
 
-const broadcasters = [...new Set(clips.map((c: any) => c.broadcaster))].filter(Boolean).sort()
-const magicians    = [...new Set(clips.map((c: any) => c.magician?.artistName ?? c.magician?.name))].filter(Boolean).sort()
+const broadcasters = [...new Set(clips.map((c: any) => c.broadcaster))].filter(Boolean).sort() as string[]
+const magicians    = [...new Set(clips.map((c: any) => c.magician?.artistName ?? c.magician?.name))].filter(Boolean).sort() as string[]
 const total        = clips.length
 
 const categoryLabels: Record<string, string> = {

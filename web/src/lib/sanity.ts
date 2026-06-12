@@ -1,7 +1,8 @@
 // src/lib/sanity.ts
 import { createClient } from '@sanity/client'
 import { createImageUrlBuilder } from '@sanity/image-url'
-import type { SanityImageSource } from '@sanity/image-url/lib/types/types'
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type SanityImageSource = any
 
 // "production" i Vercel prod-miljø, "preview" i preview-bygg, undefined lokalt
 const isProd = import.meta.env.PUBLIC_VERCEL_ENV === 'production'
@@ -414,6 +415,288 @@ export async function getOmOssPage(): Promise<OmOssPage | null> {
   `)
 }
 
+// ── Typer: Besøk oss ─────────────────────────────────────────────
+export interface BesokPage {
+  hero: { label: string; heading: string; ingress: string }
+  hurtiginfo: { inngangTekst: string; forestillingerTekst: string }
+  apningstider: {
+    rader: { dag: string; tid?: string; aapen: boolean }[]
+    merknad: string
+  }
+  priser: {
+    rader: { kategori: string; pris: string; gratis: boolean }[]
+    merknad: string
+  }
+  medlemskapSeksjon: { label: string; heading: string; tekst: string }
+  forestillingerSeksjon: { heading: string; tekst: string }
+  sporsmalSeksjon: { tekst: string }
+  transport: { badge: string; farge: 'rod' | 'blaa'; tekst: string }[]
+}
+
+export async function getBesokPage(): Promise<BesokPage> {
+  const d = await sanityClient.fetch(`
+    *[_type == "besokPage"][0] {
+      hero { label, heading, ingress },
+      hurtiginfo { inngangTekst, forestillingerTekst },
+      apningstider { rader[] { dag, tid, aapen }, merknad },
+      priser { rader[] { kategori, pris, gratis }, merknad },
+      medlemskapSeksjon { label, heading, tekst },
+      forestillingerSeksjon { heading, tekst },
+      sporsmalSeksjon { tekst },
+      transport[] { badge, farge, tekst }
+    }
+  `)
+  return {
+    hero: {
+      label:   d?.hero?.label   ?? 'Planlegg besøket',
+      heading: d?.hero?.heading ?? 'Besøk oss',
+      ingress: d?.hero?.ingress ?? 'Vi holder til på Årvoll gård i Oslo — et av byens mest sjarmerende kultursteder. Kom og opplev magi på nært hold.',
+    },
+    hurtiginfo: {
+      inngangTekst:        d?.hurtiginfo?.inngangTekst        ?? 'Gratis inngang for alle',
+      forestillingerTekst: d?.hurtiginfo?.forestillingerTekst ?? '3 pr. halvår',
+    },
+    apningstider: {
+      rader: d?.apningstider?.rader ?? [
+        { dag: 'Søndag',          tid: '12:00 – 15:00', aapen: true  },
+        { dag: 'Mandag – Lørdag', tid: '',               aapen: false },
+      ],
+      merknad: d?.apningstider?.merknad ?? 'Vi er også åpne ved spesielle arrangementer og etter avtale for grupper og skoler.',
+    },
+    priser: {
+      rader: d?.priser?.rader ?? [
+        { kategori: 'Barn (under 16 år)', pris: 'Gratis',       gratis: true  },
+        { kategori: 'Voksne',             pris: 'Gratis',       gratis: true  },
+        { kategori: 'Familie',            pris: 'Gratis',       gratis: true  },
+        { kategori: 'Grupper (10+)',      pris: 'Etter avtale', gratis: false },
+      ],
+      merknad: d?.priser?.merknad ?? 'Trylleforestillinger kan ha egne priser.',
+    },
+    medlemskapSeksjon: {
+      label:   d?.medlemskapSeksjon?.label   ?? 'Støtt museet',
+      heading: d?.medlemskapSeksjon?.heading ?? 'Bli medlem!',
+      tekst:   d?.medlemskapSeksjon?.tekst   ?? 'Som medlem støtter du Tryllemuseet og bidrar til å holde magien levende for kommende generasjoner. Medlemskapet er enkelt å tegne.',
+    },
+    forestillingerSeksjon: {
+      heading: d?.forestillingerSeksjon?.heading ?? 'Trylleforestillinger',
+      tekst:   d?.forestillingerSeksjon?.tekst   ?? 'Vi arrangerer tre trylleforestillinger hvert halvår — for familier, barn og alle som elsker magi. Forestillingene holdes på Årvoll gård og er åpne for alle.',
+    },
+    sporsmalSeksjon: {
+      tekst: d?.sporsmalSeksjon?.tekst ?? 'Lurer du på noe om besøket, vil booke for en gruppe eller skole, eller ønsker mer informasjon?',
+    },
+    transport: d?.transport ?? [
+      { badge: 'T', farge: 'rod',  tekst: 'T-bane linje 2 eller 3 til Grorud eller Furuset' },
+      { badge: 'B', farge: 'blaa', tekst: 'Buss 31 eller 68 — stopp Årvoll' },
+    ],
+  }
+}
+
+// ── Typer: Kontakt ───────────────────────────────────────────────
+export interface KontaktPage {
+  hero:      { label: string; heading: string; ingress: string }
+  skjemaUrl: string
+  faq:       { sporsmal: string; svar: string }[]
+}
+
+export async function getKontaktPage(): Promise<KontaktPage> {
+  const d = await sanityClient.fetch(`
+    *[_type == "kontaktPage"][0] {
+      hero { label, heading, ingress },
+      skjemaUrl,
+      faq[] { sporsmal, svar }
+    }
+  `)
+  return {
+    hero: {
+      label:   d?.hero?.label   ?? 'Tryllemuseet',
+      heading: d?.hero?.heading ?? 'Kontakt oss',
+      ingress: d?.hero?.ingress ?? 'Vi svarer på e-post så snart vi kan. Send gjerne spørsmål eller booking-forespørsel.',
+    },
+    skjemaUrl: d?.skjemaUrl ?? 'https://forms.cloud.microsoft/Pages/ResponsePage.aspx?id=ntTGX9tmLEuCq9W0nbG7xw-QkId2PUtCgZXNTCF6McdUNjhIWjhENjhaWTA2U1ZCTjBKRjZIUjdSMy4u&embed=true',
+    faq: d?.faq ?? [
+      { sporsmal: 'Kan vi booke besøk for en skole eller gruppe?',   svar: 'Ja! Vi tar imot grupper og skoleklasser etter avtale. Send oss en melding med antall deltakere og ønsket dato.' },
+      { sporsmal: 'Er museet tilgjengelig for rullestol?',           svar: 'Ta kontakt med oss på forhånd, så sørger vi for at besøket blir best mulig.' },
+      { sporsmal: 'Holdes det bursdagsarrangementer?',               svar: 'Ta kontakt med oss for å høre om mulighetene — vi finner gjerne en magisk løsning!' },
+      { sporsmal: 'Kan vi kjøpe tryllerekvisitter?',                 svar: 'Vi har et lite utvalg i museumsbutikken. Større utvalg finner du hos spesialforretninger som Egelos Crazy Shop.' },
+    ],
+  }
+}
+
+// ── Typer: Tryllehistorie ─────────────────────────────────────────
+export interface TryllehistorieSeksjon {
+  href:   string
+  emoji:  string
+  title:  string
+  sub:    string
+  desc:   string
+  badge:  string
+  soon:   boolean
+}
+
+export interface TryllehistoriePage {
+  hero:              { label: string; heading: string; ingress: string }
+  seksjoner:         TryllehistorieSeksjon[]
+  tidslinjeHeading:  string
+  tidslinje:         { aar: string; hendelse: string; siste: boolean }[]
+}
+
+export async function getTryllehistoriePage(): Promise<TryllehistoriePage> {
+  const d = await sanityClient.fetch(`
+    *[_type == "tryllehistoriePage"][0] {
+      hero { label, heading, ingress },
+      seksjoner[] { href, emoji, title, sub, desc, badge, soon },
+      tidslinjeHeading,
+      tidslinje[] { aar, hendelse, siste }
+    }
+  `)
+  return {
+    hero: {
+      label:   d?.hero?.label   ?? 'Tryllemuseet',
+      heading: d?.hero?.heading ?? 'Tryllehistorie',
+      ingress: d?.hero?.ingress ?? 'Fra begerspillet i Egypt for 4000 år siden til gullalderens store scenemagikere og norske tryllekunstnere i dag — magiens lange historie.',
+    },
+    seksjoner: d?.seksjoner ?? [
+      { href: '/tryllehistorie/magiens-hvem-er-hvem',        emoji: '📖', title: 'Magiens Hvem er Hvem',               sub: 'Norske tryllekunstnere',      desc: '173 biografier over norske tryllekunstnere fra Terje Nordheims standardverk. Søk på navn, kunstnernavn og spesialitet.',                                                                    badge: '173 biografier',  soon: false },
+      { href: '/utstillingen',                                emoji: '🎩', title: 'Gullalderen 1845–1930',              sub: 'Internasjonal tryllehistorie', desc: 'Robert-Houdin, Herrmann, Kellar, Thurston og Houdini — magikerne som forandret verden og skapte scenetryllingens gylne epoke.',                                                          badge: '7 utstillingsfelt', soon: false },
+      { href: '/tryllehistorie/norske-legender/henrik-ibsen', emoji: '🎭', title: 'Henrik Ibsen som tryllekunstner',    sub: 'Norsk kulturhistorie',        desc: 'Visste du at Henrik Ibsen tryllet? Den store dramatikeren hadde en ukjent side som tryllekunstner i sin ungdom.',                                                                          badge: 'Artikkel',         soon: false },
+      { href: '/tryllehistorie/begerspillet',                 emoji: '🏺', title: 'Begerspillet',                       sub: 'Magiens opprinnelse',         desc: 'Verdens eldste kjente trylletriks — avbildet i Egypt for over 4000 år siden. Historien om magiens aller første triks.',                                                                     badge: 'Kommer snart',    soon: true  },
+      { href: '/tryllehistorie/norske-legender',              emoji: '⭐', title: 'Norske legender',                    sub: 'Portretter',                  desc: 'Egelo, Jan Crosby, Davido, Arnardo og andre norske tryllekunstnere som har satt spor. Dyptgående portretter.',                                                                                badge: '7 artikler',      soon: false },
+      { href: '/tryllehistorie/got-talent',                   emoji: '🏆', title: 'Got Talent',                         sub: 'Nordisk TV-magi',             desc: 'Norske, svenske, danske og finske tryllekunstnere i Norske Talenter, Talang, Danmark har Talent og Talent Suomi.',                                                                          badge: '35 opptredener',  soon: false },
+      { href: '/tryllehistorie/fool-us',                      emoji: '🎯', title: 'Penn & Teller: Fool Us',             sub: 'Nordisk TV-magi',             desc: 'Nordiske magikere som har møtt Penn & Teller i den prestisjetunge fagduellen fra Las Vegas. 7 klarte å lure dem.',                                                                            badge: '12 opptredener',  soon: false },
+    ],
+    tidslinjeHeading: d?.tidslinjeHeading ?? '4000 år med magi',
+    tidslinje: d?.tidslinje ?? [
+      { aar: 'ca. 2000 f.Kr.', hendelse: 'Begerspillet avbildes i Egypt — verdens eldste kjente trylletriks',                               siste: false },
+      { aar: '1845',           hendelse: 'Robert-Houdin åpner sitt teater i Paris — den moderne scenetryllingens fødsel',                    siste: false },
+      { aar: '1856',           hendelse: 'Robert-Houdin stopper et opprør i Algerie — med tryllekunst',                                      siste: false },
+      { aar: '1885',           hendelse: 'Henrik Ibsen opptrer som tryllekunstner i Christiania',                                            siste: false },
+      { aar: '1896',           hendelse: 'Adelaide Herrmann overtar showet etter sin manns død — blir «The Queen of Magic»',                  siste: false },
+      { aar: '1908',           hendelse: 'Kellar overrekker tittelen til Thurston — gullalderens store kroningsseremoni',                    siste: false },
+      { aar: '1926',           hendelse: 'Houdini dør på Halloween — gullalderens slutt',                                                    siste: false },
+      { aar: '1940',           hendelse: 'Magiske Cirkel Norge stiftes — norsk trylleorganisasjon etableres',                                siste: false },
+      { aar: 'I dag',          hendelse: 'Tryllemuseet på Årvoll holder historien levende',                                                  siste: true  },
+    ],
+  }
+}
+
+// ── Typer: Ressurser ─────────────────────────────────────────────
+export interface RessursKort {
+  emoji:       string
+  title:       string
+  beskrivelse: string
+  href:        string
+  soon:        boolean
+}
+
+export interface RessurserPage {
+  hero:      { label: string; heading: string; ingress: string }
+  ressurser: RessursKort[]
+}
+
+export async function getRessurserPage(): Promise<RessurserPage> {
+  const d = await sanityClient.fetch(`
+    *[_type == "ressurserPage"][0] {
+      hero { label, heading, ingress },
+      ressurser[] { emoji, title, beskrivelse, href, soon }
+    }
+  `)
+  return {
+    hero: {
+      label:   d?.hero?.label   ?? 'Tryllemuseet',
+      heading: d?.hero?.heading ?? 'Ressurser',
+      ingress: d?.hero?.ingress ?? 'Tryllekatalog, bibliotek, kunstnerregister og mer.',
+    },
+    ressurser: d?.ressurser ?? [
+      { emoji: '📚', title: 'Bibliotek',                  beskrivelse: 'Norske tryllebøker og faglitteratur om illusjonismens kunst.',                                           href: '/bibliotek',                                            soon: false },
+      { emoji: '🪄', title: 'Hvem er hvem',               beskrivelse: 'Biografiregister over norske og nordiske tryllekunstnere.',                                              href: '/tryllehistorie/magiens-hvem-er-hvem',                  soon: false },
+      { emoji: '📺', title: 'Nordiske magikere på TV',    beskrivelse: 'Oversikt over nordiske tryllekunstnere i Got Talent og Penn & Teller: Fool Us.',                        href: '/tryllehistorie/nordisk-tv-magi',                       soon: false },
+      { emoji: '🎩', title: 'Tryllekatalogen ↗',          beskrivelse: 'Magiske Cirkel Norges katalog over norske tryllekunstnere.',                                            href: 'https://www.magiskecirkel.no/tryllekatalogen',           soon: false },
+      { emoji: '🎭', title: 'Tryllekunstnere',            beskrivelse: 'Register over tryllekunstnere tilknyttet museet og MCN.',                                               href: '',                                                       soon: true  },
+      { emoji: '✨', title: 'Magiske øyeblikk',           beskrivelse: 'Høydepunkter og øyeblikk fra museets liv og arrangementer.',                                            href: '',                                                       soon: true  },
+      { emoji: '📰', title: 'Historiske avisartikler',    beskrivelse: 'Pekere til historiske artikler om norsk tryllekunst fra nb.no og Riksarkivet.',                        href: '',                                                       soon: true  },
+    ],
+  }
+}
+
+// ── Typer: Arrangementer (side) ──────────────────────────────────
+export interface ArrangementInfoItem {
+  emoji:     string
+  heading:   string
+  tekst:     string
+  linkHref?: string
+  linkTekst?: string
+}
+
+export interface ArrangementPage {
+  hero:      { label: string; heading: string; ingress: string }
+  infoStrip: ArrangementInfoItem[]
+}
+
+export async function getArrangementPage(): Promise<ArrangementPage> {
+  const d = await sanityClient.fetch(`
+    *[_type == "arrangementPage"][0] {
+      hero { label, heading, ingress },
+      infoStrip[] { emoji, heading, tekst, linkHref, linkTekst }
+    }
+  `)
+  return {
+    hero: {
+      label:   d?.hero?.label   ?? 'Tryllemuseet',
+      heading: d?.hero?.heading ?? 'Arrangementer',
+      ingress: d?.hero?.ingress ?? 'Tryllekurs, familieforestillinger og magiske opplevelser for alle aldre. Tre forestillinger og kurs hvert halvår.',
+    },
+    infoStrip: d?.infoStrip ?? [
+      { emoji: '🎭', heading: '3 forestillinger pr. halvår',  tekst: 'Vi arrangerer familieforestillinger og tryllekurs jevnlig gjennom året.' },
+      { emoji: '👥', heading: 'Grupper og skoler',            tekst: 'Vi tar imot grupper etter avtale.',          linkHref: '/kontakt', linkTekst: 'Ta kontakt' },
+      { emoji: '📍', heading: 'Årvoll gård, Oslo',            tekst: 'Årvollveien 35, 0590 Oslo.',                linkHref: '/besok',   linkTekst: 'Se veibeskrivelse' },
+    ],
+  }
+}
+
+// ── Typer: Utstillingen (side) ────────────────────────────────────
+export interface UtstillingPage {
+  hero: { eraLabel: string; heading: string; ingress: string }
+  gullalderSeksjon: { label: string; heading: string; ingress: string }
+  fremhevedeSlugs: string[]
+  kommerSnartSeksjon: { label: string; heading: string }
+  seksjoner: { icon: string; label: string; title: string; description: string; slug: string; ready: boolean }[]
+}
+
+export async function getUtstillingPage(): Promise<UtstillingPage> {
+  const d = await sanityClient.fetch(`
+    *[_type == "utstillingPage"][0] {
+      hero { eraLabel, heading, ingress },
+      gullalderSeksjon { label, heading, ingress },
+      fremhevedeSlugs,
+      kommerSnartSeksjon { label, heading },
+      seksjoner[] { icon, label, title, description, slug, ready }
+    }
+  `)
+  return {
+    hero: {
+      eraLabel: d?.hero?.eraLabel ?? '1845 – 1930',
+      heading:  d?.hero?.heading  ?? 'Utstillingen',
+      ingress:  d?.hero?.ingress  ?? 'Tryllekunsten har en rik og fascinerende historie. Her møter du magikerne som formet verden — fra teatersalene i Paris til de store scenene i Amerika. Utforsk gullalderen, norske legender, og museets unike samling.',
+    },
+    gullalderSeksjon: {
+      label:   d?.gullalderSeksjon?.label   ?? 'Fremhevet',
+      heading: d?.gullalderSeksjon?.heading ?? 'Tryllingens gullalder',
+      ingress: d?.gullalderSeksjon?.ingress ?? 'Tre ikoner som definerte en epoke. I det fysiske museet bærer filmene og den mystiske kula vitnesbyrd om gullalderens storhet.',
+    },
+    fremhevedeSlugs: d?.fremhevedeSlugs ?? ['robert-houdin', 'alexander', 'houdini'],
+    kommerSnartSeksjon: {
+      label:   d?.kommerSnartSeksjon?.label   ?? 'Mer å utforske',
+      heading: d?.kommerSnartSeksjon?.heading ?? 'I utstillingen',
+    },
+    seksjoner: d?.seksjoner ?? [
+      { icon: '🇳🇴', label: 'Norsk tryllekunst',  title: 'Norske legender',    description: 'Fra Arnardo til Finn Jon — tryllekunstnerne som skapte norsk magi.',                        slug: 'norske-legender',    ready: false },
+      { icon: '🎩',   label: 'Samlingen',           title: 'Artefakter',         description: 'Sjeldne rekvisitter, historiske gjenstander og mysterier fra museets samling.',              slug: 'artefakter',         ready: false },
+      { icon: '♣',    label: 'Organisasjonene',     title: 'Trylleforeningene',  description: 'Magisk Cirkel Norge og Det Magiske Råd — fellesskapet bak kunsten.',                        slug: 'trylleforeningene',  ready: false },
+      { icon: '🛍',   label: 'Butikken',             title: 'Tryllebutikken',     description: 'Bøker, rekvisitter og kuriositeter for den nysgjerrige.',                                   slug: 'tryllebutikken',     ready: false },
+    ],
+  }
+}
+
 // ── Typer: SiteConfig ────────────────────────────────────────────
 export interface SiteConfig {
   siteName:          string
@@ -656,8 +939,10 @@ export interface Biography {
   fullBio?:    any[]
   videos?:     BiographyVideo[]
   links?:      BiographyLink[]
-  legendRef?:  { _ref: string; slug: string }
-  sources?:    { label: string; url?: string }[]
+  legendRef?:    { _ref: string; slug: string }
+  sources?:      { label: string; url?: string }
+  lastVerified?: string
+  needsUpdate?:  boolean[]
 }
 
 // ── Typer: Legend ────────────────────────────────────────────────
@@ -718,7 +1003,8 @@ export async function getBiographyBySlug(slug: string): Promise<Biography | null
         "internalSlug": internalRef->slug.current
       },
       "legendRef": legendRef-> { "slug": slug.current },
-      sources[] { label, url }
+      sources[] { label, url },
+      lastVerified, needsUpdate
     }
   `, { slug })
 }

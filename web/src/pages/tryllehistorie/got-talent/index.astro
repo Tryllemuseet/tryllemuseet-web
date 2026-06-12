@@ -28,8 +28,8 @@ const appearances = await sanityClient.fetch(`
   }
 `, { shows: GOT_TALENT_SHOWS })
 
-const shows     = [...new Set(appearances.map((a: any) => a.show))].filter(Boolean).sort()
-const countries = [...new Set(appearances.map((a: any) => a.magician?.nationality))].filter(Boolean).sort()
+const shows     = [...new Set(appearances.map((a: any) => a.show))].filter(Boolean).sort() as string[]
+const countries = [...new Set(appearances.map((a: any) => a.magician?.nationality))].filter(Boolean).sort() as string[]
 const total     = appearances.length
 ---
 

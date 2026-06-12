@@ -102,7 +102,7 @@ const total = biographies.length
       <section class="letter-section" id={`letter-${letter}`} data-letter={letter}>
         <h2 class="letter-heading" aria-label={`Bokstav ${letter}`}>{letter}</h2>
         <div class="bio-grid">
-          {grouped[letter].map(bio => (
+          {grouped[letter].map((bio: import('../../../lib/sanity').Biography) => (
             <article
               class="bio-card"
               data-name={bio.name.toLowerCase()}

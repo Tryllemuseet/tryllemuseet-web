@@ -2,10 +2,12 @@
 // src/pages/arrangementer.astro
 import BaseLayout from '../layouts/BaseLayout.astro'
 import AnimateIn from '../components/AnimateIn.astro'
-import { sanityClient } from '../lib/sanity'
+import { sanityClient, getArrangementPage } from '../lib/sanity'
 import { toHTML } from '@portabletext/to-html'
 
-const events = await sanityClient.fetch(`
+const [page, events] = await Promise.all([
+  getArrangementPage(),
+  sanityClient.fetch(`
   *[_type == "event"] | order(date asc) {
     _id, title, "slug": slug.current,
     date, ageGroup, price, excerpt, featured,
@@ -13,7 +15,8 @@ const events = await sanityClient.fetch(`
     description,
     image { asset->{ url }, alt }
   }
-`)
+`),
+])
 
 const now = new Date()
 
@@ -47,12 +50,9 @@ function formatDateShort(d: string) {
   <!-- HERO ──────────────────────────────────────────────────────── -->
   <section class="arr-hero">
     <div class="container">
-      <p class="section-label">Tryllemuseet</p>
-      <h1 class="display-title arr-title">Arrangementer</h1>
-      <p class="arr-sub">
-        Tryllekurs, familieforestillinger og magiske opplevelser for alle aldre.
-        Tre forestillinger og kurs hvert halvår.
-      </p>
+      <p class="section-label">{page.hero.label}</p>
+      <h1 class="display-title arr-title">{page.hero.heading}</h1>
+      <p class="arr-sub">{page.hero.ingress}</p>
     </div>
   </section>
 
@@ -170,29 +170,21 @@ function formatDateShort(d: string) {
     <!-- INFO-STRIP ───────────────────────────────────────────────── -->
     <AnimateIn direction="up">
     <aside class="info-strip">
-      <div class="info-strip-item">
-        <span class="info-strip-icon" aria-hidden="true">🎭</span>
-        <div>
-          <strong>3 forestillinger pr. halvår</strong>
-          <p>Vi arrangerer familieforestillinger og tryllekurs jevnlig gjennom året.</p>
-        </div>
-      </div>
-      <div class="info-strip-divider"></div>
-      <div class="info-strip-item">
-        <span class="info-strip-icon" aria-hidden="true">👥</span>
-        <div>
-          <strong>Grupper og skoler</strong>
-          <p>Vi tar imot grupper etter avtale. <a href="/kontakt">Ta kontakt</a> for booking.</p>
-        </div>
-      </div>
-      <div class="info-strip-divider"></div>
-      <div class="info-strip-item">
-        <span class="info-strip-icon" aria-hidden="true">📍</span>
-        <div>
-          <strong>Årvoll gård, Oslo</strong>
-          <p>Årvollveien 35, 0590 Oslo. <a href="/besok">Se veibeskrivelse</a>.</p>
-        </div>
-      </div>
+      {page.infoStrip.map((item, i) => (
+        <>
+          {i > 0 && <div class="info-strip-divider"></div>}
+          <div class="info-strip-item">
+            <span class="info-strip-icon" aria-hidden="true">{item.emoji}</span>
+            <div>
+              <strong>{item.heading}</strong>
+              <p>
+                {item.tekst}
+                {item.linkHref && <>{' '}<a href={item.linkHref}>{item.linkTekst}</a>.</>}
+              </p>
+            </div>
+          </div>
+        </>
+      ))}
     </aside>
     </AnimateIn>
 

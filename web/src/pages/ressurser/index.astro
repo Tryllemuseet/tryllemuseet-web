@@ -1,103 +1,72 @@
 ---
 // src/pages/ressurser/index.astro
 import BaseLayout from '../../layouts/BaseLayout.astro'
+import { getRessurserPage } from '../../lib/sanity'
+
+const page = await getRessurserPage()
+
+const tilgjengelige = page.ressurser.filter(r => !r.soon)
+const kommerSnart   = page.ressurser.filter(r =>  r.soon)
 ---
 
 <BaseLayout
   title="Ressurser — Tryllemuseet"
-  description="Tryllekatalog, bibliotek, kunstnerregister og magiske ressurser fra Tryllemuseet."
+  description={page.hero.ingress}
 >
 
   <section class="hero">
     <div class="container">
-      <p class="section-label">Tryllemuseet</p>
-      <h1 class="display-title">Ressurser</h1>
-      <p class="hero-sub">
-        Tryllekatalog, bibliotek, kunstnerregister og mer.
-      </p>
+      <p class="section-label">{page.hero.label}</p>
+      <h1 class="display-title">{page.hero.heading}</h1>
+      <p class="hero-sub">{page.hero.ingress}</p>
     </div>
   </section>
 
   <div class="container page-body">
 
-    <!-- Tilgjengelige ressurser nå -->
-    <section class="resources-section">
-      <h2 class="section-heading">Tilgjengelig nå</h2>
-      <div class="resources-grid">
-
-        <a href="/bibliotek" class="resource-card resource-card--active">
-          <div class="resource-icon" aria-hidden="true">📚</div>
-          <div class="resource-body">
-            <h3>Bibliotek</h3>
-            <p>Norske tryllebøker og faglitteratur om illusjonismens kunst.</p>
-          </div>
-          <span class="resource-arrow" aria-hidden="true">→</span>
-        </a>
-
-        <a href="/tryllehistorie/magiens-hvem-er-hvem" class="resource-card resource-card--active">
-          <div class="resource-icon" aria-hidden="true">🪄</div>
-          <div class="resource-body">
-            <h3>Hvem er hvem</h3>
-            <p>Biografiregister over norske og nordiske tryllekunstnere.</p>
-          </div>
-          <span class="resource-arrow" aria-hidden="true">→</span>
-        </a>
-
-        <a href="/tryllehistorie/nordisk-tv-magi" class="resource-card resource-card--active">
-          <div class="resource-icon" aria-hidden="true">📺</div>
-          <div class="resource-body">
-            <h3>Nordiske magikere på TV</h3>
-            <p>Oversikt over nordiske tryllekunstnere i Got Talent og Penn &amp; Teller: Fool Us.</p>
-          </div>
-          <span class="resource-arrow" aria-hidden="true">→</span>
-        </a>
-
-        <a href="https://www.magiskecirkel.no/tryllekatalogen" class="resource-card resource-card--active" target="_blank" rel="noopener">
-          <div class="resource-icon" aria-hidden="true">🎩</div>
-          <div class="resource-body">
-            <h3>Tryllekatalogen ↗</h3>
-            <p>Magiske Cirkel Norges katalog over norske tryllekunstnere.</p>
-          </div>
-          <span class="resource-arrow" aria-hidden="true">→</span>
-        </a>
-
-      </div>
-    </section>
-
-    <!-- Kommer snart -->
-    <section class="resources-section">
-      <h2 class="section-heading">Kommer snart</h2>
-      <div class="resources-grid">
-
-        <div class="resource-card resource-card--soon">
-          <div class="resource-icon" aria-hidden="true">🎭</div>
-          <div class="resource-body">
-            <h3>Tryllekunstnere</h3>
-            <p>Register over tryllekunstnere tilknyttet museet og MCN.</p>
-          </div>
-          <span class="soon-badge">Snart</span>
+    {tilgjengelige.length > 0 && (
+      <section class="resources-section">
+        <h2 class="section-heading">Tilgjengelig nå</h2>
+        <div class="resources-grid">
+          {tilgjengelige.map(r => {
+            const ekstern = r.href.startsWith('http')
+            return (
+              <a
+                href={r.href}
+                class="resource-card resource-card--active"
+                target={ekstern ? '_blank' : undefined}
+                rel={ekstern ? 'noopener' : undefined}
+              >
+                <div class="resource-icon" aria-hidden="true">{r.emoji}</div>
+                <div class="resource-body">
+                  <h3>{r.title}</h3>
+                  <p>{r.beskrivelse}</p>
+                </div>
+                <span class="resource-arrow" aria-hidden="true">→</span>
+              </a>
+            )
+          })}
         </div>
+      </section>
+    )}
 
-        <div class="resource-card resource-card--soon">
-          <div class="resource-icon" aria-hidden="true">✨</div>
-          <div class="resource-body">
-            <h3>Magiske øyeblikk</h3>
-            <p>Høydepunkter og øyeblikk fra museets liv og arrangementer.</p>
-          </div>
-          <span class="soon-badge">Snart</span>
+    {kommerSnart.length > 0 && (
+      <section class="resources-section">
+        <h2 class="section-heading">Kommer snart</h2>
+        <div class="resources-grid">
+          {kommerSnart.map(r => (
+            <div class="resource-card resource-card--soon">
+              <div class="resource-icon" aria-hidden="true">{r.emoji}</div>
+              <div class="resource-body">
+                <h3>{r.title}</h3>
+                <p>{r.beskrivelse}</p>
+              </div>
+              <span class="soon-badge">Snart</span>
+            </div>
+          ))}
         </div>
-
-        <div class="resource-card resource-card--soon">
-          <div class="resource-icon" aria-hidden="true">📰</div>
-          <div class="resource-body">
-            <h3>Historiske avisartikler</h3>
-            <p>Pekere til historiske artikler om norsk tryllekunst fra nb.no og Riksarkivet.</p>
-          </div>
-          <span class="soon-badge">Snart</span>
-        </div>
-
-      </div>
-    </section>
+      </section>
+    )}
 
   </div>
 
