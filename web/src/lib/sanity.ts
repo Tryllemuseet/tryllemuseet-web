@@ -415,6 +415,82 @@ export async function getOmOssPage(): Promise<OmOssPage | null> {
   `)
 }
 
+// ── Typer: Besøk oss ─────────────────────────────────────────────
+export interface BesokPage {
+  hero: { label: string; heading: string; ingress: string }
+  hurtiginfo: { inngangTekst: string; forestillingerTekst: string }
+  apningstider: {
+    rader: { dag: string; tid?: string; aapen: boolean }[]
+    merknad: string
+  }
+  priser: {
+    rader: { kategori: string; pris: string; gratis: boolean }[]
+    merknad: string
+  }
+  medlemskapSeksjon: { label: string; heading: string; tekst: string }
+  forestillingerSeksjon: { heading: string; tekst: string }
+  sporsmalSeksjon: { tekst: string }
+  transport: { badge: string; farge: 'rod' | 'blaa'; tekst: string }[]
+}
+
+export async function getBesokPage(): Promise<BesokPage> {
+  const d = await sanityClient.fetch(`
+    *[_type == "besokPage"][0] {
+      hero { label, heading, ingress },
+      hurtiginfo { inngangTekst, forestillingerTekst },
+      apningstider { rader[] { dag, tid, aapen }, merknad },
+      priser { rader[] { kategori, pris, gratis }, merknad },
+      medlemskapSeksjon { label, heading, tekst },
+      forestillingerSeksjon { heading, tekst },
+      sporsmalSeksjon { tekst },
+      transport[] { badge, farge, tekst }
+    }
+  `)
+  return {
+    hero: {
+      label:   d?.hero?.label   ?? 'Planlegg besøket',
+      heading: d?.hero?.heading ?? 'Besøk oss',
+      ingress: d?.hero?.ingress ?? 'Vi holder til på Årvoll gård i Oslo — et av byens mest sjarmerende kultursteder. Kom og opplev magi på nært hold.',
+    },
+    hurtiginfo: {
+      inngangTekst:        d?.hurtiginfo?.inngangTekst        ?? 'Gratis inngang for alle',
+      forestillingerTekst: d?.hurtiginfo?.forestillingerTekst ?? '3 pr. halvår',
+    },
+    apningstider: {
+      rader: d?.apningstider?.rader ?? [
+        { dag: 'Søndag',          tid: '12:00 – 15:00', aapen: true  },
+        { dag: 'Mandag – Lørdag', tid: '',               aapen: false },
+      ],
+      merknad: d?.apningstider?.merknad ?? 'Vi er også åpne ved spesielle arrangementer og etter avtale for grupper og skoler.',
+    },
+    priser: {
+      rader: d?.priser?.rader ?? [
+        { kategori: 'Barn (under 16 år)', pris: 'Gratis',       gratis: true  },
+        { kategori: 'Voksne',             pris: 'Gratis',       gratis: true  },
+        { kategori: 'Familie',            pris: 'Gratis',       gratis: true  },
+        { kategori: 'Grupper (10+)',      pris: 'Etter avtale', gratis: false },
+      ],
+      merknad: d?.priser?.merknad ?? 'Trylleforestillinger kan ha egne priser.',
+    },
+    medlemskapSeksjon: {
+      label:   d?.medlemskapSeksjon?.label   ?? 'Støtt museet',
+      heading: d?.medlemskapSeksjon?.heading ?? 'Bli medlem!',
+      tekst:   d?.medlemskapSeksjon?.tekst   ?? 'Som medlem støtter du Tryllemuseet og bidrar til å holde magien levende for kommende generasjoner. Medlemskapet er enkelt å tegne.',
+    },
+    forestillingerSeksjon: {
+      heading: d?.forestillingerSeksjon?.heading ?? 'Trylleforestillinger',
+      tekst:   d?.forestillingerSeksjon?.tekst   ?? 'Vi arrangerer tre trylleforestillinger hvert halvår — for familier, barn og alle som elsker magi. Forestillingene holdes på Årvoll gård og er åpne for alle.',
+    },
+    sporsmalSeksjon: {
+      tekst: d?.sporsmalSeksjon?.tekst ?? 'Lurer du på noe om besøket, vil booke for en gruppe eller skole, eller ønsker mer informasjon?',
+    },
+    transport: d?.transport ?? [
+      { badge: 'T', farge: 'rod',  tekst: 'T-bane linje 2 eller 3 til Grorud eller Furuset' },
+      { badge: 'B', farge: 'blaa', tekst: 'Buss 31 eller 68 — stopp Årvoll' },
+    ],
+  }
+}
+
 // ── Typer: SiteConfig ────────────────────────────────────────────
 export interface SiteConfig {
   siteName:          string

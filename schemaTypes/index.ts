@@ -9,6 +9,7 @@ import { book }           from './book'
 import { homepage }       from './homepage'
 import { barnPage }       from './barnPage'
 import { omOssPage }      from './omOssPage'
+import { besokPage }      from './besokPage'
 import { partner }        from './partner'
 import artifact           from './artifact'
 import { tvAppearance }   from './tvAppearance'
@@ -19,6 +20,7 @@ export const schemaTypes = [
   homepage,
   barnPage,
   omOssPage,
+  besokPage,
   // Dokumenttyper
   magician,
   biography,
