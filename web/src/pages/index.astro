@@ -6,6 +6,10 @@ import MentionedMagicians from '../components/MentionedMagicians.astro'
 import { getAllMagicians, getUpcomingEvents, getHomepage, getSiteConfig, getAllPartners, getLatestPressClipping, getFeaturedMediaAppearance, urlFor } from '../lib/sanity'
 
 const today = new Date().toISOString().split('T')[0]
+
+const mediaTypeLabels: Record<string, string> = {
+  avis: 'Avis', nettavis: 'Nettavis', tv: 'TV', radio: 'Radio', podkast: 'Podkast',
+}
 const [magicians, events, hp, config, partners, latestClipping, featuredMedia] = await Promise.all([
   getAllMagicians(),
   getUpcomingEvents(3),
@@ -346,9 +350,7 @@ function formatTime(d: string) {
           <AnimateIn direction="left">
           <div class="media-text">
             <p class="section-label">Museet i media</p>
-            <span class="media-type-badge">{
-              ({ avis:'Avis', nettavis:'Nettavis', tv:'TV', radio:'Radio', podkast:'Podkast' } as Record<string,string>)[featuredMedia.type] ?? featuredMedia.type
-            }</span>
+            <span class="media-type-badge">{mediaTypeLabels[featuredMedia.type] ?? featuredMedia.type}</span>
             <h2 class="display-title section-title" id="media-heading">{featuredMedia.title}</h2>
             <p class="media-meta">
               <span>{featuredMedia.sourceName}</span>
