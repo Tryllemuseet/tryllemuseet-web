@@ -796,6 +796,12 @@ export interface PressClipping {
   commentary?:  string
   someText?:    string
   category?:    string
+  mentionedMagicians?: {
+    _id:         string
+    name:        string
+    slug:        string
+    artistName?: string
+  }[]
 }
 
 // ── Spørringer: PressClipping ────────────────────────────────────
@@ -807,7 +813,8 @@ export async function getLatestPressClipping(): Promise<PressClipping | null> {
       _id, title, "slug": slug.current,
       publishedAt, originalDate, sourceName, sourceUrl,
       image { asset->{ _ref, url }, alt },
-      teaser, commentary, someText, category
+      teaser, commentary, someText, category,
+      mentionedMagicians[]-> { _id, name, "slug": slug.current, artistName }
     }
   `)
 }
@@ -819,7 +826,8 @@ export async function getPressClippingArchive(): Promise<PressClipping[]> {
       _id, title, "slug": slug.current,
       publishedAt, originalDate, sourceName, sourceUrl,
       image { asset->{ _ref, url }, alt },
-      teaser, commentary, category
+      teaser, commentary, category,
+      mentionedMagicians[]-> { _id, name, "slug": slug.current, artistName }
     }
   `)
 }

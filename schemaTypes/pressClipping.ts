@@ -115,6 +115,14 @@ export const pressClipping = defineType({
       },
     }),
 
+    defineField({
+      name: 'mentionedMagicians',
+      title: 'Omtalte tryllekunstnere',
+      type: 'array',
+      of: [{ type: 'reference', to: [{ type: 'biography' }] }],
+      description: 'Tryllekunstnere omtalt i artikkelen — lenkes automatisk til «Hvem er hvem»-profilen.',
+    }),
+
   ],
 
   orderings: [

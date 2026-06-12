@@ -308,6 +308,19 @@ function formatTime(d: string) {
             </p>
           )}
           <p class="press-teaser">{latestClipping.teaser}</p>
+          {latestClipping.mentionedMagicians && latestClipping.mentionedMagicians.length > 0 && (
+            <p class="press-magicians">
+              <span class="press-magicians-label">Omtalt:</span>
+              {latestClipping.mentionedMagicians.map((m, i) => (
+                <>
+                  <a href={`/tryllehistorie/magiens-hvem-er-hvem/${m.slug}`} class="press-magician-link">
+                    {m.artistName ?? m.name}
+                  </a>
+                  {i < (latestClipping.mentionedMagicians?.length ?? 0) - 1 && <span aria-hidden="true">, </span>}
+                </>
+              ))}
+            </p>
+          )}
           <div class="press-actions">
             <a href={latestClipping.sourceUrl} target="_blank" rel="noopener" class="btn-primary">
               Les hos Nasjonalbiblioteket →
@@ -631,6 +644,10 @@ function formatTime(d: string) {
   .press-inner { display:grid; grid-template-columns:1fr 1fr; gap:4rem; align-items:center; }
   .press-meta { font-family:var(--font-ui); font-size:0.8rem; text-transform:uppercase; letter-spacing:0.1em; color:var(--gold-dark); font-weight:600; margin:0.6rem 0 0.5rem; }
   .press-teaser { font-family:var(--font-ui); font-size:1rem; color:var(--ink-mid); line-height:1.7; margin:0.75rem 0 1.5rem; }
+  .press-magicians { font-family:var(--font-ui); font-size:0.82rem; color:var(--ink-mid); margin:0.5rem 0 1rem; display:flex; flex-wrap:wrap; align-items:baseline; gap:0.2rem; }
+  .press-magicians-label { font-weight:600; text-transform:uppercase; letter-spacing:0.08em; font-size:0.68rem; color:var(--grey); margin-right:0.15rem; }
+  .press-magician-link { color:var(--burgundy); text-decoration:none; border-bottom:1px solid var(--gold-light); transition:color 150ms, border-color 150ms; }
+  .press-magician-link:hover { color:var(--gold-dark); border-color:var(--gold); }
   .press-actions { display:flex; gap:0.75rem; flex-wrap:wrap; }
   .press-image { border-radius:4px; overflow:hidden; box-shadow:var(--shadow-lg); border:1px solid var(--cream-dark); }
   .press-image img { width:100%; height:auto; display:block; transition:transform 400ms ease; }
