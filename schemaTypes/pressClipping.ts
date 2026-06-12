@@ -99,6 +99,22 @@ export const pressClipping = defineType({
     }),
 
     defineField({
+      name: 'instagramText',
+      title: 'Instagram-tekst',
+      type: 'text',
+      rows: 5,
+      description: 'Bildetekst til Instagram. Kortere og mer visuell tone enn Facebook – maks 2200 tegn, men algoritmen foretrekker under 125.',
+    }),
+
+    defineField({
+      name: 'tiktokText',
+      title: 'TikTok-tekst',
+      type: 'text',
+      rows: 4,
+      description: 'Undertekst / caption til TikTok-video. Ung målgruppe — kort, fengende, 3–5 emneknagger. Maks 2200 tegn.',
+    }),
+
+    defineField({
       name: 'category',
       title: 'Kategori',
       type: 'string',
