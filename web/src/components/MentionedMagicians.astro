@@ -1,0 +1,48 @@
+---
+// src/components/MentionedMagicians.astro
+interface MagicianRef {
+  _id:         string
+  name:        string
+  slug:        string
+  artistName?: string
+}
+
+interface Props {
+  magicians?: MagicianRef[]
+}
+
+const { magicians = [] } = Astro.props
+---
+
+{magicians.length > 0 && (
+  <div class="wrapper">
+    <span class="label">Omtalt:</span>
+    {magicians.map((m, i) => (
+      <>
+        <a href={`/tryllehistorie/magiens-hvem-er-hvem/${m.slug}`} class="link">
+          {m.artistName ?? m.name}
+        </a>
+        {i < magicians.length - 1 && <span aria-hidden="true">, </span>}
+      </>
+    ))}
+  </div>
+)}
+
+<style>
+  .wrapper {
+    display: flex; flex-wrap: wrap; align-items: baseline;
+    gap: 0.2rem; margin: 0.4rem 0 0.75rem;
+    font-family: var(--font-ui); font-size: 0.78rem; color: var(--ink-mid);
+  }
+  .label {
+    font-size: 0.68rem; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 0.08em;
+    color: var(--grey); margin-right: 0.15rem;
+  }
+  .link {
+    color: var(--burgundy); text-decoration: none;
+    border-bottom: 1px solid var(--gold-light);
+    transition: color 150ms, border-color 150ms;
+  }
+  .link:hover { color: var(--gold-dark); border-color: var(--gold); }
+</style>

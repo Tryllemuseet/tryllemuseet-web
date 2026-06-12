@@ -2,6 +2,7 @@
 // src/pages/tryllehistorie/historiske-artikler/index.astro
 import BaseLayout from '../../../layouts/BaseLayout.astro'
 import { getPressClippingArchive } from '../../../lib/sanity'
+import MentionedMagicians from '../../../components/MentionedMagicians.astro'
 
 const clippings = await getPressClippingArchive()
 const total = clippings.length
@@ -83,22 +84,7 @@ function formatDate(dateStr?: string): string {
           <h2 class="card-title">{c.title}</h2>
           <p class="card-teaser">{c.teaser}</p>
           {c.commentary && <p class="card-commentary">{c.commentary}</p>}
-          {c.mentionedMagicians?.length > 0 && (
-            <div class="card-magicians">
-              <span class="card-magicians-label">Omtalt:</span>
-              {c.mentionedMagicians.map((m: any, i: number) => (
-                <>
-                  <a
-                    href={`/tryllehistorie/magiens-hvem-er-hvem/${m.slug}`}
-                    class="card-magician-link"
-                  >
-                    {m.artistName ?? m.name}
-                  </a>
-                  {i < c.mentionedMagicians.length - 1 && <span aria-hidden="true">, </span>}
-                </>
-              ))}
-            </div>
-          )}
+          <MentionedMagicians magicians={c.mentionedMagicians} />
           <a
             href={c.sourceUrl}
             target="_blank"
@@ -192,12 +178,7 @@ function formatDate(dateStr?: string): string {
   .card-title { font-family: var(--font-display); font-size: 1.05rem; color: var(--burgundy); letter-spacing: 0.02em; line-height: 1.25; margin-top: 0.1rem; }
   .card-teaser { font-family: var(--font-ui); font-size: 0.875rem; color: var(--ink-mid); line-height: 1.55; }
   .card-commentary { font-family: var(--font-body); font-size: 0.8rem; font-style: italic; color: var(--grey); line-height: 1.5; border-left: 2px solid var(--gold-light); padding-left: 0.6rem; margin-top: 0.15rem; }
-  .card-magicians { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.2rem; margin-top: 0.4rem; font-family: var(--font-ui); font-size: 0.75rem; }
-  .card-magicians-label { color: var(--grey); font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; font-size: 0.68rem; margin-right: 0.15rem; }
-  .card-magician-link { color: var(--burgundy); text-decoration: none; border-bottom: 1px solid var(--gold-light); transition: color 150ms, border-color 150ms; }
-  .card-magician-link:hover { color: var(--gold-dark); border-color: var(--gold); }
-
-  .card-link-nb { display: inline-block; margin-top: auto; padding-top: 0.75rem; font-family: var(--font-ui); font-size: 0.8rem; font-weight: 700; color: var(--gold-dark); text-decoration: none; transition: color 150ms; }
+.card-link-nb { display: inline-block; margin-top: auto; padding-top: 0.75rem; font-family: var(--font-ui); font-size: 0.8rem; font-weight: 700; color: var(--gold-dark); text-decoration: none; transition: color 150ms; }
   .card-link-nb:hover { color: var(--burgundy); }
 
   .empty-state { padding: 4rem 0; text-align: center; font-family: var(--font-ui); color: var(--ink-mid); }
