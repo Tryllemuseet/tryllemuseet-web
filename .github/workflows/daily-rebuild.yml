@@ -1,0 +1,25 @@
+name: Daily rebuild (publish scheduled content)
+
+on:
+  schedule:
+    # Daily at 05:30 UTC — before the YouTube sync job (06:00 UTC)
+    - cron: '30 5 * * *'
+  workflow_dispatch:
+
+jobs:
+  rebuild:
+    name: Trigger Vercel deploy
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Trigger test deploy hook
+        run: curl -X POST "$VERCEL_DEPLOY_HOOK_TEST"
+        env:
+          VERCEL_DEPLOY_HOOK_TEST: ${{ secrets.VERCEL_DEPLOY_HOOK_TEST }}
+
+      # Uncomment when production deploy hook is ready:
+      # - name: Trigger production deploy hook
+      #   run: curl -X POST "$VERCEL_DEPLOY_HOOK_PROD"
+      #   env:
+      #     VERCEL_DEPLOY_HOOK_PROD: ${{ secrets.VERCEL_DEPLOY_HOOK_PROD }}

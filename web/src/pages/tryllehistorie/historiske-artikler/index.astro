@@ -1,0 +1,192 @@
+---
+// src/pages/tryllehistorie/historiske-artikler/index.astro
+import BaseLayout from '../../../layouts/BaseLayout.astro'
+import { getPressClippingArchive } from '../../../lib/sanity'
+
+const clippings = await getPressClippingArchive()
+const total = clippings.length
+
+const categories = [...new Set(clippings.map((c: any) => c.category))].filter(Boolean).sort()
+
+const categoryLabels: Record<string, string> = {
+  artist:       'Artist / tryllekunstner',
+  forestilling: 'Forestilling',
+  presseomtale: 'Presseomtale',
+  annonse:      'Annonse',
+  kuriosa:      'Kuriosa',
+  annet:        'Annet',
+}
+
+function formatDate(dateStr?: string): string {
+  if (!dateStr) return ''
+  const d = new Date(dateStr)
+  return d.toLocaleDateString('nb-NO', { day: 'numeric', month: 'long', year: 'numeric' })
+}
+---
+
+<BaseLayout
+  title="Historiske avisartikler — Tryllemuseet"
+  description={`${total} historiske avisartikler om norsk tryllekunst fra Nasjonalbibliotekets digitaliserte aviser.`}
+>
+
+  <section class="hero">
+    <div class="container">
+      <p class="section-label"><a href="/tryllehistorie" class="breadcrumb-link">Tryllehistorie</a></p>
+      <h1 class="display-title hero-title">Historiske avisartikler</h1>
+      <p class="hero-sub">
+        {total} artikler fra norske aviser om tryllekunst — digitalisert og bevart av
+        <a href="https://www.nb.no" target="_blank" rel="noopener" class="hero-link">Nasjonalbiblioteket</a>.
+      </p>
+    </div>
+  </section>
+
+  <div class="filter-bar-wrap">
+    <div class="container filter-bar-inner">
+      <div class="filter-group">
+        <label class="filter-label" for="filter-category">Kategori</label>
+        <select id="filter-category" class="filter-select">
+          <option value="">Alle kategorier</option>
+          {categories.map((cat: string) => (
+            <option value={cat}>{categoryLabels[cat] ?? cat}</option>
+          ))}
+        </select>
+      </div>
+      <button class="filter-reset" id="filter-reset">Nullstill</button>
+    </div>
+  </div>
+
+  <div class="container">
+    <p class="result-count" id="result-count">Viser {total} artikler</p>
+  </div>
+
+  <div class="container articles-grid" id="articles-grid">
+    {clippings.map((c: any) => (
+      <article
+        class="article-card"
+        data-category={c.category ?? ''}
+      >
+        <div class="card-img">
+          {c.image?.asset?.url ? (
+            <img src={c.image.asset.url} alt={c.image.alt ?? c.title} loading="lazy" />
+          ) : (
+            <div class="card-img-placeholder" aria-hidden="true">📰</div>
+          )}
+          {c.category && (
+            <span class="card-cat-badge">{categoryLabels[c.category] ?? c.category}</span>
+          )}
+        </div>
+        <div class="card-body">
+          <p class="card-meta">
+            {c.sourceName && <span class="card-source">{c.sourceName}</span>}
+            {c.originalDate && <span class="card-date">{formatDate(c.originalDate)}</span>}
+          </p>
+          <h2 class="card-title">{c.title}</h2>
+          <p class="card-teaser">{c.teaser}</p>
+          {c.commentary && <p class="card-commentary">{c.commentary}</p>}
+          <a
+            href={c.sourceUrl}
+            target="_blank"
+            rel="noopener"
+            class="card-link-nb"
+            aria-label={`Les «${c.title}» hos Nasjonalbiblioteket (åpnes i ny fane)`}
+          >
+            Les hos Nasjonalbiblioteket →
+          </a>
+        </div>
+      </article>
+    ))}
+  </div>
+
+  {total === 0 && (
+    <div class="container empty-state">
+      <p>Ingen artikler publisert ennå.</p>
+    </div>
+  )}
+
+  <div class="container no-results" id="no-results" hidden>
+    <p>Ingen artikler matcher filteret.</p>
+    <button class="filter-reset-inline" id="filter-reset-2">Nullstill filter</button>
+  </div>
+
+  <div class="container page-nav">
+    <a href="/tryllehistorie/norske-legender">Norske legender →</a>
+    <a href="/tryllehistorie">← Tryllehistorie</a>
+  </div>
+
+</BaseLayout>
+
+<script>
+  const rows     = Array.from(document.querySelectorAll<HTMLElement>('.article-card'))
+  const noRes    = document.getElementById('no-results')!
+  const countEl  = document.getElementById('result-count')!
+  const selCat   = document.getElementById('filter-category') as HTMLSelectElement
+  const btnReset  = document.getElementById('filter-reset')!
+  const btnReset2 = document.getElementById('filter-reset-2')!
+
+  function applyFilters() {
+    const cat = selCat.value
+    let visible = 0
+    rows.forEach(row => {
+      const match = !cat || row.dataset.category === cat
+      row.hidden = !match
+      if (match) visible++
+    })
+    noRes.hidden = visible > 0
+    countEl.textContent = `Viser ${visible} artikler`
+  }
+
+  function resetFilters() { selCat.value = ''; applyFilters() }
+
+  selCat.addEventListener('change', applyFilters)
+  btnReset.addEventListener('click', resetFilters)
+  btnReset2.addEventListener('click', resetFilters)
+</script>
+
+<style>
+  .hero { background: var(--burgundy-dk); padding: 3.5rem 0 2.5rem; border-bottom: 2px solid var(--gold-dark); color: var(--cream); }
+  .breadcrumb-link { color: var(--gold); text-decoration: none; font-size: 0.7rem; font-weight: 600; letter-spacing: 0.2em; text-transform: uppercase; }
+  .hero-title { font-size: clamp(1.8rem, 5vw, 3rem); color: var(--cream); margin: 0.5rem 0 0.75rem; }
+  .hero-sub { font-family: var(--font-ui); font-size: 1rem; opacity: 0.8; max-width: 600px; }
+  .hero-link { color: var(--gold-light); }
+
+  .filter-bar-wrap { position: sticky; top: var(--header-h); z-index: 50; background: white; border-bottom: 1px solid var(--cream-dark); box-shadow: 0 2px 12px rgba(26,18,8,0.06); }
+  .filter-bar-inner { display: flex; flex-wrap: wrap; gap: 0.75rem; align-items: flex-end; padding: 0.75rem 1.5rem; }
+  .filter-group { display: flex; flex-direction: column; gap: 0.2rem; }
+  .filter-label { font-family: var(--font-ui); font-size: 0.65rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; color: var(--grey); }
+  .filter-select { font-family: var(--font-ui); font-size: 0.875rem; color: var(--ink); background: var(--cream); border: 1.5px solid var(--cream-dark); border-radius: 6px; padding: 0.45rem 0.75rem; cursor: pointer; min-width: 200px; }
+  .filter-reset { font-family: var(--font-ui); font-size: 0.8rem; font-weight: 600; color: var(--grey); border: 1.5px solid var(--cream-dark); border-radius: 6px; padding: 0.45rem 0.9rem; background: white; cursor: pointer; align-self: flex-end; }
+  .filter-reset:hover { color: var(--burgundy); border-color: var(--gold); }
+
+  .result-count { font-family: var(--font-ui); font-size: 0.8rem; color: var(--grey); padding: 0.75rem 0 0.25rem; }
+
+  .articles-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1.5rem; padding-bottom: 1rem; }
+
+  .article-card { border-radius: 6px; overflow: hidden; border: 1px solid var(--cream-dark); background: white; transition: transform 220ms ease, box-shadow 220ms ease, border-color 220ms ease; display: flex; flex-direction: column; }
+  .article-card:hover { transform: translateY(-4px); box-shadow: 0 8px 28px rgba(107,15,26,0.14); border-color: var(--gold-light); }
+
+  .card-img { position: relative; aspect-ratio: 4/3; overflow: hidden; background: var(--burgundy-dk); flex-shrink: 0; }
+  .card-img img { width: 100%; height: 100%; object-fit: cover; transition: transform 400ms ease; }
+  .article-card:hover .card-img img { transform: scale(1.03); }
+  .card-img-placeholder { display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; font-size: 3.5rem; background: linear-gradient(160deg, var(--burgundy-dk), #2a1208); }
+  .card-cat-badge { position: absolute; top: 0.6rem; left: 0.6rem; font-family: var(--font-ui); font-size: 0.68rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; padding: 0.2rem 0.5rem; border-radius: 3px; background: rgba(26,18,8,0.75); color: var(--gold-light); backdrop-filter: blur(4px); }
+
+  .card-body { padding: 1.1rem 1.25rem 1.3rem; display: flex; flex-direction: column; gap: 0.35rem; flex: 1; }
+  .card-meta { display: flex; flex-wrap: wrap; gap: 0.4rem; font-family: var(--font-ui); font-size: 0.72rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--gold-dark); }
+  .card-date { font-weight: 400; color: var(--grey); text-transform: none; letter-spacing: 0; }
+  .card-title { font-family: var(--font-display); font-size: 1.05rem; color: var(--burgundy); letter-spacing: 0.02em; line-height: 1.25; margin-top: 0.1rem; }
+  .card-teaser { font-family: var(--font-ui); font-size: 0.875rem; color: var(--ink-mid); line-height: 1.55; }
+  .card-commentary { font-family: var(--font-body); font-size: 0.8rem; font-style: italic; color: var(--grey); line-height: 1.5; border-left: 2px solid var(--gold-light); padding-left: 0.6rem; margin-top: 0.15rem; }
+  .card-link-nb { display: inline-block; margin-top: auto; padding-top: 0.75rem; font-family: var(--font-ui); font-size: 0.8rem; font-weight: 700; color: var(--gold-dark); text-decoration: none; transition: color 150ms; }
+  .card-link-nb:hover { color: var(--burgundy); }
+
+  .empty-state { padding: 4rem 0; text-align: center; font-family: var(--font-ui); color: var(--ink-mid); }
+
+  .no-results { padding: 3rem 0; text-align: center; font-family: var(--font-ui); color: var(--ink-mid); }
+  .filter-reset-inline { margin-top: 0.75rem; font-family: var(--font-ui); font-size: 0.875rem; font-weight: 600; color: var(--burgundy); background: none; border: 1px solid var(--gold-dark); border-radius: 6px; padding: 0.45rem 1rem; cursor: pointer; }
+
+  .page-nav { display: flex; flex-wrap: wrap; gap: 0.75rem; padding: 1.5rem 0 3rem; font-family: var(--font-ui); font-size: 0.875rem; }
+  .page-nav a { color: var(--grey); text-decoration: none; border: 1px solid var(--cream-dark); padding: 0.4rem 1rem; border-radius: var(--radius); transition: color 150ms, border-color 150ms; }
+  .page-nav a:hover { color: var(--burgundy); border-color: var(--gold); }
+
+  @media (max-width: 700px) { .articles-grid { grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 1rem; } }
+</style>
