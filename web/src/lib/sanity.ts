@@ -618,6 +618,85 @@ export async function getRessurserPage(): Promise<RessurserPage> {
   }
 }
 
+// ── Typer: Arrangementer (side) ──────────────────────────────────
+export interface ArrangementInfoItem {
+  emoji:     string
+  heading:   string
+  tekst:     string
+  linkHref?: string
+  linkTekst?: string
+}
+
+export interface ArrangementPage {
+  hero:      { label: string; heading: string; ingress: string }
+  infoStrip: ArrangementInfoItem[]
+}
+
+export async function getArrangementPage(): Promise<ArrangementPage> {
+  const d = await sanityClient.fetch(`
+    *[_type == "arrangementPage"][0] {
+      hero { label, heading, ingress },
+      infoStrip[] { emoji, heading, tekst, linkHref, linkTekst }
+    }
+  `)
+  return {
+    hero: {
+      label:   d?.hero?.label   ?? 'Tryllemuseet',
+      heading: d?.hero?.heading ?? 'Arrangementer',
+      ingress: d?.hero?.ingress ?? 'Tryllekurs, familieforestillinger og magiske opplevelser for alle aldre. Tre forestillinger og kurs hvert halvår.',
+    },
+    infoStrip: d?.infoStrip ?? [
+      { emoji: '🎭', heading: '3 forestillinger pr. halvår',  tekst: 'Vi arrangerer familieforestillinger og tryllekurs jevnlig gjennom året.' },
+      { emoji: '👥', heading: 'Grupper og skoler',            tekst: 'Vi tar imot grupper etter avtale.',          linkHref: '/kontakt', linkTekst: 'Ta kontakt' },
+      { emoji: '📍', heading: 'Årvoll gård, Oslo',            tekst: 'Årvollveien 35, 0590 Oslo.',                linkHref: '/besok',   linkTekst: 'Se veibeskrivelse' },
+    ],
+  }
+}
+
+// ── Typer: Utstillingen (side) ────────────────────────────────────
+export interface UtstillingPage {
+  hero: { eraLabel: string; heading: string; ingress: string }
+  gullalderSeksjon: { label: string; heading: string; ingress: string }
+  fremhevedeSlugs: string[]
+  kommerSnartSeksjon: { label: string; heading: string }
+  seksjoner: { icon: string; label: string; title: string; description: string; slug: string; ready: boolean }[]
+}
+
+export async function getUtstillingPage(): Promise<UtstillingPage> {
+  const d = await sanityClient.fetch(`
+    *[_type == "utstillingPage"][0] {
+      hero { eraLabel, heading, ingress },
+      gullalderSeksjon { label, heading, ingress },
+      fremhevedeSlugs,
+      kommerSnartSeksjon { label, heading },
+      seksjoner[] { icon, label, title, description, slug, ready }
+    }
+  `)
+  return {
+    hero: {
+      eraLabel: d?.hero?.eraLabel ?? '1845 – 1930',
+      heading:  d?.hero?.heading  ?? 'Utstillingen',
+      ingress:  d?.hero?.ingress  ?? 'Tryllekunsten har en rik og fascinerende historie. Her møter du magikerne som formet verden — fra teatersalene i Paris til de store scenene i Amerika. Utforsk gullalderen, norske legender, og museets unike samling.',
+    },
+    gullalderSeksjon: {
+      label:   d?.gullalderSeksjon?.label   ?? 'Fremhevet',
+      heading: d?.gullalderSeksjon?.heading ?? 'Tryllingens gullalder',
+      ingress: d?.gullalderSeksjon?.ingress ?? 'Tre ikoner som definerte en epoke. I det fysiske museet bærer filmene og den mystiske kula vitnesbyrd om gullalderens storhet.',
+    },
+    fremhevedeSlugs: d?.fremhevedeSlugs ?? ['robert-houdin', 'alexander', 'houdini'],
+    kommerSnartSeksjon: {
+      label:   d?.kommerSnartSeksjon?.label   ?? 'Mer å utforske',
+      heading: d?.kommerSnartSeksjon?.heading ?? 'I utstillingen',
+    },
+    seksjoner: d?.seksjoner ?? [
+      { icon: '🇳🇴', label: 'Norsk tryllekunst',  title: 'Norske legender',    description: 'Fra Arnardo til Finn Jon — tryllekunstnerne som skapte norsk magi.',                        slug: 'norske-legender',    ready: false },
+      { icon: '🎩',   label: 'Samlingen',           title: 'Artefakter',         description: 'Sjeldne rekvisitter, historiske gjenstander og mysterier fra museets samling.',              slug: 'artefakter',         ready: false },
+      { icon: '♣',    label: 'Organisasjonene',     title: 'Trylleforeningene',  description: 'Magisk Cirkel Norge og Det Magiske Råd — fellesskapet bak kunsten.',                        slug: 'trylleforeningene',  ready: false },
+      { icon: '🛍',   label: 'Butikken',             title: 'Tryllebutikken',     description: 'Bøker, rekvisitter og kuriositeter for den nysgjerrige.',                                   slug: 'tryllebutikken',     ready: false },
+    ],
+  }
+}
+
 // ── Typer: SiteConfig ────────────────────────────────────────────
 export interface SiteConfig {
   siteName:          string
