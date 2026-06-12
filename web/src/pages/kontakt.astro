@@ -2,22 +2,22 @@
 // src/pages/kontakt.astro
 import BaseLayout from '../layouts/BaseLayout.astro'
 import AnimateIn from '../components/AnimateIn.astro'
-import { getSiteConfig } from '../lib/sanity'
+import { getSiteConfig, getKontaktPage } from '../lib/sanity'
 
-const site = await getSiteConfig()
+const [site, page] = await Promise.all([getSiteConfig(), getKontaktPage()])
 ---
 
 <BaseLayout
   title="Kontakt oss — Tryllemuseet"
-  description="Ta kontakt med Tryllemuseet. Vi svarer på spørsmål om besøk, booking for grupper og forestillinger."
+  description={page.hero.ingress}
 >
 
   <section class="kontakt-hero">
     <div class="container">
-      <p class="section-label">Tryllemuseet</p>
-      <h1 class="display-title kontakt-title">Kontakt oss</h1>
+      <p class="section-label">{page.hero.label}</p>
+      <h1 class="display-title kontakt-title">{page.hero.heading}</h1>
       <p class="kontakt-sub">
-        Vi svarer på e-post så snart vi kan. Send gjerne direkte til
+        {page.hero.ingress}{' '}
         <a href={`mailto:${site.email}`}>{site.email}</a>.
       </p>
     </div>
@@ -32,7 +32,7 @@ const site = await getSiteConfig()
         <h2 class="form-heading">Send oss en melding</h2>
         <div class="iframe-wrap">
           <iframe
-            src="https://forms.cloud.microsoft/Pages/ResponsePage.aspx?id=ntTGX9tmLEuCq9W0nbG7xw-QkId2PUtCgZXNTCF6McdUNjhIWjhENjhaWTA2U1ZCTjBKRjZIUjdSMy4u&embed=true"
+            src={page.skjemaUrl}
             frameborder="0"
             marginwidth="0"
             marginheight="0"
@@ -96,27 +96,19 @@ const site = await getSiteConfig()
         </div>
       </div>
 
-      <div class="contact-card">
-        <h2 class="contact-card-heading">Ofte stilte spørsmål</h2>
-        <div class="faq-list">
-          <details class="faq-item">
-            <summary>Kan vi booke besøk for en skole eller gruppe?</summary>
-            <p>Ja! Vi tar imot grupper og skoleklasser etter avtale. Send oss en melding med antall deltakere og ønsket dato.</p>
-          </details>
-          <details class="faq-item">
-            <summary>Er museet tilgjengelig for rullestol?</summary>
-            <p>Ta kontakt med oss på forhånd, så sørger vi for at besøket blir best mulig.</p>
-          </details>
-          <details class="faq-item">
-            <summary>Holdes det bursdagsarrangementer?</summary>
-            <p>Ta kontakt med oss for å høre om mulighetene — vi finner gjerne en magisk løsning!</p>
-          </details>
-          <details class="faq-item">
-            <summary>Kan vi kjøpe tryllerekvisitter?</summary>
-            <p>Vi har et lite utvalg i museumsbutikken. Større utvalg finner du hos spesialforretninger som Egelos Crazy Shop.</p>
-          </details>
+      {page.faq.length > 0 && (
+        <div class="contact-card">
+          <h2 class="contact-card-heading">Ofte stilte spørsmål</h2>
+          <div class="faq-list">
+            {page.faq.map(item => (
+              <details class="faq-item">
+                <summary>{item.sporsmal}</summary>
+                <p>{item.svar}</p>
+              </details>
+            ))}
+          </div>
         </div>
-      </div>
+      )}
 
     </div>
     </AnimateIn>
