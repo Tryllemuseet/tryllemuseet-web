@@ -1,4 +1,5 @@
 import { magician }       from './magician'
+import { pressClipping }  from './pressClipping'
 import { contentSection } from './contentSection'
 import { sourceItem }     from './sourceItem'
 import { event }          from './event'
@@ -21,6 +22,7 @@ export const schemaTypes = [
   omOssPage,
   // Dokumenttyper
   magician,
+  pressClipping,
   biography,
   legend,
   tvAppearance,
