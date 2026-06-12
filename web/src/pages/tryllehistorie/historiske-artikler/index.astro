@@ -221,38 +221,18 @@ const escapedJson = JSON.stringify(modalDataRaw)
         </div>
 
         <div class="modal-nb-section">
-          <div class="modal-nb-actions">
-            <a
-              class="btn-nb-external"
-              id="modal-nb-link"
-              href="#"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              <svg viewBox="0 0 20 20" width="14" height="14" fill="none" aria-hidden="true">
-                <path d="M11 3h6v6M17 3l-8 8M8 5H4a1 1 0 00-1 1v10a1 1 0 001 1h10a1 1 0 001-1v-4" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/>
-              </svg>
-              Åpne hos Nasjonalbiblioteket
-            </a>
-            <button class="btn-nb-embed" id="modal-iframe-btn">
-              <svg viewBox="0 0 20 20" width="14" height="14" fill="none" aria-hidden="true">
-                <rect x="2" y="4" width="16" height="12" rx="1.5" stroke="currentColor" stroke-width="1.75"/>
-                <path d="M7 8l-3 2 3 2M13 8l3 2-3 2" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/>
-              </svg>
-              Vis innebygd leser
-            </button>
-          </div>
-          <div class="modal-iframe-wrap" id="modal-iframe-wrap" hidden>
-            <div class="modal-iframe-loading" id="modal-iframe-loading">
-              <span class="spinner" aria-hidden="true"></span>
-              Laster Nasjonalbibliotekets leser …
-            </div>
-            <iframe
-              id="modal-iframe"
-              title="Nasjonalbiblioteket — avisleser"
-              sandbox="allow-scripts allow-same-origin allow-popups allow-forms"
-            ></iframe>
-          </div>
+          <a
+            class="btn-nb-external"
+            id="modal-nb-link"
+            href="#"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <svg viewBox="0 0 20 20" width="14" height="14" fill="none" aria-hidden="true">
+              <path d="M11 3h6v6M17 3l-8 8M8 5H4a1 1 0 00-1 1v10a1 1 0 001 1h10a1 1 0 001-1v-4" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            Åpne hos Nasjonalbiblioteket
+          </a>
         </div>
 
       </div>
@@ -265,6 +245,16 @@ const escapedJson = JSON.stringify(modalDataRaw)
   </div>
 
   <script type="application/json" id="modal-data" set:html={escapedJson}></script>
+
+  <!-- ── Lightbox (bildzoom) ─────────────────────────────────────── -->
+  <dialog id="lightbox-dialog" class="lightbox-dialog">
+    <button class="lightbox-close" id="lightbox-close" aria-label="Lukk bilde">
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" aria-hidden="true">
+        <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
+      </svg>
+    </button>
+    <img class="lightbox-img" id="lightbox-img" src="" alt="" />
+  </dialog>
 
 </BaseLayout>
 
@@ -346,22 +336,18 @@ const escapedJson = JSON.stringify(modalDataRaw)
   btnReset2.addEventListener('click', resetFilters)
 
   // ── Modal refs ────────────────────────────────────────────────────
-  const modal           = document.getElementById('article-modal') as HTMLDialogElement
-  const elClose         = document.getElementById('modal-close')!
-  const elCatBadge      = document.getElementById('modal-cat-badge') as HTMLElement
-  const elSourceMeta    = document.getElementById('modal-source-meta')!
-  const elTitle         = document.getElementById('modal-title')!
-  const elImgWrap       = document.getElementById('modal-img-wrap') as HTMLElement
-  const elImg           = document.getElementById('modal-img') as HTMLImageElement
-  const elTeaser        = document.getElementById('modal-teaser')!
-  const elCommentary    = document.getElementById('modal-commentary') as HTMLElement
-  const elMagWrap       = document.getElementById('modal-magicians') as HTMLElement
-  const elMagList       = document.getElementById('modal-magicians-list')!
-  const elNbLink        = document.getElementById('modal-nb-link') as HTMLAnchorElement
-  const elIframeBtn     = document.getElementById('modal-iframe-btn') as HTMLButtonElement
-  const elIframeWrap    = document.getElementById('modal-iframe-wrap') as HTMLElement
-  const elIframeLoading = document.getElementById('modal-iframe-loading')!
-  const elIframe        = document.getElementById('modal-iframe') as HTMLIFrameElement
+  const modal        = document.getElementById('article-modal') as HTMLDialogElement
+  const elClose      = document.getElementById('modal-close')!
+  const elCatBadge   = document.getElementById('modal-cat-badge') as HTMLElement
+  const elSourceMeta = document.getElementById('modal-source-meta')!
+  const elTitle      = document.getElementById('modal-title')!
+  const elImgWrap    = document.getElementById('modal-img-wrap') as HTMLElement
+  const elImg        = document.getElementById('modal-img') as HTMLImageElement
+  const elTeaser     = document.getElementById('modal-teaser')!
+  const elCommentary = document.getElementById('modal-commentary') as HTMLElement
+  const elMagWrap    = document.getElementById('modal-magicians') as HTMLElement
+  const elMagList    = document.getElementById('modal-magicians-list')!
+  const elNbLink     = document.getElementById('modal-nb-link') as HTMLAnchorElement
 
   // ── Modal open / close ────────────────────────────────────────────
   function formatDate(s: string | null): string {
@@ -372,12 +358,6 @@ const escapedJson = JSON.stringify(modalDataRaw)
   function openModal(id: string) {
     const c = byId.get(id)
     if (!c) return
-
-    // Reset iframe state
-    elIframe.src = ''
-    elIframeWrap.hidden = true
-    elIframeBtn.hidden = false
-    elIframeLoading.hidden = false
 
     // Category badge
     if (c.category) {
@@ -393,12 +373,14 @@ const escapedJson = JSON.stringify(modalDataRaw)
     // Title
     elTitle.textContent = c.title
 
-    // Image
+    // Image — clear src when there is no image to avoid showing the previous card's image
     if (c.imageUrl) {
       elImg.src = c.imageUrl
       elImg.alt = c.imageAlt
       elImgWrap.removeAttribute('hidden')
     } else {
+      elImg.src = ''
+      elImg.alt = ''
       elImgWrap.hidden = true
     }
 
@@ -446,36 +428,41 @@ const escapedJson = JSON.stringify(modalDataRaw)
   function closeModal() {
     modal.close()
     document.body.style.overflow = ''
-    elIframe.src = ''
   }
 
   // ── Card click delegation ─────────────────────────────────────────
-  // Whole card is clickable; links inside still navigate normally
   document.addEventListener('click', (e) => {
     const target = e.target as HTMLElement
-    if (target.closest('a'))              return  // let links work
-    if (target.closest('#article-modal')) return  // modal handles its own events
+    if (target.closest('a'))               return
+    if (target.closest('#article-modal'))  return
+    if (target.closest('#lightbox-dialog')) return
     const card = target.closest<HTMLElement>('.article-card[data-id]')
     if (card?.dataset.id) openModal(card.dataset.id)
-  })
-
-  // ── Iframe embed toggle ───────────────────────────────────────────
-  elIframeBtn.addEventListener('click', () => {
-    elIframeWrap.removeAttribute('hidden')
-    elIframeBtn.hidden = true
-    elIframeLoading.removeAttribute('hidden')
-    elIframe.src = elNbLink.href
-    elIframe.addEventListener('load', () => {
-      elIframeLoading.hidden = true
-    }, { once: true })
   })
 
   // ── Close handlers ────────────────────────────────────────────────
   elClose.addEventListener('click', closeModal)
   modal.addEventListener('click', (e) => {
-    if (e.target === modal) closeModal()   // click outside modal-inner
+    if (e.target === modal) closeModal()
   })
-  modal.addEventListener('cancel', closeModal)  // ESC key
+  modal.addEventListener('cancel', closeModal)
+
+  // ── Lightbox (klikk på modalbildet for å zoome) ────────────────────
+  const lightboxDialog = document.getElementById('lightbox-dialog') as HTMLDialogElement
+  const lightboxImg    = document.getElementById('lightbox-img') as HTMLImageElement
+  const lightboxClose  = document.getElementById('lightbox-close')!
+
+  elImg.addEventListener('click', () => {
+    if (!elImg.src) return
+    lightboxImg.src = elImg.src
+    lightboxImg.alt = elImg.alt
+    lightboxDialog.showModal()
+  })
+  lightboxClose.addEventListener('click', () => lightboxDialog.close())
+  lightboxDialog.addEventListener('click', (e) => {
+    if (e.target === lightboxDialog || e.target === lightboxImg) lightboxDialog.close()
+  })
+  lightboxDialog.addEventListener('cancel', () => lightboxDialog.close())
 </script>
 
 <style>
@@ -510,11 +497,12 @@ const escapedJson = JSON.stringify(modalDataRaw)
   /* ── Cards ─────────────────────────────────────────────────────── */
   .articles-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1.5rem; padding-bottom: 1rem; align-items: stretch; }
 
-  .article-card { border-radius: 6px; overflow: hidden; border: 1px solid var(--cream-dark); background: white; transition: transform 220ms ease, box-shadow 220ms ease, border-color 220ms ease; display: flex; flex-direction: column; cursor: pointer; }
+  /* Cards use flex: 1 on both image and body so they share equal height */
+  .article-card { border-radius: 6px; overflow: hidden; border: 1px solid var(--cream-dark); background: white; transition: transform 220ms ease, box-shadow 220ms ease, border-color 220ms ease; display: flex; flex-direction: column; cursor: pointer; min-height: 380px; }
   .article-card:hover { transform: translateY(-4px); box-shadow: 0 8px 28px rgba(107,15,26,0.14); border-color: var(--gold-light); }
   .article-card:focus-within { border-color: var(--gold); box-shadow: 0 0 0 2px var(--gold-light); }
 
-  .card-img { position: relative; aspect-ratio: 4/3; overflow: hidden; background: var(--burgundy-dk); flex-shrink: 0; }
+  .card-img { position: relative; overflow: hidden; background: var(--burgundy-dk); flex: 1; min-height: 140px; }
   .card-img img { width: 100%; height: 100%; object-fit: cover; transition: transform 400ms ease; }
   .article-card:hover .card-img img { transform: scale(1.03); }
   .card-img-placeholder { display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; font-size: 3.5rem; background: linear-gradient(160deg, var(--burgundy-dk), #2a1208); }
@@ -564,7 +552,7 @@ const escapedJson = JSON.stringify(modalDataRaw)
   .modal-title { font-family: var(--font-display); font-size: clamp(1.15rem, 3.5vw, 1.55rem); color: var(--burgundy); letter-spacing: 0.02em; line-height: 1.25; }
 
   .modal-img-wrap { border-radius: 6px; overflow: hidden; background: var(--burgundy-dk); max-height: 380px; display: flex; align-items: center; justify-content: center; }
-  .modal-img { width: 100%; object-fit: contain; max-height: 380px; }
+  .modal-img { width: 100%; object-fit: contain; max-height: 380px; cursor: zoom-in; }
 
   .modal-teaser { font-family: var(--font-body); font-size: 1rem; color: var(--ink-mid); line-height: 1.7; }
 
@@ -575,20 +563,39 @@ const escapedJson = JSON.stringify(modalDataRaw)
   .modal-magician-link { color: var(--burgundy); border-bottom: 1px solid var(--gold-light); text-decoration: none; transition: color 150ms; }
   .modal-magician-link:hover { color: var(--gold-dark); }
 
-  .modal-nb-section { border-top: 1px solid var(--cream-dark); padding-top: 1rem; display: flex; flex-direction: column; gap: 0.75rem; }
-  .modal-nb-actions { display: flex; flex-wrap: wrap; gap: 0.55rem; }
+  .modal-nb-section { border-top: 1px solid var(--cream-dark); padding-top: 1rem; }
 
   .btn-nb-external { display: inline-flex; align-items: center; gap: 0.4rem; font-family: var(--font-ui); font-size: 0.82rem; font-weight: 700; color: white; background: var(--burgundy); border-radius: 6px; padding: 0.5rem 1rem; text-decoration: none; transition: background 150ms; }
   .btn-nb-external:hover { background: var(--burgundy-dk); }
 
-  .btn-nb-embed { display: inline-flex; align-items: center; gap: 0.4rem; font-family: var(--font-ui); font-size: 0.82rem; font-weight: 600; color: var(--burgundy); background: white; border: 1.5px solid var(--gold-dark); border-radius: 6px; padding: 0.5rem 1rem; transition: background 150ms; }
-  .btn-nb-embed:hover { background: var(--cream); }
-
-  .modal-iframe-wrap { border-radius: 6px; overflow: hidden; border: 1px solid var(--cream-dark); position: relative; min-height: 520px; background: var(--cream); }
-  .modal-iframe-loading { display: flex; align-items: center; justify-content: center; gap: 0.6rem; position: absolute; inset: 0; font-family: var(--font-ui); font-size: 0.875rem; color: var(--grey); background: var(--cream); }
-  .spinner { display: inline-block; width: 18px; height: 18px; border: 2.5px solid var(--cream-dark); border-top-color: var(--gold-dark); border-radius: 50%; animation: spin 0.8s linear infinite; }
-  @keyframes spin { to { transform: rotate(360deg); } }
-  #modal-iframe { width: 100%; height: 520px; border: none; display: block; }
+  /* ── Lightbox ──────────────────────────────────────────────────── */
+  .lightbox-dialog {
+    padding: 1rem;
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    max-width: 96vw;
+    max-height: 96vh;
+  }
+  .lightbox-dialog::backdrop { background: rgba(0,0,0,0.92); backdrop-filter: blur(4px); }
+  .lightbox-img { max-width: 92vw; max-height: 90vh; object-fit: contain; display: block; border-radius: 4px; cursor: zoom-out; }
+  .lightbox-close {
+    position: fixed;
+    top: 1rem;
+    right: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.15);
+    color: white;
+    border: 1.5px solid rgba(255,255,255,0.3);
+    transition: background 150ms;
+    z-index: 1;
+  }
+  .lightbox-close:hover { background: rgba(255,255,255,0.28); }
 
   /* ── Page nav ──────────────────────────────────────────────────── */
   .page-nav { display: flex; flex-wrap: wrap; gap: 0.75rem; padding: 1.5rem 0 3rem; font-family: var(--font-ui); font-size: 0.875rem; }
@@ -597,23 +604,16 @@ const escapedJson = JSON.stringify(modalDataRaw)
 
   /* ── Mobile ────────────────────────────────────────────────────── */
   @media (max-width: 599px) {
-    .article-modal {
-      width: 100vw;
-      max-width: 100vw;
-      max-height: 100dvh;
-      border-radius: 0;
-      margin: 0;
-      position: fixed;
-      inset: 0;
-    }
+    .article-modal { width: 100vw; max-width: 100vw; max-height: 100dvh; border-radius: 0; margin: 0; position: fixed; inset: 0; }
     .modal-inner { max-height: 100dvh; }
     .modal-scroll { padding: 1rem 1rem 2rem; }
     .filter-bar-inner { padding: 0.6rem 1rem; gap: 0.4rem 0.75rem; }
     .filter-search { min-width: 0; width: 100%; }
     .filter-select { min-width: 0; }
     .articles-grid { grid-template-columns: 1fr 1fr; gap: 0.75rem; }
-    #modal-iframe { height: 380px; }
-    .modal-iframe-wrap { min-height: 380px; }
+    /* Restore fixed image ratio on small cards */
+    .article-card { min-height: 0; }
+    .card-img { flex: none; aspect-ratio: 4/3; min-height: 0; }
   }
 
   @media (max-width: 400px) {
