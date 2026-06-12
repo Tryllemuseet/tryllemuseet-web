@@ -18,8 +18,9 @@ import { arrangementPage }   from './arrangementPage'
 import { utstillingPage }    from './utstillingPage'
 import { partner }        from './partner'
 import artifact           from './artifact'
-import { tvAppearance }   from './tvAppearance'
-import { historicalClip } from './historicalClip'
+import { tvAppearance }    from './tvAppearance'
+import { historicalClip }  from './historicalClip'
+import { mediaAppearance } from './mediaAppearance'
 
 export const schemaTypes = [
   // Sidetyper
@@ -39,6 +40,7 @@ export const schemaTypes = [
   legend,
   tvAppearance,
   historicalClip,
+  mediaAppearance,
   book,
   event,
   artifact,
