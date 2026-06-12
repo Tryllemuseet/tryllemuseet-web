@@ -491,6 +491,94 @@ export async function getBesokPage(): Promise<BesokPage> {
   }
 }
 
+// ── Typer: Kontakt ───────────────────────────────────────────────
+export interface KontaktPage {
+  hero:      { label: string; heading: string; ingress: string }
+  skjemaUrl: string
+  faq:       { sporsmal: string; svar: string }[]
+}
+
+export async function getKontaktPage(): Promise<KontaktPage> {
+  const d = await sanityClient.fetch(`
+    *[_type == "kontaktPage"][0] {
+      hero { label, heading, ingress },
+      skjemaUrl,
+      faq[] { sporsmal, svar }
+    }
+  `)
+  return {
+    hero: {
+      label:   d?.hero?.label   ?? 'Tryllemuseet',
+      heading: d?.hero?.heading ?? 'Kontakt oss',
+      ingress: d?.hero?.ingress ?? 'Vi svarer på e-post så snart vi kan. Send gjerne spørsmål eller booking-forespørsel.',
+    },
+    skjemaUrl: d?.skjemaUrl ?? 'https://forms.cloud.microsoft/Pages/ResponsePage.aspx?id=ntTGX9tmLEuCq9W0nbG7xw-QkId2PUtCgZXNTCF6McdUNjhIWjhENjhaWTA2U1ZCTjBKRjZIUjdSMy4u&embed=true',
+    faq: d?.faq ?? [
+      { sporsmal: 'Kan vi booke besøk for en skole eller gruppe?',   svar: 'Ja! Vi tar imot grupper og skoleklasser etter avtale. Send oss en melding med antall deltakere og ønsket dato.' },
+      { sporsmal: 'Er museet tilgjengelig for rullestol?',           svar: 'Ta kontakt med oss på forhånd, så sørger vi for at besøket blir best mulig.' },
+      { sporsmal: 'Holdes det bursdagsarrangementer?',               svar: 'Ta kontakt med oss for å høre om mulighetene — vi finner gjerne en magisk løsning!' },
+      { sporsmal: 'Kan vi kjøpe tryllerekvisitter?',                 svar: 'Vi har et lite utvalg i museumsbutikken. Større utvalg finner du hos spesialforretninger som Egelos Crazy Shop.' },
+    ],
+  }
+}
+
+// ── Typer: Tryllehistorie ─────────────────────────────────────────
+export interface TryllehistorieSeksjon {
+  href:   string
+  emoji:  string
+  title:  string
+  sub:    string
+  desc:   string
+  badge:  string
+  soon:   boolean
+}
+
+export interface TryllehistoriePage {
+  hero:              { label: string; heading: string; ingress: string }
+  seksjoner:         TryllehistorieSeksjon[]
+  tidslinjeHeading:  string
+  tidslinje:         { aar: string; hendelse: string; siste: boolean }[]
+}
+
+export async function getTryllehistoriePage(): Promise<TryllehistoriePage> {
+  const d = await sanityClient.fetch(`
+    *[_type == "tryllehistoriePage"][0] {
+      hero { label, heading, ingress },
+      seksjoner[] { href, emoji, title, sub, desc, badge, soon },
+      tidslinjeHeading,
+      tidslinje[] { aar, hendelse, siste }
+    }
+  `)
+  return {
+    hero: {
+      label:   d?.hero?.label   ?? 'Tryllemuseet',
+      heading: d?.hero?.heading ?? 'Tryllehistorie',
+      ingress: d?.hero?.ingress ?? 'Fra begerspillet i Egypt for 4000 år siden til gullalderens store scenemagikere og norske tryllekunstnere i dag — magiens lange historie.',
+    },
+    seksjoner: d?.seksjoner ?? [
+      { href: '/tryllehistorie/magiens-hvem-er-hvem',        emoji: '📖', title: 'Magiens Hvem er Hvem',               sub: 'Norske tryllekunstnere',      desc: '173 biografier over norske tryllekunstnere fra Terje Nordheims standardverk. Søk på navn, kunstnernavn og spesialitet.',                                                                    badge: '173 biografier',  soon: false },
+      { href: '/utstillingen',                                emoji: '🎩', title: 'Gullalderen 1845–1930',              sub: 'Internasjonal tryllehistorie', desc: 'Robert-Houdin, Herrmann, Kellar, Thurston og Houdini — magikerne som forandret verden og skapte scenetryllingens gylne epoke.',                                                          badge: '7 utstillingsfelt', soon: false },
+      { href: '/tryllehistorie/norske-legender/henrik-ibsen', emoji: '🎭', title: 'Henrik Ibsen som tryllekunstner',    sub: 'Norsk kulturhistorie',        desc: 'Visste du at Henrik Ibsen tryllet? Den store dramatikeren hadde en ukjent side som tryllekunstner i sin ungdom.',                                                                          badge: 'Artikkel',         soon: false },
+      { href: '/tryllehistorie/begerspillet',                 emoji: '🏺', title: 'Begerspillet',                       sub: 'Magiens opprinnelse',         desc: 'Verdens eldste kjente trylletriks — avbildet i Egypt for over 4000 år siden. Historien om magiens aller første triks.',                                                                     badge: 'Kommer snart',    soon: true  },
+      { href: '/tryllehistorie/norske-legender',              emoji: '⭐', title: 'Norske legender',                    sub: 'Portretter',                  desc: 'Egelo, Jan Crosby, Davido, Arnardo og andre norske tryllekunstnere som har satt spor. Dyptgående portretter.',                                                                                badge: '7 artikler',      soon: false },
+      { href: '/tryllehistorie/got-talent',                   emoji: '🏆', title: 'Got Talent',                         sub: 'Nordisk TV-magi',             desc: 'Norske, svenske, danske og finske tryllekunstnere i Norske Talenter, Talang, Danmark har Talent og Talent Suomi.',                                                                          badge: '35 opptredener',  soon: false },
+      { href: '/tryllehistorie/fool-us',                      emoji: '🎯', title: 'Penn & Teller: Fool Us',             sub: 'Nordisk TV-magi',             desc: 'Nordiske magikere som har møtt Penn & Teller i den prestisjetunge fagduellen fra Las Vegas. 7 klarte å lure dem.',                                                                            badge: '12 opptredener',  soon: false },
+    ],
+    tidslinjeHeading: d?.tidslinjeHeading ?? '4000 år med magi',
+    tidslinje: d?.tidslinje ?? [
+      { aar: 'ca. 2000 f.Kr.', hendelse: 'Begerspillet avbildes i Egypt — verdens eldste kjente trylletriks',                               siste: false },
+      { aar: '1845',           hendelse: 'Robert-Houdin åpner sitt teater i Paris — den moderne scenetryllingens fødsel',                    siste: false },
+      { aar: '1856',           hendelse: 'Robert-Houdin stopper et opprør i Algerie — med tryllekunst',                                      siste: false },
+      { aar: '1885',           hendelse: 'Henrik Ibsen opptrer som tryllekunstner i Christiania',                                            siste: false },
+      { aar: '1896',           hendelse: 'Adelaide Herrmann overtar showet etter sin manns død — blir «The Queen of Magic»',                  siste: false },
+      { aar: '1908',           hendelse: 'Kellar overrekker tittelen til Thurston — gullalderens store kroningsseremoni',                    siste: false },
+      { aar: '1926',           hendelse: 'Houdini dør på Halloween — gullalderens slutt',                                                    siste: false },
+      { aar: '1940',           hendelse: 'Magiske Cirkel Norge stiftes — norsk trylleorganisasjon etableres',                                siste: false },
+      { aar: 'I dag',          hendelse: 'Tryllemuseet på Årvoll holder historien levende',                                                  siste: true  },
+    ],
+  }
+}
+
 // ── Typer: SiteConfig ────────────────────────────────────────────
 export interface SiteConfig {
   siteName:          string

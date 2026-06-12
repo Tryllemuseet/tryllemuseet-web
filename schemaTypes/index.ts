@@ -9,7 +9,9 @@ import { book }           from './book'
 import { homepage }       from './homepage'
 import { barnPage }       from './barnPage'
 import { omOssPage }      from './omOssPage'
-import { besokPage }      from './besokPage'
+import { besokPage }           from './besokPage'
+import { kontaktPage }        from './kontaktPage'
+import { tryllehistoriePage } from './tryllehistoriePage'
 import { partner }        from './partner'
 import artifact           from './artifact'
 import { tvAppearance }   from './tvAppearance'
@@ -21,6 +23,8 @@ export const schemaTypes = [
   barnPage,
   omOssPage,
   besokPage,
+  kontaktPage,
+  tryllehistoriePage,
   // Dokumenttyper
   magician,
   biography,
