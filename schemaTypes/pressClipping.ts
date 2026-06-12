@@ -1,4 +1,5 @@
 import { defineType, defineField } from 'sanity'
+import { NbUrlInput } from './components/NbUrlInput'
 
 export const pressClipping = defineType({
   name: 'pressClipping',
@@ -58,6 +59,7 @@ export const pressClipping = defineType({
       title: 'Lenke til nb.no',
       type: 'url',
       validation: R => R.required(),
+      components: { input: NbUrlInput },
     }),
 
     defineField({
