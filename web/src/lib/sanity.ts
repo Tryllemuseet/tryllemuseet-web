@@ -781,6 +781,49 @@ export async function getLegendPaths() {
     .map((l: { slug: string }) => ({ params: { slug: l.slug } }))
 }
 
+// ── Typer: PressClipping ─────────────────────────────────────────
+
+export interface PressClipping {
+  _id:          string
+  title:        string
+  slug:         string
+  publishedAt:  string
+  originalDate?: string
+  sourceName?:  string
+  sourceUrl:    string
+  image?:       { asset: { _ref: string; url: string }; alt?: string }
+  teaser:       string
+  commentary?:  string
+  someText?:    string
+  category?:    string
+}
+
+// ── Spørringer: PressClipping ────────────────────────────────────
+
+// Newest article with publishedAt <= now() — for homepage widget
+export async function getLatestPressClipping(): Promise<PressClipping | null> {
+  return sanityClient.fetch(`
+    *[_type == "pressClipping" && isVisible != false && publishedAt <= now()] | order(publishedAt desc) [0] {
+      _id, title, "slug": slug.current,
+      publishedAt, originalDate, sourceName, sourceUrl,
+      image { asset->{ _ref, url }, alt },
+      teaser, commentary, someText, category
+    }
+  `)
+}
+
+// All published articles — for archive page
+export async function getPressClippingArchive(): Promise<PressClipping[]> {
+  return sanityClient.fetch(`
+    *[_type == "pressClipping" && isVisible != false && publishedAt <= now()] | order(publishedAt desc) {
+      _id, title, "slug": slug.current,
+      publishedAt, originalDate, sourceName, sourceUrl,
+      image { asset->{ _ref, url }, alt },
+      teaser, commentary, category
+    }
+  `)
+}
+
 // ── Typer: Partner ───────────────────────────────────────────────
 
 export interface Partner {
