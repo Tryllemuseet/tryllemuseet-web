@@ -23,6 +23,7 @@ const allNavLinks = [
   { href: '/tryllehistorie/got-talent',     label: 'Opptredener'         },
   { href: '/tryllehistorie',                label: 'Arkivet'             },
   { href: '/om-oss',                        label: 'Om oss'              },
+  { href: '/om-oss/i-media',               label: 'I media'             },
 ]
 
 const currentPath = Astro.url.pathname
@@ -120,10 +121,15 @@ const isActive = (href: string) =>
             </ul>
           </li>
 
-          <li>
+          <!-- Om oss med dropdown -->
+          <li class="has-dropdown">
             <a href="/om-oss" class:list={['nav-link', { active: isActive('/om-oss') }]}>
-              Om oss
+              Om oss <span class="nav-chevron">▾</span>
             </a>
+            <ul class="dropdown" role="list">
+              <li><a href="/om-oss" class="dropdown-link">Om museet</a></li>
+              <li><a href="/om-oss/i-media" class="dropdown-link">I media</a></li>
+            </ul>
           </li>
 
           <li>
@@ -181,7 +187,13 @@ const isActive = (href: string) =>
           </ul>
         </li>
 
-        <li><a href="/om-oss"      class:list={['mobile-nav-link', { active: isActive('/om-oss') }]}>Om oss</a></li>
+        <li class="mobile-section">
+          <a href="/om-oss" class:list={['mobile-nav-link', { active: isActive('/om-oss') }]}>Om oss</a>
+          <ul class="mobile-sub">
+            <li><a href="/om-oss"         class="mobile-sub-link">Om museet</a></li>
+            <li><a href="/om-oss/i-media" class="mobile-sub-link">I media</a></li>
+          </ul>
+        </li>
         <li>
           <a href={site.membershipUrl} class="mobile-nav-link mobile-nav-cta" target="_blank" rel="noopener">
             Bli medlem →
