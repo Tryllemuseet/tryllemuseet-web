@@ -37,7 +37,7 @@ const otherAppearances = await sanityClient.fetch(`
 
 function youtubeEmbedUrl(url: string): string | null {
   const m = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&?]+)/)
-  return m ? `https://www.youtube.com/embed/${m[1]}` : null
+  return m ? `https://www.youtube-nocookie.com/embed/${m[1]}` : null
 }
 const embedUrl = a.videoUrl ? youtubeEmbedUrl(a.videoUrl) : null
 const showLabel   = showLabels[a.show]   ?? a.show

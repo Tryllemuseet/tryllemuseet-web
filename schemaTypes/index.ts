@@ -16,6 +16,7 @@ import { tryllehistoriePage } from './tryllehistoriePage'
 import { ressurserPage }      from './ressurserPage'
 import { arrangementPage }   from './arrangementPage'
 import { utstillingPage }    from './utstillingPage'
+import { personvernPage } from './personvernPage'
 import { partner }        from './partner'
 import artifact           from './artifact'
 import { tvAppearance }    from './tvAppearance'
@@ -33,6 +34,7 @@ export const schemaTypes = [
   ressurserPage,
   arrangementPage,
   utstillingPage,
+  personvernPage,
   // Dokumenttyper
   magician,
   pressClipping,

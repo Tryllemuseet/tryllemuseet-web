@@ -1,0 +1,120 @@
+---
+// src/pages/personvern.astro
+import BaseLayout from '../layouts/BaseLayout.astro'
+import { getPersonvernPage, portableTextToHtml, sanityClient } from '../lib/sanity'
+
+const [page, config] = await Promise.all([
+  getPersonvernPage(),
+  sanityClient.fetch(`*[_type == "siteConfig"][0] { email, address }`),
+])
+
+function formatDate(d?: string) {
+  if (!d) return ''
+  return new Date(d).toLocaleDateString('nb-NO', { day: 'numeric', month: 'long', year: 'numeric' })
+}
+---
+
+<BaseLayout
+  title="Personvern — Tryllemuseet"
+  description="Personvernerklæring for tryllemuseet.no — informasjon om behandling av personopplysninger."
+>
+
+  <section class="hero">
+    <div class="container">
+      <p class="section-label">Juridisk</p>
+      <h1 class="display-title hero-title">Personvernerklæring</h1>
+      {page?.lastUpdated && (
+        <p class="hero-sub">Sist oppdatert: {formatDate(page.lastUpdated)}</p>
+      )}
+    </div>
+  </section>
+
+  <div class="container page-body">
+
+    {!page && (
+      <p class="no-content">Personvernerklæringen er ikke publisert ennå. Kom tilbake snart.</p>
+    )}
+
+    {page?.intro && (
+      <p class="intro-text">{page.intro}</p>
+    )}
+
+    {page?.sections?.map((s: any) => (
+      <section class="pv-section">
+        <h2 class="pv-heading">{s.heading}</h2>
+        {s.body?.length > 0 && (
+          <div class="prose" set:html={portableTextToHtml(s.body)} />
+        )}
+      </section>
+    ))}
+
+    {page && (!page.sections || page.sections.length === 0) && (
+      <p class="no-content">Innholdet er under utarbeiding.</p>
+    )}
+
+    <div class="contact-box">
+      <p>
+        <strong>Behandlingsansvarlig:</strong><br />
+        Tryllemuseet{config?.address ? `, ${config.address}` : ''}<br />
+        {config?.email && (
+          <>E-post: <a href={`mailto:${config.email}`}>{config.email}</a></>
+        )}
+      </p>
+    </div>
+
+  </div>
+
+</BaseLayout>
+
+<style>
+  .hero { background: var(--burgundy-dk); padding: 3.5rem 0 2.5rem; border-bottom: 2px solid var(--gold-dark); color: var(--cream); }
+  .hero-title { font-size: clamp(1.8rem, 5vw, 3rem); color: var(--cream); margin: 0.5rem 0 0.75rem; }
+  .hero-sub { font-family: var(--font-ui); font-size: 0.9rem; opacity: 0.7; }
+
+  .page-body { max-width: 720px; padding-top: 2.5rem; padding-bottom: 4rem; }
+
+  .intro-text {
+    font-family: var(--font-body);
+    font-size: 1.05rem;
+    line-height: 1.7;
+    color: var(--ink-mid);
+    margin-bottom: 2.5rem;
+    padding-bottom: 2rem;
+    border-bottom: 1px solid var(--cream-dark);
+  }
+
+  .pv-section { margin-bottom: 2.5rem; padding-bottom: 2rem; border-bottom: 1px solid var(--cream-dark); }
+  .pv-section:last-of-type { border-bottom: none; }
+
+  .pv-heading {
+    font-family: var(--font-display);
+    font-size: 1.25rem;
+    color: var(--burgundy);
+    margin-bottom: 0.75rem;
+    letter-spacing: 0.02em;
+  }
+
+  .prose { font-family: var(--font-body); font-size: 0.95rem; line-height: 1.75; color: var(--ink); }
+  .prose p { margin-bottom: 0.9rem; }
+  .prose p:last-child { margin-bottom: 0; }
+  .prose strong { color: var(--ink); font-weight: 600; }
+  .prose a { color: var(--burgundy); text-decoration: underline; text-underline-offset: 2px; }
+  .prose a:hover { color: var(--gold-dark); }
+  .prose ul { list-style: disc; padding-left: 1.4rem; margin-bottom: 0.9rem; }
+  .prose ul li { margin-bottom: 0.3rem; }
+
+  .contact-box {
+    margin-top: 2.5rem;
+    padding: 1.25rem 1.5rem;
+    background: var(--cream);
+    border: 1px solid var(--cream-dark);
+    border-radius: 6px;
+    font-family: var(--font-ui);
+    font-size: 0.875rem;
+    line-height: 1.6;
+    color: var(--ink-mid);
+  }
+  .contact-box a { color: var(--burgundy); }
+
+  .no-content { font-family: var(--font-ui); font-size: 0.95rem; color: var(--grey); padding: 3rem 0; }
+</style>
