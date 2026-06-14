@@ -31,3 +31,6 @@
 # NB.no search result files (local curation output, not for version control)
 /nb-search-results/
 *.ndjson
+
+# Claude Code internal directories (worktrees, session data)
+.claude/
