@@ -18,6 +18,14 @@ export const pressClipping = defineType({
     }),
 
     defineField({
+      name:         'needsReview',
+      title:        '⚠️ Trenger verifisering',
+      type:         'boolean',
+      initialValue: false,
+      description:  'Markert fordi kilde-URL/dato kan være feil eller delt med en annen artikkel. Sjekk mot nb.no før publisering, og fjern haken når verifisert.',
+    }),
+
+    defineField({
       name: 'title',
       title: 'Tittel',
       type: 'string',
@@ -151,17 +159,18 @@ export const pressClipping = defineType({
 
   preview: {
     select: {
-      title:      'title',
-      sourceName: 'sourceName',
-      date:       'originalDate',
-      media:      'image',
+      title:       'title',
+      sourceName:  'sourceName',
+      date:        'originalDate',
+      media:       'image',
+      needsReview: 'needsReview',
     },
-    prepare({ title, sourceName, date, media }: {
-      title?: string; sourceName?: string; date?: string; media?: unknown
+    prepare({ title, sourceName, date, media, needsReview }: {
+      title?: string; sourceName?: string; date?: string; media?: unknown; needsReview?: boolean
     }) {
       const parts = [sourceName, date].filter(Boolean).join(' · ')
       return {
-        title:    title ?? '(uten tittel)',
+        title:    (needsReview ? '⚠️ ' : '') + (title ?? '(uten tittel)'),
         subtitle: parts || undefined,
         media,
       }
