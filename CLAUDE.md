@@ -8,30 +8,39 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **Sanity Studio** (root): Headless CMS for content management
 - **Web Frontend** (`/web`): Astro-based static site generation
 
-The site serves dual audiences: children (with interactive exhibitions and activities) and adults (with historical/biographical content about magicians). It also manages a library of magic-related books and historical TV appearances.
+The site serves dual audiences: children (with interactive exhibitions and activities) and adults (with historical/biographical content about magicians). It also manages a library of magic-related books, historical TV appearances, press clippings, and a biographical who's-who reference.
 
 ## Architecture
 
 ### Content Layer (Sanity CMS)
 
-The schema defines 14+ content types in `/schemaTypes`:
+The schema defines 24 active content types in `/schemaTypes`:
 
-**Page Types** (singletons):
-- `homepage.ts` — Hero, exhibitions focus, sections, partnerships
+**Page Types** (singleton documents, one per page):
+- `homepage.ts` — Hero, exhibitions focus, sections, partnerships, press highlight
 - `barnPage.ts` — Children's section landing page
 - `omOssPage.ts` — "About Us" page with museum history
-- `siteConfig.ts` — Global settings (email, address, contact info)
+- `besokPage.ts` — "Visit Us" page with practical information
+- `kontaktPage.ts` — Contact page
+- `tryllehistoriePage.ts` — "Magic History" section landing page
+- `ressurserPage.ts` — Resources section landing page
+- `arrangementPage.ts` — Events/courses section landing page
+- `utstillingPage.ts` — Exhibition section landing page
+- `personvernPage.ts` — Privacy policy page
+- `siteConfig.ts` — Global settings (email, address, contact info, social links)
 
-**Document Types** (queryable collections):
-- `magician.ts` — Exhibition displays (4000+ years of magic history). Fields: child text, adult text, detailed mobile sections, QR-linked content, source links
-- `biography.ts` — "Hvem er hvem" (Who's Who) reference: full name, aliases, birth/death dates, nationality, magician references
+**Document Types** (queryable collections, multiple documents per type):
+- `magician.ts` — Exhibition displays (4000+ years of magic history). Fields: child text, adult text, detailed mobile sections, QR-linked content, source links, poster image
+- `biography.ts` — "Hvem er hvem" (Who's Who) reference: full name, aliases, birth/death dates, nationality, magician references (172+ entries)
 - `legend.ts` — Notable historical magicians with video, images, birth/death dates
-- `tvAppearance.ts` — TV show appearances (Got Talent, America's Funniest People, historical clips)
+- `tvAppearance.ts` — TV show appearances (Got Talent, Penn & Teller: Fool Us, etc.)
 - `historicalClip.ts` — Archival video clips with metadata
-- `book.ts` — Library catalog with author, publication, availability status
-- `event.ts` — Upcoming events/courses with dates, pricing, booking
-- `artifact.ts` — Museum objects: origin, materials, condition, gallery images
-- `partner.ts` — Sponsors/partners with category grouping
+- `mediaAppearance.ts` — Press and media mentions (newspaper, TV, radio, podcast) with featured flag
+- `pressClipping.ts` — News articles/clippings about the museum, with `needsReview` flag for editorial workflow
+- `book.ts` — Library catalog with author, publication year, availability status, type (Norwegian/international/public domain)
+- `event.ts` — Upcoming events/courses with dates, pricing, booking URL, age group
+- `artifact.ts` — Museum objects: origin, materials, condition, provenance, gallery images
+- `partner.ts` — Sponsors/partners with category grouping (public/private/organization)
 
 **Helper Types** (object types used inline by document types):
 - `contentSection.ts` — Reusable heading + rich text block
@@ -39,29 +48,149 @@ The schema defines 14+ content types in `/schemaTypes`:
 
 **Note**: `author.ts`, `category.ts`, `post.ts`, and `blockContent.ts` are leftover Sanity template defaults — they are not registered in `schemaTypes/index.ts` and not used by the active schema.
 
+**Custom Studio Components** (`/schemaTypes/components/`):
+- `NbUrlInput.tsx` — Custom Sanity input field for Norwegian National Library (NB.no) URLs
+
 ### Query Layer (Sanity Client)
 
-`/web/src/lib/sanity.ts` provides:
-- **Client setup**: Uses Sanity API v2024-01-01, CDN in production, preview mode with token locally
-- **Type definitions**: TypeScript interfaces for Magician, Event, Artifact, Biography, Legend, Book, etc.
-- **GROQ queries**: Exported async functions like getAllMagicians(), getMagicianBySlug(), getUpcomingEvents(), getBooksByMagician(), getHomepage(), getSiteConfig(), getAllPartners(), etc.
-- **Image URL builder**: urlFor() function for Sanity image optimization (width, format, etc.)
+`/web/src/lib/sanity.ts` (~1200 lines) provides:
+- **Client setup**: Sanity API v2024-01-01, CDN in production (`PUBLIC_VERCEL_ENV === 'production'`), draft perspective with preview token in local/non-prod environments
+- **Type definitions**: TypeScript interfaces for all content types
+- **GROQ query functions**: All exported async functions for fetching content
+- **Image URL builder**: `urlFor()` for Sanity image optimization
+- **Helper constants**: `showMeta`, `showLabels`, `resultLabels` — UI display maps for TV show types
+- **`portableTextToHtml()`**: Converts Sanity Portable Text arrays to HTML strings
+
+**All GROQ query functions:**
+
+| Function | Returns |
+|----------|---------|
+| `getAllMagicians()` | All visible magicians (slug, order, years, tagline, image) |
+| `getMagicianBySlug(slug)` | Full magician doc with mobile sections, sources |
+| `getMagicianByQR(qrNumber)` | Magician looked up by QR code number |
+| `getUpcomingEvents(limit?)` | Upcoming events, sorted by date |
+| `getAllEvents()` | All events including past ones |
+| `getAllArtifacts()` | All visible artifacts |
+| `getArtifactBySlug(slug)` | Full artifact doc with gallery |
+| `getFeaturedArtifacts()` | Artifacts marked as featured |
+| `getAllBooks()` | Full book catalog |
+| `getPublicDomainBooks()` | Books in the public domain |
+| `getNorwegianBooks()` | Norwegian magic books |
+| `getBooksByMagician(id)` | Books referencing a specific magician |
+| `getFeaturedBooks()` | Books marked as featured |
+| `getAllBiographies()` | Full "Hvem er hvem" list |
+| `getBiographyBySlug(slug)` | Single biography with related magician refs |
+| `getBiographyPaths()` | Slugs for static path generation |
+| `getAllLegends()` | All legend profiles |
+| `getLegendBySlug(slug)` | Full legend doc with video and images |
+| `getLegendPaths()` | Slugs for static path generation |
+| `getAllTvAppearances()` | All TV appearances |
+| `getTvAppearanceBySlug(slug)` | Full TV appearance doc |
+| `getTvAppearancesByMagician(id)` | TV appearances for a specific magician |
+| `getTvAppearancePaths()` | Slugs for static path generation |
+| `getLatestPressClipping()` | Most recent press clipping |
+| `getPressClippingArchive()` | All press clippings for archive page |
+| `getMediaAppearances()` | All media appearances |
+| `getFeaturedMediaAppearance()` | Latest featured media appearance |
+| `getHomepage()` | Hero, exhibition focus, all homepage sections |
+| `getBarnPage()` | Children's section page content |
+| `getOmOssPage()` | About Us page content |
+| `getBesokPage()` | Visit Us page content |
+| `getKontaktPage()` | Contact page content |
+| `getTryllehistoriePage()` | Magic History section page content |
+| `getRessurserPage()` | Resources section page content |
+| `getArrangementPage()` | Events section page content |
+| `getUtstillingPage()` | Exhibition section page content |
+| `getPersonvernPage()` | Privacy policy page content |
+| `getSiteConfig()` | Global site settings (email, address, hours, socials) |
+| `getAllPartners()` | All partners sorted by category |
+
+Update TypeScript interfaces in `sanity.ts` whenever schema fields change.
 
 ### Web Frontend (Astro)
 
-**Page Structure** (`/web/src/pages`):
-- `index.astro` — Homepage: fetches magicians, events, homepage config, partners in parallel
-- Dynamic magician pages — Exhibition detail pages generated via SSG
-- `barn.astro`, `besok.astro`, `arrangementer.astro`, `om-oss.astro`, `kontakt.astro` — Main navigation pages
-- `tryllehistorie/`, `ressurser/`, `aktiviteter/` — Section sub-pages
-- Special pages: `norske-legender/`, `henrik-ibsen/`, `got-talent/`, `fool-us/` — TV show archives with filtering/sorting
+**Components** (`/web/src/components/`):
+- `AnimateIn.astro` — Wrapper that applies scroll-triggered fade/slide animations
+- `MentionedMagicians.astro` — Inline list of magicians referenced from a biography or legend
+- `Welcome.astro` — Welcome/intro block component
 
-**Layout** (`/web/src/layouts`):
-- `BaseLayout.astro` — Wrapper with header, nav, footer, global styles
+**Layouts** (`/web/src/layouts/`):
+- `BaseLayout.astro` — Primary layout with header, nav, footer, and global styles
+- `Layout.astro` — Minimal fallback layout
 
-**Environment**:
-- `.env`: Public Sanity config (project ID, dataset)
-- `.env.local`: Preview token for draft content (git-ignored)
+**Utility Library** (`/web/src/lib/`):
+- `sanity.ts` — All Sanity client code, types, and queries (see above)
+- `icalendar.ts` — Generates `.ics` iCalendar files for event download/subscription
+
+**Full Page Structure** (`/web/src/pages/`):
+
+```
+pages/
+├── index.astro                          # Homepage
+├── barn.astro                           # Children's section
+├── besok.astro                          # Visit Us
+├── bibliotek.astro                      # Book library
+├── arrangementer.astro                  # Events & courses
+├── kontakt.astro                        # Contact
+├── om-oss.astro                         # About Us
+├── personvern.astro                     # Privacy policy
+│
+├── aktiviteter/
+│   ├── index.astro                      # Activities section hub
+│   └── tryllekunstnere.astro            # Magician performers page
+│
+├── ressurser/
+│   └── index.astro                      # Resources hub
+│
+├── om-oss/
+│   └── i-media/
+│       └── index.astro                  # Museum in the media (press/appearances)
+│
+├── utstillingen/
+│   ├── index.astro                      # Exhibition overview
+│   ├── artefakter.astro                 # Museum artifacts listing
+│   └── [slug].astro                     # Magician detail page (SSG)
+│
+└── tryllehistorie/
+    ├── index.astro                      # Magic history portal/hub
+    ├── historiske-artikler/
+    │   └── index.astro                  # Historical articles listing
+    ├── historiske-opptak/
+    │   ├── index.astro                  # Archival clips listing
+    │   └── [slug].astro                 # Clip detail page (SSG)
+    ├── magiens-hvem-er-hvem/
+    │   ├── index.astro                  # Who's Who biography index
+    │   └── [slug].astro                 # Biography profile (SSG)
+    ├── nordisk-tv-magi/
+    │   ├── index.astro                  # Nordic TV magic listing
+    │   └── [slug].astro                 # TV appearance detail (SSG)
+    ├── norske-legender/
+    │   ├── index.astro                  # Norwegian legends index
+    │   └── [slug].astro                 # Legend article (SSG)
+    ├── fool-us/
+    │   ├── index.astro                  # Penn & Teller: Fool Us listing
+    │   └── [slug].astro                 # Appearance detail (SSG)
+    └── got-talent/
+        ├── index.astro                  # Got Talent listing with filtering
+        └── [slug].astro                 # Appearance detail (SSG)
+```
+
+**Environment** (`/web/`):
+- `.env` — Public Sanity config (`PUBLIC_SANITY_PROJECT_ID`, `PUBLIC_SANITY_DATASET`)
+- `.env.local` — Preview token (`SANITY_PREVIEW_TOKEN`), git-ignored
+
+## Utility Scripts
+
+Node.js scripts in `/scripts/` for one-off data operations:
+
+| Script | Purpose |
+|--------|---------|
+| `searchNb.mjs` | Searches the Norwegian National Library (NB.no) API and saves results to Markdown |
+| `importNbArticle.mjs` | Imports an article from NB.no into Sanity as a press clipping |
+| `importYouTubeClips.mjs` | Bulk-imports YouTube clips as `historicalClip` documents |
+| `createPersonvernContent.mjs` | Generates the initial privacy policy document in Sanity |
+
+Scripts are run with `node scripts/<name>.mjs` from the repo root.
 
 ## Development Workflow
 
@@ -115,7 +244,7 @@ npm run deploy-graphql  # Syncs schema to Sanity GraphQL API
 
 ### Content Fetching (Frontend)
 
-All queries in `sanity.ts` are server-side (Astro pages):
+All queries in `sanity.ts` are server-side (Astro pages). Fetch multiple in parallel:
 
 ```typescript
 // In index.astro
@@ -134,28 +263,28 @@ Queries use GROQ (Sanity Query Language):
 - `{ _id, title, "slug": slug.current, ... }` — Project fields
 - `[0]` — Get first doc
 - `asset->{ _ref, url }` — Expand image references
+- `->` — Follow a reference to expand the referenced document
 
 ### Static Generation
 
-Dynamic routes use getStaticPaths():
+Dynamic routes use `getStaticPaths()`:
 
 ```typescript
-// Magician detail page generation
 export async function getStaticPaths() {
   const magicians = await getAllMagicians()
   return magicians.map(m => ({ params: { slug: m.slug } }))
 }
 ```
 
-Every magician gets its own HTML file at build time.
+Every visible magician gets its own HTML file at build time. Same pattern for biographies, legends, TV appearances, and historical clips.
 
 ### Rich Text (Portable Text)
 
-Content from Sanity (e.g., adultText, mobileSections.body) is in Portable Text format:
+Content from Sanity (e.g., `adultText`, `mobileSections.body`) is in Portable Text format:
 
 ```typescript
-import { toHTML } from '@portabletext/to-html'
-const html = toHTML(m.adultText)  // Renders as <p>, <strong>, etc.
+import { portableTextToHtml } from '../lib/sanity'
+const html = portableTextToHtml(m.adultText)  // Renders as <p>, <strong>, etc.
 ```
 
 ### Image Optimization
@@ -165,27 +294,9 @@ import { urlFor } from '../lib/sanity'
 urlFor(image).width(800).format('webp').url()
 ```
 
-## Important Queries & Types
-
-Key GROQ functions in `sanity.ts`:
-- `getAllMagicians()` — Returns slug, order, years, tagline, image
-- `getMagicianBySlug(slug)` — Full magician doc with mobile sections, sources
-- `getHomepage()` — Hero, exhibition focus, sections
-- `getUpcomingEvents(limit)` — Upcoming courses/events
-- `getBooksByMagician(id)` — Books by/referencing a magician
-- `getAllPartners()` — Sponsors grouped by category
-
-Update TypeScript interfaces in sanity.ts when schema changes.
-
-## Deployment
-
-- **Studio**: Deployed via npm run deploy to Sanity hosting
-- **Web**: Static site deployable to any static host (Vercel, Netlify, etc.)
-  - PUBLIC_VERCEL_ENV controls CDN usage in production
-
 ## Visibility / Unpublish Convention
 
-All content document types (`magician`, `biography`, `legend`, `event`, `tvAppearance`, `historicalClip`, `book`, `artifact`, `partner`) have a boolean field `isVisible` with `initialValue: true`.
+All content document types have a boolean field `isVisible` with `initialValue: true`. This applies to: `magician`, `biography`, `legend`, `event`, `tvAppearance`, `historicalClip`, `mediaAppearance`, `pressClipping`, `book`, `artifact`, `partner`.
 
 **Rules:**
 - Default is always `true` — new documents are visible automatically
@@ -196,25 +307,52 @@ All content document types (`magician`, `biography`, `legend`, `event`, `tvAppea
 
 ## Common Gotchas
 
-1. **Schema Changes**: After editing schema files, redeploy the studio for changes to appear in editor UI and API
+1. **Schema Changes**: After editing schema files, redeploy the studio (`npm run deploy` from root) for changes to appear in editor UI and API
 2. **Slug Generation**: Slug fields auto-populate from name/title; manually edit if needed
-3. **Image Assets**: Upload via Sanity UI; reference via asset->{ _ref, url } in queries
-4. **Portable Text**: Always use toHTML() or astro-portabletext to render rich text
-5. **Env Variables**: Public vars prefixed PUBLIC_*; secret vars in .env.local (git-ignored)
-6. **Static Generation**: Sanity content changes require web frontend rebuild
+3. **Image Assets**: Upload via Sanity UI; reference via `asset->{ _ref, url }` in queries
+4. **Portable Text**: Always use `portableTextToHtml()` from `sanity.ts` to render rich text (not the raw `toHTML` from `@portabletext/to-html` directly)
+5. **Env Variables**: Public vars prefixed `PUBLIC_*`; secret vars in `.env.local` (git-ignored)
+6. **Static Generation**: Sanity content changes require web frontend rebuild to take effect on the live site
+7. **Preview Mode**: Local dev uses `perspective: 'drafts'` and the preview token — draft documents are visible. Production uses published content only.
+
+## Deployment
+
+- **Studio**: Deployed via `npm run deploy` from repo root to Sanity hosting (managed by Sanity)
+- **Web**: Static site deployed to Vercel
+  - `PUBLIC_VERCEL_ENV` controls CDN and draft/published perspective
+  - Any push to `main` triggers a Vercel rebuild
+
+## Data Import Files
+
+The repo root contains `.ndjson` bulk import files used to seed or restore Sanity data:
+
+- `magicians-import.ndjson` — Magician documents
+- `hvem-er-hvem-v2.ndjson`, `hvem-er-hvem-import.ndjson` — Biography documents (172+)
+- `books-import.ndjson`, `berthelsen-books-v2.ndjson` — Book library
+- `tryllemuseet-tv-*.ndjson` — TV appearance data
+- `tryllekurs-mai-2026.ndjson` — Event data
+- `tryllehistorie-mestere-final.ndjson` — Legend documents
+- `*-seed.ndjson` — Initial page content (homepage, barnPage, omOssPage, siteConfig)
+- `rekkefolge-patch.ndjson` — Sort order patches for magicians
+
+Import with: `npx sanity dataset import <file>.ndjson production` (from repo root).
 
 ## File Locations
 
 | What | Where |
 |------|-------|
 | Schema definitions | `/schemaTypes/*.ts` |
+| Studio custom components | `/schemaTypes/components/` |
 | Sanity config | `/sanity.config.ts`, `/sanity.cli.ts` |
 | Queries and types | `/web/src/lib/sanity.ts` |
-| Pages | `/web/src/pages/*.astro` |
-| Dynamic routes | `/web/src/pages/utstillingen/` and similar |
-| Layouts | `/web/src/layouts/*.astro` |
-| Styles | Scoped in .astro files |
+| iCalendar utilities | `/web/src/lib/icalendar.ts` |
+| Astro components | `/web/src/components/` |
+| Layouts | `/web/src/layouts/` |
+| Pages | `/web/src/pages/` |
+| Dynamic routes | `/web/src/pages/utstillingen/[slug].astro` and similar |
 | Env config | `/web/.env`, `/web/.env.local` |
+| Data import files | `/*.ndjson` (repo root) |
+| Utility scripts | `/scripts/*.mjs` |
 
 ## Git Conventions
 
