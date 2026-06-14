@@ -46,7 +46,7 @@ The schema defines 24 active content types in `/schemaTypes`:
 - `contentSection.ts` — Reusable heading + rich text block
 - `sourceItem.ts` — External link with label
 
-**Note**: `author.ts`, `category.ts`, `post.ts`, and `blockContent.ts` are leftover Sanity template defaults — they are not registered in `schemaTypes/index.ts` and not used by the active schema.
+**Note**: The original Sanity template stubs (`author.ts`, `category.ts`, `post.ts`, `blockContent.ts`) have been removed — they were never registered in `schemaTypes/index.ts`.
 
 **Custom Studio Components** (`/schemaTypes/components/`):
 - `NbUrlInput.tsx` — Custom Sanity input field for Norwegian National Library (NB.no) URLs
@@ -327,9 +327,11 @@ All content document types have a boolean field `isVisible` with `initialValue: 
 The repo root contains `.ndjson` bulk import files used to seed or restore Sanity data:
 
 - `magicians-import.ndjson` — Magician documents
-- `hvem-er-hvem-v2.ndjson`, `hvem-er-hvem-import.ndjson` — Biography documents (172+)
-- `books-import.ndjson`, `berthelsen-books-v2.ndjson` — Book library
-- `tryllemuseet-tv-*.ndjson` — TV appearance data
+- `hvem-er-hvem-v2.ndjson` — Biography documents (171 entries, current version)
+- `books-import-fixed.ndjson` — International/public domain book catalog
+- `norwegian-books-import.ndjson` — Norwegian magic books
+- `berthelsen-books-v2.ndjson` — Berthelsen collection books
+- `tryllemuseet-tv-magi-v2.ndjson` — TV appearance data (current version)
 - `tryllekurs-mai-2026.ndjson` — Event data
 - `tryllehistorie-mestere-final.ndjson` — Legend documents
 - `*-seed.ndjson` — Initial page content (homepage, barnPage, omOssPage, siteConfig)
