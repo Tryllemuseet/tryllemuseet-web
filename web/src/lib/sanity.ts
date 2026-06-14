@@ -78,6 +78,7 @@ export interface Artifact {
   gallery?:     { asset: { _ref: string; url: string }; alt?: string; caption?: string }[]
   tags?:        string[]
   notes?:       any[]
+  exhibitionRef?: { _ref: string }
 }
 
 // ── Spørringer ───────────────────────────────────────────────────
@@ -1088,6 +1089,7 @@ export interface PressClipping {
     slug:        string
     artistName?: string
   }[]
+  exhibitionRef?: { _ref: string }
 }
 
 // ── Spørringer: PressClipping ────────────────────────────────────
@@ -1190,4 +1192,61 @@ export async function getAllPartners(): Promise<Partner[]> {
       logo { asset->{ _ref, url } }
     }
   `)
+}
+
+// ── Typer: SpecialExhibition ─────────────────────────────────────
+
+export interface SpecialExhibition {
+  _id:             string
+  title:           string
+  slug:            string
+  status:          'teaser' | 'active' | 'archived'
+  currentSection:  'utstillingen' | 'tryllehistorie'
+  teaserDate?:     string
+  openDate:        string
+  closeDate:       string
+  heroImage?:      { asset: { _ref: string; url: string }; alt?: string }
+  excerpt?:        string
+  teaserContent?:  any[]
+  introContent?:   any[]
+  infoSections?:   { heading?: string; body?: any[] }[]
+}
+
+// ── Spørringer: SpecialExhibition ────────────────────────────────
+
+export async function getAllSpecialExhibitions(): Promise<SpecialExhibition[]> {
+  return sanityClient.fetch(`
+    *[_type == "specialExhibition" && isVisible != false] | order(openDate desc) {
+      _id, title, "slug": slug.current,
+      status, currentSection,
+      teaserDate, openDate, closeDate,
+      heroImage { asset->{ _ref, url }, alt },
+      excerpt
+    }
+  `)
+}
+
+export async function getSpecialExhibitionBySlug(slug: string): Promise<SpecialExhibition | null> {
+  return sanityClient.fetch(`
+    *[_type == "specialExhibition" && slug.current == $slug && isVisible != false][0] {
+      _id, title, "slug": slug.current,
+      status, currentSection,
+      teaserDate, openDate, closeDate,
+      heroImage { asset->{ _ref, url }, alt },
+      excerpt, teaserContent, introContent,
+      infoSections[] { heading, body }
+    }
+  `, { slug })
+}
+
+export async function getPressClippingsByExhibition(exhibitionId: string): Promise<PressClipping[]> {
+  return sanityClient.fetch(`
+    *[_type == "pressClipping" && isVisible != false && exhibitionRef._ref == $id]
+    | order(originalDate asc) {
+      _id, title, "slug": slug.current,
+      publishedAt, originalDate, sourceName, sourceUrl,
+      image { asset->{ _ref, url }, alt },
+      teaser, category
+    }
+  `, { id: exhibitionId })
 }

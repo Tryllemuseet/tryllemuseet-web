@@ -21,6 +21,7 @@ import artifact           from './artifact'
 import { tvAppearance }    from './tvAppearance'
 import { historicalClip }  from './historicalClip'
 import { mediaAppearance } from './mediaAppearance'
+import { specialExhibition } from './specialExhibition'
 
 export const schemaTypes = [
   // Sidetyper
@@ -45,6 +46,7 @@ export const schemaTypes = [
   event,
   artifact,
   partner,
+  specialExhibition,
   siteConfig,
   // Objekttyper
   contentSection,

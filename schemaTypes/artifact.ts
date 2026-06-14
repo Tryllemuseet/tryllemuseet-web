@@ -172,6 +172,15 @@ export default defineType({
       type: 'number',
       description: 'Lavere tall vises først. Blankt = alfabetisk.',
     }),
+
+    defineField({
+      name:        'exhibitionRef',
+      title:       'Spesialutstilling',
+      type:        'reference',
+      to:          [{ type: 'specialExhibition' }],
+      options:     { disableNew: true },
+      description: 'Knytt artefakten til en spesialutstilling (valgfritt).',
+    }),
   ],
 
   // ── Forhåndsvisning i Studio ───────────────────────────────────

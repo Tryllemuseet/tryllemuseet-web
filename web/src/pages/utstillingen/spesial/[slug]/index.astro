@@ -1,0 +1,277 @@
+---
+// src/pages/utstillingen/spesial/[slug]/index.astro
+import BaseLayout from '../../../../layouts/BaseLayout.astro'
+import { sanityClient, portableTextToHtml } from '../../../../lib/sanity'
+import type { SpecialExhibition } from '../../../../lib/sanity'
+
+export async function getStaticPaths() {
+  const exhibitions: SpecialExhibition[] = await sanityClient.fetch(`
+    *[_type == "specialExhibition" && isVisible != false] {
+      "slug": slug.current
+    }
+  `)
+  return exhibitions
+    .filter(e => e.slug)
+    .map(e => ({ params: { slug: e.slug } }))
+}
+
+const { slug } = Astro.params
+
+const exhibition: SpecialExhibition | null = await sanityClient.fetch(`
+  *[_type == "specialExhibition" && slug.current == $slug && isVisible != false][0] {
+    _id, title, "slug": slug.current,
+    status, currentSection,
+    teaserDate, openDate, closeDate,
+    heroImage { asset->{ _ref, url }, alt },
+    excerpt, teaserContent, introContent,
+    infoSections[] { heading, body }
+  }
+`, { slug })
+
+if (!exhibition) return Astro.redirect('/utstillingen', 302)
+
+const { status, openDate, closeDate } = exhibition
+
+function formatDate(d: string | undefined) {
+  if (!d) return ''
+  return new Date(d).toLocaleDateString('nb-NO', { day: 'numeric', month: 'long', year: 'numeric' })
+}
+
+const teaserHtml  = portableTextToHtml(exhibition.teaserContent)
+const introHtml   = portableTextToHtml(exhibition.introContent)
+
+const heroImgUrl = exhibition.heroImage?.asset?.url
+  ? exhibition.heroImage.asset.url + '?w=1200&h=600&fit=crop&auto=format'
+  : null
+
+const clippingCount: number = await sanityClient.fetch(`
+  count(*[_type == "pressClipping" && isVisible != false && exhibitionRef._ref == $id])
+`, { id: exhibition._id })
+
+const artifactCount: number = await sanityClient.fetch(`
+  count(*[_type == "artifact" && isVisible != false && exhibitionRef._ref == $id])
+`, { id: exhibition._id })
+---
+
+<BaseLayout
+  title={`${exhibition.title} — Tryllemuseet`}
+  description={exhibition.excerpt ?? `Spesialutstilling: ${exhibition.title}`}
+>
+
+  <!-- HERO -->
+  <section class="hero" style={heroImgUrl ? `--hero-img: url('${heroImgUrl}')` : ''}>
+    <div class={`hero-bg ${heroImgUrl ? 'hero-bg--img' : ''}`} aria-hidden="true" />
+    <div class="container hero-inner">
+      <p class="section-label">
+        <a href="/utstillingen" class="breadcrumb-link">Utstillingen</a>
+        {' / '}
+        <a href="/utstillingen/spesial" class="breadcrumb-link">Spesialutstillinger</a>
+      </p>
+
+      {status === 'teaser' && (
+        <span class="status-badge status-badge--teaser">Kommer snart</span>
+      )}
+      {status === 'active' && (
+        <span class="status-badge status-badge--active">Pågår nå</span>
+      )}
+      {status === 'archived' && (
+        <span class="status-badge status-badge--archived">Avsluttet</span>
+      )}
+
+      <h1 class="display-title hero-title">{exhibition.title}</h1>
+
+      <div class="hero-dates">
+        {status === 'teaser' && openDate && (
+          <p class="date-line">Åpner <strong>{formatDate(openDate)}</strong></p>
+        )}
+        {status === 'active' && closeDate && (
+          <p class="date-line">Pågår til <strong>{formatDate(closeDate)}</strong></p>
+        )}
+        {status === 'archived' && closeDate && (
+          <p class="date-line">Avsluttet <strong>{formatDate(closeDate)}</strong></p>
+        )}
+      </div>
+    </div>
+  </section>
+
+  <!-- TEASER STATE -->
+  {status === 'teaser' && (
+    <section class="container content-section">
+      {teaserHtml ? (
+        <div class="rich-text" set:html={teaserHtml} />
+      ) : (
+        <p class="placeholder-text">Mer informasjon kommer snart.</p>
+      )}
+      {openDate && (
+        <div class="coming-soon-box">
+          <span class="coming-soon-icon">🎩</span>
+          <div>
+            <p class="coming-soon-label">Åpner</p>
+            <p class="coming-soon-date">{formatDate(openDate)}</p>
+          </div>
+        </div>
+      )}
+    </section>
+  )}
+
+  <!-- ACTIVE / ARCHIVED STATE -->
+  {(status === 'active' || status === 'archived') && (
+    <>
+      {introHtml && (
+        <section class="container content-section">
+          <div class="rich-text" set:html={introHtml} />
+        </section>
+      )}
+
+      <!-- Info sections (plakatoppslag) -->
+      {exhibition.infoSections && exhibition.infoSections.length > 0 && (
+        <section class="container info-sections">
+          {exhibition.infoSections.map((sec: { heading?: string; body?: any[] }) => (
+            <div class="info-block">
+              {sec.heading && <h2 class="info-heading">{sec.heading}</h2>}
+              {sec.body && (
+                <div class="rich-text" set:html={portableTextToHtml(sec.body)} />
+              )}
+            </div>
+          ))}
+        </section>
+      )}
+
+      <!-- Content links -->
+      <section class="container content-links">
+        {clippingCount > 0 && (
+          <a href={`/utstillingen/spesial/${slug}/presseklipp`} class="content-link-card">
+            <span class="content-link-icon">📰</span>
+            <div>
+              <h3 class="content-link-title">Historiske avisartikler</h3>
+              <p class="content-link-desc">{clippingCount} artikler fra norsk presse — hentet fra Nasjonalbiblioteket</p>
+            </div>
+            <span class="content-link-arrow">→</span>
+          </a>
+        )}
+        {artifactCount > 0 && (
+          <a href="/utstillingen/artefakter" class="content-link-card">
+            <span class="content-link-icon">🎩</span>
+            <div>
+              <h3 class="content-link-title">Gjenstander</h3>
+              <p class="content-link-desc">{artifactCount} gjenstander fra utstillingens fysiske del</p>
+            </div>
+            <span class="content-link-arrow">→</span>
+          </a>
+        )}
+      </section>
+    </>
+  )}
+
+  <div class="container page-nav">
+    <a href="/utstillingen">← Utstillingen</a>
+  </div>
+
+</BaseLayout>
+
+<style>
+  /* ── Hero ── */
+  .hero {
+    position: relative;
+    padding: 5rem 0 3.5rem;
+    overflow: hidden;
+    background: var(--burgundy-dk);
+    color: var(--cream);
+  }
+  .hero-bg {
+    position: absolute; inset: 0;
+    background: linear-gradient(160deg, var(--burgundy-dk) 40%, #2a1208);
+    z-index: 0;
+  }
+  .hero-bg--img {
+    background: var(--hero-img) center/cover no-repeat;
+  }
+  .hero-bg--img::after {
+    content: '';
+    position: absolute; inset: 0;
+    background: linear-gradient(to right, rgba(26,18,8,0.88) 40%, rgba(26,18,8,0.55));
+  }
+  .hero-inner {
+    position: relative; z-index: 1;
+  }
+  .breadcrumb-link {
+    color: var(--gold);
+    text-decoration: none;
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+  }
+  .section-label { margin-bottom: 1rem; color: rgba(255,255,255,0.6); }
+
+  .status-badge {
+    display: inline-block;
+    font-family: var(--font-ui);
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    padding: 0.3em 0.9em;
+    border-radius: 2rem;
+    margin-bottom: 1rem;
+  }
+  .status-badge--teaser   { background: rgba(212,168,67,0.2); color: var(--gold); border: 1px solid var(--gold); }
+  .status-badge--active   { background: rgba(34,139,34,0.2); color: #7ddc7d; border: 1px solid #7ddc7d; }
+  .status-badge--archived { background: rgba(120,120,120,0.2); color: #bbb; border: 1px solid #888; }
+
+  .hero-title { font-size: clamp(2rem, 5vw, 3.5rem); color: var(--cream); margin: 0 0 1rem; }
+
+  .hero-dates { font-family: var(--font-ui); font-size: 0.95rem; }
+  .date-line  { color: rgba(255,255,255,0.75); }
+  .date-line strong { color: var(--gold); }
+
+  /* ── Content ── */
+  .content-section { padding-block: 3rem; max-width: 720px; }
+
+  .rich-text :global(p)  { margin-bottom: 1em; line-height: 1.75; }
+  .rich-text :global(h2) { font-family: var(--font-display); font-size: 1.4rem; color: var(--burgundy); margin: 1.5em 0 0.5em; }
+  .rich-text :global(h3) { font-family: var(--font-display); font-size: 1.15rem; color: var(--burgundy); margin: 1.2em 0 0.4em; }
+  .rich-text :global(a)  { color: var(--burgundy); }
+  .rich-text :global(strong) { font-weight: 600; }
+
+  .placeholder-text { font-family: var(--font-ui); color: var(--grey); font-style: italic; }
+
+  /* Coming-soon box */
+  .coming-soon-box {
+    display: inline-flex; align-items: center; gap: 1.25rem;
+    margin-top: 2rem;
+    background: var(--cream);
+    border: 2px solid var(--gold);
+    border-radius: 8px;
+    padding: 1.25rem 2rem;
+  }
+  .coming-soon-icon  { font-size: 2.5rem; }
+  .coming-soon-label { font-family: var(--font-ui); font-size: 0.7rem; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; color: var(--gold-dark); }
+  .coming-soon-date  { font-family: var(--font-display); font-size: 1.35rem; color: var(--burgundy); margin-top: 0.1rem; }
+
+  /* Info sections */
+  .info-sections { padding-block: 0 3rem; }
+  .info-block { border-top: 1px solid var(--cream-dark); padding: 2rem 0; max-width: 720px; }
+  .info-block:first-child { border-top: none; }
+  .info-heading { font-family: var(--font-display); font-size: 1.4rem; color: var(--burgundy); margin-bottom: 1rem; }
+
+  /* Content links */
+  .content-links { display: flex; flex-direction: column; gap: 1rem; padding-bottom: 3rem; }
+  .content-link-card {
+    display: flex; align-items: center; gap: 1.25rem;
+    background: white; border: 1px solid var(--cream-dark);
+    border-radius: 8px; padding: 1.25rem 1.5rem;
+    text-decoration: none; color: var(--ink);
+    transition: border-color 150ms, box-shadow 150ms;
+  }
+  .content-link-card:hover { border-color: var(--gold); box-shadow: 0 2px 12px rgba(212,168,67,0.15); }
+  .content-link-icon  { font-size: 2rem; flex-shrink: 0; }
+  .content-link-title { font-family: var(--font-display); font-size: 1.1rem; color: var(--burgundy); margin-bottom: 0.2rem; }
+  .content-link-desc  { font-family: var(--font-ui); font-size: 0.875rem; color: var(--ink-mid); }
+  .content-link-arrow { margin-left: auto; font-size: 1.25rem; color: var(--grey); flex-shrink: 0; }
+
+  /* Nav */
+  .page-nav { display: flex; flex-wrap: wrap; gap: 0.75rem; padding: 1.5rem 0 3rem; font-family: var(--font-ui); font-size: 0.875rem; }
+  .page-nav a { color: var(--grey); text-decoration: none; border: 1px solid var(--cream-dark); padding: 0.4rem 1rem; border-radius: var(--radius); transition: color 150ms, border-color 150ms; }
+  .page-nav a:hover { color: var(--burgundy); border-color: var(--gold); }
+</style>

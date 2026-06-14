@@ -139,6 +139,15 @@ export const pressClipping = defineType({
       description: 'Tryllekunstnere omtalt i artikkelen — lenkes automatisk til «Hvem er hvem»-profilen.',
     }),
 
+    defineField({
+      name:        'exhibitionRef',
+      title:       'Spesialutstilling',
+      type:        'reference',
+      to:          [{ type: 'specialExhibition' }],
+      options:     { disableNew: true },
+      description: 'Knytt artikkelen til en spesialutstilling (valgfritt).',
+    }),
+
   ],
 
   orderings: [
