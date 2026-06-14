@@ -1169,6 +1169,31 @@ export async function getFeaturedMediaAppearance(today: string): Promise<MediaAp
   `, { today })
 }
 
+// ── Typer: PersonvernPage ────────────────────────────────────────
+
+export interface PersonvernSection {
+  _key:    string
+  heading: string
+  body?:   any[]
+}
+
+export interface PersonvernPage {
+  lastUpdated?: string
+  intro?:       string
+  sections?:    PersonvernSection[]
+}
+
+// ── Spørringer: PersonvernPage ───────────────────────────────────
+
+export async function getPersonvernPage(): Promise<PersonvernPage | null> {
+  return sanityClient.fetch(`
+    *[_type == "personvernPage"][0] {
+      lastUpdated, intro,
+      sections[] { _key, heading, body }
+    }
+  `)
+}
+
 // ── Typer: Partner ───────────────────────────────────────────────
 
 export interface Partner {
