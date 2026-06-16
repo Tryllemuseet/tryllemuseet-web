@@ -39,6 +39,54 @@ export default defineType({
       description: 'Kort beskrivelse som vises i oversikten og på detaljsiden.',
     }),
 
+    // ── Eierskap og lån ──────────────────────────────────────────
+    defineField({
+      name: 'ownerType',
+      title: 'Eierforhold',
+      type: 'string',
+      options: {
+        list: [
+          { title: 'Museets egen samling', value: 'museum' },
+          { title: 'Lån fra privatperson / institusjon', value: 'loan' },
+        ],
+        layout: 'radio',
+      },
+      initialValue: 'museum',
+    }),
+    defineField({
+      name: 'lenderName',
+      title: 'Utlåner (navn)',
+      type: 'string',
+      description: 'Fullt navn på person eller institusjon som låner ut gjenstanden.',
+      hidden: ({ parent }: { parent: { ownerType?: string } }) => parent?.ownerType !== 'loan',
+    }),
+    defineField({
+      name: 'lenderContact',
+      title: 'Utlåner (kontakt)',
+      type: 'string',
+      description: 'E-post eller telefon til utlåner.',
+      hidden: ({ parent }: { parent: { ownerType?: string } }) => parent?.ownerType !== 'loan',
+    }),
+    defineField({
+      name: 'loanFrom',
+      title: 'Låneperiode — fra',
+      type: 'date',
+      hidden: ({ parent }: { parent: { ownerType?: string } }) => parent?.ownerType !== 'loan',
+    }),
+    defineField({
+      name: 'loanTo',
+      title: 'Låneperiode — til',
+      type: 'date',
+      hidden: ({ parent }: { parent: { ownerType?: string } }) => parent?.ownerType !== 'loan',
+    }),
+    defineField({
+      name: 'loanReference',
+      title: 'Låneavtale / referansenummer',
+      type: 'string',
+      description: 'Avtalenummer, arkivreferanse eller annen intern ID for låneavtalen.',
+      hidden: ({ parent }: { parent: { ownerType?: string } }) => parent?.ownerType !== 'loan',
+    }),
+
     // ── Museumsinformasjon ────────────────────────────────────────
     defineField({
       name: 'category',
@@ -109,6 +157,12 @@ export default defineType({
       type: 'text',
       rows: 3,
       description: 'Hvem eide gjenstanden, hvor kom den fra, eventuelle dokumenter.',
+    }),
+    defineField({
+      name: 'displayLocation',
+      title: 'Plassering i museet',
+      type: 'string',
+      description: 'F.eks. "Sal 2, monter A", "Inngangspartiet", "Magasin".',
     }),
 
     // ── Bilder ────────────────────────────────────────────────────

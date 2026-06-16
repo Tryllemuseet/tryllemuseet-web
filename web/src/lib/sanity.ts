@@ -60,24 +60,31 @@ export interface Event {
 }
 
 export interface Artifact {
-  _id:          string
-  title:        string
-  slug:         string
-  description?: string
-  year?:        number
-  yearNote?:    string
-  origin?:      string
-  category?:    string
-  material?:    string
-  dimensions?:  string
-  condition?:   string
-  provenance?:  string
-  featured?:    boolean
-  order?:       number
-  mainImage?:   { asset: { _ref: string; url: string }; alt?: string }
-  gallery?:     { asset: { _ref: string; url: string }; alt?: string; caption?: string }[]
-  tags?:        string[]
-  notes?:       any[]
+  _id:              string
+  title:            string
+  slug:             string
+  description?:     string
+  year?:            number
+  yearNote?:        string
+  origin?:          string
+  category?:        string
+  material?:        string
+  dimensions?:      string
+  condition?:       string
+  provenance?:      string
+  displayLocation?: string
+  ownerType?:       'museum' | 'loan'
+  lenderName?:      string
+  lenderContact?:   string
+  loanFrom?:        string
+  loanTo?:          string
+  loanReference?:   string
+  featured?:        boolean
+  order?:           number
+  mainImage?:       { asset: { _ref: string; url: string }; alt?: string }
+  gallery?:         { asset: { _ref: string; url: string }; alt?: string; caption?: string }[]
+  tags?:            string[]
+  notes?:           any[]
 }
 
 // ── Spørringer ───────────────────────────────────────────────────
@@ -170,7 +177,9 @@ export async function getArtifactBySlug(slug: string): Promise<Artifact | null> 
       _id, title, "slug": slug.current,
       description, year, yearNote, origin,
       category, material, dimensions, condition,
-      provenance, featured, order, tags, notes,
+      provenance, displayLocation,
+      ownerType, lenderName, loanFrom, loanTo, loanReference,
+      featured, order, tags, notes,
       mainImage { asset->{ _ref, url }, alt },
       gallery[] { asset->{ _ref, url }, alt, caption }
     }
@@ -690,7 +699,7 @@ export async function getUtstillingPage(): Promise<UtstillingPage> {
     },
     seksjoner: d?.seksjoner ?? [
       { icon: '🇳🇴', label: 'Norsk tryllekunst',  title: 'Norske legender',    description: 'Fra Arnardo til Finn Jon — tryllekunstnerne som skapte norsk magi.',                        slug: 'norske-legender',    ready: false },
-      { icon: '🎩',   label: 'Samlingen',           title: 'Artefakter',         description: 'Sjeldne rekvisitter, historiske gjenstander og mysterier fra museets samling.',              slug: 'artefakter',         ready: false },
+      { icon: '🎩',   label: 'Samlingen',           title: 'Artefakter',         description: 'Sjeldne rekvisitter, historiske gjenstander og mysterier fra museets samling.',              slug: 'artefakter',         ready: true  },
       { icon: '♣',    label: 'Organisasjonene',     title: 'Trylleforeningene',  description: 'Magisk Cirkel Norge og Det Magiske Råd — fellesskapet bak kunsten.',                        slug: 'trylleforeningene',  ready: false },
       { icon: '🛍',   label: 'Butikken',             title: 'Tryllebutikken',     description: 'Bøker, rekvisitter og kuriositeter for den nysgjerrige.',                                   slug: 'tryllebutikken',     ready: false },
     ],

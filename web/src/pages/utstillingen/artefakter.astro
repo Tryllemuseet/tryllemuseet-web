@@ -49,7 +49,7 @@ const categoryLabels: Record<string, string> = {
           ].filter(Boolean).join(' · ')
 
           return (
-            <div class="artifact-card">
+            <a href={`/utstillingen/artefakter/${a.slug}`} class="artifact-card">
               <div class="card-img-wrap">
                 {imgUrl ? (
                   <img
@@ -72,7 +72,7 @@ const categoryLabels: Record<string, string> = {
                 <h2 class="card-title">{a.title}</h2>
                 {meta && <p class="card-meta">{meta}</p>}
               </div>
-            </div>
+            </a>
           )
         })}
       </div>
@@ -108,6 +108,8 @@ const categoryLabels: Record<string, string> = {
     background: white;
     border: 1px solid var(--cream-dark);
     transition: box-shadow 200ms ease, border-color 200ms ease;
+    text-decoration: none;
+    color: inherit;
   }
   .artifact-card:hover {
     box-shadow: var(--shadow-lg);
