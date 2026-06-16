@@ -1,0 +1,360 @@
+---
+// src/pages/utstillingen/artefakter/[slug].astro
+import BaseLayout from '../../../layouts/BaseLayout.astro'
+import { getAllArtifacts, getArtifactBySlug, urlFor } from '../../../lib/sanity'
+import { toHTML } from '@portabletext/to-html'
+
+export async function getStaticPaths() {
+  const artifacts = await getAllArtifacts()
+  return artifacts
+    .filter(a => a.slug && typeof a.slug === 'string')
+    .map(a => ({ params: { slug: String(a.slug) } }))
+}
+
+const { slug } = Astro.params
+const a = await getArtifactBySlug(slug!)
+
+if (!a) return Astro.redirect('/utstillingen/artefakter', 301)
+
+const notesHtml = a.notes ? toHTML(a.notes) : ''
+
+const categoryLabels: Record<string, string> = {
+  rekvisitt:  'Rekvisitt',
+  plakat:     'Plakat / trykk',
+  bok:        'Bøker / trykksak',
+  kostyme:    'Kostyme',
+  instrument: 'Instrument',
+  foto:       'Foto / portrett',
+  effekt:     'Personlig effekt',
+  annet:      'Annet',
+}
+
+const conditionLabels: Record<string, string> = {
+  excellent: 'Utmerket',
+  good:      'God',
+  fair:      'Middels',
+  poor:      'Dårlig',
+  restored:  'Restaurert',
+}
+
+const mainImgUrl = a.mainImage?.asset
+  ? urlFor(a.mainImage).width(900).format('webp').url()
+  : null
+---
+
+<BaseLayout
+  title={`${a.title} — Tryllemuseet`}
+  description={a.description ?? `Les om ${a.title} i Tryllemuseets samling.`}
+>
+
+  <!-- HERO ────────────────────────────────────────────────────── -->
+  <section class="artifact-hero">
+    <div class="container hero-inner">
+      {mainImgUrl && (
+        <div class="main-img-wrap">
+          <img
+            src={mainImgUrl}
+            alt={a.mainImage?.alt ?? a.title}
+            class="main-img"
+          />
+        </div>
+      )}
+      <div class="hero-text">
+        <p class="section-label">Samlingen</p>
+        <h1 class="display-title hero-title">{a.title}</h1>
+        {a.category && (
+          <p class="hero-category">{categoryLabels[a.category] ?? a.category}</p>
+        )}
+        {a.description && <p class="hero-desc">{a.description}</p>}
+      </div>
+    </div>
+  </section>
+
+  <div class="container page-body">
+
+    <!-- 1. FAKTA ─────────────────────────────────────────────── -->
+    <section class="facts-section" aria-label="Gjenstanden">
+      <h2 class="section-heading">Om gjenstanden</h2>
+      <dl class="facts-list">
+        {a.yearNote && (
+          <div class="fact-row">
+            <dt>År</dt>
+            <dd>{a.yearNote}{a.year && a.yearNote !== String(a.year) ? ` (${a.year})` : ''}</dd>
+          </div>
+        )}
+        {!a.yearNote && a.year && (
+          <div class="fact-row">
+            <dt>År</dt>
+            <dd>{a.year}</dd>
+          </div>
+        )}
+        {a.origin && (
+          <div class="fact-row">
+            <dt>Opprinnelse</dt>
+            <dd>{a.origin}</dd>
+          </div>
+        )}
+        {a.material && (
+          <div class="fact-row">
+            <dt>Materiale</dt>
+            <dd>{a.material}</dd>
+          </div>
+        )}
+        {a.dimensions && (
+          <div class="fact-row">
+            <dt>Dimensjoner</dt>
+            <dd>{a.dimensions}</dd>
+          </div>
+        )}
+        {a.condition && (
+          <div class="fact-row">
+            <dt>Tilstand</dt>
+            <dd>{conditionLabels[a.condition] ?? a.condition}</dd>
+          </div>
+        )}
+        {a.displayLocation && (
+          <div class="fact-row">
+            <dt>Plassering</dt>
+            <dd>{a.displayLocation}</dd>
+          </div>
+        )}
+        {a.ownerType && (
+          <div class="fact-row">
+            <dt>Eierforhold</dt>
+            <dd>{a.ownerType === 'loan' ? 'Lån' : 'Museets samling'}</dd>
+          </div>
+        )}
+        {a.loanFrom && (
+          <div class="fact-row">
+            <dt>Låneperiode</dt>
+            <dd>
+              {a.loanFrom}
+              {a.loanTo ? ` – ${a.loanTo}` : ' –'}
+            </dd>
+          </div>
+        )}
+        {a.lenderName && (
+          <div class="fact-row">
+            <dt>Utlåner</dt>
+            <dd>{a.lenderName}</dd>
+          </div>
+        )}
+      </dl>
+    </section>
+
+    <!-- 2. PROVENIENS ───────────────────────────────────────── -->
+    {a.provenance && (
+      <section class="prose-section" aria-label="Proveniens">
+        <h2 class="section-heading">Proveniens / historikk</h2>
+        <p class="prose-text">{a.provenance}</p>
+      </section>
+    )}
+
+    <!-- 3. UTFYLLENDE TEKST ─────────────────────────────────── -->
+    {notesHtml && (
+      <section class="prose-section" aria-label="Mer om gjenstanden">
+        <h2 class="section-heading">Les mer</h2>
+        <div class="prose" set:html={notesHtml} />
+      </section>
+    )}
+
+    <!-- 4. BILDEGALLERI ─────────────────────────────────────── -->
+    {a.gallery && a.gallery.length > 0 && (
+      <section class="gallery-section" aria-label="Bildegalleri">
+        <h2 class="section-heading">Galleri</h2>
+        <div class="gallery-grid">
+          {a.gallery.map((img) => {
+            const gUrl = img.asset
+              ? urlFor(img).width(800).format('webp').url()
+              : null
+            return gUrl ? (
+              <figure class="gallery-fig">
+                <img src={gUrl} alt={img.alt ?? ''} loading="lazy" />
+                {img.caption && <figcaption>{img.caption}</figcaption>}
+              </figure>
+            ) : null
+          })}
+        </div>
+      </section>
+    )}
+
+    <!-- 5. TAGGER ───────────────────────────────────────────── -->
+    {a.tags && a.tags.length > 0 && (
+      <div class="tags-row" aria-label="Tagger">
+        {a.tags.map(t => <span class="tag">{t}</span>)}
+      </div>
+    )}
+
+    <!-- NAVIGASJON ─────────────────────────────────────────── -->
+    <nav class="artifact-nav" aria-label="Naviger">
+      <a href="/utstillingen/artefakter" class="btn-nav">← Alle artefakter</a>
+    </nav>
+
+  </div>
+</BaseLayout>
+
+<style>
+  /* ── HERO ──────────────────────────────────────────────────── */
+  .artifact-hero {
+    background: var(--burgundy-dk);
+    padding: 3.5rem 0 3rem;
+    border-bottom: 2px solid var(--gold-dark);
+  }
+
+  .hero-inner {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 3rem;
+    align-items: start;
+  }
+
+  .main-img-wrap {
+    width: 240px;
+    flex-shrink: 0;
+    border-radius: 4px;
+    overflow: hidden;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+    border: 2px solid var(--gold-dark);
+  }
+  .main-img { width: 100%; display: block; }
+
+  .hero-text     { color: var(--cream); }
+  .hero-title    { font-size: clamp(1.8rem, 4vw, 3rem); color: var(--cream); margin: 0.3rem 0 0.5rem; }
+  .hero-category { font-family: var(--font-ui); font-size: 0.85rem; color: var(--gold-light); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.75rem; }
+  .hero-desc     { font-family: var(--font-body); font-size: 1rem; line-height: 1.7; color: rgba(255,255,255,0.85); max-width: 520px; }
+
+  /* ── PAGE BODY ─────────────────────────────────────────────── */
+  .page-body {
+    padding: 3rem 0 5rem;
+    max-width: 720px;
+    display: flex;
+    flex-direction: column;
+    gap: 2.5rem;
+  }
+
+  /* ── SECTION HEADING ───────────────────────────────────────── */
+  .section-heading {
+    font-family: var(--font-display);
+    font-size: 1.2rem;
+    color: var(--burgundy);
+    margin-bottom: 1.25rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--cream-dark);
+    letter-spacing: 0.04em;
+  }
+
+  /* ── FAKTA ─────────────────────────────────────────────────── */
+  .facts-list {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0;
+    border: 1px solid var(--cream-dark);
+    border-radius: 6px;
+    overflow: hidden;
+  }
+
+  .fact-row {
+    display: grid;
+    grid-template-columns: 160px 1fr;
+    background: white;
+    border-bottom: 1px solid var(--cream-dark);
+  }
+  .fact-row:last-child { border-bottom: none; }
+  .fact-row:nth-child(even) { background: var(--cream); }
+
+  dt {
+    font-family: var(--font-ui);
+    font-size: 0.8rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--grey);
+    padding: 0.65rem 1rem;
+    border-right: 1px solid var(--cream-dark);
+    display: flex;
+    align-items: center;
+  }
+  dd {
+    font-family: var(--font-ui);
+    font-size: 0.9rem;
+    color: var(--ink);
+    padding: 0.65rem 1rem;
+    margin: 0;
+  }
+
+  /* ── PROSE ─────────────────────────────────────────────────── */
+  .prose-text {
+    font-family: var(--font-body);
+    font-size: 1rem;
+    line-height: 1.75;
+    color: var(--ink);
+    white-space: pre-line;
+  }
+  .prose { font-family: var(--font-body); font-size: 1rem; line-height: 1.75; color: var(--ink); }
+  .prose p { margin-bottom: 1rem; }
+  .prose p:last-child { margin-bottom: 0; }
+
+  /* ── GALLERI ───────────────────────────────────────────────── */
+  .gallery-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 1rem;
+  }
+  .gallery-fig {
+    margin: 0;
+    border-radius: 4px;
+    overflow: hidden;
+    border: 1px solid var(--cream-dark);
+    background: var(--cream-dark);
+  }
+  .gallery-fig img { width: 100%; display: block; aspect-ratio: 4/3; object-fit: cover; }
+  figcaption {
+    font-family: var(--font-ui);
+    font-size: 0.75rem;
+    color: var(--grey);
+    padding: 0.4rem 0.6rem;
+    line-height: 1.4;
+  }
+
+  /* ── TAGGER ────────────────────────────────────────────────── */
+  .tags-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+  }
+  .tag {
+    font-family: var(--font-ui);
+    font-size: 0.75rem;
+    color: var(--grey);
+    background: var(--cream-dark);
+    border: 1px solid var(--cream-dark);
+    border-radius: 2px;
+    padding: 0.2rem 0.55rem;
+    letter-spacing: 0.04em;
+  }
+
+  /* ── NAVIGASJON ────────────────────────────────────────────── */
+  .artifact-nav { padding-top: 1.5rem; border-top: 1px solid var(--cream-dark); }
+  .btn-nav {
+    font-family: var(--font-ui);
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--burgundy);
+    padding: 0.5rem 1rem;
+    border: 1.5px solid var(--cream-dark);
+    border-radius: var(--radius);
+    transition: border-color 180ms, color 180ms;
+    display: inline-block;
+    text-decoration: none;
+  }
+  .btn-nav:hover { border-color: var(--gold); color: var(--gold-dark); }
+
+  /* ── RESPONSIVE ────────────────────────────────────────────── */
+  @media (max-width: 700px) {
+    .hero-inner     { grid-template-columns: 1fr; gap: 1.5rem; }
+    .main-img-wrap  { width: 160px; }
+    .page-body      { padding: 2rem 0 3rem; }
+    .fact-row       { grid-template-columns: 120px 1fr; }
+    .gallery-grid   { grid-template-columns: repeat(2, 1fr); }
+  }
+</style>
