@@ -458,17 +458,25 @@ function formatTime(d: string) {
               <div class="sponsors-group">
                 <p class="sponsors-label">{labels[cat]}</p>
                 <div class="sponsors-logos">
-                  {gruppe.map(p => {
-                    const innhold = (
-                      <>
-                        {p.logo?.asset?.url && <img src={p.logo.asset.url} alt="" class="sponsor-logo" loading="lazy" />}
-                        <span class="sponsor-name">{p.name}</span>
-                      </>
-                    )
-                    return p.url
-                      ? <a href={p.url} target="_blank" rel="noopener noreferrer" class="sponsor-item" aria-label={p.name}>{innhold}</a>
-                      : <div class="sponsor-item" aria-label={p.name}>{innhold}</div>
-                  })}
+                  {gruppe.map(p => (
+                    <button
+                      class="sponsor-item"
+                      aria-label={`Les mer om ${p.name}`}
+                      data-name={p.name}
+                      data-description={p.description ?? ''}
+                      data-url={p.url ?? ''}
+                      data-logo={p.logo?.asset?.url ?? ''}
+                    >
+                      <div class="sponsor-logo-wrap">
+                        {p.logo?.asset?.url
+                          ? <img src={p.logo.asset.url} alt="" class="sponsor-logo" loading="lazy" />
+                          : <span class="sponsor-initial">{p.name.charAt(0)}</span>
+                        }
+                      </div>
+                      <span class="sponsor-name">{p.name}</span>
+                      <span class="sponsor-info-hint" aria-hidden="true">ℹ</span>
+                    </button>
+                  ))}
                 </div>
               </div>
             )
@@ -479,6 +487,18 @@ function formatTime(d: string) {
     </div>
   </section>
 )}
+
+<!-- ══ PARTNER-POPUP ══════════════════════════════════════════ -->
+<div id="partner-popup" class="partner-popup" role="dialog" aria-modal="true" aria-labelledby="popup-name" hidden>
+  <div class="partner-popup-backdrop"></div>
+  <div class="partner-popup-card">
+    <button class="partner-popup-close" aria-label="Lukk">&#x2715;</button>
+    <div id="popup-logo-wrap" class="popup-logo-wrap"></div>
+    <h3 id="popup-name" class="popup-name"></h3>
+    <p id="popup-description" class="popup-description"></p>
+    <a id="popup-link" href="#" target="_blank" rel="noopener noreferrer" class="btn-ghost popup-link" hidden>Besøk nettside ↗</a>
+  </div>
+</div>
 
 
   <hr class="gold-rule container" />
@@ -601,6 +621,59 @@ function formatTime(d: string) {
     track.addEventListener('scroll', updateBtns, { passive: true })
     updateBtns()
   }
+
+  // ── Partner-popup ────────────────────────────────────────────────
+  const popup       = document.getElementById('partner-popup') as HTMLElement | null
+  const backdrop    = popup?.querySelector('.partner-popup-backdrop') as HTMLElement | null
+  const closeBtn    = popup?.querySelector('.partner-popup-close') as HTMLElement | null
+  const popupLogo   = document.getElementById('popup-logo-wrap') as HTMLElement | null
+  const popupName   = document.getElementById('popup-name') as HTMLElement | null
+  const popupDesc   = document.getElementById('popup-description') as HTMLElement | null
+  const popupLink   = document.getElementById('popup-link') as HTMLAnchorElement | null
+
+  let lastFocused: HTMLElement | null = null
+
+  function openPartnerPopup(data: { name: string; description: string; url: string; logo: string }) {
+    if (!popup || !popupLogo || !popupName || !popupDesc || !popupLink) return
+    popupLogo.innerHTML = data.logo
+      ? `<img src="${data.logo}" alt="" />`
+      : `<span class="sponsor-initial">${data.name.charAt(0)}</span>`
+    popupName.textContent = data.name
+    popupDesc.textContent = data.description || ''
+    if (data.url) {
+      popupLink.href = data.url
+      popupLink.removeAttribute('hidden')
+    } else {
+      popupLink.setAttribute('hidden', '')
+    }
+    popup.removeAttribute('hidden')
+    document.body.style.overflow = 'hidden'
+    closeBtn?.focus()
+  }
+
+  function closePartnerPopup() {
+    popup?.setAttribute('hidden', '')
+    document.body.style.overflow = ''
+    lastFocused?.focus()
+  }
+
+  document.querySelectorAll<HTMLElement>('.sponsor-item').forEach(btn => {
+    btn.addEventListener('click', () => {
+      lastFocused = btn
+      openPartnerPopup({
+        name:        btn.dataset.name        ?? '',
+        description: btn.dataset.description ?? '',
+        url:         btn.dataset.url         ?? '',
+        logo:        btn.dataset.logo        ?? '',
+      })
+    })
+  })
+
+  backdrop?.addEventListener('click', closePartnerPopup)
+  closeBtn?.addEventListener('click', closePartnerPopup)
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape' && popup && !popup.hasAttribute('hidden')) closePartnerPopup()
+  })
 </script>
 
 <style>
@@ -813,17 +886,51 @@ function formatTime(d: string) {
   }
   
   /* ── SPONSORER ─────────────────────────────────────────────────── */
-    .sponsors-section { background:var(--burgundy-dk); padding:2rem 0; border-top:1px solid rgba(212,168,67,0.15); }
-    .sponsors-inner { display:flex; justify-content:center; }
-    .sponsors-groups { display:flex; gap:3rem; align-items:center; flex-wrap:wrap; justify-content:center; }
-    .sponsors-group { display:flex; flex-direction:column; align-items:center; gap:0.75rem; }
-    .sponsors-label { font-family:var(--font-ui); font-size:0.65rem; text-transform:uppercase; letter-spacing:0.14em; color:var(--gold); opacity:0.6; text-align:center; }
-    .sponsors-logos { display:flex; align-items:center; gap:1.5rem; flex-wrap:wrap; justify-content:center; }
-    .sponsor-item { display:flex; flex-direction:column; align-items:center; gap:0.35rem; opacity:0.65; transition:opacity 200ms; text-decoration:none; }
-    .sponsor-item:hover { opacity:1; }
-    .sponsor-logo { height:32px; width:auto; max-width:120px; filter:brightness(0) invert(1); object-fit:contain; }
-    .sponsor-name { font-family:var(--font-ui); font-size:0.72rem; font-weight:600; color:var(--cream); letter-spacing:0.05em; white-space:nowrap; }
-    @media (max-width:600px) {
-      .sponsors-groups { flex-direction:column; gap:2rem; }
-}
+  .sponsors-section { background:var(--burgundy-dk); padding:3rem 0; border-top:1px solid rgba(212,168,67,0.15); }
+  .sponsors-inner { display:flex; justify-content:center; }
+  .sponsors-groups { display:flex; gap:3.5rem; align-items:flex-start; flex-wrap:wrap; justify-content:center; }
+  .sponsors-group { display:flex; flex-direction:column; align-items:center; gap:1rem; }
+  .sponsors-label { font-family:var(--font-ui); font-size:0.65rem; text-transform:uppercase; letter-spacing:0.14em; color:var(--gold); opacity:0.75; text-align:center; margin-bottom:0.15rem; }
+  .sponsors-logos { display:flex; align-items:stretch; gap:0.9rem; flex-wrap:wrap; justify-content:center; }
+  .sponsor-item {
+    display:flex; flex-direction:column; align-items:center; gap:0.55rem;
+    padding:1.1rem 1.2rem 0.85rem;
+    background:rgba(255,255,255,0.04);
+    border:1px solid rgba(212,168,67,0.2);
+    border-radius:10px;
+    cursor:pointer;
+    transition:background 200ms, border-color 200ms, transform 200ms, box-shadow 200ms;
+    min-width:96px; max-width:136px;
+    appearance:none; -webkit-appearance:none;
+    font:inherit; color:inherit;
+    position:relative;
+  }
+  .sponsor-item:hover { background:rgba(212,168,67,0.1); border-color:rgba(212,168,67,0.5); transform:translateY(-2px); box-shadow:0 6px 20px rgba(0,0,0,0.3); }
+  .sponsor-item:focus-visible { outline:2px solid var(--gold); outline-offset:3px; }
+  .sponsor-logo-wrap { height:52px; width:100%; display:flex; align-items:center; justify-content:center; }
+  .sponsor-logo { height:44px; width:auto; max-width:108px; filter:brightness(0) invert(1); object-fit:contain; }
+  .sponsor-initial { width:46px; height:46px; border-radius:50%; background:rgba(212,168,67,0.12); border:1px solid rgba(212,168,67,0.3); display:flex; align-items:center; justify-content:center; font-family:var(--font-display); font-size:1.4rem; color:var(--gold); }
+  .sponsor-name { font-family:var(--font-ui); font-size:0.7rem; font-weight:600; color:var(--cream); letter-spacing:0.04em; text-align:center; line-height:1.35; }
+  .sponsor-info-hint { font-size:0.65rem; color:rgba(212,168,67,0.5); line-height:1; margin-top:auto; }
+  .sponsor-item:hover .sponsor-info-hint { color:var(--gold); }
+
+  /* ── PARTNER POPUP ─────────────────────────────────────────────── */
+  .partner-popup { position:fixed; inset:0; z-index:9000; display:flex; align-items:center; justify-content:center; padding:1rem; }
+  .partner-popup[hidden] { display:none; }
+  .partner-popup-backdrop { position:absolute; inset:0; background:rgba(8,0,4,0.8); backdrop-filter:blur(4px); }
+  .partner-popup-card { position:relative; z-index:1; background:var(--burgundy-dk); border:1px solid rgba(212,168,67,0.35); border-radius:14px; padding:2.25rem 2rem 2rem; max-width:400px; width:100%; text-align:center; box-shadow:0 24px 64px rgba(0,0,0,0.7); }
+  .partner-popup-close { position:absolute; top:0.8rem; right:1rem; background:none; border:none; cursor:pointer; font-size:1.2rem; line-height:1; color:rgba(255,255,255,0.4); transition:color 150ms; padding:0.25rem 0.4rem; }
+  .partner-popup-close:hover { color:var(--gold); }
+  .popup-logo-wrap { height:80px; display:flex; align-items:center; justify-content:center; margin-bottom:1.25rem; }
+  .popup-logo-wrap img { height:68px; width:auto; max-width:200px; filter:brightness(0) invert(1); object-fit:contain; }
+  .popup-logo-wrap .sponsor-initial { width:68px; height:68px; font-size:1.9rem; }
+  .popup-name { font-family:var(--font-display); font-size:1.25rem; color:var(--cream); margin:0 0 0.75rem; }
+  .popup-description { font-family:var(--font-ui); font-size:0.88rem; color:rgba(255,255,255,0.68); line-height:1.65; margin:0 0 1.25rem; min-height:1em; }
+  .popup-link { display:inline-block; }
+  .popup-link[hidden] { display:none; }
+
+  @media (max-width:600px) {
+    .sponsors-groups { flex-direction:column; gap:2rem; align-items:center; }
+    .sponsor-item { min-width:80px; max-width:120px; padding:0.9rem 1rem 0.7rem; }
+  }
 </style>
