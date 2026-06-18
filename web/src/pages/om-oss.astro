@@ -189,13 +189,18 @@ const historieHtml = om.historieTekst?.length ? toHTML(om.historieTekst) : ''
       <AnimateIn direction="up">
         {partnerDocs.length > 0 ? (
           <div class="partnere-grupper">
-            {(['public', 'private', 'org'] as const).map(cat => {
-              const gruppe = partnerDocs.filter(pd => pd.category === cat)
+            {(
+              [
+                { label: 'Prosjektstøtte',        cats: ['public', 'private'] },
+                { label: 'Samarbeidspartnere',     cats: ['org']               },
+                { label: 'Fordeler for medlemmer', cats: ['benefit']           },
+              ]
+            ).map(({ label, cats }) => {
+              const gruppe = partnerDocs.filter(pd => cats.includes(pd.category))
               if (!gruppe.length) return null
-              const labels = { public: 'Offentlig støtte', private: 'Privat støtte', org: 'Faglig samarbeid' }
               return (
                 <div class="partner-gruppe">
-                  <p class="partner-gruppe-label">{labels[cat]}</p>
+                  <p class="partner-gruppe-label">{label}</p>
                   <div class="partnere-rad">
                     {gruppe.map(pd => {
                       const innhold = (
