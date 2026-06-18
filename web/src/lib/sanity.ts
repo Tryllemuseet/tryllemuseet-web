@@ -1208,7 +1208,7 @@ export async function getPersonvernPage(): Promise<PersonvernPage | null> {
 export interface Partner {
   _id:          string
   name:         string
-  category:     'public' | 'private' | 'org'
+  category:     'public' | 'private' | 'org' | 'benefit'
   url?:         string
   logo?:        { asset: { _ref: string; url: string } }
   description?: string
