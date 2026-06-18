@@ -786,7 +786,7 @@ function formatTime(d: string) {
   .press-inner { display:grid; grid-template-columns:1fr 1fr; gap:4rem; align-items:center; }
   .press-meta { font-family:var(--font-ui); font-size:0.8rem; text-transform:uppercase; letter-spacing:0.1em; color:var(--gold-dark); font-weight:600; margin:0.6rem 0 0.5rem; }
   .press-teaser { font-family:var(--font-ui); font-size:1rem; color:var(--ink-mid); line-height:1.7; margin:0.75rem 0 1.5rem; }
-  .press-actions { display:flex; gap:0.75rem; flex-wrap:wrap; }
+.press-actions { display:flex; gap:0.75rem; flex-wrap:wrap; }
   .press-image { border-radius:4px; overflow:hidden; box-shadow:var(--shadow-lg); border:1px solid var(--cream-dark); }
   .press-image img { width:100%; height:auto; display:block; transition:transform 400ms ease; }
   .press-inner:hover .press-image img { transform:scale(1.02); }
@@ -892,7 +892,7 @@ function formatTime(d: string) {
     .magiker-card { flex:0 0 160px; }
     .carousel-track { padding:0.5rem 1.2rem 1.5rem; gap:12px; }
   }
-
+  
   /* ── SPONSORER ─────────────────────────────────────────────────── */
   .sponsors-section { background:var(--burgundy-dk); padding:3rem 0; border-top:1px solid rgba(212,168,67,0.15); }
   .sponsors-inner { display:flex; justify-content:center; }
@@ -918,8 +918,8 @@ function formatTime(d: string) {
   .sponsor-logo-wrap { width:100%; display:flex; align-items:center; justify-content:center; min-height:48px; }
   .sponsor-logo { height:44px; width:auto; max-width:108px; object-fit:contain; display:block; }
   .sponsor-initial { width:46px; height:46px; border-radius:50%; background:rgba(212,168,67,0.12); border:1px solid rgba(212,168,67,0.3); display:flex; align-items:center; justify-content:center; font-family:var(--font-display); font-size:1.4rem; color:var(--gold); }
-  .sponsor-initial--lg { width:68px; height:68px; font-size:1.9rem; }
-  .sponsor-name { font-family:var(--font-ui); font-size:0.7rem; font-weight:600; color:var(--cream); letter-spacing:0.04em; text-align:center; line-height:1.35; }
+  .sponsor-initial--lg { width:72px; height:72px; font-size:2rem; }
+  .sponsor-name { font-family:var(--font-ui); font-size:0.7rem; font-weight:600; color:var(--cream); letter-spacing:0.04em; text-align:center; line-height:1.35; min-height:1.9rem; display:flex; align-items:center; justify-content:center; }
   .sponsor-info-hint { font-size:0.65rem; color:rgba(212,168,67,0.5); line-height:1; margin-top:auto; }
   .sponsor-item:hover .sponsor-info-hint { color:var(--gold); }
 
