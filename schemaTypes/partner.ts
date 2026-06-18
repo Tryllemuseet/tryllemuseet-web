@@ -42,9 +42,10 @@ export const partner = {
       type:    'string',
       options: {
         list: [
-          { title: 'Offentlig støtte',  value: 'public' },
-          { title: 'Privat støtte',     value: 'private' },
-          { title: 'Fagorganisasjon',   value: 'org' },
+          { title: 'Prosjektstøtte (offentlig)',   value: 'public'   },
+          { title: 'Prosjektstøtte (privat)',       value: 'private'  },
+          { title: 'Samarbeidspartner',             value: 'org'      },
+          { title: 'Fordeler for medlemmer',        value: 'benefit'  },
         ],
         layout: 'radio',
       },
@@ -61,7 +62,12 @@ export const partner = {
     select:  { title: 'name', subtitle: 'category', media: 'logo' },
     prepare: ({ title, subtitle, media }: any) => ({
       title,
-      subtitle: { public: 'Offentlig støtte', private: 'Privat støtte', org: 'Fagorganisasjon' }[subtitle as string] ?? subtitle,
+      subtitle: {
+        public:   'Prosjektstøtte (offentlig)',
+        private:  'Prosjektstøtte (privat)',
+        org:      'Samarbeidspartner',
+        benefit:  'Fordeler for medlemmer',
+      }[subtitle as string] ?? subtitle,
       media,
     }),
   },
