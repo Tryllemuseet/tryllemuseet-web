@@ -2,6 +2,7 @@
 // src/pages/om-oss.astro
 import BaseLayout from '../layouts/BaseLayout.astro'
 import AnimateIn from '../components/AnimateIn.astro'
+import MemberBenefits from '../components/MemberBenefits.astro'
 import { getOmOssPage, getAllPartners } from '../lib/sanity'
 import { toHTML } from '@portabletext/to-html'
 
@@ -189,10 +190,10 @@ const historieHtml = om.historieTekst?.length ? toHTML(om.historieTekst) : ''
       <AnimateIn direction="up">
         {partnerDocs.length > 0 ? (
           <div class="partnere-grupper">
-            {(['public', 'private', 'org'] as const).map(cat => {
+            {(['public', 'private', 'org', 'samarbeidspartner'] as const).map(cat => {
               const gruppe = partnerDocs.filter(pd => pd.category === cat)
               if (!gruppe.length) return null
-              const labels = { public: 'Offentlig støtte', private: 'Privat støtte', org: 'Faglig samarbeid' }
+              const labels = { public: 'Offentlig støtte', private: 'Privat støtte', org: 'Faglig samarbeid', samarbeidspartner: 'Samarbeidspartnere' }
               return (
                 <div class="partner-gruppe">
                   <p class="partner-gruppe-label">{labels[cat]}</p>
@@ -239,6 +240,15 @@ const historieHtml = om.historieTekst?.length ? toHTML(om.historieTekst) : ''
       </div>
     </section>
   )}
+
+  <!-- ── MEDLEMSFORDELER ────────────────────────────────────────── -->
+  <section class="section-pad bg-cream">
+    <div class="container member-benefits-wrap">
+      <AnimateIn direction="up">
+        <MemberBenefits />
+      </AnimateIn>
+    </div>
+  </section>
 
 </BaseLayout>
 
@@ -379,6 +389,9 @@ const historieHtml = om.historieTekst?.length ? toHTML(om.historieTekst) : ''
   .partner-kort strong { display: block; font-family: var(--font-display); font-size: 1rem; color: var(--burgundy); margin-bottom: 0.3rem; }
   .partner-kort p { font-family: var(--font-ui); font-size: 0.85rem; color: #777; margin: 0; }
   .partner-kort a { color: var(--gold); text-decoration: none; }
+
+  /* ── Medlemsfordeler ── */
+  .member-benefits-wrap { max-width: 720px; margin-inline: auto; }
 
   /* ── Buttons ── */
   .btn { font-family: var(--font-ui); font-size: 0.85rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; text-decoration: none; padding: 0.75em 1.8em; border-radius: 2px; transition: all 0.2s ease; display: inline-block; }

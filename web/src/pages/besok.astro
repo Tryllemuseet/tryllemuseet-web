@@ -2,6 +2,7 @@
 // src/pages/besok.astro
 import BaseLayout from '../layouts/BaseLayout.astro'
 import AnimateIn from '../components/AnimateIn.astro'
+import MemberBenefits from '../components/MemberBenefits.astro'
 import { getSiteConfig, getBesokPage } from '../lib/sanity'
 
 const [site, page] = await Promise.all([getSiteConfig(), getBesokPage()])
@@ -182,6 +183,13 @@ const [site, page] = await Promise.all([getSiteConfig(), getBesokPage()])
     </AnimateIn>
   </div>
 
+  <!-- MEDLEMSFORDELER ── -->
+  <div class="container mb-section">
+    <AnimateIn direction="up">
+      <MemberBenefits />
+    </AnimateIn>
+  </div>
+
 </BaseLayout>
 
 <style>
@@ -249,6 +257,8 @@ const [site, page] = await Promise.all([getSiteConfig(), getBesokPage()])
 
   .email-direct { display: block; font-family: var(--font-ui); font-size: 0.875rem; color: var(--burgundy); text-decoration: underline; margin-top: 0.75rem; transition: color 150ms; }
   .email-direct:hover { color: var(--gold-dark); }
+
+  .mb-section { padding: 2.5rem 0 4rem; max-width: 720px; margin-inline: auto; }
 
   @media (max-width: 800px) {
     .besok-grid { grid-template-columns: 1fr; }

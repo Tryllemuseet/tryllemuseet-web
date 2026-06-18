@@ -1,0 +1,66 @@
+---
+// src/components/MemberBenefits.astro
+import { getPartnersWithBenefits, portableTextToHtml } from '../lib/sanity'
+
+const partners = await getPartnersWithBenefits()
+---
+
+{partners.length > 0 && (
+  <section class="member-benefits">
+    <h2 class="mb-heading">Medlemsfordeler</h2>
+    <p class="mb-ingress">Som medlem av Tryllemuseet får du fordeler hos våre samarbeidspartnere.</p>
+    <ul class="mb-list">
+      {partners.map(p => (
+        <li class="mb-item">
+          <div class="mb-partner-header">
+            {p.logo?.asset?.url && (
+              <img src={p.logo.asset.url} alt={p.name} class="mb-logo" loading="lazy" />
+            )}
+            <strong class="mb-name">
+              {p.url
+                ? <a href={p.url} target="_blank" rel="noopener noreferrer" class="mb-link">{p.name} ↗</a>
+                : p.name
+              }
+            </strong>
+          </div>
+          <div class="mb-benefit prose" set:html={portableTextToHtml(p.memberBenefit)} />
+        </li>
+      ))}
+    </ul>
+  </section>
+)}
+
+<style>
+  .member-benefits { margin-top: 2.5rem; }
+  .mb-heading {
+    font-family: var(--font-display);
+    font-size: 1.1rem;
+    color: var(--burgundy);
+    letter-spacing: 0.04em;
+    margin-bottom: 0.4rem;
+    padding-bottom: 0.4rem;
+    border-bottom: 1px solid var(--cream-dark);
+  }
+  .mb-ingress {
+    font-family: var(--font-ui);
+    font-size: 0.875rem;
+    color: var(--grey);
+    margin-bottom: 1.5rem;
+    line-height: 1.55;
+  }
+  .mb-list { list-style: none; display: flex; flex-direction: column; gap: 1.25rem; }
+  .mb-item {
+    background: white;
+    border: 1px solid var(--cream-dark);
+    border-radius: 6px;
+    padding: 1.25rem;
+  }
+  .mb-partner-header { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.75rem; }
+  .mb-logo { max-height: 36px; max-width: 100px; object-fit: contain; flex-shrink: 0; }
+  .mb-name { font-family: var(--font-display); font-size: 1rem; color: var(--burgundy); }
+  .mb-link { color: var(--burgundy); text-decoration: none; }
+  .mb-link:hover { color: var(--gold-dark); text-decoration: underline; }
+  .mb-benefit { font-family: var(--font-body); font-size: 0.9rem; color: var(--ink-mid); line-height: 1.65; }
+  .mb-benefit :global(p) { margin-bottom: 0.5rem; }
+  .mb-benefit :global(p:last-child) { margin-bottom: 0; }
+</style>

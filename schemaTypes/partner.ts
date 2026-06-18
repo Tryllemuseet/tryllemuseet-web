@@ -37,14 +37,22 @@ export const partner = {
       type:  'url',
     },
     {
+      name:        'memberBenefit',
+      title:       'Medlemsfordel',
+      type:        'array',
+      of:          [{ type: 'block' }],
+      description: 'Hva museets medlemmer får hos denne partneren. Vises på Besøk oss- og Om oss-sidene.',
+    },
+    {
       name:    'category',
       title:   'Kategori',
       type:    'string',
       options: {
         list: [
-          { title: 'Offentlig støtte',  value: 'public' },
-          { title: 'Privat støtte',     value: 'private' },
-          { title: 'Fagorganisasjon',   value: 'org' },
+          { title: 'Offentlig støtte',    value: 'public' },
+          { title: 'Privat støtte',      value: 'private' },
+          { title: 'Fagorganisasjon',    value: 'org' },
+          { title: 'Samarbeidspartner',  value: 'samarbeidspartner' },
         ],
         layout: 'radio',
       },
@@ -61,7 +69,7 @@ export const partner = {
     select:  { title: 'name', subtitle: 'category', media: 'logo' },
     prepare: ({ title, subtitle, media }: any) => ({
       title,
-      subtitle: { public: 'Offentlig støtte', private: 'Privat støtte', org: 'Fagorganisasjon' }[subtitle as string] ?? subtitle,
+      subtitle: { public: 'Offentlig støtte', private: 'Privat støtte', org: 'Fagorganisasjon', samarbeidspartner: 'Samarbeidspartner' }[subtitle as string] ?? subtitle,
       media,
     }),
   },

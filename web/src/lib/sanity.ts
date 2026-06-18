@@ -1197,13 +1197,14 @@ export async function getPersonvernPage(): Promise<PersonvernPage | null> {
 // ── Typer: Partner ───────────────────────────────────────────────
 
 export interface Partner {
-  _id:          string
-  name:         string
-  category:     'public' | 'private' | 'org'
-  url?:         string
-  logo?:        { asset: { _ref: string; url: string } }
-  description?: string
-  order?:       number
+  _id:            string
+  name:           string
+  category:       'public' | 'private' | 'org' | 'samarbeidspartner'
+  url?:           string
+  logo?:          { asset: { _ref: string; url: string } }
+  description?:   string
+  memberBenefit?: any[]
+  order?:         number
 }
 
 // ── Spørringer: Partner ──────────────────────────────────────────
@@ -1211,7 +1212,17 @@ export interface Partner {
 export async function getAllPartners(): Promise<Partner[]> {
   return sanityClient.fetch(`
     *[_type == "partner" && isVisible != false] | order(coalesce(order, 99) asc, name asc) {
-      _id, name, category, url, order, description,
+      _id, name, category, url, order, description, memberBenefit,
+      logo { asset->{ _ref, url } }
+    }
+  `)
+}
+
+export async function getPartnersWithBenefits(): Promise<Partner[]> {
+  return sanityClient.fetch(`
+    *[_type == "partner" && isVisible != false && defined(memberBenefit) && length(memberBenefit) > 0]
+    | order(coalesce(order, 99) asc, name asc) {
+      _id, name, category, url, memberBenefit,
       logo { asset->{ _ref, url } }
     }
   `)
