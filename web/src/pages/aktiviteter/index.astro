@@ -6,15 +6,17 @@ import { getAllEvents } from '../../lib/sanity'
 import { getMagiskeCirkelEvents } from '../../lib/icalendar'
 
 interface Activity {
-  key:       string
-  title:     string
-  date:      string
-  source:    'tryllemuseet' | 'magiskecirkel'
-  location?: string
-  url?:      string
-  excerpt?:  string
-  ageGroup?: string
-  price?:    string
+  key:        string
+  title:      string
+  date:       string
+  source:     'tryllemuseet' | 'magiskecirkel'
+  location?:  string
+  url?:       string
+  excerpt?:   string
+  ageGroup?:  string
+  price?:     string
+  bookingUrl?: string
+  featured?:  boolean
 }
 
 const [tmEvents, mcEvents] = await Promise.all([
@@ -24,14 +26,16 @@ const [tmEvents, mcEvents] = await Promise.all([
 
 const activities: Activity[] = [
   ...tmEvents.map((e): Activity => ({
-    key:      e._id,
-    title:    e.title,
-    date:     e.date,
-    source:   'tryllemuseet',
-    url:      '/arrangementer',
-    excerpt:  e.excerpt,
-    ageGroup: e.ageGroup,
-    price:    e.price,
+    key:        e._id,
+    title:      e.title,
+    date:       e.date,
+    source:     'tryllemuseet',
+    url:        e.bookingUrl,
+    excerpt:    e.excerpt,
+    ageGroup:   e.ageGroup,
+    price:      e.price,
+    bookingUrl: e.bookingUrl,
+    featured:   e.featured,
   })),
   ...mcEvents.map((e): Activity => ({
     key:      e.uid,
@@ -110,7 +114,7 @@ function formatTime(d: string) {
         const isPast = new Date(a.date).getTime() < now
         return (
           <article
-            class="activity-row"
+            class:list={['activity-row', { 'activity-row--featured': a.featured }]}
             style={isPast ? 'display:none' : ''}
             data-source={a.source}
             data-time={new Date(a.date).getTime()}
@@ -125,6 +129,7 @@ function formatTime(d: string) {
                 <span class:list={['source-badge', `source-badge--${a.source}`]}>
                   {sourceLabels[a.source]}
                 </span>
+                {a.featured && <span class="featured-badge">✦ Fremhevet</span>}
                 <span class="row-when">{formatDate(a.date)}{time && ` · kl. ${time}`}</span>
               </p>
               <h2 class="row-title">{a.title}</h2>
@@ -135,7 +140,15 @@ function formatTime(d: string) {
                 {a.location && <span class="row-tag">📍 {a.location}</span>}
               </p>
             </div>
-            {a.url && (
+            {a.bookingUrl ? (
+              <a
+                href={a.bookingUrl}
+                class="row-link row-link--book"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label={`Meld deg på ${a.title}`}
+              >Meld på →</a>
+            ) : a.url ? (
               <a
                 href={a.url}
                 class="row-link"
@@ -143,7 +156,7 @@ function formatTime(d: string) {
                 rel={a.url.startsWith('http') ? 'noopener noreferrer' : undefined}
                 aria-label={`Mer om ${a.title}`}
               >Mer →</a>
-            )}
+            ) : null}
           </article>
         )
       })}
@@ -165,7 +178,7 @@ function formatTime(d: string) {
         <span class="sources-icon" aria-hidden="true">🎩</span>
         <div>
           <strong>Tryllemuseets egne arrangementer</strong>
-          <p>Kurs og forestillinger på Årvoll gård. <a href="/arrangementer">Se detaljer og påmelding</a>.</p>
+          <p>Kurs og forestillinger på Årvoll gård. Klikk «Meld på →» for å reservere plass.</p>
         </div>
       </div>
       <div class="sources-divider"></div>
@@ -270,6 +283,8 @@ function formatTime(d: string) {
     transition: box-shadow 200ms ease, border-color 200ms ease;
   }
   .activity-row:hover { box-shadow: var(--shadow); border-color: var(--gold-light); }
+  .activity-row--featured { border-color: var(--gold); border-width: 2px; }
+  .featured-badge { font-family: var(--font-ui); font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--burgundy); background: rgba(212,168,67,0.2); padding: 0.15rem 0.5rem; border-radius: 3px; }
 
   .row-date { display: flex; flex-direction: column; align-items: center; min-width: 56px; }
   .row-day { font-family: var(--font-display); font-size: 1.8rem; color: var(--burgundy); line-height: 1.1; }
@@ -292,6 +307,8 @@ function formatTime(d: string) {
 
   .row-link { font-family: var(--font-ui); font-size: 0.825rem; font-weight: 700; color: var(--gold-dark); text-decoration: none; white-space: nowrap; padding: 0.4rem 0.6rem; border-radius: 4px; transition: color 150ms, background 150ms; }
   .row-link:hover { color: var(--burgundy); background: var(--cream); }
+  .row-link--book { background: var(--gold); color: var(--burgundy-dk); padding: 0.45rem 0.9rem; }
+  .row-link--book:hover { background: var(--gold-light); color: var(--burgundy-dk); }
 
   /* ── TOMT RESULTAT ─────────────────────────────────────────────── */
   .no-results { text-align: center; padding: 3.5rem 2rem; background: white; border: 1px solid var(--cream-dark); border-radius: 8px; margin-top: 0.5rem; }
