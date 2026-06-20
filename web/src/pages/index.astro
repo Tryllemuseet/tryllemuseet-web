@@ -59,7 +59,7 @@ const kurs = (hp as any)?.kursSeksjon ?? {
   prisLabel:  'per kurs',
   fondsBadge: 'Støttet av Oslo kommunes Regionalt kulturfond',
   knappLabel: 'Se kommende kurs',
-  knappHref:  '/arrangementer',
+  knappHref:  '/aktiviteter',
 }
 const kursSitat = (hp as any)?.kursSitat ?? {
   tekst:  'Vil bare takke for et utrolig gøyalt tryllekurs — han koste seg!',
@@ -163,7 +163,7 @@ function formatTime(d: string) {
             <p class="section-label">Kalender</p>
             <h2 class="display-title section-title" id="events-heading">Kommende arrangementer</h2>
           </div>
-          <a href="/arrangementer" class="btn-outline">Se alle</a>
+          <a href="/aktiviteter" class="btn-outline">Se alle</a>
         </div>
       </AnimateIn>
       {events.length > 0 ? (
@@ -181,7 +181,7 @@ function formatTime(d: string) {
                   <span class="event-time">{formatTime(event.date)}</span>
                   {event.price && <span class="event-price">{event.price}</span>}
                 </div>
-                <h3 class="event-title"><a href="/arrangementer">{event.title}</a></h3>
+                <h3 class="event-title"><a href="/aktiviteter">{event.title}</a></h3>
                 {event.excerpt && <p class="event-excerpt">{event.excerpt}</p>}
               </div>
               {event.bookingUrl && (
