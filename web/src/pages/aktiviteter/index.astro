@@ -19,6 +19,22 @@ interface Activity {
   featured?:  boolean
 }
 
+const NORSKE_MÅNEDER = ['januar','februar','mars','april','mai','juni','juli','august','september','oktober','november','desember']
+
+function magiskeCirkelUrl(title: string, dateStr: string): string {
+  const date = new Date(dateStr)
+  const slug = title
+    .toLowerCase()
+    .replace(/æ/g, 'ae').replace(/ø/g, 'o').replace(/å/g, 'a')
+    .replace(/[^a-z0-9\s]/g, '')
+    .trim()
+    .replace(/\s+/g, '-')
+  const day   = date.getDate()
+  const month = NORSKE_MÅNEDER[date.getMonth()]
+  const year  = String(date.getFullYear()).slice(-2)
+  return `https://www.magiskecirkel.no/kalender/${slug}-${day}-${month}-${year}`
+}
+
 const [tmEvents, mcEvents] = await Promise.all([
   getAllEvents(),
   getMagiskeCirkelEvents(),
@@ -43,7 +59,7 @@ const activities: Activity[] = [
     date:     e.start,
     source:   'magiskecirkel',
     location: e.location,
-    url:      e.url ?? 'https://www.magiskecirkel.no/kalender',
+    url:      e.url ?? magiskeCirkelUrl(e.title, e.start),
   })),
 ].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
 
