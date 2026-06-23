@@ -2,10 +2,10 @@
 // src/pages/om-oss.astro
 import BaseLayout from '../layouts/BaseLayout.astro'
 import AnimateIn from '../components/AnimateIn.astro'
-import { getOmOssPage, getAllPartners } from '../lib/sanity'
+import { getOmOssPage, getAllPartners, getSiteConfig } from '../lib/sanity'
 import { toHTML } from '@portabletext/to-html'
 
-const [p, partnerDocs] = await Promise.all([getOmOssPage(), getAllPartners()])
+const [p, partnerDocs, site] = await Promise.all([getOmOssPage(), getAllPartners(), getSiteConfig()])
 
 const hero = p?.hero ?? {
   label: 'Om Tryllemuseet',
@@ -118,7 +118,7 @@ const historieHtml = om.historieTekst?.length ? toHTML(om.historieTekst) : ''
       <div class="medlemskap-grid">
         {medlem.nivaaer.map(m => (
           <div class:list={['medlemskap-kort', { anbefalt: m.anbefalt }]}>
-            {m.anbefalt && <div class="anbefalt-badge">Populær</div>}
+            {m.anbefalt && <div class="anbefalt-badge">{site.partnerKategorier?.anbefaltBadge ?? 'Populær'}</div>}
             <h3>{m.type}</h3>
             <div class="pris">{m.pris}</div>
             <ul>
@@ -192,7 +192,11 @@ const historieHtml = om.historieTekst?.length ? toHTML(om.historieTekst) : ''
             {(['public', 'private', 'org'] as const).map(cat => {
               const gruppe = partnerDocs.filter(pd => pd.category === cat)
               if (!gruppe.length) return null
-              const labels = { public: 'Offentlig støtte', private: 'Privat støtte', org: 'Faglig samarbeid' }
+              const labels = {
+                public:  site.partnerKategorier?.offentlig ?? 'Offentlig støtte',
+                private: site.partnerKategorier?.privat    ?? 'Privat støtte',
+                org:     site.partnerKategorier?.org       ?? 'Faglig samarbeid',
+              }
               return (
                 <div class="partner-gruppe">
                   <p class="partner-gruppe-label">{labels[cat]}</p>

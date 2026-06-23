@@ -748,6 +748,12 @@ export interface SiteConfig {
   instagram:         string
   youtube?:          string
   seoDescription:    string
+  partnerKategorier?: {
+    offentlig:    string
+    privat:       string
+    org:          string
+    anbefaltBadge: string
+  }
 }
 
 export async function getSiteConfig(): Promise<SiteConfig> {
@@ -758,7 +764,8 @@ export async function getSiteConfig(): Promise<SiteConfig> {
       openingHoursShort, openingHoursNote,
       membershipUrl, vippsNumber,
       facebook, instagram, youtube,
-      seoDescription
+      seoDescription,
+      partnerKategorier { offentlig, privat, org, anbefaltBadge }
     }
   `)
   return config ?? {

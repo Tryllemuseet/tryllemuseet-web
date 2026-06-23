@@ -117,6 +117,20 @@ export const siteConfig = defineType({
       type: 'url',
     }),
 
+    // ─── PARTNERKATEGORIER ──────────────────────────────────────
+    defineField({
+      name: 'partnerKategorier',
+      title: 'Partner-kategorilabels',
+      description: 'Labels som vises over partnergrupper på Om oss-siden',
+      type: 'object',
+      fields: [
+        defineField({ name: 'offentlig', title: 'Offentlig støtte',  type: 'string', initialValue: 'Offentlig støtte' }),
+        defineField({ name: 'privat',    title: 'Privat støtte',     type: 'string', initialValue: 'Privat støtte' }),
+        defineField({ name: 'org',       title: 'Faglig samarbeid',  type: 'string', initialValue: 'Faglig samarbeid' }),
+        defineField({ name: 'anbefaltBadge', title: '"Populær"-badge på medlemskapskort', type: 'string', initialValue: 'Populær' }),
+      ],
+    }),
+
     // ─── SEO ────────────────────────────────────────────────────
     defineField({
       name: 'seoDescription',

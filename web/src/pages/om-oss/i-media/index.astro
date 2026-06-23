@@ -3,25 +3,10 @@
 import BaseLayout from '../../../layouts/BaseLayout.astro'
 import { getMediaAppearances } from '../../../lib/sanity'
 import type { MediaAppearance } from '../../../lib/sanity'
+import { typeLabels, typeIcons } from '../../../lib/mediaTypes'
 
 const appearances = await getMediaAppearances()
 const total       = appearances.length
-
-const typeLabels: Record<string, string> = {
-  avis:     'Avis',
-  nettavis: 'Nettavis',
-  tv:       'TV',
-  radio:    'Radio',
-  podkast:  'Podkast',
-}
-
-const typeIcons: Record<string, string> = {
-  avis:     '🗞️',
-  nettavis: '🖥️',
-  tv:       '📺',
-  radio:    '📻',
-  podkast:  '🎙️',
-}
 
 const types = [...new Set(appearances.map((a: MediaAppearance) => a.type))]
   .filter(Boolean).sort() as string[]
