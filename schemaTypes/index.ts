@@ -24,6 +24,7 @@ import { historicalClip }  from './historicalClip'
 import { mediaAppearance } from './mediaAppearance'
 import signageQuote        from './signageQuote'
 import signageConfig       from './signageConfig'
+import signageVideo        from './signageVideo'
 
 export const schemaTypes = [
   // Sidetyper
@@ -40,6 +41,7 @@ export const schemaTypes = [
   // Dokumenttyper
   signageQuote,
   signageConfig,
+  signageVideo,
   magician,
   pressClipping,
   biography,

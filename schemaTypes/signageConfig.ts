@@ -44,6 +44,21 @@ export default defineType({
       initialValue: 9,
       validation: Rule => Rule.min(5).max(60),
     }),
+    defineField({
+      name: 'memberQrUrl',
+      title: 'Bli-med QR URL',
+      type: 'url',
+      description: 'URL for «Bli med»-QR-koden på skjermen.',
+      initialValue: 'https://tryllemuseet.no/blimedlem',
+    }),
+    defineField({
+      name: 'overlayPanelSecs',
+      title: 'Infopanel — visningsvarighet (sekunder)',
+      type: 'number',
+      description: 'Hvor lenge hvert infopanel vises over videoen.',
+      initialValue: 18,
+      validation: Rule => Rule.min(8).max(60),
+    }),
   ],
   preview: {
     prepare() {
