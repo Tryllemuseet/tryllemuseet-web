@@ -23,6 +23,8 @@ Denne bruksanvisningen dekker de oppgavene en redaktør utfører til daglig.
 14. [Skjule innhold uten å slette](#14-skjule-innhold-uten-å-slette)
 15. [Vanlige oppgaver — steg for steg](#15-vanlige-oppgaver--steg-for-steg)
 
+> **Veiledning til kapittel 12 (Infoskjerm):** Seksjonene 12a–12c dekker de tre dokumenttypene som styrer skjermen. Start med 12a hvis du er ny, og legg til videoer via 12c.
+
 ---
 
 ## 1. Komme i gang
@@ -329,6 +331,26 @@ Vises på Om oss-siden.
 
 Infoskjermen (`tryllemuseet.no/skjerm.html`) er en separat side beregnet på Yodeck-digital signage i museet (1080×1920 portrett). Den henter innhold live fra Sanity hvert 5. minutt.
 
+### Slik fungerer skjermen
+
+Skjermen har to modi som velges automatisk:
+
+**Videomodus** (aktiv når minst én aktiv video finnes i spillelisten):
+Videoene spilles i løkke over hele skjermen. Mellom videoer — og med 10 sekunders «rent video»-mellomrom — sklir informasjonspaneler opp fra bunnen:
+- **Arrangementer** — de tre neste kommende arrangementene fra Sanity
+- **Info** — åpningstider, priser og Mini-show-tidspunkt
+- **Bli med** — QR-kode til bli-med-lenken
+- **Sitat** — et roterende sitat fra sitatlisten
+
+Panelene bytter i fast syklus. Lengden på hvert panel og varigheten mellom dem styres i konfigurasjonsdokumentet.
+
+Nede på skjermen løper alltid en **ticker** (rullende tekst) med de kommende arrangementene.
+
+**Statisk modus** (ingen aktive videoer):
+Skjermen viser et kortdisplay med museumsinformasjon og sitat-rotasjon — samme visuelle uttrykk som før videoene ble lagt til.
+
+---
+
 ### 12a. Infoskjerm – konfigurasjon
 
 **Meny:** Infoskjerm – konfigurasjon
@@ -337,18 +359,24 @@ Det finnes kun ett konfigurasjonsdokument. Hvis det ikke finnes, opprett det ved
 
 | Felt | Standard | Merknad |
 |---|---|---|
-| QR-kode URL | `https://tryllemuseet.no` | URL QR-koden på skjermen peker til |
-| Åpningstider (fritekst) | `Søndager kl. 13:00 – 16:00` | Vises på skjermen. Format: «Dag kl. HH:MM – HH:MM» |
-| Mini-show tidspunkt | `Kl. 14:00 — presis` | Vises ved siden av Mini-show-merket |
-| Pris voksen (kr) | 50 | Vises i priskortet |
-| Pris barn (kr) | 20 | Vises i priskortet |
-| Sitat-bytte hvert X sekund | 9 | Hvor lenge hvert sitat vises (5–60 sekunder) |
+| QR-kode URL | `https://tryllemuseet.no` | URL QR-koden i statisk modus peker til |
+| Åpningstider (fritekst) | `Søndager kl. 13:00 – 16:00` | Vises i info-panelet og statisk modus |
+| Mini-show tidspunkt | `Kl. 14:00 — presis` | Vises i info-panelet |
+| Pris voksen (kr) | 50 | Vises i info-panelet |
+| Pris barn (kr) | 20 | Vises i info-panelet |
+| Sitat-bytte hvert X sekund | 9 | Sekunder hvert sitat vises i statisk modus (5–60) |
+| Bli-med QR URL | `https://tryllemuseet.no/blimedlem` | URL QR-koden i «Bli med»-panelet peker til |
+| Infopanel — visningsvarighet (sekunder) | 18 | Hvor lenge hvert overlay-panel vises over videoen (8–60) |
+
+> **Tips:** Endre «Infopanel — visningsvarighet» til 25–30 sekunder hvis du vil at besøkende skal rekke å lese arrangementsinformasjonen.
+
+---
 
 ### 12b. Infoskjerm – sitater
 
 **Meny:** Infoskjerm – sitat
 
-Sitatene roterer nedst på skjermen. Legg til så mange du vil.
+Sitatene vises i sitat-panelet (videomodus) og som roterende tekst nederst (statisk modus). Legg til så mange du vil.
 
 | Felt | Merknad |
 |---|---|
@@ -366,6 +394,51 @@ Sitatene roterer nedst på skjermen. Legg til så mange du vil.
 6. Klikk **Publiser**.
 
 Endringen er synlig på skjermen innen 5 minutter (skjermen henter automatisk på nytt).
+
+---
+
+### 12c. Infoskjerm – videoer
+
+**Meny:** Infoskjerm – video
+
+Her administrerer du spillelisten med videoer som spilles over hele skjermen. Du kan legge til både MP4-filer og YouTube-videoer. Videoene spilles i rekkefølge og starter på nytt fra begynnelsen når alle er spilt.
+
+> Så lenge spillelisten er tom, bruker skjermen statisk modus (kortvisning). Aktiverer du én eller flere videoer, bytter skjermen automatisk til videomodus neste gang den laster.
+
+#### Felter
+
+| Felt | Påkrevd | Merknad |
+|---|---|---|
+| Tittel (internt) | Ja | Brukes bare i Studio-listen — vises ikke på skjermen |
+| Video-URL | Ja | Direkte MP4-lenke **eller** YouTube-URL (f.eks. `youtube.com/watch?v=…`) |
+| Start fra (sekunder) | Nei | Hopp til dette sekundet ved oppstart. 0 = fra begynnelsen |
+| Stopp ved (sekunder) | Nei | Stopp avspillingen her. 0 = spill til slutten |
+| Aktiv | Nei | Kun aktive videoer spilles av. Slå av for å pause en video uten å slette |
+| Rekkefølge | Nei | Lavere tall spilles av først |
+
+#### Slik legger du til en video
+
+1. Klikk **+ Nytt dokument** under Infoskjerm – video.
+2. Fyll inn en intern tittel (f.eks. «Trylleshow åpning 2024»).
+3. Lim inn video-URL:
+   - **MP4:** direktelenke til filen (f.eks. fra nettskyen eller museets server)
+   - **YouTube:** `https://www.youtube.com/watch?v=VIDEOID`
+4. Sett eventuelt **Start fra** og **Stopp ved** i sekunder hvis du bare vil vise en del av videoen. Eksempel: `startSecs=120, endSecs=300` spiller de tre minuttene fra 2:00 til 5:00.
+5. Kontroller at **Aktiv** er slått på.
+6. Sett **Rekkefølge** (1, 2, 3 …) for å bestemme avspillingsrekkefølgen.
+7. Klikk **Publiser**.
+
+> **Merk for YouTube-videoer:** Videoen må være offentlig eller «ikke listet» — private videoer fungerer ikke. Lyden slås av automatisk (skjermen spiller alltid stumfilmsmodus).
+
+> **Merk for MP4-filer:** Filen må ligge på en URL som kan nås av nettleseren. Filer lastet opp direkte i Sanity fungerer ikke her — bruk en ekstern fillenke.
+
+#### Midlertidig fjerne en video
+
+Åpne videodokumentet → slå av **Aktiv** → klikk **Publiser**. Videoen hoppes over i spillelisten, men er lett å aktivere igjen.
+
+#### Endre rekkefølge
+
+Endre **Rekkefølge**-tallet på hvert dokument. Videoer med lav verdi (f.eks. 1) spilles før videoer med høy verdi (f.eks. 10). Klikk **Publiser** på alle dokumenter du endrer.
 
 ---
 
@@ -439,7 +512,7 @@ Se [Hvem er hvem](#6-hvem-er-hvem--biografiregisteret) → «Legge til en ny per
 ### Bytte QR-kode-lenken på infoskjermen
 
 1. Gå til **Infoskjerm – konfigurasjon**.
-2. Oppdater **QR-kode URL**.
+2. Oppdater **QR-kode URL** (statisk modus) og/eller **Bli-med QR URL** (videomodus).
 3. Klikk **Publiser**.
 
 ### Midlertidig fjerne et sitat fra skjermen
@@ -449,6 +522,31 @@ Se [Hvem er hvem](#6-hvem-er-hvem--biografiregisteret) → «Legge til en ny per
 3. Klikk **Publiser**.
 
 Sitatet forblir lagret og kan aktiveres igjen ved å slå på **Aktiv** og publisere på nytt.
+
+### Legge til en video i spillelisten
+
+Se [12c. Infoskjerm – videoer](#12c-infoskjerm--videoer) → «Slik legger du til en video».
+
+### Midlertidig pause en video
+
+1. Gå til **Infoskjerm – video** og åpne videoen.
+2. Slå av **Aktiv**.
+3. Klikk **Publiser**.
+
+Videoen hoppes over i spillelisten til du slår **Aktiv** på igjen.
+
+### Vise bare én bestemt del av en YouTube-video
+
+1. Åpne videodokumentet under **Infoskjerm – video**.
+2. Sett **Start fra (sekunder)** til det sekundet du vil begynne fra. Eksempel: 2 minutter og 30 sekunder → skriv `150`.
+3. Sett **Stopp ved (sekunder)** til sluttsekundet. Eksempel: 5 minutter → skriv `300`.
+4. Klikk **Publiser**.
+
+### Justere tempoet på overlay-panelene
+
+1. Gå til **Infoskjerm – konfigurasjon**.
+2. Endre **Infopanel — visningsvarighet (sekunder)**. Lavere tall = raskere bytte; høyere tall gir mer lesetid.
+3. Klikk **Publiser**.
 
 ---
 
