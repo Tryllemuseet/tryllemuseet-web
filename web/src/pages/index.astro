@@ -37,8 +37,7 @@ const utstilling = hp?.utstillingsFokus ?? {
   eraLabel: 'Gullalderen 1845–1930',
   heading:  'Møt mesterne',
 }
-// Ibsen — hentes fra hp?.ibsenSeksjon når feltet legges til i homepage.ts
-const ibsen = (hp as any)?.ibsenSeksjon ?? {
+const ibsen = hp?.ibsenSeksjon ?? {
   heading:    'Henrik Ibsen var tryllekunstner',
   ingress:    'Det som få vet, er at lille Henrik som barn hadde trylling som hobby. Han ga forestillinger der han kunne få et ur til å forsvinne fra lommen på én mann og dukke opp hos en annen.',
   sitat:      'Enkelte søndagsaftener fik han lov til at optræde som tryllekunstner i et af husets værelser, og alle omkringboende naboer blev indbudte til at overvære forestillingen.',
@@ -46,8 +45,7 @@ const ibsen = (hp as any)?.ibsenSeksjon ?? {
   lenkLabel:  'Les mer tryllehistorie',
   lenkHref:   '/tryllehistorie',
 }
-// Kurs — hentes fra hp?.kursSeksjon når feltet legges til i homepage.ts
-const kurs = (hp as any)?.kursSeksjon ?? {
+const kurs = hp?.kursSeksjon ?? {
   heading:    'Tryllekurs for barn',
   ingress:    'Du lærer triks som er enkle å utføre, men som virker meget imponerende. Kursene går over tre ettermiddager annenhver uke.',
   detaljer:   [
@@ -61,7 +59,7 @@ const kurs = (hp as any)?.kursSeksjon ?? {
   knappLabel: 'Se kommende kurs',
   knappHref:  '/aktiviteter',
 }
-const kursSitat = (hp as any)?.kursSitat ?? {
+const kursSitat = hp?.kursSitat ?? {
   tekst:  'Vil bare takke for et utrolig gøyalt tryllekurs — han koste seg!',
   kilde:  'Mor til kursdeltaker, 8 år · Januar 2026',
 }
