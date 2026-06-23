@@ -126,6 +126,54 @@ export const homepage = defineType({
       ],
     }),
 
+    // ─── IBSEN-SEKSJON ──────────────────────────────────────────
+    defineField({
+      name: 'ibsenSeksjon',
+      title: 'Ibsen-seksjon',
+      type: 'object',
+      fields: [
+        defineField({ name: 'heading', title: 'Overskrift', type: 'string' }),
+        defineField({ name: 'ingress', title: 'Ingress', type: 'text', rows: 3 }),
+        defineField({ name: 'sitat', title: 'Sitat', type: 'text', rows: 3 }),
+        defineField({ name: 'sitatKilde', title: 'Sitatets kilde', type: 'string' }),
+        defineField({ name: 'lenkLabel', title: 'Lenke — tekst', type: 'string' }),
+        defineField({ name: 'lenkHref', title: 'Lenke — URL', type: 'string' }),
+      ],
+    }),
+
+    // ─── KURS-SEKSJON ───────────────────────────────────────────
+    defineField({
+      name: 'kursSeksjon',
+      title: 'Kurs-seksjon',
+      type: 'object',
+      fields: [
+        defineField({ name: 'heading', title: 'Overskrift', type: 'string' }),
+        defineField({ name: 'ingress', title: 'Ingress', type: 'text', rows: 2 }),
+        defineField({
+          name: 'detaljer',
+          title: 'Detaljer (kulepunkter)',
+          type: 'array',
+          of: [{ type: 'string' }],
+        }),
+        defineField({ name: 'pris', title: 'Pris', type: 'string' }),
+        defineField({ name: 'prisLabel', title: 'Prislabel', type: 'string' }),
+        defineField({ name: 'fondsBadge', title: 'Fondsbadge', type: 'string' }),
+        defineField({ name: 'knappLabel', title: 'Knapp — tekst', type: 'string' }),
+        defineField({ name: 'knappHref', title: 'Knapp — URL', type: 'string' }),
+      ],
+    }),
+
+    // ─── KURSSITAT ──────────────────────────────────────────────
+    defineField({
+      name: 'kursSitat',
+      title: 'Kurssitat',
+      type: 'object',
+      fields: [
+        defineField({ name: 'tekst', title: 'Sitatekst', type: 'text', rows: 2 }),
+        defineField({ name: 'kilde', title: 'Kilde', type: 'string' }),
+      ],
+    }),
+
   ],
 
   preview: {

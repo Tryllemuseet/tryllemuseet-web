@@ -339,6 +339,28 @@ export interface Homepage {
     sitat:       string
     sitatKilde:  string
   }
+  ibsenSeksjon?: {
+    heading:    string
+    ingress:    string
+    sitat:      string
+    sitatKilde: string
+    lenkLabel:  string
+    lenkHref:   string
+  }
+  kursSeksjon?: {
+    heading:    string
+    ingress:    string
+    detaljer:   string[]
+    pris:       string
+    prisLabel:  string
+    fondsBadge: string
+    knappLabel: string
+    knappHref:  string
+  }
+  kursSitat?: {
+    tekst: string
+    kilde: string
+  }
 }
 
 export async function getHomepage(): Promise<Homepage | null> {
@@ -356,7 +378,10 @@ export async function getHomepage(): Promise<Homepage | null> {
         sitater[] { emoji, tekst, kilde }
       },
       medlemSeksjon { heading, tekst, knappLabel, knappUrl },
-      omMuseet { heading, tekst, sitat, sitatKilde }
+      omMuseet { heading, tekst, sitat, sitatKilde },
+      ibsenSeksjon { heading, ingress, sitat, sitatKilde, lenkLabel, lenkHref },
+      kursSeksjon { heading, ingress, detaljer, pris, prisLabel, fondsBadge, knappLabel, knappHref },
+      kursSitat { tekst, kilde }
     }
   `)
 }
