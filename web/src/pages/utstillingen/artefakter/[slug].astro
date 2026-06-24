@@ -37,6 +37,14 @@ const conditionLabels: Record<string, string> = {
   restored:  'Restaurert',
 }
 
+const acquisitionLabels: Record<string, string> = {
+  purchase: 'Kjøpt',
+  gift:     'Gave / donasjon',
+  deposit:  'Depot',
+  loan_in:  'Innlån',
+  unknown:  'Ukjent',
+}
+
 const mainImgUrl = a.mainImage?.asset
   ? urlFor(a.mainImage).width(900).format('webp').url()
   : null
@@ -118,25 +126,45 @@ const mainImgUrl = a.mainImage?.asset
             <dd>{a.displayLocation}</dd>
           </div>
         )}
-        {a.ownerType && (
+        {a.ownerName && (
           <div class="fact-row">
-            <dt>Eierforhold</dt>
-            <dd>{a.ownerType === 'loan' ? 'Lån' : 'Museets samling'}</dd>
+            <dt>Eier</dt>
+            <dd>{a.ownerName}</dd>
           </div>
         )}
-        {a.loanFrom && (
+        {a.acquisitionType && (
           <div class="fact-row">
-            <dt>Låneperiode</dt>
+            <dt>Anskaffelse</dt>
             <dd>
-              {a.loanFrom}
-              {a.loanTo ? ` – ${a.loanTo}` : ' –'}
+              {acquisitionLabels[a.acquisitionType] ?? a.acquisitionType}
+              {a.acquisitionNote ? ` — ${a.acquisitionNote}` : ''}
+              {a.acquisitionDate ? ` (${a.acquisitionDate})` : ''}
             </dd>
           </div>
         )}
-        {a.lenderName && (
+        {a.acquisitionType === 'loan_in' && a.lenderName && (
           <div class="fact-row">
-            <dt>Utlåner</dt>
+            <dt>Innlånt fra</dt>
             <dd>{a.lenderName}</dd>
+          </div>
+        )}
+        {a.acquisitionType === 'loan_in' && (a.loanFrom || a.loanTo) && (
+          <div class="fact-row">
+            <dt>Innlånsperiode</dt>
+            <dd>{a.loanFrom ?? '?'}{a.loanTo ? ` – ${a.loanTo}` : ' –'}</dd>
+          </div>
+        )}
+        {a.onLoanOut && (
+          <div class="fact-row fact-row--notice">
+            <dt>Utlånt til</dt>
+            <dd>
+              {a.loanOutTo ?? 'Ekstern institusjon'}
+              {(a.loanOutFrom || a.loanOutUntil) && (
+                <span class="loan-period">
+                  {' '}({a.loanOutFrom ?? '?'} – {a.loanOutUntil ?? '?'})
+                </span>
+              )}
+            </dd>
           </div>
         )}
       </dl>
@@ -261,6 +289,10 @@ const mainImgUrl = a.mainImage?.asset
   }
   .fact-row:last-child { border-bottom: none; }
   .fact-row:nth-child(even) { background: var(--cream); }
+  .fact-row--notice dt,
+  .fact-row--notice dd { color: #8b4513; }
+  .fact-row--notice { background: rgba(139,69,19,0.05); }
+  .loan-period { font-size: 0.82rem; color: var(--grey); }
 
   dt {
     font-family: var(--font-ui);

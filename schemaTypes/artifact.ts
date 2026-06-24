@@ -39,52 +39,109 @@ export default defineType({
       description: 'Kort beskrivelse som vises i oversikten og på detaljsiden.',
     }),
 
-    // ── Eierskap og lån ──────────────────────────────────────────
+    // ── Eierskap og anskaffelse ───────────────────────────────────
     defineField({
-      name: 'ownerType',
-      title: 'Eierforhold',
+      name: 'ownerName',
+      title: 'Eier',
+      type: 'string',
+      description: 'F.eks. "Tryllemuseet", "Per Olsen", "Oslo Museum".',
+    }),
+    defineField({
+      name: 'acquisitionType',
+      title: 'Anskaffelsesmåte',
       type: 'string',
       options: {
         list: [
-          { title: 'Museets egen samling', value: 'museum' },
-          { title: 'Lån fra privatperson / institusjon', value: 'loan' },
+          { title: 'Kjøpt',                          value: 'purchase' },
+          { title: 'Gave / donasjon',                value: 'gift'     },
+          { title: 'Depot (permanent depositum)',    value: 'deposit'  },
+          { title: 'Innlån (midlertidig)',           value: 'loan_in'  },
+          { title: 'Ukjent',                         value: 'unknown'  },
         ],
         layout: 'radio',
       },
-      initialValue: 'museum',
     }),
+    defineField({
+      name: 'acquisitionDate',
+      title: 'Anskaffelsesdato',
+      type: 'date',
+      description: 'Dato museet mottok eller kjøpte gjenstanden.',
+    }),
+    defineField({
+      name: 'acquisitionNote',
+      title: 'Anskaffelsesmerknad',
+      type: 'string',
+      description: 'F.eks. "Gave fra familie Andersen, 2018" eller "Kjøpt på auksjon".',
+    }),
+
+    // ── Innlån (vises kun ved anskaffelsesmåte = innlån) ─────────
     defineField({
       name: 'lenderName',
       title: 'Utlåner (navn)',
       type: 'string',
       description: 'Fullt navn på person eller institusjon som låner ut gjenstanden.',
-      hidden: ({ parent }: { parent: { ownerType?: string } }) => parent?.ownerType !== 'loan',
+      hidden: ({ parent }: { parent: { acquisitionType?: string } }) => parent?.acquisitionType !== 'loan_in',
     }),
     defineField({
       name: 'lenderContact',
       title: 'Utlåner (kontakt)',
       type: 'string',
       description: 'E-post eller telefon til utlåner.',
-      hidden: ({ parent }: { parent: { ownerType?: string } }) => parent?.ownerType !== 'loan',
+      hidden: ({ parent }: { parent: { acquisitionType?: string } }) => parent?.acquisitionType !== 'loan_in',
     }),
     defineField({
       name: 'loanFrom',
-      title: 'Låneperiode — fra',
+      title: 'Innlånsperiode — fra',
       type: 'date',
-      hidden: ({ parent }: { parent: { ownerType?: string } }) => parent?.ownerType !== 'loan',
+      hidden: ({ parent }: { parent: { acquisitionType?: string } }) => parent?.acquisitionType !== 'loan_in',
     }),
     defineField({
       name: 'loanTo',
-      title: 'Låneperiode — til',
+      title: 'Innlånsperiode — til',
       type: 'date',
-      hidden: ({ parent }: { parent: { ownerType?: string } }) => parent?.ownerType !== 'loan',
+      hidden: ({ parent }: { parent: { acquisitionType?: string } }) => parent?.acquisitionType !== 'loan_in',
     }),
     defineField({
       name: 'loanReference',
-      title: 'Låneavtale / referansenummer',
+      title: 'Innlånsavtale / referansenummer',
       type: 'string',
-      description: 'Avtalenummer, arkivreferanse eller annen intern ID for låneavtalen.',
-      hidden: ({ parent }: { parent: { ownerType?: string } }) => parent?.ownerType !== 'loan',
+      description: 'Avtalenummer eller arkivreferanse for innlånsavtalen.',
+      hidden: ({ parent }: { parent: { acquisitionType?: string } }) => parent?.acquisitionType !== 'loan_in',
+    }),
+
+    // ── Utlån (museet låner ut til andre) ────────────────────────
+    defineField({
+      name: 'onLoanOut',
+      title: 'Utlånt til annen institusjon',
+      type: 'boolean',
+      initialValue: false,
+      description: 'Slå på hvis gjenstanden er midlertidig utlånt til en annen institusjon.',
+    }),
+    defineField({
+      name: 'loanOutTo',
+      title: 'Utlånt til (navn)',
+      type: 'string',
+      description: 'Navn på institusjon eller person som har gjenstanden.',
+      hidden: ({ parent }: { parent: { onLoanOut?: boolean } }) => !parent?.onLoanOut,
+    }),
+    defineField({
+      name: 'loanOutFrom',
+      title: 'Utlånsperiode — fra',
+      type: 'date',
+      hidden: ({ parent }: { parent: { onLoanOut?: boolean } }) => !parent?.onLoanOut,
+    }),
+    defineField({
+      name: 'loanOutUntil',
+      title: 'Utlånsperiode — til',
+      type: 'date',
+      hidden: ({ parent }: { parent: { onLoanOut?: boolean } }) => !parent?.onLoanOut,
+    }),
+    defineField({
+      name: 'loanOutReference',
+      title: 'Utlånsavtale / referansenummer',
+      type: 'string',
+      description: 'Avtalenummer eller arkivreferanse for utlånsavtalen.',
+      hidden: ({ parent }: { parent: { onLoanOut?: boolean } }) => !parent?.onLoanOut,
     }),
 
     // ── Museumsinformasjon ────────────────────────────────────────

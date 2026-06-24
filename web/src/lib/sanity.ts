@@ -60,31 +60,39 @@ export interface Event {
 }
 
 export interface Artifact {
-  _id:              string
-  title:            string
-  slug:             string
-  description?:     string
-  year?:            number
-  yearNote?:        string
-  origin?:          string
-  category?:        string
-  material?:        string
-  dimensions?:      string
-  condition?:       string
-  provenance?:      string
-  displayLocation?: string
-  ownerType?:       'museum' | 'loan'
-  lenderName?:      string
-  lenderContact?:   string
-  loanFrom?:        string
-  loanTo?:          string
-  loanReference?:   string
-  featured?:        boolean
-  order?:           number
-  mainImage?:       { asset: { _ref: string; url: string }; alt?: string }
-  gallery?:         { asset: { _ref: string; url: string }; alt?: string; caption?: string }[]
-  tags?:            string[]
-  notes?:           any[]
+  _id:               string
+  title:             string
+  slug:              string
+  description?:      string
+  year?:             number
+  yearNote?:         string
+  origin?:           string
+  category?:         string
+  material?:         string
+  dimensions?:       string
+  condition?:        string
+  provenance?:       string
+  displayLocation?:  string
+  ownerName?:        string
+  acquisitionType?:  'purchase' | 'gift' | 'deposit' | 'loan_in' | 'unknown'
+  acquisitionDate?:  string
+  acquisitionNote?:  string
+  lenderName?:       string
+  lenderContact?:    string
+  loanFrom?:         string
+  loanTo?:           string
+  loanReference?:    string
+  onLoanOut?:        boolean
+  loanOutTo?:        string
+  loanOutFrom?:      string
+  loanOutUntil?:     string
+  loanOutReference?: string
+  featured?:         boolean
+  order?:            number
+  mainImage?:        { asset: { _ref: string; url: string }; alt?: string }
+  gallery?:          { asset: { _ref: string; url: string }; alt?: string; caption?: string }[]
+  tags?:             string[]
+  notes?:            any[]
 }
 
 // ── Spørringer ───────────────────────────────────────────────────
@@ -178,7 +186,9 @@ export async function getArtifactBySlug(slug: string): Promise<Artifact | null> 
       description, year, yearNote, origin,
       category, material, dimensions, condition,
       provenance, displayLocation,
-      ownerType, lenderName, loanFrom, loanTo, loanReference,
+      ownerName, acquisitionType, acquisitionDate, acquisitionNote,
+      lenderName, loanFrom, loanTo, loanReference,
+      onLoanOut, loanOutTo, loanOutFrom, loanOutUntil, loanOutReference,
       featured, order, tags, notes,
       mainImage { asset->{ _ref, url }, alt },
       gallery[] { asset->{ _ref, url }, alt, caption }
