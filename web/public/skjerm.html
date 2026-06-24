@@ -104,15 +104,6 @@ html, body {
   position: fixed; top: 130px; left: 0; right: 0;
   text-align: center; z-index: 2;
 }
-.hat-icon {
-  font-size: 88px; line-height: 1;
-  filter: drop-shadow(0 0 28px rgba(212,168,67,0.5));
-  animation: float 5s ease-in-out infinite;
-}
-@keyframes float {
-  0%,100% { transform: translateY(0); }
-  50%      { transform: translateY(-12px); }
-}
 .museum-name {
   font-family: 'Cinzel', serif;
   font-size: 72px; font-weight: 700;
@@ -120,10 +111,6 @@ html, body {
   margin-top: 20px; color: var(--cream);
 }
 .museum-name em { font-style: italic; color: var(--gold); }
-.tagline {
-  font-size: 20px; font-weight: 300; color: var(--dim);
-  letter-spacing: 0.12em; text-transform: uppercase; margin-top: 18px;
-}
 .rule {
   height: 1px; margin: 28px 72px;
   background: linear-gradient(90deg, transparent, var(--gold) 30%, var(--gold) 70%, transparent);
@@ -341,9 +328,7 @@ html, body {
 
 <!-- Static content (hidden in video mode) -->
 <div id="static-hero">
-  <div class="hat-icon">🎩</div>
   <h1 class="museum-name">Trylle<em>museet</em></h1>
-  <p class="tagline">Der det umulige er mulig</p>
 </div>
 <div class="rule" id="static-rule"></div>
 <div id="static-cards">
