@@ -22,6 +22,9 @@ import artifact           from './artifact'
 import { tvAppearance }    from './tvAppearance'
 import { historicalClip }  from './historicalClip'
 import { mediaAppearance } from './mediaAppearance'
+import signageQuote        from './signageQuote'
+import signageConfig       from './signageConfig'
+import signageVideo        from './signageVideo'
 
 export const schemaTypes = [
   // Sidetyper
@@ -36,6 +39,9 @@ export const schemaTypes = [
   utstillingPage,
   personvernPage,
   // Dokumenttyper
+  signageQuote,
+  signageConfig,
+  signageVideo,
   magician,
   pressClipping,
   biography,
