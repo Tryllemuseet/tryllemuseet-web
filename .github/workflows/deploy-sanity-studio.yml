@@ -28,6 +28,6 @@ jobs:
         run: npm install -g sanity
 
       - name: Deploy Sanity Studio
-        run: sanity deploy --no-confirm
+        run: sanity deploy --yes
         env:
           SANITY_AUTH_TOKEN: ${{ secrets.SANITY_AUTH_TOKEN }}
