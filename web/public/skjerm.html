@@ -488,7 +488,7 @@ async function loadAll() {
     sq(`*[_type=="signageQuote"&&active==true]|order(sortOrder asc){text,author}`),
   ]);
   cfg    = c || {};
-  videos = v || [];
+  videos = (v || []).filter(x => x.videoUrl && x.videoUrl.trim());
   events = e || [];
   quotes = (q && q.length) ? q : FALLBACK_QUOTES;
 }
@@ -537,14 +537,19 @@ function setupStaticMode() {
   startStaticQuoteRotation();
 }
 
-function renderStaticEvents() {
+async function renderStaticEvents() {
   const list = document.getElementById('sevt-list');
   if (!list) return;
-  if (!events.length) {
+  const data = await sq(
+    `*[_type=="event"&&dateTime(date)>dateTime(now())]|order(date asc)[0..2]{title,date,ageGroup,price}`
+  );
+  const evts = Array.isArray(data) ? data : events;
+  if (evts.length) events = evts;
+  if (!evts.length) {
     list.innerHTML = '<div class="sevt-none">Ingen kommende arrangementer registrert</div>';
     return;
   }
-  list.innerHTML = events.slice(0, 2).map(ev => {
+  list.innerHTML = evts.map(ev => {
     const d = new Date(ev.date);
     const dateStr = d.toLocaleDateString('nb-NO', { weekday: 'long', day: 'numeric', month: 'long' });
     const timeStr = String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0');
