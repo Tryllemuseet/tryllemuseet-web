@@ -17,12 +17,28 @@
  */
 
 import { createClient } from '@sanity/client'
+import { readFileSync } from 'fs'
+import { join } from 'path'
+import { homedir } from 'os'
 
 const dataset = process.env.SANITY_DATASET ?? 'production'
 
-if (!process.env.SANITY_TOKEN) {
+function getStoredToken() {
+  try {
+    const configPath = join(homedir(), '.config', 'sanity', 'config.json')
+    const config = JSON.parse(readFileSync(configPath, 'utf-8'))
+    return config?.authToken ?? null
+  } catch {
+    return null
+  }
+}
+
+const token = process.env.SANITY_TOKEN ?? getStoredToken()
+
+if (!token) {
   console.error('❌ Mangler SANITY_TOKEN.')
-  console.error('   Kjør: SANITY_TOKEN=<token> node scripts/createSignageContent.mjs')
+  console.error('   Kjør: npx sanity login')
+  console.error('   Eller: SANITY_TOKEN=<token> node scripts/createSignageContent.mjs')
   process.exit(1)
 }
 
@@ -35,7 +51,7 @@ const client = createClient({
   projectId: 'n2ynpgty',
   dataset,
   apiVersion: '2024-01-01',
-  token: process.env.SANITY_TOKEN,
+  token,
   useCdn: false,
 })
 
