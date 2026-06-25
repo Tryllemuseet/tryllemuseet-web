@@ -484,7 +484,7 @@ async function loadAll() {
   const [c, v, e, q] = await Promise.all([
     sq(`*[_type=="signageConfig"][0]{qrUrl,openingHours,showTime,priceAdult,priceChild,quoteCycleSecs,memberQrUrl,overlayPanelSecs}`),
     sq(`*[_type=="signageVideo"&&active==true]|order(sortOrder asc){title,videoUrl,startSecs,endSecs}`),
-    sq(`*[_type=="event"&&dateTime(date)>dateTime(now())]|order(date asc)[0..2]{title,date,ageGroup,price}`),
+    sq(`*[_type=="event"&&dateTime(date)>dateTime(now())]|order(date asc)[0..1]{title,date,ageGroup,price}`),
     sq(`*[_type=="signageQuote"&&active==true]|order(sortOrder asc){text,author}`),
   ]);
   cfg    = c || {};
@@ -495,7 +495,7 @@ async function loadAll() {
 
 async function refreshDynamic() {
   const [e, q] = await Promise.all([
-    sq(`*[_type=="event"&&dateTime(date)>dateTime(now())]|order(date asc)[0..2]{title,date,ageGroup,price}`),
+    sq(`*[_type=="event"&&dateTime(date)>dateTime(now())]|order(date asc)[0..1]{title,date,ageGroup,price}`),
     sq(`*[_type=="signageQuote"&&active==true]|order(sortOrder asc){text,author}`),
   ]);
   if (e) events = e;
@@ -541,7 +541,7 @@ async function renderStaticEvents() {
   const list = document.getElementById('sevt-list');
   if (!list) return;
   const data = await sq(
-    `*[_type=="event"&&dateTime(date)>dateTime(now())]|order(date asc)[0..2]{title,date,ageGroup,price}`
+    `*[_type=="event"&&dateTime(date)>dateTime(now())]|order(date asc)[0..1]{title,date,ageGroup,price}`
   );
   const evts = Array.isArray(data) ? data : events;
   if (evts.length) events = evts;
