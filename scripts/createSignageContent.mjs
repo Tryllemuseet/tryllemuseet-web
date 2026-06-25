@@ -5,14 +5,15 @@
  * in Sanity so the digital signage screen (skjerm.html) shows real data
  * instead of hardcoded fallbacks.
  *
- * Usage:
+ * Usage (lokalt — bruker din eksisterende Sanity-innlogging):
+ *   npx sanity exec scripts/createSignageContent.mjs --with-user-token
+ *   npx sanity exec scripts/createSignageContent.mjs --with-user-token -- --dataset development
+ *
+ * Usage (CI / uten lokal Sanity-innlogging):
  *   SANITY_TOKEN=<token> node scripts/createSignageContent.mjs
- *   SANITY_TOKEN=<token> SANITY_DATASET=development node scripts/createSignageContent.mjs
+ *   Hent token fra sanity.io/manage → prosjekt → API → Tokens (editor-tilgang).
  *
- * Hent token fra sanity.io/manage → prosjekt → API → Tokens (editor-tilgang).
- *
- * Scriptet er trygt å kjøre flere ganger — det bruker createOrReplace og
- * will not overwrite manually edited documents if you change the IDs.
+ * Scriptet er trygt å kjøre flere ganger — det bruker createOrReplace.
  */
 
 import { createClient } from '@sanity/client'
