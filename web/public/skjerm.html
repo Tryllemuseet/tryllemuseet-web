@@ -397,8 +397,11 @@ const DS   = 'production';
 const API  = `https://${PROJ}.api.sanity.io/v2021-10-21/data/query/${DS}`;
 
 async function sq(query) {
-  try { return (await (await fetch(API + '?query=' + encodeURIComponent(query))).json()).result; }
-  catch(_) { return null; }
+  try {
+    const res = await fetch(API + '?query=' + encodeURIComponent(query));
+    if (!res.ok) { console.error('Sanity API feil', res.status, await res.text()); return null; }
+    return (await res.json()).result;
+  } catch(e) { console.error('Sanity fetch feil:', e); return null; }
 }
 
 // ── State ─────────────────────────────────────────────────────
