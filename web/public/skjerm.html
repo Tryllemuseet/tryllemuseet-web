@@ -280,7 +280,7 @@ html, body {
 
 /* ── Static events section ─────────────────────────────────── */
 #static-events {
-  position: fixed; top: 920px; left: 0; right: 0;
+  position: fixed; top: 1000px; left: 0; right: 0;
   padding: 0 72px; z-index: 2;
 }
 .sevt-eyebrow {
@@ -299,28 +299,20 @@ html, body {
   50%       { opacity: 0.2; }
 }
 .sevt-item {
-  border-top: 1px solid var(--border); padding: 30px 0;
-  opacity: 0; animation: sevt-in 0.7s ease forwards;
-}
-.sevt-item:nth-child(1) { animation-delay: 0.10s; }
-.sevt-item:nth-child(2) { animation-delay: 0.30s; }
-.sevt-item:nth-child(3) { animation-delay: 0.50s; }
-@keyframes sevt-in {
-  from { opacity: 0; transform: translateY(10px); }
-  to   { opacity: 1; transform: translateY(0); }
+  border-top: 1px solid var(--border); padding: 22px 0;
 }
 .sevt-date {
   font-family: 'Source Sans 3', sans-serif;
   font-size: 16px; letter-spacing: 0.15em; text-transform: uppercase;
-  color: var(--gold); margin-bottom: 8px;
+  color: var(--gold); margin-bottom: 6px;
 }
 .sevt-title {
   font-family: 'Cinzel', serif;
-  font-size: 30px; font-weight: 700; color: var(--cream); line-height: 1.2;
+  font-size: 28px; font-weight: 700; color: var(--cream); line-height: 1.2;
 }
-.sevt-meta { font-size: 18px; font-weight: 300; color: var(--dim); margin-top: 6px; }
+.sevt-meta { font-size: 17px; font-weight: 300; color: var(--dim); margin-top: 4px; }
 .sevt-none {
-  border-top: 1px solid var(--border); padding: 30px 0;
+  border-top: 1px solid var(--border); padding: 22px 0;
   font-size: 20px; font-weight: 300; color: var(--dim);
 }
 
@@ -552,11 +544,11 @@ function renderStaticEvents() {
     list.innerHTML = '<div class="sevt-none">Ingen kommende arrangementer registrert</div>';
     return;
   }
-  list.innerHTML = events.slice(0, 3).map(ev => {
+  list.innerHTML = events.slice(0, 2).map(ev => {
     const d = new Date(ev.date);
     const dateStr = d.toLocaleDateString('nb-NO', { weekday: 'long', day: 'numeric', month: 'long' });
     const timeStr = String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0');
-    const meta = [ev.ageGroup, ev.price ? ev.price + ' kr' : null, 'kl. ' + timeStr].filter(Boolean).join(' · ');
+    const meta = [ev.ageGroup, ev.price || null, 'kl. ' + timeStr].filter(Boolean).join(' · ');
     return `<div class="sevt-item">
       <div class="sevt-date">${dateStr}</div>
       <div class="sevt-title">${ev.title || ''}</div>
