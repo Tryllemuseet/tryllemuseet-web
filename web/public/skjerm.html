@@ -278,6 +278,52 @@ html, body {
   font-family: 'Source Sans 3', sans-serif;
 }
 
+/* ── Static events section ─────────────────────────────────── */
+#static-events {
+  position: fixed; top: 920px; left: 0; right: 0;
+  padding: 0 72px; z-index: 2;
+}
+.sevt-eyebrow {
+  display: flex; align-items: center; gap: 12px; margin-bottom: 4px;
+  font-size: 13px; letter-spacing: 0.3em; text-transform: uppercase;
+  color: var(--gold); font-weight: 600;
+  font-family: 'Source Sans 3', sans-serif;
+}
+.live-pulse {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--gold); flex-shrink: 0;
+  animation: live-blink 2.5s ease-in-out infinite;
+}
+@keyframes live-blink {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.2; }
+}
+.sevt-item {
+  border-top: 1px solid var(--border); padding: 30px 0;
+  opacity: 0; animation: sevt-in 0.7s ease forwards;
+}
+.sevt-item:nth-child(1) { animation-delay: 0.10s; }
+.sevt-item:nth-child(2) { animation-delay: 0.30s; }
+.sevt-item:nth-child(3) { animation-delay: 0.50s; }
+@keyframes sevt-in {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.sevt-date {
+  font-family: 'Source Sans 3', sans-serif;
+  font-size: 16px; letter-spacing: 0.15em; text-transform: uppercase;
+  color: var(--gold); margin-bottom: 8px;
+}
+.sevt-title {
+  font-family: 'Cinzel', serif;
+  font-size: 30px; font-weight: 700; color: var(--cream); line-height: 1.2;
+}
+.sevt-meta { font-size: 18px; font-weight: 300; color: var(--dim); margin-top: 6px; }
+.sevt-none {
+  border-top: 1px solid var(--border); padding: 30px 0;
+  font-size: 20px; font-weight: 300; color: var(--dim);
+}
+
 /* ── Ticker bar ─────────────────────────────────────────────── */
 .ticker-bar {
   position: fixed; bottom: 0; left: 0; right: 0; height: 64px;
@@ -357,6 +403,13 @@ html, body {
     </div>
     <div class="price-free">Gratis for medlemmer av DMR og MCN</div>
   </div>
+</div>
+<div id="static-events">
+  <div class="sevt-eyebrow">
+    <span class="live-pulse"></span>
+    <span>Kommende arrangementer</span>
+  </div>
+  <div id="sevt-list"></div>
 </div>
 <div id="static-bottom">
   <div class="quote-block">
@@ -455,6 +508,7 @@ async function refreshDynamic() {
   ]);
   if (e) events = e;
   if (q && q.length) quotes = q;
+  if (!videoMode) renderStaticEvents();
   startTicker();
 }
 
@@ -487,7 +541,28 @@ function setupStaticMode() {
     document.getElementById('s-qr-url-label').textContent = new URL(qrUrl).hostname.replace(/^www\./,'');
   } catch(_) {}
 
+  renderStaticEvents();
   startStaticQuoteRotation();
+}
+
+function renderStaticEvents() {
+  const list = document.getElementById('sevt-list');
+  if (!list) return;
+  if (!events.length) {
+    list.innerHTML = '<div class="sevt-none">Ingen kommende arrangementer registrert</div>';
+    return;
+  }
+  list.innerHTML = events.slice(0, 3).map(ev => {
+    const d = new Date(ev.date);
+    const dateStr = d.toLocaleDateString('nb-NO', { weekday: 'long', day: 'numeric', month: 'long' });
+    const timeStr = String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0');
+    const meta = [ev.ageGroup, ev.price ? ev.price + ' kr' : null, 'kl. ' + timeStr].filter(Boolean).join(' · ');
+    return `<div class="sevt-item">
+      <div class="sevt-date">${dateStr}</div>
+      <div class="sevt-title">${ev.title || ''}</div>
+      ${meta ? `<div class="sevt-meta">${meta}</div>` : ''}
+    </div>`;
+  }).join('');
 }
 
 let staticQuoteTimer = null;
@@ -525,8 +600,9 @@ function enterVideoMode() {
   document.getElementById('static-bg').style.display    = 'none';
   document.getElementById('static-hero').style.display  = 'none';
   document.getElementById('static-rule').style.display  = 'none';
-  document.getElementById('static-cards').style.display = 'none';
-  document.getElementById('static-bottom').style.display= 'none';
+  document.getElementById('static-cards').style.display  = 'none';
+  document.getElementById('static-events').style.display = 'none';
+  document.getElementById('static-bottom').style.display = 'none';
   document.getElementById('video-layer').style.display  = '';
   document.getElementById('grad-top').style.display     = '';
   document.getElementById('grad-bot').style.display     = '';
