@@ -175,11 +175,11 @@ html, body {
   display:flex; flex-direction:column;
 }
 
-/* Row 1: opening hours */
+/* Row 1: opening hours (44px) */
 #bot-info {
-  height:54px; flex-shrink:0;
+  height:44px; flex-shrink:0;
   display:flex; align-items:center; gap:20px;
-  padding:0 72px;
+  padding:0 64px;
   border-bottom:1px solid var(--border);
 }
 .bot-label {
@@ -187,69 +187,99 @@ html, body {
   color:var(--gold); font-weight:600; white-space:nowrap;
 }
 .bot-hours {
-  font-size:22px; font-weight:300; color:var(--cream);
+  font-size:20px; font-weight:300; color:var(--cream);
 }
 
-/* Row 2: partner – one at a time, crossfade */
-#bot-partner {
-  height:154px; flex-shrink:0;
+/* Row 2: sponsors – up to 3 columns, colour logos (148px) */
+#bot-partners {
+  height:148px; flex-shrink:0;
   position:relative;
   border-bottom:1px solid var(--border);
-  display:flex; align-items:center; justify-content:center;
+  overflow:hidden;
 }
-.partner-slide {
+.partner-page {
   position:absolute; inset:0;
   display:flex; flex-direction:column;
-  align-items:center; justify-content:center;
-  gap:10px;
   transition:opacity 0.7s ease;
 }
-.partner-slide img {
-  max-height:76px; max-width:340px;
+.partner-page-label {
+  height:22px; flex-shrink:0;
+  font-size:9px; letter-spacing:0.40em; text-transform:uppercase;
+  color:var(--gold); opacity:0.55;
+  display:flex; align-items:center; justify-content:center;
+  padding-top:6px;
+}
+.partner-page-logos {
+  flex:1;
+  display:flex; align-items:center; justify-content:center;
+}
+.partner-col {
+  flex:0 0 33.333%; max-width:33.333%;
+  display:flex; flex-direction:column;
+  align-items:center; justify-content:center;
+  gap:8px; padding:0 20px;
+}
+.partner-col img {
+  max-height:72px; max-width:260px;
   object-fit:contain;
-  filter:brightness(0) invert(1);
-  opacity:0.60;
 }
-.p-name {
-  font-size:20px; font-weight:300;
-  color:rgba(251,247,239,0.48); letter-spacing:0.06em;
-}
-.p-cat {
-  font-size:9px; letter-spacing:0.42em; text-transform:uppercase;
-  color:var(--gold); opacity:0.50;
+.partner-col .p-name {
+  font-size:13px; font-weight:300;
+  color:rgba(251,247,239,0.45); letter-spacing:0.04em;
+  text-align:center;
 }
 
-/* Row 3: horizontal ticker */
-#bot-ticker {
-  height:80px; flex-shrink:0;
+/* Row 3: quote ticker (48px) */
+#bot-quote-ticker {
+  height:48px; flex-shrink:0;
+  display:flex; align-items:center;
+  overflow:hidden; position:relative;
+  border-bottom:1px solid var(--border);
+}
+#bot-quote-ticker::before, #bot-quote-ticker::after {
+  content:''; position:absolute; top:0; bottom:0; width:60px; z-index:2; pointer-events:none;
+}
+#bot-quote-ticker::before { left:0;  background:linear-gradient(to right, rgba(8,5,14,0.92), transparent); }
+#bot-quote-ticker::after  { right:0; background:linear-gradient(to left,  rgba(8,5,14,0.92), transparent); }
+
+/* Row 4: bus ticker – L/R split (48px) */
+#bot-bus-ticker {
+  height:48px; flex-shrink:0;
+  display:flex;
+}
+.bus-half {
+  flex:1;
   display:flex; align-items:center;
   overflow:hidden; position:relative;
 }
-#bot-ticker::before, #bot-ticker::after {
-  content:''; position:absolute; top:0; bottom:0; width:72px; z-index:2; pointer-events:none;
+.bus-half + .bus-half { border-left:1px solid var(--border); }
+.bus-half::before, .bus-half::after {
+  content:''; position:absolute; top:0; bottom:0; width:48px; z-index:2; pointer-events:none;
 }
-#bot-ticker::before { left:0;  background:linear-gradient(to right, rgba(8,5,14,0.92), transparent); }
-#bot-ticker::after  { right:0; background:linear-gradient(to left,  rgba(8,5,14,0.92), transparent); }
+.bus-half::before { left:0;  background:linear-gradient(to right, rgba(8,5,14,0.92), transparent); }
+.bus-half::after  { right:0; background:linear-gradient(to left,  rgba(8,5,14,0.92), transparent); }
+
+/* Shared ticker track */
 .ticker-track {
   display:inline-flex; align-items:center; white-space:nowrap;
 }
 .ticker-sep {
-  color:var(--gold); opacity:0.40; font-size:11px; padding:0 28px;
+  color:var(--gold); opacity:0.38; font-size:10px; padding:0 22px;
 }
 .t-bus {
-  display:inline-flex; align-items:center; gap:10px;
-  font-size:19px; font-weight:300; color:var(--cream);
+  display:inline-flex; align-items:center; gap:8px;
+  font-size:17px; font-weight:300; color:var(--cream);
 }
 .t-num {
   display:inline-block;
   background:var(--gold); color:var(--deep);
-  font-weight:700; font-size:16px;
-  padding:3px 8px; border-radius:4px;
+  font-weight:700; font-size:14px;
+  padding:2px 7px; border-radius:3px;
 }
 .t-time { color:var(--gold); font-weight:600; }
 .t-quote {
   font-family:'Lora', serif;
-  font-size:19px; font-style:italic; color:var(--dim);
+  font-size:17px; font-style:italic; color:var(--dim);
 }
 @keyframes ticker-roll {
   from { transform:translateX(0); }
@@ -291,9 +321,13 @@ html, body {
     <span class="bot-label">Åpningstider</span>
     <span class="bot-hours" id="bot-hours">—</span>
   </div>
-  <div id="bot-partner"></div>
-  <div id="bot-ticker">
-    <div class="ticker-track" id="ticker-track"></div>
+  <div id="bot-partners"></div>
+  <div id="bot-quote-ticker">
+    <div class="ticker-track" id="quote-track"></div>
+  </div>
+  <div id="bot-bus-ticker">
+    <div class="bus-half" id="bus-left"><div class="ticker-track" id="bus-track-left"></div></div>
+    <div class="bus-half" id="bus-right"><div class="ticker-track" id="bus-track-right"></div></div>
   </div>
 </div>
 
@@ -317,18 +351,19 @@ const CAT_LABEL = {
 };
 
 // ── State ──────────────────────────────────────────────────
-let cfg        = {};
-let videos     = [];
-let vidIdx     = 0;
-let events     = [];
-let quotes     = [];
-let partners   = [];
-let busDeps    = [];
-let busStopId  = null;
-let partnerIdx = 0;
-let partnerTmr = null;
-let ytReady    = null;
-let ytPlayer   = null;
+let cfg           = {};
+let videos        = [];
+let vidIdx        = 0;
+let events        = [];
+let quotes        = [];
+let partners      = [];
+let busDeps       = [];
+let busStopId     = null;
+let partnerPages  = [];
+let partnerPageIdx= 0;
+let partnerTmr    = null;
+let ytReady       = null;
+let ytPlayer      = null;
 
 // ── Clock ───────────────────────────────────────────────────
 (function tick() {
@@ -431,7 +466,8 @@ async function refreshDynamic() {
   if (Array.isArray(q) && q.length)  quotes  = q;
   if (Array.isArray(bus))            busDeps = bus;
   renderMidZone();
-  renderTicker();
+  renderQuoteTicker();
+  renderBusTicker();
 }
 
 // ── Mid zone – 2 slots ──────────────────────────────────────
@@ -479,43 +515,72 @@ function renderMidZone() {
   }
 }
 
-// ── Bot zone: partner cycle ──────────────────────────────────
-function showPartner(idx) {
-  const p = partners[idx];
-  if (!p) return;
-  const container = document.getElementById('bot-partner');
+// ── Bot zone: partners by category group, 3 per page ────────
+const CAT_GROUPS = [
+  { label: 'Prosjektstøtte',        cats: ['public', 'private'] },
+  { label: 'Samarbeidspartner',      cats: ['org']               },
+  { label: 'Fordel for medlemmer',   cats: ['benefit']           },
+];
+
+function buildPartnerPages() {
+  partnerPages = [];
+  const handled = new Set();
+  for (const g of CAT_GROUPS) {
+    const group = partners.filter(p => g.cats.includes(p.category));
+    if (!group.length) continue;
+    for (let i = 0; i < group.length; i += 3) {
+      partnerPages.push({ label: g.label, items: group.slice(i, i + 3) });
+    }
+    group.forEach(p => handled.add(p.name));
+  }
+  // Uncategorized
+  const rest = partners.filter(p => !handled.has(p.name));
+  for (let i = 0; i < rest.length; i += 3) {
+    partnerPages.push({ label: 'Partner', items: rest.slice(i, i + 3) });
+  }
+}
+
+function showPartnerPage(idx) {
+  if (!partnerPages.length) return;
+  const page = partnerPages[idx % partnerPages.length];
+  const container = document.getElementById('bot-partners');
   if (!container) return;
 
   const slide = document.createElement('div');
-  slide.className = 'partner-slide';
+  slide.className = 'partner-page';
   slide.style.opacity = '0';
-
-  const url = sanityImg(p.logoRef, 152);
   slide.innerHTML =
-    (url ? `<img src="${url}" alt="${p.name || ''}">` : '') +
-    `<div class="p-name">${p.name || ''}</div>` +
-    `<div class="p-cat">${CAT_LABEL[p.category] || 'Partner'}</div>`;
+    `<div class="partner-page-label">${page.label}</div>` +
+    `<div class="partner-page-logos">${page.items.map(p => {
+      const url = sanityImg(p.logoRef, 144);
+      return `<div class="partner-col">` +
+        (url ? `<img src="${url}" alt="${p.name||''}">` : '') +
+        `<div class="p-name">${p.name||''}</div>` +
+      `</div>`;
+    }).join('')}</div>`;
 
-  container.innerHTML = '';
-  container.appendChild(slide);
-
-  // Double rAF ensures transition fires after paint
-  requestAnimationFrame(() => requestAnimationFrame(() => { slide.style.opacity = '1'; }));
+  const old = container.querySelector('.partner-page');
+  if (old) {
+    old.style.opacity = '0';
+    setTimeout(() => {
+      container.innerHTML = '';
+      container.appendChild(slide);
+      requestAnimationFrame(() => requestAnimationFrame(() => { slide.style.opacity = '1'; }));
+    }, 700);
+  } else {
+    container.appendChild(slide);
+    requestAnimationFrame(() => requestAnimationFrame(() => { slide.style.opacity = '1'; }));
+  }
 }
 
 function startPartnerCycle() {
-  if (!partners.length) return;
-  showPartner(0);
+  buildPartnerPages();
+  if (!partnerPages.length) return;
+  showPartnerPage(0);
   if (partnerTmr) clearInterval(partnerTmr);
   partnerTmr = setInterval(() => {
-    const next = (partnerIdx + 1) % partners.length;
-    const cur  = document.querySelector('#bot-partner .partner-slide');
-    if (cur) {
-      cur.style.opacity = '0';
-      setTimeout(() => { partnerIdx = next; showPartner(next); }, 750);
-    } else {
-      partnerIdx = next; showPartner(next);
-    }
+    partnerPageIdx = (partnerPageIdx + 1) % partnerPages.length;
+    showPartnerPage(partnerPageIdx);
   }, 8000);
 }
 
@@ -525,19 +590,17 @@ function renderBotInfo() {
   if (el) el.textContent = [cfg.openingHours, cfg.showTime].filter(Boolean).join('  ·  ');
 }
 
-// ── Bot zone: ticker (quotes + bus) ─────────────────────────
-function renderTicker() {
-  const track = document.getElementById('ticker-track');
+// ── Bot zone: quote ticker ───────────────────────────────────
+function renderQuoteTicker() {
+  const track = document.getElementById('quote-track');
   if (!track) return;
+  if (!quotes.length) { track.innerHTML = ''; track.style.animation = 'none'; return; }
 
-  const parts = [];
-  const sep   = '<span class="ticker-sep">✦</span>';
-
-  // Quotes
-  for (const q of quotes) {
+  const sep  = '<span class="ticker-sep">✦</span>';
+  const html = quotes.map(q => {
     const auth = q.author ? ` — ${q.author}` : '';
-    parts.push(`<span class="t-quote">${q.text}${auth}</span>`);
-  }
+    return `<span class="t-quote">${q.text}${auth}</span>${sep}`;
+  }).join('');
 
   // Bus: one next departure per direction (unique destination = one direction)
   const now  = Date.now();
@@ -549,25 +612,44 @@ function renderTicker() {
     if (dest && !seen.has(dest)) { seen.add(dest); deps.push(d); }
   }
 
-  for (const dep of deps) {
-    const { line, dest, time } = fmtDep(dep);
-    parts.push(
-      `<span class="t-bus">` +
-        `<span class="t-num">${line}</span>` +
-        ` → ${dest}&nbsp;&nbsp;<span class="t-time">${time}</span>` +
-      `</span>`
-    );
+// ── Bot zone: bus ticker – one track per direction ───────────
+function busByDirection() {
+  const now    = Date.now();
+  const future = busDeps.filter(d => new Date(d.expectedDepartureTime) > now);
+  const dirs   = {};
+  for (const d of future) {
+    const dest = d.destinationDisplay?.frontText;
+    if (!dest) continue;
+    if (!dirs[dest]) dirs[dest] = [];
+    dirs[dest].push(d);
   }
+  // Sort direction groups by next departure time
+  return Object.entries(dirs)
+    .sort(([, a], [, b]) => new Date(a[0].expectedDepartureTime) - new Date(b[0].expectedDepartureTime));
+}
 
-  if (!parts.length) { track.innerHTML = ''; track.style.animation = 'none'; return; }
+function fillBusTrack(trackId, deps) {
+  const track = document.getElementById(trackId);
+  if (!track) return;
+  if (!deps || !deps.length) { track.innerHTML = ''; track.style.animation = 'none'; return; }
 
-  const html = parts.map(p => p + sep).join('');
-  track.innerHTML = html + html; // duplicate for seamless loop
+  const sep  = '<span class="ticker-sep">·</span>';
+  const html = deps.slice(0, 6).map(dep => {
+    const { line, dest, time } = fmtDep(dep);
+    return `<span class="t-bus"><span class="t-num">${line}</span> → ${dest}&nbsp;<span class="t-time">${time}</span></span>${sep}`;
+  }).join('');
 
-  const dur = Math.max(40, parts.length * 9);
+  track.innerHTML = html + html;
+  const dur = Math.max(20, deps.length * 7);
   track.style.animation = 'none';
-  void track.offsetWidth;  // force reflow so animation resets cleanly
+  void track.offsetWidth;
   track.style.animation = `ticker-roll ${dur}s linear infinite`;
+}
+
+function renderBusTicker() {
+  const dirs = busByDirection();
+  fillBusTrack('bus-track-left',  dirs[0]?.[1] || []);
+  fillBusTrack('bus-track-right', dirs[1]?.[1] || []);
 }
 
 // ── Video ────────────────────────────────────────────────────
@@ -665,7 +747,8 @@ async function playYT(v) {
   renderMidZone();
   renderBotInfo();
   startPartnerCycle();
-  renderTicker();
+  renderQuoteTicker();
+  renderBusTicker();
 
   // Refresh content every 3 minutes
   setInterval(refreshDynamic, 3 * 60 * 1000);
