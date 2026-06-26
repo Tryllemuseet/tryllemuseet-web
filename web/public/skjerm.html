@@ -8,41 +8,35 @@
 @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Lora:ital,wght@0,400;0,600;1,400;1,600&family=Source+Sans+3:wght@300;400;600&display=swap');
 
 :root {
-  --gold:    #D4A843;
-  --cream:   #FBF7EF;
-  --dim:     rgba(251,247,239,0.55);
-  --deep:    #0E0A15;
-  --border:  rgba(212,168,67,0.22);
+  --gold:   #D4A843;
+  --cream:  #FBF7EF;
+  --dim:    rgba(251,247,239,0.55);
+  --deep:   #0E0A15;
+  --border: rgba(212,168,67,0.22);
 }
-
-* { margin: 0; padding: 0; box-sizing: border-box; }
-
+* { margin:0; padding:0; box-sizing:border-box; }
 html, body {
-  width: 1080px; height: 1920px;
-  overflow: hidden;
-  background: var(--deep);
-  color: var(--cream);
-  font-family: 'Source Sans 3', sans-serif;
+  width:1080px; height:1920px;
+  overflow:hidden;
+  background:var(--deep);
+  color:var(--cream);
+  font-family:'Source Sans 3', sans-serif;
 }
 
-/* ═══════════════════════════════════════════
-   TOP ZONE  0 – 864 px  (45 %)
-   ═══════════════════════════════════════════ */
-#zone-top {
-  position: absolute; top: 0; left: 0; right: 0;
-  height: 864px; overflow: hidden;
-}
+/* ═══════════════════════════════════════
+   TOP ZONE  0–864 px  (45 %)
+   ═══════════════════════════════════════ */
+#zone-top { position:absolute; top:0; left:0; right:0; height:864px; overflow:hidden; }
 
-/* Atmospheric static background */
 #top-bg {
-  position: absolute; inset: 0; z-index: 0;
+  position:absolute; inset:0; z-index:0;
   background:
     radial-gradient(ellipse 900px 500px at 50% 5%,  rgba(123,44,143,0.22) 0%, transparent 65%),
     radial-gradient(ellipse 600px 700px at 85% 100%, rgba(107,15,26,0.28)  0%, transparent 60%),
     linear-gradient(175deg, #1A0A28 0%, #0E0A15 50%, #130208 100%);
 }
 #top-bg::after {
-  content: ''; position: absolute; inset: 0;
+  content:''; position:absolute; inset:0;
   background-image:
     radial-gradient(1px 1px at 15% 20%, rgba(255,255,255,0.20) 0%, transparent 100%),
     radial-gradient(1px 1px at 35% 45%, rgba(255,255,255,0.12) 0%, transparent 100%),
@@ -54,193 +48,218 @@ html, body {
     radial-gradient(1px 1px at 05% 55%, rgba(255,255,255,0.08) 0%, transparent 100%);
 }
 
-/* Video layer (hidden when no videos) */
-#top-video {
-  position: absolute; inset: 0; z-index: 1;
-  display: none; overflow: hidden;
-}
-#main-video {
-  width: 100%; height: 100%; object-fit: cover;
-}
-/* YouTube: scale 16:9 to fill 1080×864 — crop sides */
+/* Video layer */
+#top-video { position:absolute; inset:0; z-index:1; overflow:hidden; }
+#main-video { width:100%; height:100%; object-fit:cover; display:none; }
 #yt-outer {
-  position: absolute; top: 0; left: 0;
-  width: 1080px; height: 864px;
-  overflow: hidden; display: none;
+  position:absolute; top:0; left:0;
+  width:1080px; height:864px;
+  overflow:hidden; display:none;
 }
-#yt-outer > iframe, #yt-player {
-  position: absolute !important;
-  left: -228px !important; top: 0 !important;
-  width: 1536px !important; height: 864px !important;
-  border: 0; pointer-events: none;
+/* YouTube 16:9 → fill 1080×864 by cropping sides: (1536–1080)/2 = 228 */
+#yt-outer iframe {
+  position:absolute !important;
+  left:-228px !important; top:0 !important;
+  width:1536px !important; height:864px !important;
+  border:0; pointer-events:none;
 }
-/* Darkening shade over video */
+
+/* Dark overlay over video */
 #top-shade {
-  position: absolute; inset: 0; z-index: 2;
-  background: rgba(10,7,17,0.32);
-  pointer-events: none; display: none;
+  position:absolute; inset:0; z-index:2;
+  background:rgba(10,7,17,0.30);
+  pointer-events:none; display:none;
 }
 
 /* Museum name – shown when no video */
 #top-name {
-  position: absolute; inset: 0; z-index: 2;
-  display: flex; flex-direction: column;
-  align-items: center; justify-content: center;
+  position:absolute; inset:0; z-index:2;
+  display:flex; flex-direction:column;
+  align-items:center; justify-content:center;
 }
 .top-name-h {
-  font-family: 'Cinzel', serif;
-  font-size: 96px; font-weight: 700;
-  letter-spacing: 0.02em; line-height: 1;
-  color: var(--cream); text-align: center;
+  font-family:'Cinzel', serif;
+  font-size:96px; font-weight:700;
+  letter-spacing:0.02em; line-height:1;
+  color:var(--cream); text-align:center;
 }
-.top-name-h em { font-style: italic; color: var(--gold); }
+.top-name-h em { font-style:italic; color:var(--gold); }
 .top-name-rule {
-  width: 280px; height: 1px; margin: 36px auto;
-  background: linear-gradient(90deg, transparent, var(--gold) 30%, var(--gold) 70%, transparent);
-  opacity: 0.55;
+  width:280px; height:1px; margin:36px auto;
+  background:linear-gradient(90deg,transparent,var(--gold) 30%,var(--gold) 70%,transparent);
+  opacity:0.55;
 }
 .top-name-sub {
-  font-size: 16px; letter-spacing: 0.40em; text-transform: uppercase;
-  color: var(--dim); font-weight: 300;
+  font-size:16px; letter-spacing:0.40em; text-transform:uppercase;
+  color:var(--dim); font-weight:300;
 }
 
-/* Logo + clock — always on top */
+/* Logo + clock strip (always on top) */
 #top-bar {
-  position: absolute; top: 0; left: 0; right: 0; z-index: 4;
-  display: flex; justify-content: space-between; align-items: center;
-  padding: 40px 64px 0;
+  position:absolute; top:0; left:0; right:0; z-index:4;
+  display:flex; justify-content:space-between; align-items:center;
+  padding:40px 64px 0;
 }
-.top-logo  { height: 52px; width: auto; }
+.top-logo  { height:52px; width:auto; }
 .top-clock {
-  font-family: 'Source Sans 3', sans-serif;
-  font-size: 22px; font-weight: 300; color: var(--dim);
-  letter-spacing: 0.05em; font-variant-numeric: tabular-nums;
+  font-size:22px; font-weight:300; color:var(--dim);
+  letter-spacing:0.05em; font-variant-numeric:tabular-nums;
 }
 
 /* Gradient fade into mid zone */
 #top-fade {
-  position: absolute; bottom: 0; left: 0; right: 0; height: 160px; z-index: 5;
-  background: linear-gradient(to bottom, transparent, var(--deep) 100%);
-  pointer-events: none;
+  position:absolute; bottom:0; left:0; right:0; height:160px; z-index:5;
+  background:linear-gradient(to bottom, transparent, var(--deep) 100%);
+  pointer-events:none;
 }
 
-/* ═══════════════════════════════════════════
-   MID ZONE  864 – 1632 px  (40 %)
-   ═══════════════════════════════════════════ */
+/* ═══════════════════════════════════════
+   MID ZONE  864–1632 px  (40 %)
+   ═══════════════════════════════════════ */
 #zone-mid {
-  position: absolute; top: 864px; left: 0; right: 0; height: 768px;
-  display: flex; flex-direction: column;
+  position:absolute; top:864px; left:0; right:0; height:768px;
+  display:flex; flex-direction:column;
 }
-
 .mid-slot {
-  flex: 1;            /* 256 px each */
-  padding: 26px 72px;
-  border-top: 1px solid var(--border);
-  display: flex; flex-direction: column; justify-content: center;
-  overflow: hidden;
+  flex:1;                  /* 384 px each with 2 slots */
+  padding:44px 80px;
+  border-top:1px solid var(--border);
+  display:flex; flex-direction:column; justify-content:center;
+  overflow:hidden;
 }
 
 /* — Event slot — */
 .mid-event .slot-eyebrow {
-  font-size: 11px; letter-spacing: 0.38em; text-transform: uppercase;
-  color: var(--gold); font-weight: 600; margin-bottom: 8px;
-  font-family: 'Source Sans 3', sans-serif;
+  font-size:11px; letter-spacing:0.40em; text-transform:uppercase;
+  color:var(--gold); font-weight:600; margin-bottom:14px;
 }
 .mid-event .slot-date {
-  font-family: 'Source Sans 3', sans-serif;
-  font-size: 18px; font-weight: 400; letter-spacing: 0.08em;
-  text-transform: uppercase; color: var(--gold); margin-bottom: 8px;
+  font-size:21px; font-weight:400; letter-spacing:0.07em;
+  text-transform:uppercase; color:var(--gold); margin-bottom:16px;
 }
 .mid-event .slot-title {
-  font-family: 'Cinzel', serif;
-  font-size: 38px; font-weight: 700; color: var(--cream);
-  line-height: 1.15; margin-bottom: 8px;
-  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
-  overflow: hidden;
+  font-family:'Cinzel', serif;
+  font-size:52px; font-weight:700; color:var(--cream);
+  line-height:1.15; margin-bottom:16px;
+  display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical;
+  overflow:hidden;
 }
 .mid-event .slot-meta {
-  font-size: 18px; font-weight: 300; color: var(--dim);
+  font-size:21px; font-weight:300; color:var(--dim);
 }
 
 /* — Quote slot — */
 .mid-quote .slot-qmark {
-  font-family: 'Lora', serif;
-  font-size: 60px; line-height: 0.6;
-  color: var(--gold); opacity: 0.40; margin-bottom: 14px;
+  font-family:'Lora', serif;
+  font-size:72px; line-height:0.6;
+  color:var(--gold); opacity:0.38; margin-bottom:20px;
 }
 .mid-quote .slot-qtext {
-  font-family: 'Lora', serif;
-  font-size: 26px; font-style: italic; line-height: 1.55; color: var(--cream);
-  display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical;
-  overflow: hidden;
+  font-family:'Lora', serif;
+  font-size:36px; font-style:italic; line-height:1.5; color:var(--cream);
+  display:-webkit-box; -webkit-line-clamp:4; -webkit-box-orient:vertical;
+  overflow:hidden;
 }
 .mid-quote .slot-qauthor {
-  font-family: 'Source Sans 3', sans-serif;
-  font-size: 13px; letter-spacing: 0.25em; text-transform: uppercase;
-  color: var(--gold); margin-top: 12px;
+  font-size:14px; letter-spacing:0.25em; text-transform:uppercase;
+  color:var(--gold); margin-top:18px;
 }
 
-/* ═══════════════════════════════════════════
-   BOT ZONE  1632 – 1920 px  (15 %)
-   ═══════════════════════════════════════════ */
+/* ═══════════════════════════════════════
+   BOT ZONE  1632–1920 px  (15 %)
+   ═══════════════════════════════════════ */
 #zone-bot {
-  position: absolute; top: 1632px; left: 0; right: 0; height: 288px;
-  border-top: 1px solid rgba(212,168,67,0.40);
-  background: rgba(8,5,14,0.90);
-  display: flex; flex-direction: column;
+  position:absolute; top:1632px; left:0; right:0; height:288px;
+  border-top:1px solid rgba(212,168,67,0.40);
+  background:rgba(8,5,14,0.92);
+  display:flex; flex-direction:column;
 }
 
-/* Opening hours row */
+/* Row 1: opening hours */
 #bot-info {
-  height: 88px;
-  display: flex; align-items: center; gap: 20px;
-  padding: 0 72px;
-  border-bottom: 1px solid var(--border);
-  flex-shrink: 0;
+  height:54px; flex-shrink:0;
+  display:flex; align-items:center; gap:20px;
+  padding:0 72px;
+  border-bottom:1px solid var(--border);
 }
 .bot-label {
-  font-size: 11px; letter-spacing: 0.35em; text-transform: uppercase;
-  color: var(--gold); font-weight: 600; white-space: nowrap;
-  font-family: 'Source Sans 3', sans-serif;
+  font-size:10px; letter-spacing:0.35em; text-transform:uppercase;
+  color:var(--gold); font-weight:600; white-space:nowrap;
 }
 .bot-hours {
-  font-size: 24px; font-weight: 300; color: var(--cream);
-  font-family: 'Source Sans 3', sans-serif;
+  font-size:22px; font-weight:300; color:var(--cream);
 }
 
-/* Sponsor logo carousel */
-#bot-partners {
-  flex: 1;
-  display: flex; align-items: center;
-  overflow: hidden;
+/* Row 2: partner – one at a time, crossfade */
+#bot-partner {
+  height:154px; flex-shrink:0;
+  position:relative;
+  border-bottom:1px solid var(--border);
+  display:flex; align-items:center; justify-content:center;
 }
-.partners-track {
-  display: inline-flex; align-items: center; white-space: nowrap;
-  animation: p-roll 35s linear infinite;
+.partner-slide {
+  position:absolute; inset:0;
+  display:flex; flex-direction:column;
+  align-items:center; justify-content:center;
+  gap:10px;
+  transition:opacity 0.7s ease;
 }
-.partner-item {
-  padding: 0 52px;
-  display: flex; align-items: center; justify-content: center;
+.partner-slide img {
+  max-height:76px; max-width:340px;
+  object-fit:contain;
+  filter:brightness(0) invert(1);
+  opacity:0.60;
 }
-.partner-logo {
-  height: 56px; width: auto; max-width: 200px;
-  object-fit: contain;
-  filter: brightness(0) invert(1);
-  opacity: 0.50;
+.p-name {
+  font-size:20px; font-weight:300;
+  color:rgba(251,247,239,0.48); letter-spacing:0.06em;
 }
-.partner-name {
-  font-size: 18px; font-weight: 300; letter-spacing: 0.05em;
-  color: rgba(251,247,239,0.38);
+.p-cat {
+  font-size:9px; letter-spacing:0.42em; text-transform:uppercase;
+  color:var(--gold); opacity:0.50;
 }
-@keyframes p-roll {
-  from { transform: translateX(0); }
-  to   { transform: translateX(-50%); }
+
+/* Row 3: horizontal ticker */
+#bot-ticker {
+  height:80px; flex-shrink:0;
+  display:flex; align-items:center;
+  overflow:hidden; position:relative;
+}
+#bot-ticker::before, #bot-ticker::after {
+  content:''; position:absolute; top:0; bottom:0; width:72px; z-index:2; pointer-events:none;
+}
+#bot-ticker::before { left:0;  background:linear-gradient(to right, rgba(8,5,14,0.92), transparent); }
+#bot-ticker::after  { right:0; background:linear-gradient(to left,  rgba(8,5,14,0.92), transparent); }
+.ticker-track {
+  display:inline-flex; align-items:center; white-space:nowrap;
+}
+.ticker-sep {
+  color:var(--gold); opacity:0.40; font-size:11px; padding:0 28px;
+}
+.t-bus {
+  display:inline-flex; align-items:center; gap:10px;
+  font-size:19px; font-weight:300; color:var(--cream);
+}
+.t-num {
+  display:inline-block;
+  background:var(--gold); color:var(--deep);
+  font-weight:700; font-size:16px;
+  padding:3px 8px; border-radius:4px;
+}
+.t-time { color:var(--gold); font-weight:600; }
+.t-quote {
+  font-family:'Lora', serif;
+  font-size:19px; font-style:italic; color:var(--dim);
+}
+@keyframes ticker-roll {
+  from { transform:translateX(0); }
+  to   { transform:translateX(-50%); }
 }
 </style>
 </head>
 <body>
 
-<!-- ══ TOP ZONE ══════════════════════════════════ -->
+<!-- ══ TOP ZONE ══════════════════════════════════════ -->
 <div id="zone-top">
   <div id="top-bg"></div>
   <div id="top-video">
@@ -260,25 +279,24 @@ html, body {
   <div id="top-fade"></div>
 </div>
 
-<!-- ══ MID ZONE ══════════════════════════════════ -->
+<!-- ══ MID ZONE ══════════════════════════════════════ -->
 <div id="zone-mid">
   <div class="mid-slot" id="mid-0"></div>
   <div class="mid-slot" id="mid-1"></div>
-  <div class="mid-slot" id="mid-2"></div>
 </div>
 
-<!-- ══ BOT ZONE ══════════════════════════════════ -->
+<!-- ══ BOT ZONE ══════════════════════════════════════ -->
 <div id="zone-bot">
   <div id="bot-info">
     <span class="bot-label">Åpningstider</span>
     <span class="bot-hours" id="bot-hours">—</span>
   </div>
-  <div id="bot-partners">
-    <div class="partners-track" id="partners-track"></div>
+  <div id="bot-partner"></div>
+  <div id="bot-ticker">
+    <div class="ticker-track" id="ticker-track"></div>
   </div>
 </div>
 
-<!-- ══ Application logic ══════════════════════════ -->
 <script>
 'use strict';
 
@@ -286,85 +304,153 @@ const PROJ = 'n2ynpgty';
 const DS   = 'production';
 const API  = `https://${PROJ}.apicdn.sanity.io/v2021-10-21/data/query/${DS}`;
 
+const ENTUR_CLIENT = 'tryllemuseet-infoskjerm';
+const ENTUR_GEO    = 'https://api.entur.io/geocoder/v1/autocomplete';
+const ENTUR_JP     = 'https://api.entur.io/journey-planner/v3/graphql';
+const BUS_STOP     = 'Årvollveien';
+
+const CAT_LABEL = {
+  public:  'Prosjektstøtte',
+  private: 'Prosjektstøtte',
+  org:     'Samarbeidspartner',
+  benefit: 'Fordel for medlemmer',
+};
+
+// ── State ──────────────────────────────────────────────────
+let cfg        = {};
+let videos     = [];
+let vidIdx     = 0;
+let events     = [];
+let quotes     = [];
+let partners   = [];
+let busDeps    = [];
+let busStopId  = null;
+let partnerIdx = 0;
+let partnerTmr = null;
+let ytReady    = null;
+let ytPlayer   = null;
+
+// ── Clock ───────────────────────────────────────────────────
+(function tick() {
+  const n = new Date(), el = document.getElementById('clock');
+  if (el) el.textContent =
+    String(n.getHours()).padStart(2,'0') + ':' + String(n.getMinutes()).padStart(2,'0');
+  setTimeout(tick, 1000);
+}());
+
+// ── Sanity image URL ────────────────────────────────────────
+function sanityImg(ref, h) {
+  if (!ref) return null;
+  const m = ref.match(/^image-([a-f0-9]+)-(\d+x\d+)-(\w+)$/);
+  if (!m) return null;
+  return `https://cdn.sanity.io/images/${PROJ}/${DS}/${m[1]}-${m[2]}.${m[3]}?h=${h||120}&fit=max`;
+}
+
+// ── Sanity GROQ ─────────────────────────────────────────────
 async function sq(query) {
   try {
     const r = await fetch(API + '?query=' + encodeURIComponent(query));
     if (!r.ok) { console.error('Sanity', r.status); return null; }
     return (await r.json()).result;
-  } catch(e) { console.error('Sanity fetch:', e); return null; }
+  } catch(e) { console.error('Sanity:', e); return null; }
 }
 
-// ── State ─────────────────────────────────────────
-let cfg      = {};
-let videos   = [];
-let vidIdx   = 0;
-let events   = [];
-let quotes   = [];
-let partners = [];
-let ytPlayer = null;
-let ytLoaded = false;
-
-// ── Clock ─────────────────────────────────────────
-(function tickClock() {
-  const n = new Date();
-  const el = document.getElementById('clock');
-  if (el) el.textContent =
-    String(n.getHours()).padStart(2,'0') + ':' + String(n.getMinutes()).padStart(2,'0');
-  setTimeout(tickClock, 1000);
-}());
-
-// ── Sanity image CDN URL ──────────────────────────
-function sanityImg(ref, h) {
-  if (!ref) return null;
-  const m = ref.match(/^image-([a-f0-9]+)-(\d+x\d+)-(\w+)$/);
-  if (!m) return null;
-  return `https://cdn.sanity.io/images/${PROJ}/${DS}/${m[1]}-${m[2]}.${m[3]}?h=${h || 120}&fit=max`;
+// ── EnTur / Ruter bus ───────────────────────────────────────
+async function findBusStop() {
+  try {
+    const r = await fetch(
+      `${ENTUR_GEO}?text=${encodeURIComponent(BUS_STOP)}&layers=venue&size=5`,
+      { headers: { 'ET-Client-Name': ENTUR_CLIENT } }
+    );
+    if (!r.ok) return null;
+    const j = await r.json();
+    const f = (j.features || []).find(x => x.properties?.layer === 'venue');
+    return f?.properties?.id || null;
+  } catch(e) { console.error('EnTur geocoder:', e); return null; }
 }
 
-// ── Data loading ──────────────────────────────────
+async function fetchBusDeps() {
+  if (!busStopId) busStopId = await findBusStop();
+  if (!busStopId) return [];
+  const q = `{
+    stopPlace(id:"${busStopId}") {
+      estimatedCalls(timeRange:7200,numberOfDepartures:10) {
+        expectedDepartureTime
+        destinationDisplay { frontText }
+        serviceJourney { journeyPattern { line { publicCode } } }
+      }
+    }
+  }`;
+  try {
+    const r = await fetch(ENTUR_JP, {
+      method: 'POST',
+      headers: { 'Content-Type':'application/json', 'ET-Client-Name':ENTUR_CLIENT },
+      body: JSON.stringify({ query: q }),
+    });
+    if (!r.ok) return [];
+    const j = await r.json();
+    return j.data?.stopPlace?.estimatedCalls || [];
+  } catch(e) { console.error('EnTur JP:', e); return []; }
+}
+
+function fmtDep(dep) {
+  const mins = Math.round((new Date(dep.expectedDepartureTime) - Date.now()) / 60000);
+  return {
+    line: dep.serviceJourney?.journeyPattern?.line?.publicCode || '?',
+    dest: dep.destinationDisplay?.frontText || '?',
+    time: mins <= 1 ? 'nå' : `${mins} min`,
+    mins,
+  };
+}
+
+// ── Data loading ────────────────────────────────────────────
 async function loadAll() {
-  const [c, v, e, q, p] = await Promise.all([
-    sq(`*[_type=="signageConfig"][0]{openingHours,showTime,qrUrl,memberQrUrl}`),
+  const [c, v, e, q, p, bus] = await Promise.all([
+    sq(`*[_type=="signageConfig"][0]{openingHours,showTime}`),
     sq(`*[_type=="signageVideo"&&active==true]|order(sortOrder asc){title,videoUrl,startSecs,endSecs}`),
-    sq(`*[_type=="event"&&dateTime(date)>dateTime(now())]|order(date asc)[0..2]{title,date,ageGroup,price}`),
+    sq(`*[_type=="event"&&dateTime(date)>dateTime(now())]|order(date asc)[0..1]{title,date,ageGroup,price}`),
     sq(`*[_type=="signageQuote"&&active==true]|order(sortOrder asc){text,author}`),
-    sq(`*[_type=="partner"&&isVisible!=false]|order(order asc){name,"logoRef":logo.asset._ref}`),
+    sq(`*[_type=="partner"&&isVisible!=false]|order(order asc){name,category,"logoRef":logo.asset._ref}`),
+    fetchBusDeps(),
   ]);
   cfg      = c || {};
-  videos   = (v || []).filter(x => x.videoUrl && x.videoUrl.trim());
+  videos   = (v || []).filter(x => x.videoUrl?.trim());
   events   = Array.isArray(e) ? e : [];
   quotes   = Array.isArray(q) ? q : [];
   partners = Array.isArray(p) ? p : [];
+  busDeps  = Array.isArray(bus) ? bus : [];
 }
 
 async function refreshDynamic() {
-  const [e, q] = await Promise.all([
-    sq(`*[_type=="event"&&dateTime(date)>dateTime(now())]|order(date asc)[0..2]{title,date,ageGroup,price}`),
+  const [e, q, bus] = await Promise.all([
+    sq(`*[_type=="event"&&dateTime(date)>dateTime(now())]|order(date asc)[0..1]{title,date,ageGroup,price}`),
     sq(`*[_type=="signageQuote"&&active==true]|order(sortOrder asc){text,author}`),
+    fetchBusDeps(),
   ]);
-  if (Array.isArray(e)) events = e;
-  if (Array.isArray(q) && q.length) quotes = q;
+  if (Array.isArray(e))              events  = e;
+  if (Array.isArray(q) && q.length)  quotes  = q;
+  if (Array.isArray(bus))            busDeps = bus;
   renderMidZone();
+  renderTicker();
 }
 
-// ── Middle zone ───────────────────────────────────
+// ── Mid zone – 2 slots ──────────────────────────────────────
 function buildSlots() {
-  // Fill 3 slots: events first, then quotes as fallback
   const slots = [];
   for (const ev of events) {
-    slots.push({ type: 'event', data: ev });
-    if (slots.length === 3) return slots;
+    slots.push({ type:'event', data:ev });
+    if (slots.length === 2) return slots;
   }
   for (const q of quotes) {
-    slots.push({ type: 'quote', data: q });
-    if (slots.length === 3) return slots;
+    slots.push({ type:'quote', data:q });
+    if (slots.length === 2) return slots;
   }
   return slots;
 }
 
 function renderMidZone() {
   const slots = buildSlots();
-  for (let i = 0; i < 3; i++) {
+  for (let i = 0; i < 2; i++) {
     const el = document.getElementById(`mid-${i}`);
     if (!el) continue;
     const s = slots[i];
@@ -373,7 +459,7 @@ function renderMidZone() {
     if (s.type === 'event') {
       const ev = s.data;
       const d  = new Date(ev.date);
-      const dateStr = d.toLocaleDateString('nb-NO', { weekday: 'long', day: 'numeric', month: 'long' });
+      const dateStr = d.toLocaleDateString('nb-NO', { weekday:'long', day:'numeric', month:'long' });
       const timeStr = String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0');
       const meta = [ev.ageGroup, ev.price].filter(Boolean).join(' · ');
       el.className = 'mid-slot mid-event';
@@ -393,30 +479,94 @@ function renderMidZone() {
   }
 }
 
-// ── Bottom zone ───────────────────────────────────
-function renderBotZone() {
+// ── Bot zone: partner cycle ──────────────────────────────────
+function showPartner(idx) {
+  const p = partners[idx];
+  if (!p) return;
+  const container = document.getElementById('bot-partner');
+  if (!container) return;
+
+  const slide = document.createElement('div');
+  slide.className = 'partner-slide';
+  slide.style.opacity = '0';
+
+  const url = sanityImg(p.logoRef, 152);
+  slide.innerHTML =
+    (url ? `<img src="${url}" alt="${p.name || ''}">` : '') +
+    `<div class="p-name">${p.name || ''}</div>` +
+    `<div class="p-cat">${CAT_LABEL[p.category] || 'Partner'}</div>`;
+
+  container.innerHTML = '';
+  container.appendChild(slide);
+
+  // Double rAF ensures transition fires after paint
+  requestAnimationFrame(() => requestAnimationFrame(() => { slide.style.opacity = '1'; }));
+}
+
+function startPartnerCycle() {
+  if (!partners.length) return;
+  showPartner(0);
+  if (partnerTmr) clearInterval(partnerTmr);
+  partnerTmr = setInterval(() => {
+    const next = (partnerIdx + 1) % partners.length;
+    const cur  = document.querySelector('#bot-partner .partner-slide');
+    if (cur) {
+      cur.style.opacity = '0';
+      setTimeout(() => { partnerIdx = next; showPartner(next); }, 750);
+    } else {
+      partnerIdx = next; showPartner(next);
+    }
+  }, 8000);
+}
+
+// ── Bot zone: opening hours ──────────────────────────────────
+function renderBotInfo() {
   const el = document.getElementById('bot-hours');
-  if (el) {
-    const parts = [cfg.openingHours, cfg.showTime].filter(Boolean);
-    el.textContent = parts.join('  ·  ');
+  if (el) el.textContent = [cfg.openingHours, cfg.showTime].filter(Boolean).join('  ·  ');
+}
+
+// ── Bot zone: ticker (quotes + bus) ─────────────────────────
+function renderTicker() {
+  const track = document.getElementById('ticker-track');
+  if (!track) return;
+
+  const parts = [];
+  const sep   = '<span class="ticker-sep">✦</span>';
+
+  // Quotes
+  for (const q of quotes) {
+    const auth = q.author ? ` — ${q.author}` : '';
+    parts.push(`<span class="t-quote">${q.text}${auth}</span>`);
   }
-  renderPartners();
+
+  // Bus departures (only future, max 8)
+  const now  = Date.now();
+  const deps = busDeps
+    .filter(d => new Date(d.expectedDepartureTime) > now)
+    .slice(0, 8);
+
+  for (const dep of deps) {
+    const { line, dest, time } = fmtDep(dep);
+    parts.push(
+      `<span class="t-bus">` +
+        `<span class="t-num">${line}</span>` +
+        ` → ${dest}&nbsp;&nbsp;<span class="t-time">${time}</span>` +
+      `</span>`
+    );
+  }
+
+  if (!parts.length) { track.innerHTML = ''; track.style.animation = 'none'; return; }
+
+  const html = parts.map(p => p + sep).join('');
+  track.innerHTML = html + html; // duplicate for seamless loop
+
+  const dur = Math.max(40, parts.length * 9);
+  track.style.animation = 'none';
+  void track.offsetWidth;  // force reflow so animation resets cleanly
+  track.style.animation = `ticker-roll ${dur}s linear infinite`;
 }
 
-function renderPartners() {
-  const track = document.getElementById('partners-track');
-  if (!track || !partners.length) return;
-  const html = partners.map(p => {
-    const url = sanityImg(p.logoRef, 112);
-    return url
-      ? `<div class="partner-item"><img class="partner-logo" src="${url}" alt="${p.name || ''}"></div>`
-      : `<div class="partner-item"><span class="partner-name">${p.name || ''}</span></div>`;
-  }).join('');
-  track.innerHTML = html + html; // duplicate for seamless scroll loop
-  track.style.animationDuration = Math.max(20, partners.length * 8) + 's';
-}
-
-// ── Video (top zone) ──────────────────────────────
+// ── Video ────────────────────────────────────────────────────
 function isYT(url)    { return /youtube\.com|youtu\.be/.test(url || ''); }
 function getYTId(url) {
   const m = url.match(/[?&]v=([^&]+)/) || url.match(/youtu\.be\/([^?&]+)/);
@@ -424,12 +574,27 @@ function getYTId(url) {
 }
 
 function setVideoMode(on) {
-  document.getElementById('top-video').style.display = on ? '' : 'none';
-  document.getElementById('top-shade').style.display = on ? '' : 'none';
-  document.getElementById('top-name').style.display  = on ? 'none' : '';
+  document.getElementById('top-shade').style.display = on ? 'block' : 'none';
+  document.getElementById('top-name').style.display  = on ? 'none'  : '';
+}
+
+function loadYTApi() {
+  if (ytReady) return ytReady;
+  ytReady = new Promise(resolve => {
+    if (window.YT?.Player) { resolve(); return; }
+    if (!document.querySelector('script[src*="youtube.com/iframe_api"]')) {
+      const s = document.createElement('script');
+      s.src = 'https://www.youtube.com/iframe_api';
+      document.head.appendChild(s);
+    }
+    const prev = window.onYouTubeIframeAPIReady;
+    window.onYouTubeIframeAPIReady = () => { if (prev) prev(); resolve(); };
+  });
+  return ytReady;
 }
 
 function playVid(idx) {
+  if (!videos.length) return;
   vidIdx = ((idx % videos.length) + videos.length) % videos.length;
   setVideoMode(true);
   const v = videos[vidIdx];
@@ -437,9 +602,9 @@ function playVid(idx) {
 }
 
 function playMp4(v) {
-  document.getElementById('yt-outer').style.display = 'none';
+  document.getElementById('yt-outer').style.display   = 'none';
   const el = document.getElementById('main-video');
-  el.style.display = '';
+  el.style.display = 'block';
   el.src = v.videoUrl;
   el.onloadedmetadata = () => {
     if (v.startSecs) el.currentTime = v.startSecs;
@@ -454,52 +619,52 @@ function playMp4(v) {
   }
 }
 
-function loadYTApi() {
-  return new Promise(resolve => {
-    if (window.YT && window.YT.Player) { ytLoaded = true; resolve(); return; }
-    const s = document.createElement('script');
-    s.src = 'https://www.youtube.com/iframe_api';
-    document.head.appendChild(s);
-    const prev = window.onYouTubeIframeAPIReady;
-    window.onYouTubeIframeAPIReady = () => { ytLoaded = true; if (prev) prev(); resolve(); };
-  });
-}
-
 async function playYT(v) {
   document.getElementById('main-video').style.display = 'none';
-  document.getElementById('yt-outer').style.display   = '';
-  if (!ytLoaded) await loadYTApi();
+  document.getElementById('yt-outer').style.display   = 'block';
+  await loadYTApi();
   const id  = getYTId(v.videoUrl);
-  const end = v.endSecs || undefined;
-  const onEnd = e => { if (e.data === YT.PlayerState.ENDED) playVid(vidIdx + 1); };
+  const onStateChange = e => {
+    if (e.data === YT.PlayerState.ENDED) playVid(vidIdx + 1);
+  };
   if (ytPlayer) {
-    ytPlayer.loadVideoById({ videoId: id, startSeconds: v.startSecs || 0, endSeconds: end });
+    const opts = { videoId:id, startSeconds: v.startSecs || 0 };
+    if (v.endSecs) opts.endSeconds = v.endSecs;
+    ytPlayer.loadVideoById(opts);
   } else {
+    const pvars = {
+      autoplay:1, mute:1, controls:0, rel:0,
+      modestbranding:1, iv_load_policy:3, disablekb:1,
+      start: v.startSecs || 0,
+    };
+    if (v.endSecs) pvars.end = v.endSecs;
     ytPlayer = new YT.Player('yt-player', {
       videoId: id,
-      width: '1536', height: '864',
-      playerVars: { autoplay:1, mute:1, controls:0, rel:0,
-                    modestbranding:1, iv_load_policy:3, disablekb:1,
-                    start: v.startSecs || 0, end },
-      events: { onStateChange: onEnd },
+      width:  '1536',
+      height: '864',
+      playerVars: pvars,
+      events: {
+        onReady:       e => e.target.playVideo(),
+        onStateChange: onStateChange,
+      },
     });
   }
 }
 
-// ── Boot ──────────────────────────────────────────
+// ── Boot ─────────────────────────────────────────────────────
 (async () => {
   await loadAll();
 
-  if (videos.length > 0) {
-    playVid(0);
-  } else {
-    setVideoMode(false);
-  }
+  if (videos.length > 0) playVid(0);
+  else                   setVideoMode(false);
 
   renderMidZone();
-  renderBotZone();
+  renderBotInfo();
+  startPartnerCycle();
+  renderTicker();
 
-  setInterval(refreshDynamic, 5 * 60 * 1000);
+  // Refresh content every 3 minutes
+  setInterval(refreshDynamic, 3 * 60 * 1000);
 })();
 </script>
 </body>
