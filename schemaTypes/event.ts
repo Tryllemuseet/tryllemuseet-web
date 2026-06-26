@@ -21,10 +21,17 @@ export const event = defineType({
     }),
     defineField({
       name: 'date',
-      title: 'Dato og klokkeslett',
+      title: 'Startdato og klokkeslett',
       type: 'datetime',
       options: { dateFormat: 'DD.MM.YYYY', timeFormat: 'HH:mm', timeStep: 15 },
       validation: R => R.required(),
+    }),
+    defineField({
+      name: 'endDate',
+      title: 'Sluttdato (valgfri)',
+      type: 'datetime',
+      options: { dateFormat: 'DD.MM.YYYY', timeFormat: 'HH:mm', timeStep: 15 },
+      description: 'Fyll inn om arrangementet strekker seg over flere dager',
     }),
     defineField({
       name: 'ageGroup',

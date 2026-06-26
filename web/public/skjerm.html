@@ -141,6 +141,17 @@ html, body {
   font-size:26px; font-weight:400; letter-spacing:0.07em;
   text-transform:uppercase; color:var(--gold); margin-bottom:16px;
 }
+.slot-date-range {
+  display:flex; gap:56px; align-items:flex-start; margin-bottom:16px;
+}
+.slot-date-range-col .range-label {
+  font-size:10px; letter-spacing:0.38em; text-transform:uppercase;
+  color:var(--gold); opacity:0.55; font-weight:600; margin-bottom:5px;
+}
+.slot-date-range-col .range-date {
+  font-size:24px; font-weight:400; letter-spacing:0.06em;
+  text-transform:uppercase; color:var(--gold);
+}
 .mid-event .slot-title {
   font-family:'Cinzel', serif;
   font-size:60px; font-weight:700; color:var(--cream);
@@ -483,7 +494,7 @@ async function loadAll() {
   const [c, v, e, q, p, bus] = await Promise.all([
     sq(`*[_type=="signageConfig"][0]{openingHours,showTime,memberQrUrl,courseQrUrl}`),
     sq(`*[_type=="signageVideo"&&active==true]|order(sortOrder asc){title,videoUrl,startSecs,endSecs}`),
-    sq(`*[_type=="event"&&dateTime(date)>dateTime(now())]|order(date asc)[0..1]{title,date,ageGroup,price}`),
+    sq(`*[_type=="event"&&dateTime(date)>dateTime(now())]|order(date asc)[0..1]{title,date,endDate,price}`),
     sq(`*[_type=="signageQuote"&&active==true]|order(sortOrder asc){text,author}`),
     sq(`*[_type=="partner"&&isVisible!=false]|order(order asc){name,category,"logoRef":logo.asset._ref}`),
     fetchBusDeps(),
@@ -498,7 +509,7 @@ async function loadAll() {
 
 async function refreshDynamic() {
   const [e, q, bus] = await Promise.all([
-    sq(`*[_type=="event"&&dateTime(date)>dateTime(now())]|order(date asc)[0..1]{title,date,ageGroup,price}`),
+    sq(`*[_type=="event"&&dateTime(date)>dateTime(now())]|order(date asc)[0..1]{title,date,endDate,price}`),
     sq(`*[_type=="signageQuote"&&active==true]|order(sortOrder asc){text,author}`),
     fetchBusDeps(),
   ]);
@@ -535,12 +546,26 @@ function renderMidZone() {
     if (s.type === 'event') {
       const ev = s.data;
       const d  = new Date(ev.date);
-      const dateStr = d.toLocaleDateString('nb-NO', { weekday:'long', day:'numeric', month:'long' });
-      const timeStr = String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0');
       const meta = ev.price || '';
+      let dateBlock;
+      if (ev.endDate) {
+        const dE = new Date(ev.endDate);
+        const fmt = { day:'numeric', month:'long' };
+        const fromStr = d.toLocaleDateString('nb-NO', fmt);
+        const toStr   = dE.toLocaleDateString('nb-NO', fmt);
+        dateBlock =
+          `<div class="slot-date-range">` +
+            `<div class="slot-date-range-col"><div class="range-label">Fra</div><div class="range-date">${fromStr}</div></div>` +
+            `<div class="slot-date-range-col"><div class="range-label">Til</div><div class="range-date">${toStr}</div></div>` +
+          `</div>`;
+      } else {
+        const dateStr = d.toLocaleDateString('nb-NO', { weekday:'long', day:'numeric', month:'long' });
+        const timeStr = String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0');
+        dateBlock = `<div class="slot-date">${dateStr} — kl. ${timeStr}</div>`;
+      }
       el.className = 'mid-slot mid-event';
       el.innerHTML =
-        `<div class="slot-date">${dateStr} — kl. ${timeStr}</div>` +
+        dateBlock +
         `<div class="slot-title">${ev.title || ''}</div>` +
         (meta ? `<div class="slot-meta">${meta}</div>` : '');
     } else {
