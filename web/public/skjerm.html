@@ -310,6 +310,10 @@ html, body {
   from { transform:translateX(0); }
   to   { transform:translateX(-50%); }
 }
+@keyframes ticker-roll-reverse {
+  from { transform:translateX(-50%); }
+  to   { transform:translateX(0); }
+}
 </style>
 </head>
 <body>
@@ -682,9 +686,10 @@ function fillBusTrack(trackId, deps) {
 
   track.innerHTML = html + html;
   const dur = Math.max(20, deps.length * 7);
+  const anim = trackId === 'bus-track-right' ? 'ticker-roll-reverse' : 'ticker-roll';
   track.style.animation = 'none';
   void track.offsetWidth;
-  track.style.animation = `ticker-roll ${dur}s linear infinite`;
+  track.style.animation = `${anim} ${dur}s linear infinite`;
 }
 
 function renderBusTicker() {
