@@ -1,0 +1,143 @@
+---
+// MemberModal.astro — iframe modal for blimedlem.tryllemuseet.no
+// NOTE: If blimedlem.tryllemuseet.no sets X-Frame-Options: DENY or
+// Content-Security-Policy: frame-ancestors 'none', the browser will block
+// the iframe regardless of anything we do on our side. Check the browser
+// console for "Refused to display" errors after opening the modal.
+---
+
+<div id="member-modal" class="modal-backdrop" role="dialog" aria-modal="true" aria-label="Bli medlem">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h2 class="modal-title">Bli medlem</h2>
+      <button class="modal-close" id="modal-close-btn" aria-label="Lukk">✕</button>
+    </div>
+    <div class="modal-body">
+      <iframe
+        src="https://blimedlem.tryllemuseet.no"
+        title="Bli medlem av Tryllemuseet"
+        loading="lazy"
+        allow="payment"
+      ></iframe>
+    </div>
+  </div>
+</div>
+
+<style>
+  .modal-backdrop {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 9000;
+    background: rgba(26, 18, 8, 0.7);
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+  }
+
+  .modal-backdrop.is-open {
+    display: flex;
+  }
+
+  .modal-box {
+    background: #FBF7EF;
+    border-radius: 4px;
+    width: 100%;
+    max-width: 700px;
+    max-height: calc(100vh - 2rem);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    box-shadow: 0 8px 40px rgba(26, 18, 8, 0.4);
+  }
+
+  .modal-header {
+    background: #6B0F1A;
+    color: #FBF7EF;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.875rem 1.25rem;
+    flex-shrink: 0;
+    border-bottom: 2px solid #D4A843;
+  }
+
+  .modal-title {
+    font-family: 'Cinzel', serif;
+    font-size: 1.125rem;
+    margin: 0;
+    color: #D4A843;
+    letter-spacing: 0.05em;
+  }
+
+  .modal-close {
+    background: none;
+    border: 1px solid rgba(212, 168, 67, 0.4);
+    color: #FBF7EF;
+    font-size: 1.125rem;
+    line-height: 1;
+    width: 2rem;
+    height: 2rem;
+    border-radius: 2px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.15s, color 0.15s;
+  }
+
+  .modal-close:hover {
+    background: #D4A843;
+    color: #1A1208;
+    border-color: #D4A843;
+  }
+
+  .modal-body {
+    flex: 1;
+    overflow-y: auto;
+    min-height: 600px;
+  }
+
+  .modal-body iframe {
+    display: block;
+    width: 100%;
+    height: 100%;
+    min-height: 600px;
+    border: none;
+  }
+</style>
+
+<script>
+  declare global {
+    interface Window {
+      openMemberModal: () => void
+      closeMemberModal: () => void
+    }
+  }
+
+  const modal = document.getElementById('member-modal')!
+  const closeBtn = document.getElementById('modal-close-btn')!
+
+  window.openMemberModal = () => {
+    modal.classList.add('is-open')
+    document.body.style.overflow = 'hidden'
+    closeBtn.focus()
+  }
+
+  window.closeMemberModal = () => {
+    modal.classList.remove('is-open')
+    document.body.style.overflow = ''
+  }
+
+  closeBtn.addEventListener('click', window.closeMemberModal)
+
+  modal.addEventListener('click', (e) => {
+    if (e.target === modal) window.closeMemberModal()
+  })
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && modal.classList.contains('is-open')) {
+      window.closeMemberModal()
+    }
+  })
+</script>

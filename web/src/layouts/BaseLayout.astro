@@ -1,6 +1,7 @@
 ---
 // src/layouts/BaseLayout.astro
 import { getSiteConfig } from '../lib/sanity'
+import MemberModal from '../components/MemberModal.astro'
 
 export interface Props {
   title?: string;
@@ -133,7 +134,7 @@ const isActive = (href: string) =>
           </li>
 
           <li>
-            <a href={site.membershipUrl} class="nav-cta" target="_blank" rel="noopener">Bli medlem</a>
+            <button type="button" class="nav-cta" onclick="openMemberModal()">Bli medlem</button>
           </li>
 
         </ul>
@@ -195,9 +196,9 @@ const isActive = (href: string) =>
           </ul>
         </li>
         <li>
-          <a href={site.membershipUrl} class="mobile-nav-link mobile-nav-cta" target="_blank" rel="noopener">
+          <button type="button" class="mobile-nav-link mobile-nav-cta" onclick="openMemberModal()">
             Bli medlem →
-          </a>
+          </button>
         </li>
       </ul>
     </nav>
@@ -249,6 +250,9 @@ const isActive = (href: string) =>
       <p>© {new Date().getFullYear()} Tryllemuseet &nbsp;·&nbsp; <a href="/personvern">Personvern</a></p>
     </div>
   </footer>
+
+  <!-- MEMBER MODAL ────────────────────────────────────────────── -->
+  <MemberModal />
 
   <!-- LIGHTBOX ─────────────────────────────────────────────────── -->
   <div id="lightbox" class="lightbox" role="dialog" aria-modal="true" aria-label="Forstørret bilde" hidden>

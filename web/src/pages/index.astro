@@ -554,9 +554,9 @@ function formatTime(d: string) {
         </div>
       </AnimateIn>
       <AnimateIn direction="right">
-        <a href={config.membershipUrl} target="_blank" rel="noopener noreferrer" class="btn-member">
+        <button type="button" onclick="openMemberModal()" class="btn-member">
           {medlem.knappLabel}
-        </a>
+        </button>
       </AnimateIn>
     </div>
   </section>

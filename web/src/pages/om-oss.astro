@@ -124,9 +124,9 @@ const historieHtml = om.historieTekst?.length ? toHTML(om.historieTekst) : ''
             <ul>
               {m.fordeler.map(f => <li>{f}</li>)}
             </ul>
-            <a href={m.knappUrl} target="_blank" rel="noopener noreferrer" class="btn-meld-inn">
+            <button type="button" onclick="openMemberModal()" class="btn-meld-inn">
               {m.knappLabel}
-            </a>
+            </button>
           </div>
         ))}
       </div>

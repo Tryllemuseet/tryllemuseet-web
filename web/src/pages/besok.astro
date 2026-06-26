@@ -100,9 +100,9 @@ const [site, page] = await Promise.all([getSiteConfig(), getBesokPage()])
             <h2 class="display-title" style="font-size:1.75rem">{page.medlemskapSeksjon.heading}</h2>
             <p>{page.medlemskapSeksjon.tekst}</p>
           </div>
-          <a href={site.membershipUrl} target="_blank" rel="noopener noreferrer" class="btn-member-big">
+          <button type="button" onclick="openMemberModal()" class="btn-member-big">
             Bli medlem nå →
-          </a>
+          </button>
         </div>
       </section>
 

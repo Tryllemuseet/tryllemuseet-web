@@ -742,6 +742,7 @@ export interface SiteConfig {
   mapUrl:            string
   openingHoursShort: string
   openingHoursNote:  string
+  // memberUrl used for display reference only; web uses openMemberModal() instead
   membershipUrl:     string
   vippsNumber:       string
   facebook:          string
