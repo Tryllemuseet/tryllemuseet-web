@@ -602,12 +602,15 @@ function renderQuoteTicker() {
     return `<span class="t-quote">${q.text}${auth}</span>${sep}`;
   }).join('');
 
-  track.innerHTML = html + html;
-  const dur = Math.max(40, quotes.length * 12);
-  track.style.animation = 'none';
-  void track.offsetWidth;
-  track.style.animation = `ticker-roll ${dur}s linear infinite`;
-}
+  // Bus: one next departure per direction (unique destination = one direction)
+  const now  = Date.now();
+  const seen = new Set();
+  const deps = [];
+  for (const d of busDeps) {
+    if (new Date(d.expectedDepartureTime) <= now) continue;
+    const dest = d.destinationDisplay?.frontText;
+    if (dest && !seen.has(dest)) { seen.add(dest); deps.push(d); }
+  }
 
 // ── Bot zone: bus ticker – one track per direction ───────────
 function busByDirection() {
