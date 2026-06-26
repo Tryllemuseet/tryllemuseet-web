@@ -52,6 +52,13 @@ export default defineType({
       initialValue: 'https://tryllemuseet.no/blimedlem',
     }),
     defineField({
+      name: 'courseQrUrl',
+      title: 'Kurs-påmelding QR URL',
+      type: 'url',
+      description: 'URL for «Meld deg på kurs»-QR-koden på skjermen.',
+      initialValue: 'https://tryllemuseet.no/arrangementer',
+    }),
+    defineField({
       name: 'overlayPanelSecs',
       title: 'Infopanel — visningsvarighet (sekunder)',
       type: 'number',

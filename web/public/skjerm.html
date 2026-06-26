@@ -194,11 +194,32 @@ html, body {
   font-size:20px; font-weight:300; color:var(--cream);
 }
 
-/* Row 2: sponsors – up to 3 columns, colour logos (148px) */
+/* Row 2: QR codes + sponsors (148px) */
 #bot-partners {
   height:148px; flex-shrink:0;
-  position:relative;
+  display:flex; flex-direction:row; align-items:stretch;
   border-bottom:1px solid var(--border);
+  overflow:hidden;
+}
+.bot-qr {
+  flex:0 0 155px;
+  display:flex; flex-direction:column;
+  align-items:center; justify-content:center;
+  gap:6px; padding:8px 12px;
+}
+.bot-qr img {
+  width:96px; height:96px; display:block;
+  border-radius:4px; background:#fff;
+}
+.bot-qr-label {
+  font-size:10px; letter-spacing:0.22em; text-transform:uppercase;
+  color:var(--dim); text-align:center;
+}
+#partner-slides {
+  flex:1;
+  position:relative;
+  border-left:1px solid var(--border);
+  border-right:1px solid var(--border);
   overflow:hidden;
 }
 .partner-page {
@@ -326,7 +347,17 @@ html, body {
     <span class="bot-label">Åpningstider</span>
     <span class="bot-hours" id="bot-hours">—</span>
   </div>
-  <div id="bot-partners"></div>
+  <div id="bot-partners">
+    <div class="bot-qr" id="qr-member">
+      <img src="" alt="Bli medlem">
+      <div class="bot-qr-label">Bli medlem</div>
+    </div>
+    <div id="partner-slides"></div>
+    <div class="bot-qr" id="qr-course">
+      <img src="" alt="Kurs og arrangement">
+      <div class="bot-qr-label">Kurs og arrangement</div>
+    </div>
+  </div>
   <div id="bot-quote-ticker">
     <div class="ticker-track" id="quote-track"></div>
   </div>
@@ -446,7 +477,7 @@ function fmtDep(dep) {
 // ── Data loading ────────────────────────────────────────────
 async function loadAll() {
   const [c, v, e, q, p, bus] = await Promise.all([
-    sq(`*[_type=="signageConfig"][0]{openingHours,showTime}`),
+    sq(`*[_type=="signageConfig"][0]{openingHours,showTime,memberQrUrl,courseQrUrl}`),
     sq(`*[_type=="signageVideo"&&active==true]|order(sortOrder asc){title,videoUrl,startSecs,endSecs}`),
     sq(`*[_type=="event"&&dateTime(date)>dateTime(now())]|order(date asc)[0..1]{title,date,ageGroup,price}`),
     sq(`*[_type=="signageQuote"&&active==true]|order(sortOrder asc){text,author}`),
@@ -547,7 +578,7 @@ function buildPartnerPages() {
 function showPartnerPage(idx) {
   if (!partnerPages.length) return;
   const page = partnerPages[idx % partnerPages.length];
-  const container = document.getElementById('bot-partners');
+  const container = document.getElementById('partner-slides');
   if (!container) return;
 
   const slide = document.createElement('div');
@@ -592,6 +623,15 @@ function startPartnerCycle() {
 function renderBotInfo() {
   const el = document.getElementById('bot-hours');
   if (el) el.textContent = [cfg.openingHours, cfg.showTime].filter(Boolean).join('  ·  ');
+}
+
+// ── Bot zone: QR codes ───────────────────────────────────────
+function renderQrCodes() {
+  const base = 'https://api.qrserver.com/v1/create-qr-code/?size=96x96&data=';
+  const mImg = document.querySelector('#qr-member img');
+  const cImg = document.querySelector('#qr-course img');
+  if (mImg && cfg.memberQrUrl) mImg.src = base + encodeURIComponent(cfg.memberQrUrl);
+  if (cImg && cfg.courseQrUrl) cImg.src = base + encodeURIComponent(cfg.courseQrUrl);
 }
 
 // ── Bot zone: quote ticker ───────────────────────────────────
@@ -747,6 +787,7 @@ async function playYT(v) {
 
   renderMidZone();
   renderBotInfo();
+  renderQrCodes();
   startPartnerCycle();
   renderQuoteTicker();
   renderBusTicker();
