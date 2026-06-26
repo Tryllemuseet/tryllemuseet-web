@@ -539,11 +539,15 @@ function renderTicker() {
     parts.push(`<span class="t-quote">${q.text}${auth}</span>`);
   }
 
-  // Bus departures (only future, max 8)
+  // Bus: one next departure per direction (unique destination = one direction)
   const now  = Date.now();
-  const deps = busDeps
-    .filter(d => new Date(d.expectedDepartureTime) > now)
-    .slice(0, 8);
+  const seen = new Set();
+  const deps = [];
+  for (const d of busDeps) {
+    if (new Date(d.expectedDepartureTime) <= now) continue;
+    const dest = d.destinationDisplay?.frontText;
+    if (dest && !seen.has(dest)) { seen.add(dest); deps.push(d); }
+  }
 
   for (const dep of deps) {
     const { line, dest, time } = fmtDep(dep);
