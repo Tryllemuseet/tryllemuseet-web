@@ -204,7 +204,7 @@ function formatTime(d: string) {
 
   <hr class="gold-rule container" />
 
-  <!-- ══ MØT MAGIKERNE — horisontal scroll-karusell ══════════════ -->
+  <!-- ══ MØT MAGIKERNE ════════════════════════════════════════════ -->
   <section class="section magikerne-section" aria-labelledby="magikerne-heading">
     <div class="container">
       <AnimateIn direction="up">
@@ -217,40 +217,76 @@ function formatTime(d: string) {
         </div>
       </AnimateIn>
     </div>
-    <div class="carousel-viewport" aria-label="Magikere i utstillingen">
-      <div class="carousel-track" id="carousel-track">
-        {(hp?.utstillingsFokus?.felt?.length ? hp.utstillingsFokus.felt : magicians).map((m) => {
-          const imgUrl = m.posterImage?.asset?._ref
-            ? urlFor(m.posterImage.asset).width(600).height(800).fit('crop').format('webp').url()
-            : (m.posterImage?.asset?.url ?? null)
-          return (
-            <a href={`/utstillingen/${m.slug}`} class="magiker-card" aria-label={`Les mer om ${m.title}`}>
-              <div class="magiker-img">
-                {imgUrl
-                  ? <img src={imgUrl} alt={m.posterImage?.alt ?? m.title} loading="lazy" />
-                  : <div class="magiker-img-placeholder" aria-hidden="true">🎩</div>
-                }
-                <div class="magiker-overlay" aria-hidden="true"></div>
-              </div>
-              <div class="magiker-caption">
-                {m.years && <span class="magiker-years">{m.years}</span>}
-                <h3 class="magiker-name">{m.title}</h3>
-                {m.tagline && <p class="magiker-tagline">«{m.tagline}»</p>}
-                <span class="magiker-link-hint">Les mer →</span>
-              </div>
-            </a>
-          )
-        })}
+
+    {hp?.utstillingsFokus?.felt?.length ? (
+      <!-- Håndplukkede: grid-visning -->
+      <div class="container">
+        <AnimateIn direction="up">
+          <div class="featured-magicians">
+            {hp.utstillingsFokus.felt.map((m) => {
+              const imgUrl = m.posterImage?.asset?._ref
+                ? urlFor(m.posterImage.asset).width(800).height(1066).fit('crop').format('webp').url()
+                : (m.posterImage?.asset?.url ?? null)
+              return (
+                <a href={`/utstillingen/${m.slug}`} class="magiker-card featured-magiker-card" aria-label={`Les mer om ${m.title}`}>
+                  <div class="magiker-img">
+                    {imgUrl
+                      ? <img src={imgUrl} alt={m.posterImage?.alt ?? m.title} loading="lazy" />
+                      : <div class="magiker-img-placeholder" aria-hidden="true">🎩</div>
+                    }
+                    <div class="magiker-overlay" aria-hidden="true"></div>
+                  </div>
+                  <div class="magiker-caption">
+                    {m.years && <span class="magiker-years">{m.years}</span>}
+                    <h3 class="magiker-name">{m.title}</h3>
+                    {m.tagline && <p class="magiker-tagline">«{m.tagline}»</p>}
+                    <span class="magiker-link-hint">Les mer →</span>
+                  </div>
+                </a>
+              )
+            })}
+          </div>
+        </AnimateIn>
       </div>
-      <button class="carousel-btn carousel-btn--prev" id="carousel-prev" aria-label="Forrige">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><polyline points="15 18 9 12 15 6"/></svg>
-      </button>
-      <button class="carousel-btn carousel-btn--next" id="carousel-next" aria-label="Neste">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg>
-      </button>
-    </div>
-    <div class="carousel-fade carousel-fade--left"  aria-hidden="true"></div>
-    <div class="carousel-fade carousel-fade--right" aria-hidden="true"></div>
+    ) : (
+      <!-- Full liste: horisontal scroll-karusell -->
+      <>
+        <div class="carousel-viewport" aria-label="Magikere i utstillingen">
+          <div class="carousel-track" id="carousel-track">
+            {magicians.map((m) => {
+              const imgUrl = m.posterImage?.asset?._ref
+                ? urlFor(m.posterImage.asset).width(600).height(800).fit('crop').format('webp').url()
+                : (m.posterImage?.asset?.url ?? null)
+              return (
+                <a href={`/utstillingen/${m.slug}`} class="magiker-card" aria-label={`Les mer om ${m.title}`}>
+                  <div class="magiker-img">
+                    {imgUrl
+                      ? <img src={imgUrl} alt={m.posterImage?.alt ?? m.title} loading="lazy" />
+                      : <div class="magiker-img-placeholder" aria-hidden="true">🎩</div>
+                    }
+                    <div class="magiker-overlay" aria-hidden="true"></div>
+                  </div>
+                  <div class="magiker-caption">
+                    {m.years && <span class="magiker-years">{m.years}</span>}
+                    <h3 class="magiker-name">{m.title}</h3>
+                    {m.tagline && <p class="magiker-tagline">«{m.tagline}»</p>}
+                    <span class="magiker-link-hint">Les mer →</span>
+                  </div>
+                </a>
+              )
+            })}
+          </div>
+          <button class="carousel-btn carousel-btn--prev" id="carousel-prev" aria-label="Forrige">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><polyline points="15 18 9 12 15 6"/></svg>
+          </button>
+          <button class="carousel-btn carousel-btn--next" id="carousel-next" aria-label="Neste">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg>
+          </button>
+        </div>
+        <div class="carousel-fade carousel-fade--left"  aria-hidden="true"></div>
+        <div class="carousel-fade carousel-fade--right" aria-hidden="true"></div>
+      </>
+    )}
   </section>
 
   <hr class="gold-rule container" />
@@ -780,6 +816,12 @@ function formatTime(d: string) {
   .carousel-fade { position:absolute; top:0; bottom:0; width:60px; pointer-events:none; z-index:5; }
   .carousel-fade--left { left:0; background:linear-gradient(to right,white,transparent); }
   .carousel-fade--right { right:0; background:linear-gradient(to left,white,transparent); }
+
+  /* ── FEATURED MAGICIANS GRID ──────────────────────────────────── */
+  .featured-magicians { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; padding: 1.5rem 0 2rem; }
+  .featured-magiker-card { flex: unset !important; }
+  @media (max-width: 700px) { .featured-magicians { grid-template-columns: 1fr 1fr; } }
+  @media (max-width: 420px) { .featured-magicians { grid-template-columns: 1fr; } }
 
   /* ── PRESS CLIPPING ────────────────────────────────────────────── */
   .press-section { background:white; }
