@@ -1,6 +1,7 @@
 ---
 // src/layouts/BaseLayout.astro
 import { getSiteConfig } from '../lib/sanity'
+import Analytics from '@vercel/analytics/astro'
 
 export interface Props {
   title?: string;
@@ -247,6 +248,8 @@ const isActive = (href: string) =>
       <p>© {new Date().getFullYear()} Tryllemuseet &nbsp;·&nbsp; <a href="/personvern">Personvern</a></p>
     </div>
   </footer>
+
+  <Analytics />
 
   <!-- LIGHTBOX ─────────────────────────────────────────────────── -->
   <div id="lightbox" class="lightbox" role="dialog" aria-modal="true" aria-label="Forstørret bilde" hidden>
