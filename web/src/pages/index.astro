@@ -219,7 +219,7 @@ function formatTime(d: string) {
     </div>
     <div class="carousel-viewport" aria-label="Magikere i utstillingen">
       <div class="carousel-track" id="carousel-track">
-        {magicians.map((m) => {
+        {(hp?.utstillingsFokus?.felt?.length ? hp.utstillingsFokus.felt : magicians).map((m) => {
           const imgUrl = m.posterImage?.asset?._ref
             ? urlFor(m.posterImage.asset).width(600).height(800).fit('crop').format('webp').url()
             : (m.posterImage?.asset?.url ?? null)
