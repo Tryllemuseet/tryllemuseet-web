@@ -320,7 +320,7 @@ export interface Homepage {
     bgImage?:   { asset: { _ref: string; url: string }; hotspot: any }
   }
   infoBadges:       { label: string }[]
-  utstillingsFokus: { eraLabel: string; heading: string }
+  utstillingsFokus: { eraLabel: string; heading: string; felt?: Magician[] }
   barnSeksjon: {
     heading:   string
     ingress:   string
@@ -372,7 +372,10 @@ export async function getHomepage(): Promise<Homepage | null> {
         bgImage { asset->{ _ref, url }, hotspot }
       },
       infoBadges[] { label },
-      utstillingsFokus { eraLabel, heading },
+      utstillingsFokus {
+        eraLabel, heading,
+        felt[]->{ _id, title, "slug": slug.current, order, years, tagline, posterImage { asset->{ _ref, url }, alt } }
+      },
       barnSeksjon {
         heading, ingress, features,
         sitater[] { emoji, tekst, kilde }
