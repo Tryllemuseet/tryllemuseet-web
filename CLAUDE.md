@@ -180,8 +180,18 @@ Update TypeScript interfaces in sanity.ts when schema changes.
 ## Deployment
 
 - **Studio**: Deployed via npm run deploy to Sanity hosting
-- **Web**: Static site deployable to any static host (Vercel, Netlify, etc.)
-  - PUBLIC_VERCEL_ENV controls CDN usage in production
+- **Web**: Hosted on Vercel. `PUBLIC_VERCEL_ENV` controls CDN usage in production.
+
+### Deploy hooks (web)
+
+The web frontend is **not** auto-deployed on push to `main`. Deploys are triggered via Vercel deploy hooks called from GitHub Actions:
+
+| Environment | URL | Hook secret | Workflow |
+|---|---|---|---|
+| Test | `test.tryllemuseet.no` | `VERCEL_DEPLOY_HOOK_TEST` | `.github/workflows/daily-rebuild.yml` |
+| Production | `tryllemuseet.no` | `VERCEL_DEPLOY_HOOK_PROD` | same (commented out) |
+
+The `daily-rebuild.yml` workflow runs automatically at 05:30 UTC every day and can also be triggered manually via **Actions → Daily rebuild → Run workflow** on GitHub. The production hook is defined but commented out in the workflow file — uncomment when ready to enable auto-deploy to production.
 
 ## Visibility / Unpublish Convention
 
