@@ -1,4 +1,5 @@
-import { magician }       from './magician'
+import { magician }           from './magician'
+import { magicOrganization }  from './magicOrganization'
 import { pressClipping }  from './pressClipping'
 import { contentSection } from './contentSection'
 import { sourceItem }     from './sourceItem'
@@ -43,6 +44,7 @@ export const schemaTypes = [
   signageConfig,
   signageVideo,
   magician,
+  magicOrganization,
   pressClipping,
   biography,
   legend,

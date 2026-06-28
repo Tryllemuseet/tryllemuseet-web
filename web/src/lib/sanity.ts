@@ -930,6 +930,11 @@ export function portableTextToHtml(blocks: PortableTextBlock[] | undefined | nul
       marks: {
         link: ({ children, value }) =>
           `<a href="${value?.href ?? '#'}" target="_blank" rel="noopener noreferrer">${children}</a>`,
+        internalLink: ({ children, value }) => {
+          const slug = value?.slug ?? ''
+          const href = slug ? `/tryllehistorie/magiens-hvem-er-hvem/${slug}` : '#'
+          return `<a href="${href}">${children}</a>`
+        },
       },
     },
   })
@@ -1252,4 +1257,70 @@ export async function getAllPartners(): Promise<Partner[]> {
       logo { asset->{ _ref, url } }
     }
   `)
+}
+
+// ── Typer: MagicOrganization ─────────────────────────────────────
+
+export interface MagicOrganizationArticle {
+  _key:  string
+  title: string
+  body?: any[]
+}
+
+export interface MagicOrganization {
+  _id:               string
+  title:             string
+  slug:              string
+  shortDescription?: string
+  logo?:             { asset: { _ref: string; url: string }; alt?: string }
+  foundedYear?:      number
+  websiteUrl?:       string
+  body?:             any[]
+  articles?:         MagicOrganizationArticle[]
+  sources?:          { label: string; url?: string }[]
+}
+
+// GROQ helper: projects markDefs so internalLink includes the referenced biography slug.
+const bodyProjection = `body[]{
+  ...,
+  markDefs[]{
+    ...,
+    "slug": reference->slug.current
+  }
+}`
+
+const articleBodyProjection = `articles[]{
+  _key, title,
+  body[]{
+    ...,
+    markDefs[]{
+      ...,
+      "slug": reference->slug.current
+    }
+  }
+}`
+
+// ── Spørringer: MagicOrganization ────────────────────────────────
+
+export async function getAllMagicOrganizations(): Promise<MagicOrganization[]> {
+  return sanityClient.fetch(`
+    *[_type == "magicOrganization" && isVisible != false] | order(title asc) {
+      _id, title, "slug": slug.current,
+      shortDescription, foundedYear, websiteUrl,
+      logo { asset->{ _ref, url }, alt }
+    }
+  `)
+}
+
+export async function getMagicOrganizationBySlug(slug: string): Promise<MagicOrganization | null> {
+  return sanityClient.fetch(`
+    *[_type == "magicOrganization" && slug.current == $slug && isVisible != false][0] {
+      _id, title, "slug": slug.current,
+      shortDescription, foundedYear, websiteUrl,
+      logo { asset->{ _ref, url }, alt },
+      ${bodyProjection},
+      ${articleBodyProjection},
+      sources[] { label, url }
+    }
+  `, { slug })
 }
