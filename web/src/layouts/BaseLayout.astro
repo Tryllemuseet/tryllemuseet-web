@@ -509,15 +509,15 @@ const isActive = (href: string) =>
   /* ── MOBILMENY ── */
   .mobile-menu { display: none; background: var(--burgundy-dk); border-top: 1px solid var(--gold-dark); }
   .mobile-menu.open { display: block; }
-  .mobile-menu > ul { max-width: var(--max-w); margin: 0 auto; padding: 0.75rem 1.5rem 1rem; display: flex; flex-direction: column; gap: 0.1rem; }
+  .mobile-menu > ul { max-width: var(--max-w); margin: 0 auto; padding: 0.5rem 1.5rem 0.75rem; display: flex; flex-direction: column; gap: 0.1rem; }
 
-  .mobile-nav-link { display: block; font-family: var(--font-ui); font-size: 1rem; font-weight: 600; color: var(--cream); padding: 0.25rem 0.75rem; border-radius: var(--radius); transition: color var(--transition), background var(--transition); letter-spacing: 0.03em; }
+  .mobile-nav-link { display: block; font-family: var(--font-ui); font-size: 1rem; font-weight: 600; line-height: 1.2; color: var(--cream); padding: 0.25rem 0.75rem; border-radius: var(--radius); transition: color var(--transition), background var(--transition); letter-spacing: 0.03em; }
   .mobile-nav-link:hover, .mobile-nav-link.active { color: var(--gold); background: rgba(212,168,67,0.1); }
-  .mobile-nav-cta { color: var(--gold); border: 1px solid var(--gold-dark); margin-top: 0.5rem; }
+  .mobile-nav-cta { color: var(--gold); border: 1px solid var(--gold-dark); margin-top: 0.25rem; }
   .mobile-nav-cta:hover { background: var(--gold); color: var(--burgundy-dk); }
 
-  .mobile-sub { padding: 0.1rem 0 0.3rem 1.25rem; display: flex; flex-direction: column; gap: 0; }
-  .mobile-sub-link { display: block; font-family: var(--font-ui); font-size: 0.875rem; color: var(--cream); opacity: 0.7; padding: 0.35rem 0.75rem; border-radius: var(--radius); transition: opacity var(--transition), color var(--transition); }
+  .mobile-sub { padding: 0.1rem 0 0.1rem 1.25rem; display: flex; flex-direction: column; gap: 0; }
+  .mobile-sub-link { display: block; font-family: var(--font-ui); font-size: 0.875rem; line-height: 1.2; color: var(--cream); opacity: 0.7; padding: 0.2rem 0.75rem; border-radius: var(--radius); transition: opacity var(--transition), color var(--transition); }
   .mobile-sub-link:hover { opacity: 1; color: var(--gold-light); }
   .mobile-sub-link--soon { opacity: 0.35; pointer-events: none; }
 
