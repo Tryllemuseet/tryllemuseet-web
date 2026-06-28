@@ -94,7 +94,8 @@ const kommerSnart   = page.ressurser.filter(r =>  r.soon)
 
   /* ── PAGE BODY ─────────────────────────────────────────────────── */
   .page-body {
-    padding: 3rem 1.5rem 5rem;
+    padding-top: 3rem;
+    padding-bottom: 5rem;
     display: flex;
     flex-direction: column;
     gap: 3rem;
@@ -186,7 +187,7 @@ const kommerSnart   = page.ressurser.filter(r =>  r.soon)
   }
 
   @media (max-width: 560px) {
-    .page-body { padding: 2rem 1rem 3rem; }
+    .page-body { padding-top: 2rem; padding-bottom: 3rem; }
     .resources-grid { grid-template-columns: 1fr; }
   }
 </style>

@@ -1,6 +1,7 @@
 ---
 // src/layouts/BaseLayout.astro
 import { getSiteConfig } from '../lib/sanity'
+import Analytics from '@vercel/analytics/astro'
 
 export interface Props {
   title?: string;
@@ -19,11 +20,9 @@ const allNavLinks = [
   { href: '/besok',                         label: 'Besøk oss'           },
   { href: '/utstillingen',                  label: 'Utstillingen'        },
   { href: '/aktiviteter',                   label: 'Aktiviteter'         },
-  { href: '/aktiviteter/tryllekunstnere',   label: 'Bestill tryllekunstner' },
   { href: '/tryllehistorie/got-talent',     label: 'Opptredener'         },
   { href: '/tryllehistorie',                label: 'Arkivet'             },
   { href: '/om-oss',                        label: 'Om oss'              },
-  { href: '/om-oss/i-media',               label: 'I media'             },
 ]
 
 const currentPath = Astro.url.pathname
@@ -213,7 +212,7 @@ const isActive = (href: string) =>
     <div class="footer-inner">
 
       <div class="footer-brand">
-        <span class="footer-name">✦ Tryllemuseet ✦</span>
+        <img src="/LOGO-bred.png" alt="Tryllemuseet" class="footer-logo" />
         <p class="footer-address">{site.addressShort}</p>
         <p class="footer-hours">{site.openingHoursShort} &nbsp;·&nbsp; {site.openingHoursNote}</p>
       </div>
@@ -249,6 +248,8 @@ const isActive = (href: string) =>
       <p>© {new Date().getFullYear()} Tryllemuseet &nbsp;·&nbsp; <a href="/personvern">Personvern</a></p>
     </div>
   </footer>
+
+  <Analytics />
 
   <!-- LIGHTBOX ─────────────────────────────────────────────────── -->
   <div id="lightbox" class="lightbox" role="dialog" aria-modal="true" aria-label="Forstørret bilde" hidden>
@@ -521,12 +522,12 @@ const isActive = (href: string) =>
   .mobile-sub-link--soon { opacity: 0.35; pointer-events: none; }
 
   /* ── FOOTER ── */
-  .site-footer { background: var(--burgundy-dk); border-top: 2px solid var(--gold-dark); color: var(--cream); margin-top: auto; }
+  .site-footer { background: var(--burgundy); border-top: 2px solid var(--gold-dark); color: var(--cream); margin-top: auto; }
   .footer-inner { max-width: var(--max-w); margin: 0 auto; padding: 3rem 1.5rem 2rem; display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 3rem; }
-  .footer-name { font-family: var(--font-display); font-size: 1.2rem; color: var(--gold); letter-spacing: 0.1em; display: block; margin-bottom: 0.75rem; }
+  .footer-logo { display: block; height: 48px; width: auto; margin-bottom: 0.75rem; }
   .footer-address, .footer-hours { font-family: var(--font-ui); font-size: 0.875rem; color: var(--cream); opacity: 0.75; line-height: 1.6; }
   .footer-links h3, .footer-contact h3 { font-family: var(--font-display); font-size: 0.75rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--gold); margin-bottom: 1rem; }
-  .footer-links ul { display: flex; flex-direction: column; gap: 0.4rem; }
+  .footer-links ul { display: grid; grid-template-columns: 1fr 1fr; gap: 0.4rem 1.5rem; }
   .footer-links a { font-family: var(--font-ui); font-size: 0.875rem; color: var(--cream); opacity: 0.75; transition: opacity var(--transition), color var(--transition); }
   .footer-links a:hover { opacity: 1; color: var(--gold-light); }
   .footer-cta { display: inline-block; font-family: var(--font-ui); font-size: 0.875rem; font-weight: 600; color: var(--gold); border: 1px solid var(--gold-dark); padding: 0.5rem 1rem; border-radius: var(--radius); transition: background var(--transition), color var(--transition); margin-bottom: 1.25rem; }
