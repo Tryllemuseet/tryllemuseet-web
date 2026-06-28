@@ -930,6 +930,12 @@ export function portableTextToHtml(blocks: PortableTextBlock[] | undefined | nul
       marks: {
         link: ({ children, value }) =>
           `<a href="${value?.href ?? '#'}" target="_blank" rel="noopener noreferrer">${children}</a>`,
+        internalLink: ({ children, value }) => {
+          const slug = value?.reference?.slug ?? ''
+          return slug
+            ? `<a href="/tryllehistorie/magiens-hvem-er-hvem/${slug}">${children}</a>`
+            : `<span>${children}</span>`
+        },
       },
     },
   })
@@ -1252,4 +1258,105 @@ export async function getAllPartners(): Promise<Partner[]> {
       logo { asset->{ _ref, url } }
     }
   `)
+}
+
+// ── Typer: MagicOrganization ─────────────────────────────────────
+
+export interface MagicOrgLogoEntry {
+  year?: number
+  logo?: { asset: { _ref: string; url: string }; alt?: string }
+  note?: string
+}
+
+export interface MagicOrgPerson {
+  person: { name: string; slug: string }
+  role?: string
+  years?: string
+}
+
+export interface MagicOrgArticle {
+  title: string
+  articleSlug?: string
+  ingress?: string
+  body?: any[]
+}
+
+export interface MagicOrganization {
+  _id:             string
+  name:            string
+  slug:            string
+  abbreviation?:   string
+  country?:        string
+  foundedYear?:    number
+  dissolutionYear?: number
+  website?:        string
+  ingress?:        string
+  logo?:           { asset: { _ref: string; url: string }; alt?: string }
+  logoHistory?:    MagicOrgLogoEntry[]
+  body?:           any[]
+  keyPeople?:      MagicOrgPerson[]
+  articles?:       MagicOrgArticle[]
+  gallery?:        { asset: { _ref: string; url: string }; alt?: string; caption?: string; year?: number }[]
+  sources?:        { label: string; url?: string }[]
+}
+
+// ── Spørringer: MagicOrganization ────────────────────────────────
+
+export async function getAllMagicOrganizations(): Promise<MagicOrganization[]> {
+  return sanityClient.fetch(`
+    *[_type == "magicOrganization" && isVisible != false] | order(name asc) {
+      _id, name, "slug": slug.current,
+      abbreviation, country, foundedYear, dissolutionYear,
+      website, ingress,
+      "logo": logoHistory[-1].logo { asset->{ _ref, url }, alt }
+    }
+  `)
+}
+
+export async function getMagicOrganizationBySlug(slug: string): Promise<MagicOrganization | null> {
+  return sanityClient.fetch(`
+    *[_type == "magicOrganization" && slug.current == $slug && isVisible != false][0] {
+      _id, name, "slug": slug.current,
+      abbreviation, country, foundedYear, dissolutionYear,
+      website, ingress,
+      logoHistory[] {
+        year, note,
+        logo { asset->{ _ref, url }, alt }
+      },
+      body[]{
+        ...,
+        markDefs[]{
+          ...,
+          "reference": reference->{ "slug": slug.current }
+        }
+      },
+      keyPeople[] {
+        person->{ name, "slug": slug.current },
+        role, years
+      },
+      articles[] {
+        title,
+        "articleSlug": slug.current,
+        ingress,
+        body[]{
+          ...,
+          markDefs[]{
+            ...,
+            "reference": reference->{ "slug": slug.current }
+          }
+        }
+      },
+      gallery[] { asset->{ _ref, url }, alt, caption, year },
+      sources[] { label, url }
+    }
+  `, { slug })
+}
+
+export async function getMagicOrganizationPaths() {
+  const orgs = await sanityClient.fetch(`
+    *[_type == "magicOrganization" && isVisible != false] { "slug": slug.current }
+  `)
+  return orgs
+    .filter((o: { slug?: string }) => o.slug)
+    .map((o: { slug: string }) => ({ params: { slug: o.slug } }))
 }

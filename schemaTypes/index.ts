@@ -25,6 +25,7 @@ import { mediaAppearance } from './mediaAppearance'
 import signageQuote        from './signageQuote'
 import signageConfig       from './signageConfig'
 import signageVideo        from './signageVideo'
+import magicOrganization   from './magicOrganization'
 
 export const schemaTypes = [
   // Sidetyper
@@ -53,6 +54,7 @@ export const schemaTypes = [
   event,
   artifact,
   partner,
+  magicOrganization,
   siteConfig,
   // Objekttyper
   contentSection,

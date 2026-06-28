@@ -1,0 +1,249 @@
+---
+// src/pages/utstillingen/trylleforeningene/index.astro
+import BaseLayout from '../../../layouts/BaseLayout.astro'
+import { getAllMagicOrganizations } from '../../../lib/sanity'
+import type { MagicOrganization } from '../../../lib/sanity'
+
+const orgs = await getAllMagicOrganizations()
+
+function yearRange(org: MagicOrganization): string {
+  if (org.foundedYear && org.dissolutionYear) return `${org.foundedYear}–${org.dissolutionYear}`
+  if (org.foundedYear) return `Stiftet ${org.foundedYear}`
+  return ''
+}
+---
+
+<BaseLayout
+  title="Trylleforeningene — Tryllemuseet"
+  description="Oversikt over norske og nordiske trylleforeninger — fra Magiske Cirkel Norge til lokale klubber og historiske sammenslutninger."
+>
+
+  <!-- HERO ──────────────────────────────────────────────────────── -->
+  <section class="page-hero">
+    <div class="container">
+      <p class="section-label">Utstillingen</p>
+      <h1 class="display-title page-title">Trylleforeningene</h1>
+      <p class="page-sub">
+        Norske og nordiske trylleforeninger har i over hundre år samlet tryllekunstnere,
+        dyrket faget og bevart tradisjonene. Her er organisasjonene bak historien.
+      </p>
+    </div>
+  </section>
+
+  <!-- LISTE ─────────────────────────────────────────────────────── -->
+  <main class="container org-list">
+
+    {orgs.length === 0 && (
+      <p class="empty-notice">Ingen foreninger er registrert ennå.</p>
+    )}
+
+    {orgs.map((org) => (
+      <article class="org-card">
+        <a href={`/utstillingen/trylleforeningene/${org.slug}`} class="org-card-link">
+
+          <div class="org-logo" aria-hidden="true">
+            {org.logo?.asset?.url ? (
+              <img
+                src={org.logo.asset.url}
+                alt={org.logo.alt ?? `${org.name}-logo`}
+                loading="lazy"
+              />
+            ) : (
+              <span class="org-logo-placeholder">🎩</span>
+            )}
+          </div>
+
+          <div class="org-info">
+            <div class="org-header">
+              <h2 class="org-name">
+                {org.name}
+                {org.abbreviation && <span class="org-abbr">({org.abbreviation})</span>}
+              </h2>
+              {org.dissolutionYear && (
+                <span class="org-badge org-badge--dissolved">Oppløst</span>
+              )}
+            </div>
+
+            <div class="org-meta">
+              {org.country && <span class="org-country">{org.country}</span>}
+              {yearRange(org) && <span class="org-years">{yearRange(org)}</span>}
+            </div>
+
+            {org.ingress && (
+              <p class="org-ingress">{org.ingress}</p>
+            )}
+          </div>
+
+          <span class="org-arrow" aria-hidden="true">→</span>
+        </a>
+      </article>
+    ))}
+  </main>
+
+  <div class="container back-link">
+    <a href="/utstillingen">← Tilbake til utstillingen</a>
+  </div>
+
+</BaseLayout>
+
+<style>
+  /* ── HERO ──────────────────────────────────────────────────────── */
+  .page-hero {
+    background: var(--burgundy-dk);
+    padding: 3.5rem 0 2.5rem;
+    border-bottom: 2px solid var(--gold-dark);
+    color: var(--cream);
+  }
+
+  .page-title { font-size: clamp(1.8rem, 5vw, 3rem); color: var(--cream); margin: 0.5rem 0 0.75rem; }
+  .page-sub   { font-family: var(--font-ui); font-size: 1rem; opacity: 0.8; max-width: 60ch; }
+
+  /* ── LISTE ─────────────────────────────────────────────────────── */
+  .org-list {
+    padding: 2.5rem 0 5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    background: var(--cream-dark);
+    border: 1px solid var(--cream-dark);
+    border-radius: 8px;
+    overflow: hidden;
+    margin-top: 2rem;
+    margin-bottom: 1rem;
+  }
+
+  .org-card { background: white; }
+  .org-card:hover { background: var(--cream); }
+
+  .org-card-link {
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+    padding: 1.1rem 1.5rem;
+    text-decoration: none;
+    color: var(--ink);
+    transition: background 150ms;
+  }
+
+  /* Logo */
+  .org-logo {
+    width: 64px;
+    height: 64px;
+    flex-shrink: 0;
+    border-radius: 4px;
+    overflow: hidden;
+    background: var(--cream-dark);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .org-logo img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    padding: 4px;
+  }
+
+  .org-logo-placeholder { font-size: 1.8rem; }
+
+  /* Info */
+  .org-info { flex: 1; min-width: 0; }
+
+  .org-header {
+    display: flex;
+    align-items: baseline;
+    gap: 0.6rem;
+    flex-wrap: wrap;
+    margin-bottom: 0.2rem;
+  }
+
+  .org-name {
+    font-family: var(--font-display);
+    font-size: 1rem;
+    color: var(--burgundy);
+    letter-spacing: 0.02em;
+  }
+
+  .org-abbr {
+    font-family: var(--font-ui);
+    font-size: 0.8rem;
+    color: var(--grey);
+    font-weight: normal;
+  }
+
+  .org-badge {
+    font-family: var(--font-ui);
+    font-size: 0.65rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    padding: 0.15rem 0.5rem;
+    border-radius: 2px;
+  }
+
+  .org-badge--dissolved {
+    background: var(--cream-dark);
+    color: var(--grey);
+  }
+
+  .org-meta {
+    display: flex;
+    gap: 0.75rem;
+    font-family: var(--font-ui);
+    font-size: 0.78rem;
+    color: var(--grey);
+    margin-bottom: 0.3rem;
+  }
+
+  .org-ingress {
+    font-family: var(--font-ui);
+    font-size: 0.85rem;
+    color: var(--ink-mid);
+    line-height: 1.5;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .org-arrow {
+    color: var(--gold-dark);
+    font-size: 1rem;
+    transition: transform 150ms;
+    flex-shrink: 0;
+  }
+
+  .org-card:hover .org-arrow { transform: translateX(3px); }
+
+  /* ── EMPTY / BACK ──────────────────────────────────────────────── */
+  .empty-notice {
+    padding: 3rem 1.5rem;
+    font-family: var(--font-ui);
+    color: var(--grey);
+    text-align: center;
+  }
+
+  .back-link {
+    padding: 0.5rem 0 3rem;
+    font-family: var(--font-ui);
+    font-size: 0.875rem;
+  }
+
+  .back-link a {
+    color: var(--grey);
+    text-decoration: none;
+    border: 1px solid var(--cream-dark);
+    padding: 0.4rem 1rem;
+    border-radius: var(--radius);
+    transition: color 150ms, border-color 150ms;
+  }
+
+  .back-link a:hover { color: var(--burgundy); border-color: var(--gold); }
+
+  /* ── RESPONSIVE ────────────────────────────────────────────────── */
+  @media (max-width: 600px) {
+    .org-ingress { display: none; }
+    .org-logo    { width: 48px; height: 48px; }
+  }
+</style>
