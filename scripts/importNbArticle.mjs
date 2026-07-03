@@ -188,10 +188,14 @@ try {
       contentType: 'image/jpeg',
     })
     console.log(`   ✅ Bilde lastet opp: ${imageAsset._id}`)
-    doc.image = {
-      _type: 'image',
-      asset: { _type: 'reference', _ref: imageAsset._id },
-    }
+    doc.images = [
+      {
+        _key: imageAsset._id.slice(-12),
+        _type: 'faksimile',
+        asset: { _type: 'reference', _ref: imageAsset._id },
+        alt: `Faksimile fra ${sourceName || 'avis'}${originalDate ? `, ${originalDate}` : ''}`,
+      },
+    ]
   } catch (imgErr) {
     console.warn(`   ⚠️  Bilde-opplasting feilet: ${imgErr.message}`)
     console.warn(`   Legg til bilde manuelt i Studio (IIIF-URL: ${thumbUrl})`)

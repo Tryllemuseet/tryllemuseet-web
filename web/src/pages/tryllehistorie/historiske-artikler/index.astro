@@ -39,12 +39,22 @@ function formatDate(dateStr?: string): string {
 const modalDataRaw = clippings.map((c: PressClipping) => ({
   id:          c._id,
   title:       c.title,
+  originalMainTitle: c.originalMainTitle ?? null,
+  originalSubTitle:  c.originalSubTitle ?? null,
   originalDate: c.originalDate ?? null,
   sourceName:  c.sourceName ?? null,
   sourceUrl:   c.sourceUrl,
-  imageUrl:    c.image?.asset?.url ?? null,
-  imageAlt:    c.image?.alt ?? c.title,
+  // Images are already gated on isPublicDomain in the GROQ projection —
+  // an empty array here means "show no facsimile", never fall back to anything.
+  images:      (c.images ?? [])
+    .filter(img => img.asset?.url)
+    .map(img => ({
+      url:     img.asset.url,
+      alt:     img.alt ?? c.title,
+      caption: img.caption ?? null,
+    })),
   teaser:      c.teaser,
+  rewrittenText: c.rewrittenText ?? null,
   commentary:  c.commentary ?? null,
   category:    c.category ?? null,
   magicians:   (c.mentionedMagicians ?? []).map(m => ({
@@ -150,8 +160,8 @@ const escapedJson = JSON.stringify(modalDataRaw)
         data-search={[c.title, c.teaser, c.sourceName, c.commentary].filter(Boolean).join(' ').toLowerCase()}
       >
         <div class="card-img">
-          {c.image?.asset?.url ? (
-            <img src={c.image.asset.url} alt={c.image.alt ?? c.title} loading="lazy" />
+          {c.images?.[0]?.asset?.url ? (
+            <img src={c.images[0].asset.url} alt={c.images[0].alt ?? c.title} loading="lazy" />
           ) : (
             <div class="card-img-placeholder" aria-hidden="true">📰</div>
           )}
@@ -207,11 +217,17 @@ const escapedJson = JSON.stringify(modalDataRaw)
 
         <h2 class="modal-title" id="modal-title"></h2>
 
-        <div class="modal-img-wrap" id="modal-img-wrap" hidden>
-          <img class="modal-img" id="modal-img" src="" alt="" loading="lazy" />
+        <div class="modal-original-title" id="modal-original-title" hidden>
+          <span class="modal-original-label">Original tittel</span>
+          <p class="modal-original-main" id="modal-original-main"></p>
+          <p class="modal-original-sub" id="modal-original-sub" hidden></p>
         </div>
 
+        <div class="modal-gallery" id="modal-gallery" hidden></div>
+
         <p class="modal-teaser" id="modal-teaser"></p>
+
+        <div class="modal-body-text" id="modal-body-text" hidden></div>
 
         <blockquote class="modal-commentary" id="modal-commentary" hidden></blockquote>
 
@@ -270,15 +286,23 @@ const escapedJson = JSON.stringify(modalDataRaw)
 
 <script>
   // ── Types ──────────────────────────────────────────────────────────
+  interface ModalImage {
+    url: string
+    alt: string
+    caption: string | null
+  }
+
   interface ModalClipping {
     id: string
     title: string
+    originalMainTitle: string | null
+    originalSubTitle: string | null
     originalDate: string | null
     sourceName: string | null
     sourceUrl: string
-    imageUrl: string | null
-    imageAlt: string
+    images: ModalImage[]
     teaser: string
+    rewrittenText: string | null
     commentary: string | null
     category: string | null
     magicians: { name: string; slug: string }[]
@@ -351,9 +375,12 @@ const escapedJson = JSON.stringify(modalDataRaw)
   const elCatBadge      = document.getElementById('modal-cat-badge') as HTMLElement
   const elSourceMeta    = document.getElementById('modal-source-meta')!
   const elTitle         = document.getElementById('modal-title')!
-  const elImgWrap       = document.getElementById('modal-img-wrap') as HTMLElement
-  const elImg           = document.getElementById('modal-img') as HTMLImageElement
+  const elOrigWrap      = document.getElementById('modal-original-title') as HTMLElement
+  const elOrigMain      = document.getElementById('modal-original-main')!
+  const elOrigSub       = document.getElementById('modal-original-sub') as HTMLElement
+  const elGallery       = document.getElementById('modal-gallery') as HTMLElement
   const elTeaser        = document.getElementById('modal-teaser')!
+  const elBodyText      = document.getElementById('modal-body-text') as HTMLElement
   const elCommentary    = document.getElementById('modal-commentary') as HTMLElement
   const elMagWrap       = document.getElementById('modal-magicians') as HTMLElement
   const elMagList       = document.getElementById('modal-magicians-list')!
@@ -393,17 +420,63 @@ const escapedJson = JSON.stringify(modalDataRaw)
     // Title
     elTitle.textContent = c.title
 
-    // Image
-    if (c.imageUrl) {
-      elImg.src = c.imageUrl
-      elImg.alt = c.imageAlt
-      elImgWrap.removeAttribute('hidden')
+    // Original newspaper title (main + optional subtitle)
+    if (c.originalMainTitle) {
+      elOrigMain.textContent = c.originalMainTitle
+      if (c.originalSubTitle) {
+        elOrigSub.textContent = c.originalSubTitle
+        elOrigSub.removeAttribute('hidden')
+      } else {
+        elOrigSub.hidden = true
+      }
+      elOrigWrap.removeAttribute('hidden')
     } else {
-      elImgWrap.hidden = true
+      elOrigWrap.hidden = true
+    }
+
+    // Facsimile gallery (safe DOM building, no innerHTML with user content)
+    elGallery.innerHTML = ''
+    if (c.images.length > 0) {
+      elGallery.classList.toggle('is-multi', c.images.length > 1)
+      c.images.forEach(imgData => {
+        const fig = document.createElement('figure')
+        fig.className = 'gallery-item'
+        const img = document.createElement('img')
+        img.src = imgData.url
+        img.alt = imgData.alt
+        img.loading = 'lazy'
+        fig.appendChild(img)
+        if (imgData.caption) {
+          const cap = document.createElement('figcaption')
+          cap.textContent = imgData.caption
+          fig.appendChild(cap)
+        }
+        elGallery.appendChild(fig)
+      })
+      elGallery.removeAttribute('hidden')
+    } else {
+      elGallery.hidden = true
     }
 
     // Teaser
     elTeaser.textContent = c.teaser
+
+    // Rewritten article text (editorial retelling — paragraph per blank line)
+    elBodyText.innerHTML = ''
+    if (c.rewrittenText) {
+      c.rewrittenText
+        .split(/\n\s*\n/)
+        .map(p => p.trim())
+        .filter(Boolean)
+        .forEach(paragraph => {
+          const p = document.createElement('p')
+          p.textContent = paragraph
+          elBodyText.appendChild(p)
+        })
+      elBodyText.removeAttribute('hidden')
+    } else {
+      elBodyText.hidden = true
+    }
 
     // Museum commentary
     if (c.commentary) {
@@ -563,10 +636,24 @@ const escapedJson = JSON.stringify(modalDataRaw)
 
   .modal-title { font-family: var(--font-display); font-size: clamp(1.15rem, 3.5vw, 1.55rem); color: var(--burgundy); letter-spacing: 0.02em; line-height: 1.25; }
 
-  .modal-img-wrap { border-radius: 6px; overflow: hidden; background: var(--burgundy-dk); max-height: 380px; display: flex; align-items: center; justify-content: center; }
-  .modal-img { width: 100%; object-fit: contain; max-height: 380px; }
+  .modal-original-title { border-left: 3px solid var(--gold); padding: 0.35rem 0 0.35rem 0.9rem; display: flex; flex-direction: column; gap: 0.15rem; }
+  .modal-original-label { font-family: var(--font-ui); font-size: 0.62rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.12em; color: var(--gold-dark); }
+  .modal-original-main { font-family: var(--font-display); font-size: 1.05rem; font-style: italic; color: var(--ink-mid); line-height: 1.3; margin: 0; }
+  .modal-original-sub { font-family: var(--font-body); font-size: 0.875rem; font-style: italic; color: var(--grey); line-height: 1.45; margin: 0; }
 
-  .modal-teaser { font-family: var(--font-body); font-size: 1rem; color: var(--ink-mid); line-height: 1.7; }
+  /* Facsimile gallery — single image fills the width; multiple images become
+     a horizontal scroll-snap strip (no carousel library needed). */
+  .modal-gallery { display: flex; gap: 0.75rem; }
+  .modal-gallery .gallery-item { margin: 0; flex: 1 1 100%; min-width: 0; display: flex; flex-direction: column; gap: 0.35rem; }
+  .modal-gallery .gallery-item img { width: 100%; max-height: 380px; object-fit: contain; border-radius: 6px; background: var(--burgundy-dk); }
+  .modal-gallery .gallery-item figcaption { font-family: var(--font-ui); font-size: 0.75rem; color: var(--grey); line-height: 1.4; }
+  .modal-gallery.is-multi { overflow-x: auto; scroll-snap-type: x mandatory; padding-bottom: 0.4rem; -webkit-overflow-scrolling: touch; }
+  .modal-gallery.is-multi .gallery-item { flex: 0 0 min(85%, 460px); scroll-snap-align: start; }
+
+  .modal-teaser { font-family: var(--font-body); font-size: 1rem; color: var(--ink-mid); line-height: 1.7; font-weight: 600; }
+
+  .modal-body-text { display: flex; flex-direction: column; gap: 0.85rem; }
+  .modal-body-text p { font-family: var(--font-body); font-size: 0.95rem; color: var(--ink-mid); line-height: 1.75; margin: 0; }
 
   .modal-commentary { border-left: 3px solid var(--gold-light); padding: 0.6rem 0 0.6rem 1rem; font-family: var(--font-body); font-size: 0.9rem; font-style: italic; color: var(--grey); line-height: 1.6; margin: 0; }
 
