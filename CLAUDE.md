@@ -14,30 +14,38 @@ The site serves dual audiences: children (with interactive exhibitions and activ
 
 ### Content Layer (Sanity CMS)
 
-The schema defines 14+ content types in `/schemaTypes`:
+The schema defines 27 registered content types in `/schemaTypes` (see `schemaTypes/index.ts`):
 
 **Page Types** (singletons):
 - `homepage.ts` — Hero, exhibitions focus, sections, partnerships
 - `barnPage.ts` — Children's section landing page
 - `omOssPage.ts` — "About Us" page with museum history
+- `besokPage.ts` — Visit page (opening hours, prices, transport)
+- `kontaktPage.ts` — Contact page (form URL, FAQ)
+- `tryllehistoriePage.ts` — Magic history landing page (sections, timeline)
+- `ressurserPage.ts` — Resources landing page
+- `arrangementPage.ts` — Events page hero and info strip
+- `utstillingPage.ts` — Exhibition landing page
+- `personvernPage.ts` — Privacy policy content
 - `siteConfig.ts` — Global settings (email, address, contact info)
 
 **Document Types** (queryable collections):
 - `magician.ts` — Exhibition displays (4000+ years of magic history). Fields: child text, adult text, detailed mobile sections, QR-linked content, source links
 - `biography.ts` — "Hvem er hvem" (Who's Who) reference: full name, aliases, birth/death dates, nationality, magician references
 - `legend.ts` — Notable historical magicians with video, images, birth/death dates
-- `tvAppearance.ts` — TV show appearances (Got Talent, America's Funniest People, historical clips)
-- `historicalClip.ts` — Archival video clips with metadata
+- `tvAppearance.ts` — TV show appearances (Got Talent formats, Penn & Teller: Fool Us)
+- `historicalClip.ts` — Archival video clips with metadata (synced daily from YouTube via GitHub Actions)
+- `pressClipping.ts` — Historical newspaper articles (nb.no references)
+- `mediaAppearance.ts` — The museum's own press/media coverage ("I media")
 - `book.ts` — Library catalog with author, publication, availability status
 - `event.ts` — Upcoming events/courses with dates, pricing, booking
 - `artifact.ts` — Museum objects: origin, materials, condition, gallery images
 - `partner.ts` — Sponsors/partners with category grouping
+- `signageConfig.ts`, `signageVideo.ts`, `signageQuote.ts` — Content for the physical info screen (`/skjerm.html`)
 
 **Helper Types** (object types used inline by document types):
 - `contentSection.ts` — Reusable heading + rich text block
 - `sourceItem.ts` — External link with label
-
-**Note**: `author.ts`, `category.ts`, `post.ts`, and `blockContent.ts` are leftover Sanity template defaults — they are not registered in `schemaTypes/index.ts` and not used by the active schema.
 
 ### Query Layer (Sanity Client)
 
@@ -51,15 +59,24 @@ The schema defines 14+ content types in `/schemaTypes`:
 
 **Page Structure** (`/web/src/pages`):
 - `index.astro` — Homepage: fetches magicians, events, homepage config, partners in parallel
-- Dynamic magician pages — Exhibition detail pages generated via SSG
-- `barn.astro`, `besok.astro`, `arrangementer.astro`, `om-oss.astro`, `kontakt.astro` — Main navigation pages
-- `tryllehistorie/`, `ressurser/`, `aktiviteter/` — Section sub-pages
-- Special pages: `norske-legender/`, `henrik-ibsen/`, `got-talent/`, `fool-us/` — TV show archives with filtering/sorting
+- `barn.astro`, `besok.astro`, `arrangementer.astro`, `om-oss.astro`, `kontakt.astro`, `bibliotek.astro`, `personvern.astro` — Main pages
+- `om-oss/i-media/` — Museum press coverage
+- `aktiviteter/`, `ressurser/` — Section landing pages
+- `utstillingen/` — Exhibition: `index`, `[slug]` (magician detail), `artefakter` (+ `[slug]`), `tryllebutikken`
+- `tryllehistorie/` — Magic history archive:
+  - `magiens-hvem-er-hvem` (+ `[slug]`) — biography directory
+  - `norske-legender/` (+ `[slug]`) — legend portraits (incl. `henrik-ibsen` as a slug)
+  - `got-talent/` and `fool-us/` (+ `[slug]`) — TV show archives with filtering/sorting
+  - `historiske-opptak/` (+ `[slug]`) — archival TV clips
+  - `historiske-artikler/` — press clipping archive
+  - `nordisk-tv-magi/` — combined overview; its `[slug]` route 301-redirects to got-talent/fool-us
+- `web/public/skjerm.html` — physical info screen; fetches Sanity client-side (live, not SSG) plus Entur bus departures. `/skjerm` redirects to it.
+- Legacy/short URL redirects (QR codes, print) are defined in `web/astro.config.mjs` under `redirects`.
 
 **Layout** (`/web/src/layouts`):
-- `BaseLayout.astro` — Wrapper with header, nav, footer, global styles
+- `BaseLayout.astro` — Wrapper with header, nav, footer, global styles, Vercel Analytics
 
-**Environment**:
+**Environment** (see `web/.env.example`):
 - `.env`: Public Sanity config (project ID, dataset)
 - `.env.local`: Preview token for draft content (git-ignored)
 
@@ -167,6 +184,8 @@ urlFor(image).width(800).format('webp').url()
 
 ## Important Queries & Types
 
+ALL GROQ queries live in `web/src/lib/sanity.ts` — pages must import query functions from there, never call `sanityClient.fetch()` inline. (Exception: `web/public/skjerm.html`, which queries Sanity client-side by design.)
+
 Key GROQ functions in `sanity.ts`:
 - `getAllMagicians()` — Returns slug, order, years, tagline, image
 - `getMagicianBySlug(slug)` — Full magician doc with mobile sections, sources
@@ -174,6 +193,10 @@ Key GROQ functions in `sanity.ts`:
 - `getUpcomingEvents(limit)` — Upcoming courses/events
 - `getBooksByMagician(id)` — Books by/referencing a magician
 - `getAllPartners()` — Sponsors grouped by category
+- `getFoolUsAppearances()` / `getGotTalentAppearances()` — TV show archives
+- `getAllHistoricalClips()` / `getHistoricalClipBySlug(slug)` — archival clips
+- `getBiographyDirectory()` — compact biography list for Hvem er hvem
+- Per-type `get*Paths()` helpers for `getStaticPaths()` (all filter `isVisible != false`)
 
 Update TypeScript interfaces in sanity.ts when schema changes.
 
