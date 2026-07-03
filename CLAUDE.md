@@ -212,9 +212,9 @@ The web frontend is **not** auto-deployed on push to `main`. Deploys are trigger
 | Environment | URL | Hook secret | Workflow |
 |---|---|---|---|
 | Test | `test.tryllemuseet.no` | `VERCEL_DEPLOY_HOOK_TEST` | `.github/workflows/daily-rebuild.yml` |
-| Production | `tryllemuseet.no` | `VERCEL_DEPLOY_HOOK_PROD` | same (commented out) |
+| Production | `tryllemuseet.no` | `VERCEL_DEPLOY_HOOK_PROD` | same |
 
-The `daily-rebuild.yml` workflow runs automatically at 05:30 UTC every day and can also be triggered manually via **Actions → Daily rebuild → Run workflow** on GitHub. The production hook is defined but commented out in the workflow file — uncomment when ready to enable auto-deploy to production.
+The `daily-rebuild.yml` workflow runs automatically at 05:30 UTC every day and can also be triggered manually via **Actions → Daily rebuild → Run workflow** on GitHub. Both hooks rebuild their branch with fresh Sanity content — they never ship new code; code reaches production only when the `prod` branch itself is updated. Both steps fail loudly if their hook secret is empty (this silently broke the test rebuild June 28 – July 1).
 
 ## Visibility / Unpublish Convention
 
