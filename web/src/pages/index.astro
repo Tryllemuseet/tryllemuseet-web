@@ -360,12 +360,12 @@ function formatTime(d: string) {
           </div>
         </div>
         </AnimateIn>
-        {latestClipping.image?.asset?.url && (
+        {latestClipping.images?.[0]?.asset?.url && (
           <AnimateIn direction="right">
           <div class="press-image">
             <img
-              src={latestClipping.image.asset.url}
-              alt={latestClipping.image.alt ?? latestClipping.title}
+              src={latestClipping.images[0].asset.url}
+              alt={latestClipping.images[0].alt ?? latestClipping.title}
               loading="lazy"
             />
           </div>

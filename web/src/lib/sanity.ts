@@ -1350,10 +1350,14 @@ export interface PressClipping {
   slug:         string
   publishedAt:  string
   originalDate?: string
+  originalMainTitle?: string
+  originalSubTitle?:  string
   sourceName?:  string
   sourceUrl:    string
-  image?:       { asset: { _ref: string; url: string }; alt?: string }
+  isPublicDomain?: boolean
+  images?:      { asset: { _ref: string; url: string }; alt?: string; caption?: string }[]
   teaser:       string
+  rewrittenText?: string
   commentary?:  string
   someText?:    string
   category?:    string
@@ -1367,15 +1371,28 @@ export interface PressClipping {
 
 // ── Spørringer: PressClipping ────────────────────────────────────
 
+// Shared projection. originalFullText is deliberately excluded —
+// it must never reach the frontend, regardless of article age.
+// "images" is gated on isPublicDomain in the GROQ query itself.
+const pressClippingProjection = `
+  _id, title, "slug": slug.current,
+  publishedAt, originalDate, originalMainTitle, originalSubTitle,
+  sourceName, sourceUrl, isPublicDomain,
+  "images": select(
+    isPublicDomain == true => images[]{
+      asset->{ _ref, url }, alt, caption
+    },
+    []
+  ),
+  teaser, rewrittenText, commentary, category,
+  mentionedMagicians[]-> { _id, name, "slug": slug.current, artistName }
+`
+
 // Newest article with publishedAt <= now() — for homepage widget
 export async function getLatestPressClipping(): Promise<PressClipping | null> {
   return sanityClient.fetch(`
     *[_type == "pressClipping" && isVisible != false && publishedAt <= now()] | order(publishedAt desc) [0] {
-      _id, title, "slug": slug.current,
-      publishedAt, originalDate, sourceName, sourceUrl,
-      image { asset->{ _ref, url }, alt },
-      teaser, commentary, someText, category,
-      mentionedMagicians[]-> { _id, name, "slug": slug.current, artistName }
+      ${pressClippingProjection}, someText
     }
   `)
 }
@@ -1384,11 +1401,7 @@ export async function getLatestPressClipping(): Promise<PressClipping | null> {
 export async function getPressClippingArchive(): Promise<PressClipping[]> {
   return sanityClient.fetch(`
     *[_type == "pressClipping" && isVisible != false && publishedAt <= now()] | order(publishedAt desc) {
-      _id, title, "slug": slug.current,
-      publishedAt, originalDate, sourceName, sourceUrl,
-      image { asset->{ _ref, url }, alt },
-      teaser, commentary, category,
-      mentionedMagicians[]-> { _id, name, "slug": slug.current, artistName }
+      ${pressClippingProjection}
     }
   `)
 }
