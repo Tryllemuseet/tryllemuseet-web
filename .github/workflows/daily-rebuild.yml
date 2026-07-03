@@ -14,12 +14,21 @@ jobs:
 
     steps:
       - name: Trigger test deploy hook
-        run: curl -X POST "$VERCEL_DEPLOY_HOOK_TEST"
+        run: |
+          if [ -z "$VERCEL_DEPLOY_HOOK_TEST" ]; then
+            echo "::error::VERCEL_DEPLOY_HOOK_TEST secret is empty or unset"
+            exit 1
+          fi
+          curl --fail -sS -X POST "$VERCEL_DEPLOY_HOOK_TEST"
         env:
           VERCEL_DEPLOY_HOOK_TEST: ${{ secrets.VERCEL_DEPLOY_HOOK_TEST }}
 
-      # Uncomment when production deploy hook is ready:
-      # - name: Trigger production deploy hook
-      #   run: curl -X POST "$VERCEL_DEPLOY_HOOK_PROD"
-      #   env:
-      #     VERCEL_DEPLOY_HOOK_PROD: ${{ secrets.VERCEL_DEPLOY_HOOK_PROD }}
+      - name: Trigger production deploy hook
+        run: |
+          if [ -z "$VERCEL_DEPLOY_HOOK_PROD" ]; then
+            echo "::error::VERCEL_DEPLOY_HOOK_PROD secret is empty or unset"
+            exit 1
+          fi
+          curl --fail -sS -X POST "$VERCEL_DEPLOY_HOOK_PROD"
+        env:
+          VERCEL_DEPLOY_HOOK_PROD: ${{ secrets.VERCEL_DEPLOY_HOOK_PROD }}
