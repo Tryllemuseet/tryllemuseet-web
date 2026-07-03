@@ -1350,11 +1350,66 @@ export interface PressClipping {
   slug:         string
   publishedAt:  string
   originalDate?: string
-  originalMainTitle?: string
-  originalSubTitle?:  string
   sourceName?:  string
   sourceUrl:    string
-  isPublicDomain?: boolean
+  image?:       { asset: { _ref: string; url: string }; alt?: string }
+  teaser:       string
+  commentary?:  string
+  someText?:    string
+  category?:    string
+  mentionedMagicians?: {
+    _id:         string
+    name:        string
+    slug:        string
+    artistName?: string
+  }[]
+}
+
+// ── Spørringer: PressClipping ────────────────────────────────────
+// Legacy type — kept until the old pressClipping documents are deleted.
+// The frontend now uses historiskeKlippNb (see below).
+
+// Newest article with publishedAt <= now() — for homepage widget
+export async function getLatestPressClipping(): Promise<PressClipping | null> {
+  return sanityClient.fetch(`
+    *[_type == "pressClipping" && isVisible != false && publishedAt <= now()] | order(publishedAt desc) [0] {
+      _id, title, "slug": slug.current,
+      publishedAt, originalDate, sourceName, sourceUrl,
+      image { asset->{ _ref, url }, alt },
+      teaser, commentary, someText, category,
+      mentionedMagicians[]-> { _id, name, "slug": slug.current, artistName }
+    }
+  `)
+}
+
+// All published articles — for archive page
+export async function getPressClippingArchive(): Promise<PressClipping[]> {
+  return sanityClient.fetch(`
+    *[_type == "pressClipping" && isVisible != false && publishedAt <= now()] | order(publishedAt desc) {
+      _id, title, "slug": slug.current,
+      publishedAt, originalDate, sourceName, sourceUrl,
+      image { asset->{ _ref, url }, alt },
+      teaser, commentary, category,
+      mentionedMagicians[]-> { _id, name, "slug": slug.current, artistName }
+    }
+  `)
+}
+
+// ── Typer: HistoriskKlippNb ───────────────────────────────────────
+
+export interface HistoriskKlippNb {
+  _id:          string
+  title:        string
+  slug:         string
+  publishedAt:  string
+  featuredDurationDays?: number
+  originalDate?: string
+  originalKicker?: string
+  originalMainTitle?: string
+  originalIngress?: string
+  sourceName?:  string
+  sourceUrl:    string
+  copyrightOverride?: 'auto' | 'show' | 'hide'
   images?:      { asset: { _ref: string; url: string }; alt?: string; caption?: string }[]
   teaser:       string
   rewrittenText?: string
@@ -1369,41 +1424,59 @@ export interface PressClipping {
   }[]
 }
 
-// ── Spørringer: PressClipping ────────────────────────────────────
+// ── Spørringer: HistoriskKlippNb ─────────────────────────────────
+
+// Cutoff date for the 70-year copyright rule, computed at build time.
+// The daily rebuild keeps this current without manual work.
+function publicDomainCutoffIso(): string {
+  const cutoff = new Date()
+  cutoff.setFullYear(cutoff.getFullYear() - 70)
+  return cutoff.toISOString().split('T')[0] // YYYY-MM-DD
+}
 
 // Shared projection. originalFullText is deliberately excluded —
 // it must never reach the frontend, regardless of article age.
-// "images" is gated on isPublicDomain in the GROQ query itself.
-const pressClippingProjection = `
+// Facsimile images are gated in GROQ: editor override wins, otherwise
+// the 70-year rule applies; missing originalDate means images stay hidden.
+const historiskKlippProjection = `
   _id, title, "slug": slug.current,
-  publishedAt, originalDate, originalMainTitle, originalSubTitle,
-  sourceName, sourceUrl, isPublicDomain,
+  publishedAt, featuredDurationDays,
+  originalDate, originalKicker, originalMainTitle, originalIngress,
+  sourceName, sourceUrl, copyrightOverride,
   "images": select(
-    isPublicDomain == true => images[]{
-      asset->{ _ref, url }, alt, caption
-    },
+    copyrightOverride == "show" => images[]{ asset->{ _ref, url }, alt, caption },
+    copyrightOverride == "hide" => [],
+    originalDate < $publicDomainCutoff => images[]{ asset->{ _ref, url }, alt, caption },
     []
   ),
   teaser, rewrittenText, commentary, category,
   mentionedMagicians[]-> { _id, name, "slug": slug.current, artistName }
 `
 
-// Newest article with publishedAt <= now() — for homepage widget
-export async function getLatestPressClipping(): Promise<PressClipping | null> {
-  return sanityClient.fetch(`
-    *[_type == "pressClipping" && isVisible != false && publishedAt <= now()] | order(publishedAt desc) [0] {
-      ${pressClippingProjection}, someText
+// Newest article within its featured window (default 7 days) — for homepage
+export async function getLatestHistoriskKlipp(): Promise<HistoriskKlippNb | null> {
+  return sanityClient.fetch(
+    `
+    *[_type == "historiskeKlippNb" && isVisible != false && publishedAt <= now()
+      && (dateTime(now()) - dateTime(publishedAt)) < coalesce(featuredDurationDays, 7) * 86400
+    ] | order(publishedAt desc) [0] {
+      ${historiskKlippProjection}, someText
     }
-  `)
+    `,
+    { publicDomainCutoff: publicDomainCutoffIso() }
+  )
 }
 
-// All published articles — for archive page
-export async function getPressClippingArchive(): Promise<PressClipping[]> {
-  return sanityClient.fetch(`
-    *[_type == "pressClipping" && isVisible != false && publishedAt <= now()] | order(publishedAt desc) {
-      ${pressClippingProjection}
+// All published articles, regardless of featured window — for archive page
+export async function getHistoriskKlippArchive(): Promise<HistoriskKlippNb[]> {
+  return sanityClient.fetch(
+    `
+    *[_type == "historiskeKlippNb" && isVisible != false && publishedAt <= now()] | order(publishedAt desc) {
+      ${historiskKlippProjection}
     }
-  `)
+    `,
+    { publicDomainCutoff: publicDomainCutoffIso() }
+  )
 }
 
 // ── Typer: MediaAppearance ────────────────────────────────────────

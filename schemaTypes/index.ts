@@ -1,5 +1,6 @@
 import { magician }       from './magician'
 import { pressClipping }  from './pressClipping'
+import { historiskeKlippNb } from './historiskeKlippNb'
 import { contentSection } from './contentSection'
 import { sourceItem }     from './sourceItem'
 import { event }          from './event'
@@ -45,6 +46,7 @@ export const schemaTypes = [
   signageVideo,
   magician,
   pressClipping,
+  historiskeKlippNb,
   biography,
   legend,
   tvAppearance,

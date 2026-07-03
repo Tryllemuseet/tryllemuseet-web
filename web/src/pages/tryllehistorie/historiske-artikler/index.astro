@@ -1,11 +1,11 @@
 ---
 // src/pages/tryllehistorie/historiske-artikler/index.astro
 import BaseLayout from '../../../layouts/BaseLayout.astro'
-import { getPressClippingArchive } from '../../../lib/sanity'
+import { getHistoriskKlippArchive } from '../../../lib/sanity'
 import MentionedMagicians from '../../../components/MentionedMagicians.astro'
-import type { PressClipping } from '../../../lib/sanity'
+import type { HistoriskKlippNb } from '../../../lib/sanity'
 
-const clippings = await getPressClippingArchive()
+const clippings = await getHistoriskKlippArchive()
 const total     = clippings.length
 
 const categoryLabels: Record<string, string> = {
@@ -17,10 +17,10 @@ const categoryLabels: Record<string, string> = {
   annet:        'Annet',
 }
 
-const categories = [...new Set(clippings.map((c: PressClipping) => c.category))]
+const categories = [...new Set(clippings.map((c: HistoriskKlippNb) => c.category))]
   .filter(Boolean).sort() as string[]
 
-const sources = [...new Set(clippings.map((c: PressClipping) => c.sourceName))]
+const sources = [...new Set(clippings.map((c: HistoriskKlippNb) => c.sourceName))]
   .filter(Boolean).sort() as string[]
 
 function getDecade(dateStr?: string): string {
@@ -28,7 +28,7 @@ function getDecade(dateStr?: string): string {
   return String(Math.floor(new Date(dateStr).getFullYear() / 10) * 10)
 }
 
-const decades = [...new Set(clippings.map((c: PressClipping) => getDecade(c.originalDate)))]
+const decades = [...new Set(clippings.map((c: HistoriskKlippNb) => getDecade(c.originalDate)))]
   .filter(Boolean).sort() as string[]
 
 function formatDate(dateStr?: string): string {
@@ -36,16 +36,18 @@ function formatDate(dateStr?: string): string {
   return new Date(dateStr).toLocaleDateString('nb-NO', { day: 'numeric', month: 'long', year: 'numeric' })
 }
 
-const modalDataRaw = clippings.map((c: PressClipping) => ({
+const modalDataRaw = clippings.map((c: HistoriskKlippNb) => ({
   id:          c._id,
   title:       c.title,
+  originalKicker:    c.originalKicker ?? null,
   originalMainTitle: c.originalMainTitle ?? null,
-  originalSubTitle:  c.originalSubTitle ?? null,
+  originalIngress:   c.originalIngress ?? null,
   originalDate: c.originalDate ?? null,
   sourceName:  c.sourceName ?? null,
   sourceUrl:   c.sourceUrl,
-  // Images are already gated on isPublicDomain in the GROQ projection —
-  // an empty array here means "show no facsimile", never fall back to anything.
+  // Images are already copyright-gated in the GROQ projection (70-year rule
+  // or editor override) — an empty array means "show no facsimile", never
+  // fall back to anything.
   images:      (c.images ?? [])
     .filter(img => img.asset?.url)
     .map(img => ({
@@ -150,7 +152,7 @@ const escapedJson = JSON.stringify(modalDataRaw)
 
   <!-- ── Article grid ────────────────────────────────────────────── -->
   <div class="container articles-grid" id="articles-grid">
-    {clippings.map((c: PressClipping) => (
+    {clippings.map((c: HistoriskKlippNb) => (
       <article
         class="article-card"
         data-id={c._id}
@@ -218,9 +220,10 @@ const escapedJson = JSON.stringify(modalDataRaw)
         <h2 class="modal-title" id="modal-title"></h2>
 
         <div class="modal-original-title" id="modal-original-title" hidden>
-          <span class="modal-original-label">Original tittel</span>
-          <p class="modal-original-main" id="modal-original-main"></p>
-          <p class="modal-original-sub" id="modal-original-sub" hidden></p>
+          <span class="modal-original-label">Slik sto det i avisen</span>
+          <p class="modal-original-kicker" id="modal-original-kicker" hidden></p>
+          <p class="modal-original-main" id="modal-original-main" hidden></p>
+          <p class="modal-original-ingress" id="modal-original-ingress" hidden></p>
         </div>
 
         <div class="modal-gallery" id="modal-gallery" hidden></div>
@@ -295,8 +298,9 @@ const escapedJson = JSON.stringify(modalDataRaw)
   interface ModalClipping {
     id: string
     title: string
+    originalKicker: string | null
     originalMainTitle: string | null
-    originalSubTitle: string | null
+    originalIngress: string | null
     originalDate: string | null
     sourceName: string | null
     sourceUrl: string
@@ -376,8 +380,9 @@ const escapedJson = JSON.stringify(modalDataRaw)
   const elSourceMeta    = document.getElementById('modal-source-meta')!
   const elTitle         = document.getElementById('modal-title')!
   const elOrigWrap      = document.getElementById('modal-original-title') as HTMLElement
-  const elOrigMain      = document.getElementById('modal-original-main')!
-  const elOrigSub       = document.getElementById('modal-original-sub') as HTMLElement
+  const elOrigKicker    = document.getElementById('modal-original-kicker') as HTMLElement
+  const elOrigMain      = document.getElementById('modal-original-main') as HTMLElement
+  const elOrigIngress   = document.getElementById('modal-original-ingress') as HTMLElement
   const elGallery       = document.getElementById('modal-gallery') as HTMLElement
   const elTeaser        = document.getElementById('modal-teaser')!
   const elBodyText      = document.getElementById('modal-body-text') as HTMLElement
@@ -420,15 +425,23 @@ const escapedJson = JSON.stringify(modalDataRaw)
     // Title
     elTitle.textContent = c.title
 
-    // Original newspaper title (main + optional subtitle)
-    if (c.originalMainTitle) {
-      elOrigMain.textContent = c.originalMainTitle
-      if (c.originalSubTitle) {
-        elOrigSub.textContent = c.originalSubTitle
-        elOrigSub.removeAttribute('hidden')
+    // Original newspaper heading: kicker (small) → main title → ingress box
+    const origParts: [HTMLElement, string | null][] = [
+      [elOrigKicker,  c.originalKicker],
+      [elOrigMain,    c.originalMainTitle],
+      [elOrigIngress, c.originalIngress],
+    ]
+    let hasOriginal = false
+    origParts.forEach(([el, value]) => {
+      if (value) {
+        el.textContent = value
+        el.removeAttribute('hidden')
+        hasOriginal = true
       } else {
-        elOrigSub.hidden = true
+        el.hidden = true
       }
+    })
+    if (hasOriginal) {
       elOrigWrap.removeAttribute('hidden')
     } else {
       elOrigWrap.hidden = true
@@ -636,10 +649,11 @@ const escapedJson = JSON.stringify(modalDataRaw)
 
   .modal-title { font-family: var(--font-display); font-size: clamp(1.15rem, 3.5vw, 1.55rem); color: var(--burgundy); letter-spacing: 0.02em; line-height: 1.25; }
 
-  .modal-original-title { border-left: 3px solid var(--gold); padding: 0.35rem 0 0.35rem 0.9rem; display: flex; flex-direction: column; gap: 0.15rem; }
+  .modal-original-title { border-left: 3px solid var(--gold); padding: 0.35rem 0 0.35rem 0.9rem; display: flex; flex-direction: column; gap: 0.2rem; }
   .modal-original-label { font-family: var(--font-ui); font-size: 0.62rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.12em; color: var(--gold-dark); }
-  .modal-original-main { font-family: var(--font-display); font-size: 1.05rem; font-style: italic; color: var(--ink-mid); line-height: 1.3; margin: 0; }
-  .modal-original-sub { font-family: var(--font-body); font-size: 0.875rem; font-style: italic; color: var(--grey); line-height: 1.45; margin: 0; }
+  .modal-original-kicker { font-family: var(--font-ui); font-size: 0.78rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--grey); margin: 0; }
+  .modal-original-main { font-family: var(--font-display); font-size: 1.15rem; color: var(--ink-mid); line-height: 1.3; margin: 0; }
+  .modal-original-ingress { font-family: var(--font-body); font-size: 0.875rem; font-style: italic; color: var(--grey); line-height: 1.5; margin: 0.15rem 0 0; padding: 0.5rem 0.75rem; border: 1px solid var(--cream-dark); border-radius: 4px; background: var(--cream); }
 
   /* Facsimile gallery — single image fills the width; multiple images become
      a horizontal scroll-snap strip (no carousel library needed). */

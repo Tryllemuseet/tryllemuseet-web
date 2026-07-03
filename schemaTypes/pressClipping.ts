@@ -25,12 +25,10 @@ export const pressClipping = defineType({
       description:  'Markert fordi kilde-URL/dato kan være feil eller delt med en annen artikkel. Sjekk mot nb.no før publisering, og fjern haken når verifisert.',
     }),
 
-    // ── TITLER ────────────────────────────────────────────────────
     defineField({
       name: 'title',
-      title: 'Tittel (redaksjonell)',
+      title: 'Tittel',
       type: 'string',
-      description: 'Deres egen tittel — vises i kortlisten og brukes til SEO. Kan avvike fra original.',
       validation: R => R.required(),
     }),
 
@@ -42,22 +40,6 @@ export const pressClipping = defineType({
       validation: R => R.required(),
     }),
 
-    defineField({
-      name: 'originalMainTitle',
-      title: 'Original hovedtittel',
-      type: 'string',
-      description: 'Hovedoverskriften slik den sto i avisen.',
-    }),
-
-    defineField({
-      name: 'originalSubTitle',
-      title: 'Original undertittel',
-      type: 'text',
-      rows: 2,
-      description: 'Ingress/underoverskrift fra oppslaget, hvis artikkelen hadde det (mange har en egen boks under hovedtittelen).',
-    }),
-
-    // ── DATO / KILDE ──────────────────────────────────────────────
     defineField({
       name: 'publishedAt',
       title: 'Publiseres på tryllemuseet.no',
@@ -88,36 +70,17 @@ export const pressClipping = defineType({
       components: { input: NbUrlInput },
     }),
 
-    // ── RETTIGHETER ───────────────────────────────────────────────
     defineField({
-      name: 'isPublicDomain',
-      title: 'Falt i det fri (eldre enn ca. 70 år)',
-      type: 'boolean',
-      initialValue: false,
-      description: '⚖️ Styrer om faksimilebilder faktisk vises på nettsiden. Sjekk avisens dato før du slår denne på — usikker på om artikkelen er fri? La den stå av.',
-    }),
-
-    // ── BILDER (array) ────────────────────────────────────────────
-    defineField({
-      name: 'images',
-      title: 'Faksimiler/utsnitt',
-      type: 'array',
-      description: 'Kun aviser falt i det fri (se «Falt i det fri» over) — bildene vises IKKE på siden hvis feltet over ikke er slått på, uansett hva som ligger her.',
-      of: [
-        defineField({
-          name: 'faksimile',
-          type: 'image',
-          title: 'Faksimile',
-          options: { hotspot: true },
-          fields: [
-            defineField({ name: 'alt', title: 'Alt-tekst', type: 'string', validation: R => R.required() }),
-            defineField({ name: 'caption', title: 'Bildetekst', type: 'string' }),
-          ],
-        }),
+      name: 'image',
+      title: 'Faksimile/utsnitt',
+      type: 'image',
+      options: { hotspot: true },
+      description: 'NB rettigheter: Kun faksimiler fra aviser falt i det fri (eldre enn ca. 70 år). For nyere artikler: bruk kun lenke, ikke bilde.',
+      fields: [
+        defineField({ name: 'alt', title: 'Alt-tekst', type: 'string' }),
       ],
     }),
 
-    // ── TEKST ─────────────────────────────────────────────────────
     defineField({
       name: 'teaser',
       title: 'Ingress / teaser',
@@ -128,14 +91,6 @@ export const pressClipping = defineType({
     }),
 
     defineField({
-      name: 'rewrittenText',
-      title: 'Omskrevet artikkeltekst (vises på siden)',
-      type: 'text',
-      rows: 12,
-      description: '📝 Deres egen frie gjengivelse av innholdet, i egne ord. Dette — ikke originalteksten — er det besøkende leser i modalen. Bruk «Original fulltekst» under som kilde mens du skriver.',
-    }),
-
-    defineField({
       name: 'commentary',
       title: 'Museets kommentar',
       type: 'text',
@@ -143,15 +98,6 @@ export const pressClipping = defineType({
       description: 'Kort kontekst som vises i arkivet.',
     }),
 
-    defineField({
-      name: 'originalFullText',
-      title: '🔒 Original fulltekst (internt — vises ALDRI på nettsiden)',
-      type: 'text',
-      rows: 16,
-      description: 'Lim inn hele den transkriberte avisteksten her som referanse. Kun for redaktørens bruk i Studio — hentes aldri ut i front-end-spørringene, uansett alder på artikkelen.',
-    }),
-
-    // ── SOME ──────────────────────────────────────────────────────
     defineField({
       name: 'someText',
       title: 'SoMe-tekst (Instagram/Facebook)',
@@ -176,7 +122,6 @@ export const pressClipping = defineType({
       description: 'Undertekst / caption til TikTok-video. Ung målgruppe — kort, fengende, 3–5 emneknagger. Maks 2200 tegn.',
     }),
 
-    // ── KATEGORISERING ────────────────────────────────────────────
     defineField({
       name: 'category',
       title: 'Kategori',
@@ -217,7 +162,7 @@ export const pressClipping = defineType({
       title:       'title',
       sourceName:  'sourceName',
       date:        'originalDate',
-      media:       'images.0',
+      media:       'image',
       needsReview: 'needsReview',
     },
     prepare({ title, sourceName, date, media, needsReview }: {
