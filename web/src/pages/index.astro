@@ -3,7 +3,7 @@
 import BaseLayout from '../layouts/BaseLayout.astro'
 import AnimateIn from '../components/AnimateIn.astro'
 import MentionedMagicians from '../components/MentionedMagicians.astro'
-import { getAllMagicians, getUpcomingEvents, getHomepage, getSiteConfig, getAllPartners, getLatestPressClipping, getFeaturedMediaAppearance, urlFor } from '../lib/sanity'
+import { getAllMagicians, getUpcomingEvents, getHomepage, getSiteConfig, getAllPartners, getLatestHistoriskKlipp, getFeaturedMediaAppearance, urlFor } from '../lib/sanity'
 
 const today = new Date().toISOString().split('T')[0]
 
@@ -16,7 +16,7 @@ const [magicians, events, hp, config, partners, latestClipping, featuredMedia] =
   getHomepage(),
   getSiteConfig(),
   getAllPartners(),
-  getLatestPressClipping(),
+  getLatestHistoriskKlipp(),
   getFeaturedMediaAppearance(today),
 ])
 
