@@ -1,24 +1,9 @@
 ---
 // src/pages/tryllehistorie/magiens-hvem-er-hvem.astro
 import BaseLayout from '../../layouts/BaseLayout.astro'
-import { sanityClient } from '../../lib/sanity'
+import { getBiographyDirectory } from '../../lib/sanity'
 
-const biographies = await sanityClient.fetch(`
-  *[_type == "biography"] | order(name asc) {
-    _id,
-    name,
-    artistName,
-    aliases,
-    years,
-    nationality,
-    shortBio,
-    tags,
-    needsUpdate,
-    featured,
-    "slug": slug.current,
-    mainImage { asset->{ url }, alt }
-  }
-`)
+const biographies = await getBiographyDirectory()
 
 // Grupper alfabetisk
 const grouped: Record<string, typeof biographies> = {}

@@ -753,6 +753,11 @@ export interface SiteConfig {
   seoDescription:    string
 }
 
+// Kun e-post og adresse — til personvernsiden
+export async function getSiteContactInfo(): Promise<{ email?: string; address?: string } | null> {
+  return sanityClient.fetch(`*[_type == "siteConfig"][0] { email, address }`)
+}
+
 export async function getSiteConfig(): Promise<SiteConfig> {
   const config = await sanityClient.fetch(`
     *[_type == "siteConfig"][0] {
@@ -804,7 +809,9 @@ export interface TvAppearance {
     nationality?: string
     years?:      string
     shortBio?:   string
+    tags?:       string[]
     mainImage?:  { asset: { _ref: string; url: string }; alt?: string }
+    links?:      { label: string; type?: string; url?: string; internalSlug?: string }[]
   }
 }
 
@@ -846,6 +853,125 @@ export const resultLabels: Record<string, string> = {
 }
 
 // ── Spørringer: TV-opptreden ─────────────────────────────────────
+
+/** Show-slugs som regnes som Got Talent-formater. */
+export const GOT_TALENT_SHOWS = [
+  'norske-talenter', 'talang', 'danmark-har-talent',
+  'talent-suomi', 'bgt', 'das-supertalent',
+]
+
+// Fool Us-opptredener — til /tryllehistorie/fool-us
+export async function getFoolUsAppearances(): Promise<TvAppearance[]> {
+  return sanityClient.fetch(`
+    *[_type == "tvAppearance" && show == "fool-us" && isVisible != false] | order(year desc, season asc, episode asc) {
+      _id,
+      "slug": slug.current,
+      year, season, episode, episodeTitle,
+      result,
+      featuredImage { asset->{ url }, alt },
+      videoUrl,
+      magician-> {
+        _id, name, "slug": slug.current,
+        artistName, nationality,
+        mainImage { asset->{ url }, alt }
+      }
+    }
+  `)
+}
+
+// Got Talent-opptredener — til /tryllehistorie/got-talent
+export async function getGotTalentAppearances(): Promise<TvAppearance[]> {
+  return sanityClient.fetch(`
+    *[_type == "tvAppearance" && show in $shows && isVisible != false] | order(year desc, show asc) {
+      _id,
+      "slug": slug.current,
+      show, year, season, episode, episodeTitle,
+      result,
+      featuredImage { asset->{ url }, alt },
+      videoUrl,
+      magician-> {
+        _id, name, "slug": slug.current,
+        artistName, nationality,
+        mainImage { asset->{ url }, alt }
+      }
+    }
+  `, { shows: GOT_TALENT_SHOWS })
+}
+
+// Én Fool Us-opptreden via slug — til detaljsiden
+export async function getFoolUsAppearanceBySlug(slug: string): Promise<TvAppearance | null> {
+  return sanityClient.fetch(`
+    *[_type == "tvAppearance" && show == "fool-us" && slug.current == $slug && isVisible != false][0] {
+      _id, "slug": slug.current,
+      show, year, season, episode, episodeTitle,
+      result, description, videoUrl,
+      featuredImage { asset->{ url }, alt, caption },
+      magician-> {
+        _id, name, "slug": slug.current,
+        artistName, nationality, years, shortBio, tags,
+        mainImage { asset->{ url }, alt },
+        links[] { label, type, url, "internalSlug": internalRef->slug.current }
+      }
+    }
+  `, { slug })
+}
+
+// Én Got Talent-opptreden via slug — til detaljsiden
+export async function getGotTalentAppearanceBySlug(slug: string): Promise<TvAppearance | null> {
+  return sanityClient.fetch(`
+    *[_type == "tvAppearance" && show in $shows && slug.current == $slug && isVisible != false][0] {
+      _id, "slug": slug.current,
+      show, year, season, episode, episodeTitle,
+      result, description, videoUrl,
+      featuredImage { asset->{ url }, alt, caption },
+      magician-> {
+        _id, name, "slug": slug.current,
+        artistName, nationality, years, shortBio, tags,
+        mainImage { asset->{ url }, alt },
+        links[] { label, type, url, "internalSlug": internalRef->slug.current }
+      }
+    }
+  `, { slug, shows: GOT_TALENT_SHOWS })
+}
+
+// Andre opptredener av samme magiker — sidekolonnen på detaljsidene
+export async function getOtherTvAppearances(slug: string, magicianId: string): Promise<{ slug: string; show: string; year?: number; result?: string }[]> {
+  return sanityClient.fetch(`
+    *[_type == "tvAppearance" && slug.current != $slug && magician._ref == $magicianId && isVisible != false] | order(year asc) {
+      "slug": slug.current, show, year, result
+    }
+  `, { slug, magicianId })
+}
+
+// Statiske stier for fool-us/[slug].astro
+export async function getFoolUsPaths() {
+  const slugs = await sanityClient.fetch(`
+    *[_type == "tvAppearance" && show == "fool-us" && isVisible != false] { "slug": slug.current }
+  `)
+  return slugs
+    .filter((s: { slug?: string }) => s.slug)
+    .map((s: { slug: string }) => ({ params: { slug: s.slug } }))
+}
+
+// Statiske stier for got-talent/[slug].astro
+export async function getGotTalentPaths() {
+  const slugs = await sanityClient.fetch(`
+    *[_type == "tvAppearance" && show in $shows && isVisible != false] { "slug": slug.current }
+  `, { shows: GOT_TALENT_SHOWS })
+  return slugs
+    .filter((s: { slug?: string }) => s.slug)
+    .map((s: { slug: string }) => ({ params: { slug: s.slug } }))
+}
+
+// Slug + show for alle opptredener — til redirect-ruten nordisk-tv-magi/[slug]
+export async function getTvAppearanceSlugsWithShow(): Promise<{ slug: string; show: string }[]> {
+  return sanityClient.fetch(`
+    *[_type == "tvAppearance" && isVisible != false] {
+      "slug": slug.current,
+      show
+    }
+  `)
+}
 
 // Alle opptredener — til oversiktssiden
 export async function getAllTvAppearances(): Promise<TvAppearance[]> {
@@ -1056,6 +1182,26 @@ export async function getBiographyPaths() {
     .map((b: { slug: string }) => ({ params: { slug: b.slug } }))
 }
 
+// Kompakt katalogvisning — til /tryllehistorie/magiens-hvem-er-hvem
+export async function getBiographyDirectory(): Promise<Biography[]> {
+  return sanityClient.fetch(`
+    *[_type == "biography" && isVisible != false] | order(name asc) {
+      _id,
+      name,
+      artistName,
+      aliases,
+      years,
+      nationality,
+      shortBio,
+      tags,
+      needsUpdate,
+      featured,
+      "slug": slug.current,
+      mainImage { asset->{ url }, alt }
+    }
+  `)
+}
+
 // ── Spørringer: Legend ───────────────────────────────────────────
 
 // Alle legender — til oversiktssiden
@@ -1102,6 +1248,92 @@ export async function getLegendPaths() {
   return legends
     .filter((l: { slug?: string }) => l.slug)
     .map((l: { slug: string }) => ({ params: { slug: l.slug } }))
+}
+
+// ── Typer: HistoricalClip ────────────────────────────────────────
+
+export interface HistoricalClip {
+  _id:            string
+  slug:           string
+  title:          string
+  year?:          number
+  broadcaster?:   string
+  show?:          string
+  category?:      string
+  description?:   any[]
+  videoUrl?:      string
+  videoUrlAlt?:   string
+  source?:        string
+  featuredImage?: { asset: { url: string }; alt?: string; caption?: string }
+  magician?: {
+    _id:          string
+    name:         string
+    slug:         string
+    artistName?:  string
+    nationality?: string
+    years?:       string
+    shortBio?:    string
+    tags?:        string[]
+    mainImage?:   { asset: { url: string }; alt?: string }
+    links?:       { label: string; type?: string; url?: string }[]
+  }
+}
+
+// ── Spørringer: HistoricalClip ───────────────────────────────────
+
+// Alle historiske opptak — til oversiktssiden
+export async function getAllHistoricalClips(): Promise<HistoricalClip[]> {
+  return sanityClient.fetch(`
+    *[_type == "historicalClip" && isVisible != false] | order(year asc) {
+      _id,
+      "slug": slug.current,
+      title, year, broadcaster, show, category,
+      featuredImage { asset->{ url }, alt },
+      videoUrl,
+      magician-> {
+        _id, name, "slug": slug.current,
+        artistName, nationality,
+        mainImage { asset->{ url }, alt }
+      }
+    }
+  `)
+}
+
+// Ett opptak via slug — til detaljsiden
+export async function getHistoricalClipBySlug(slug: string): Promise<HistoricalClip | null> {
+  return sanityClient.fetch(`
+    *[_type == "historicalClip" && slug.current == $slug && isVisible != false][0] {
+      _id, "slug": slug.current,
+      title, year, broadcaster, show, category,
+      description, videoUrl, videoUrlAlt, source,
+      featuredImage { asset->{ url }, alt, caption },
+      magician-> {
+        _id, name, "slug": slug.current,
+        artistName, nationality, years, shortBio, tags,
+        mainImage { asset->{ url }, alt },
+        links[] { label, type, url }
+      }
+    }
+  `, { slug })
+}
+
+// Andre opptak av samme magiker — sidekolonnen på detaljsiden
+export async function getOtherHistoricalClips(slug: string, magicianId: string): Promise<{ slug: string; title: string; year?: number }[]> {
+  return sanityClient.fetch(`
+    *[_type == "historicalClip" && slug.current != $slug && magician._ref == $magicianId && isVisible != false] | order(year asc) {
+      "slug": slug.current, title, year
+    }
+  `, { slug, magicianId })
+}
+
+// Statiske stier for historiske-opptak/[slug].astro
+export async function getHistoricalClipPaths() {
+  const slugs = await sanityClient.fetch(`
+    *[_type == "historicalClip" && isVisible != false] { "slug": slug.current }
+  `)
+  return slugs
+    .filter((s: { slug?: string }) => s.slug)
+    .map((s: { slug: string }) => ({ params: { slug: s.slug } }))
 }
 
 // ── Typer: PressClipping ─────────────────────────────────────────

@@ -1,14 +1,9 @@
 ---
 // src/pages/tryllehistorie/nordisk-tv-magi/[slug].astro
-import { sanityClient } from '../../../lib/sanity'
+import { getTvAppearanceSlugsWithShow } from '../../../lib/sanity'
 
 export async function getStaticPaths() {
-  const docs = await sanityClient.fetch(`
-    *[_type == "tvAppearance"] {
-      "slug": slug.current,
-      show
-    }
-  `)
+  const docs = await getTvAppearanceSlugsWithShow()
   return docs.map((d: { slug: string; show: string }) => ({
     params: { slug: d.slug },
     props:  { show: d.show },

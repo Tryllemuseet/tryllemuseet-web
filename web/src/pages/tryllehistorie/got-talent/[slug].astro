@@ -1,39 +1,19 @@
 ---
 // src/pages/tryllehistorie/got-talent/[slug].astro
 import BaseLayout from '../../../layouts/BaseLayout.astro'
-import { sanityClient, showLabels, showMeta, resultLabels, portableTextToHtml } from '../../../lib/sanity'
+import { getGotTalentPaths, getGotTalentAppearanceBySlug, getOtherTvAppearances, showLabels, showMeta, resultLabels, portableTextToHtml } from '../../../lib/sanity'
 
 export async function getStaticPaths() {
-  const slugs = await sanityClient.fetch(`
-    *[_type == "tvAppearance" && show in ["norske-talenter","talang","danmark-har-talent","talent-suomi","bgt","das-supertalent"]] { "slug": slug.current }
-  `)
-  return slugs.filter((s: any) => s.slug).map((s: any) => ({ params: { slug: s.slug } }))
+  return getGotTalentPaths()
 }
 
 const { slug } = Astro.params
 
-const a = await sanityClient.fetch(`
-  *[_type == "tvAppearance" && show in ["norske-talenter","talang","danmark-har-talent","talent-suomi","bgt","das-supertalent"] && slug.current == $slug][0] {
-    _id, "slug": slug.current,
-    show, year, season, episode, episodeTitle,
-    result, description, videoUrl,
-    featuredImage { asset->{ url }, alt, caption },
-    magician-> {
-      _id, name, "slug": slug.current,
-      artistName, nationality, years, shortBio, tags,
-      mainImage { asset->{ url }, alt },
-      links[] { label, type, url, "internalSlug": internalRef->slug.current }
-    }
-  }
-`, { slug })
+const a = await getGotTalentAppearanceBySlug(slug!)
 
 if (!a) return Astro.redirect('/tryllehistorie/got-talent')
 
-const otherAppearances = await sanityClient.fetch(`
-  *[_type == "tvAppearance" && slug.current != $slug && magician._ref == $magicianId] | order(year asc) {
-    "slug": slug.current, show, year, result
-  }
-`, { slug, magicianId: a.magician._id })
+const otherAppearances = await getOtherTvAppearances(slug!, a.magician._id)
 
 function youtubeEmbedUrl(url: string): string | null {
   const m = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&?]+)/)

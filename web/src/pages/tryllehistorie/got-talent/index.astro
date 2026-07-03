@@ -1,9 +1,7 @@
 ---
 // src/pages/tryllehistorie/got-talent/index.astro
 import BaseLayout from '../../../layouts/BaseLayout.astro'
-import { sanityClient, showLabels, resultLabels } from '../../../lib/sanity'
-
-const GOT_TALENT_SHOWS = ['norske-talenter', 'talang', 'danmark-har-talent', 'talent-suomi', 'bgt', 'das-supertalent']
+import { getGotTalentAppearances, showLabels, resultLabels } from '../../../lib/sanity'
 
 
 function ytThumb(url?: string): string | null {
@@ -12,21 +10,7 @@ function ytThumb(url?: string): string | null {
   return m ? `https://img.youtube.com/vi/${m[1]}/hqdefault.jpg` : null
 }
 
-const appearances = await sanityClient.fetch(`
-  *[_type == "tvAppearance" && show in $shows] | order(year desc, show asc) {
-    _id,
-    "slug": slug.current,
-    show, year, season, episode, episodeTitle,
-    result,
-    featuredImage { asset->{ url }, alt },
-    videoUrl,
-    magician-> {
-      _id, name, "slug": slug.current,
-      artistName, nationality,
-      mainImage { asset->{ url }, alt }
-    }
-  }
-`, { shows: GOT_TALENT_SHOWS })
+const appearances = await getGotTalentAppearances()
 
 const shows     = [...new Set(appearances.map((a: any) => a.show))].filter(Boolean).sort() as string[]
 const countries = [...new Set(appearances.map((a: any) => a.magician?.nationality))].filter(Boolean).sort() as string[]
