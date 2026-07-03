@@ -1,0 +1,308 @@
+---
+// src/pages/utstillingen/tryllebutikken.astro
+import BaseLayout from '../../layouts/BaseLayout.astro'
+import AnimateIn from '../../components/AnimateIn.astro'
+import { getSiteConfig } from '../../lib/sanity'
+
+const site = await getSiteConfig()
+---
+
+<BaseLayout
+  title="Tryllebutikken — Tryllemuseet"
+  description="I Tryllemuseets butikk finner du trylletriks, bøker og rekvisita for nybegynnere og viderekomne. Betales med Vipps på stedet."
+>
+
+  <!-- HERO -->
+  <section class="butikk-hero">
+    <div class="container">
+      <p class="section-label">Utstillingen</p>
+      <h1 class="display-title butikk-title">Tryllebutikken</h1>
+      <p class="butikk-sub">
+        Etter besøket kan du ta med deg litt magi hjem. I vår lille butikk
+        finner du trylletriks, rekvisita og bøker — noe for alle nivåer.
+      </p>
+    </div>
+  </section>
+
+  <!-- INNHOLD -->
+  <div class="container butikk-layout">
+
+    <AnimateIn direction="left">
+    <div class="butikk-main">
+
+      <!-- Trylleposer -->
+      <section class="produkt-seksjon">
+        <h2 class="seksjon-tittel">
+          <span class="seksjon-ikon" aria-hidden="true">🪄</span>
+          Trylleposer
+        </h2>
+        <p class="seksjon-ingress">
+          Perfekt for nybegynnere — hver pose inneholder et triks med forklaring og manual på norsk.
+        </p>
+        <ul class="produkt-liste">
+          <li>Pengemaskinen</li>
+          <li>Pengeslukeren</li>
+          <li>Fantommynten</li>
+          <li>Myntforsvinning</li>
+          <li>Spiralen</li>
+        </ul>
+      </section>
+
+      <hr class="gold-rule" />
+
+      <!-- Triks -->
+      <section class="produkt-seksjon">
+        <h2 class="seksjon-tittel">
+          <span class="seksjon-ikon" aria-hidden="true">🎩</span>
+          Triks og rekvisita
+        </h2>
+        <ul class="produkt-liste produkt-liste--grid">
+          <li>Mentalboksen</li>
+          <li>Tauringene</li>
+          <li>Repillusjonen</li>
+          <li>Fargetauene</li>
+          <li>Flygende fyrstikk</li>
+          <li>Ringspillet</li>
+          <li>Begerspillet</li>
+          <li>Flygende mynter</li>
+          <li>Kulebegeret</li>
+          <li>Kortesken de Luxe</li>
+          <li>Terningtrikset</li>
+          <li>Fargeskiftende tørkler</li>
+          <li>The secret box</li>
+          <li>Tryllekortstokk</li>
+        </ul>
+      </section>
+
+      <hr class="gold-rule" />
+
+      <!-- Bøker -->
+      <section class="produkt-seksjon">
+        <h2 class="seksjon-tittel">
+          <span class="seksjon-ikon" aria-hidden="true">📚</span>
+          Bøker
+        </h2>
+        <ul class="produkt-liste">
+          <li>Mystikk som underholdning</li>
+          <li>I livets manesje — boken om Arnardo</li>
+          <li>Egelo: Lærebok i humor</li>
+          <li>Kortkunster</li>
+          <li>Tryllekunster</li>
+        </ul>
+      </section>
+
+    </div>
+    </AnimateIn>
+
+    <!-- SIDEBAR -->
+    <AnimateIn direction="right">
+    <aside class="butikk-sidebar">
+
+      <div class="info-kort">
+        <h3 class="info-kort-tittel">Praktisk info</h3>
+        <ul class="info-liste">
+          <li>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            <span>Butikken ligger inne i museet</span>
+          </li>
+          <li>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            <span>Åpent i museets åpningstider: {site.openingHoursShort}</span>
+          </li>
+          <li>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+            <span>Betaling med Vipps — nr. <strong>95626</strong></span>
+          </li>
+        </ul>
+      </div>
+
+      <div class="info-kort info-kort--mork">
+        <h3 class="info-kort-tittel">Spørsmål om produkter?</h3>
+        <p>Vi hjelper deg gjerne med å finne riktig triks for ditt nivå eller alder.</p>
+        <a href="/kontakt" class="btn-gull">Send oss en melding →</a>
+      </div>
+
+      <div class="info-kort">
+        <h3 class="info-kort-tittel">Planlegger du besøket?</h3>
+        <p>Se åpningstider, adresse og priser på besøkssiden.</p>
+        <a href="/besok" class="btn-kontur">Besøk oss →</a>
+      </div>
+
+    </aside>
+    </AnimateIn>
+
+  </div>
+
+</BaseLayout>
+
+<style>
+  .butikk-hero {
+    background: var(--burgundy-dk);
+    padding: 3.5rem 0 2.5rem;
+    border-bottom: 2px solid var(--gold-dark);
+    color: var(--cream);
+  }
+  .butikk-title {
+    font-size: clamp(2rem, 5vw, 3rem);
+    color: var(--cream);
+    margin: 0.5rem 0 0.75rem;
+  }
+  .butikk-sub {
+    font-family: var(--font-ui);
+    font-size: 1rem;
+    opacity: 0.82;
+    max-width: 560px;
+    line-height: 1.6;
+  }
+
+  .butikk-layout {
+    display: grid;
+    grid-template-columns: 1fr 320px;
+    gap: 2.5rem;
+    padding-top: 2.5rem;
+    padding-bottom: 5rem;
+    align-items: start;
+  }
+
+  /* Seksjoner */
+  .produkt-seksjon { margin-bottom: 0.5rem; }
+
+  .seksjon-tittel {
+    font-family: var(--font-display);
+    font-size: 1.15rem;
+    color: var(--burgundy);
+    letter-spacing: 0.04em;
+    margin-bottom: 0.6rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .seksjon-ikon { font-size: 1.1rem; }
+
+  .seksjon-ingress {
+    font-family: var(--font-ui);
+    font-size: 0.9rem;
+    color: var(--ink-mid);
+    line-height: 1.6;
+    margin-bottom: 0.75rem;
+  }
+
+  .produkt-liste {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+  }
+  .produkt-liste li {
+    font-family: var(--font-ui);
+    font-size: 0.95rem;
+    color: var(--ink);
+    padding: 0.45rem 0.75rem;
+    background: var(--cream-dark);
+    border-radius: var(--radius);
+    border-left: 3px solid var(--gold-dark);
+  }
+
+  .produkt-liste--grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.4rem;
+  }
+
+  /* Sidebar */
+  .butikk-sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+  }
+
+  .info-kort {
+    background: white;
+    border: 1px solid var(--cream-dark);
+    border-radius: 6px;
+    padding: 1.25rem 1.5rem;
+  }
+  .info-kort--mork {
+    background: var(--burgundy-dk);
+    border-color: var(--gold-dark);
+    color: var(--cream);
+  }
+  .info-kort--mork p {
+    opacity: 0.82;
+  }
+
+  .info-kort-tittel {
+    font-family: var(--font-display);
+    font-size: 0.95rem;
+    color: var(--burgundy);
+    letter-spacing: 0.04em;
+    margin-bottom: 0.85rem;
+  }
+  .info-kort--mork .info-kort-tittel {
+    color: var(--gold);
+  }
+
+  .info-liste {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+  .info-liste li {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.6rem;
+    font-family: var(--font-ui);
+    font-size: 0.875rem;
+    color: var(--ink-mid);
+    line-height: 1.45;
+  }
+  .info-liste svg {
+    width: 18px;
+    height: 18px;
+    color: var(--gold-dark);
+    flex-shrink: 0;
+    margin-top: 0.1rem;
+  }
+
+  .info-kort p {
+    font-family: var(--font-ui);
+    font-size: 0.875rem;
+    color: var(--ink-mid);
+    line-height: 1.6;
+    margin-bottom: 1rem;
+  }
+
+  .btn-gull {
+    display: inline-block;
+    font-family: var(--font-ui);
+    font-size: 0.875rem;
+    font-weight: 600;
+    background: var(--gold);
+    color: var(--burgundy-dk);
+    padding: 0.5rem 1.1rem;
+    border-radius: var(--radius);
+    transition: background 180ms;
+    text-decoration: none;
+  }
+  .btn-gull:hover { background: var(--gold-light); }
+
+  .btn-kontur {
+    display: inline-block;
+    font-family: var(--font-ui);
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--burgundy);
+    border: 1px solid var(--burgundy);
+    padding: 0.5rem 1.1rem;
+    border-radius: var(--radius);
+    transition: background 180ms, color 180ms;
+    text-decoration: none;
+  }
+  .btn-kontur:hover { background: var(--burgundy); color: var(--cream); }
+
+  @media (max-width: 860px) {
+    .butikk-layout { grid-template-columns: 1fr; }
+    .produkt-liste--grid { grid-template-columns: 1fr; }
+  }
+</style>
