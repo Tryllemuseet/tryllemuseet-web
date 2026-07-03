@@ -1,7 +1,7 @@
 ---
 // src/pages/tryllehistorie/historiske-opptak/index.astro
 import BaseLayout from '../../../layouts/BaseLayout.astro'
-import { sanityClient } from '../../../lib/sanity'
+import { getAllHistoricalClips } from '../../../lib/sanity'
 
 
 function ytThumb(url?: string): string | null {
@@ -10,20 +10,7 @@ function ytThumb(url?: string): string | null {
   return m ? `https://img.youtube.com/vi/${m[1]}/hqdefault.jpg` : null
 }
 
-const clips = await sanityClient.fetch(`
-  *[_type == "historicalClip" && isVisible != false] | order(year asc) {
-    _id,
-    "slug": slug.current,
-    title, year, broadcaster, show, category,
-    featuredImage { asset->{ url }, alt },
-    videoUrl,
-    magician-> {
-      _id, name, "slug": slug.current,
-      artistName, nationality,
-      mainImage { asset->{ url }, alt }
-    }
-  }
-`)
+const clips = await getAllHistoricalClips()
 
 const broadcasters = [...new Set(clips.map((c: any) => c.broadcaster))].filter(Boolean).sort() as string[]
 const magicians    = [...new Set(clips.map((c: any) => c.magician?.artistName ?? c.magician?.name))].filter(Boolean).sort() as string[]

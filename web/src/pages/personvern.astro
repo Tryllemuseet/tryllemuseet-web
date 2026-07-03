@@ -1,11 +1,11 @@
 ---
 // src/pages/personvern.astro
 import BaseLayout from '../layouts/BaseLayout.astro'
-import { getPersonvernPage, portableTextToHtml, sanityClient } from '../lib/sanity'
+import { getPersonvernPage, portableTextToHtml, getSiteContactInfo } from '../lib/sanity'
 
 const [page, config] = await Promise.all([
   getPersonvernPage(),
-  sanityClient.fetch(`*[_type == "siteConfig"][0] { email, address }`),
+  getSiteContactInfo(),
 ])
 
 function formatDate(d?: string) {

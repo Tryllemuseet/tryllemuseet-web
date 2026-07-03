@@ -1,40 +1,20 @@
 ---
 // src/pages/tryllehistorie/historiske-opptak/[slug].astro
 import BaseLayout from '../../../layouts/BaseLayout.astro'
-import { sanityClient, portableTextToHtml } from '../../../lib/sanity'
+import { getHistoricalClipPaths, getHistoricalClipBySlug, getOtherHistoricalClips, portableTextToHtml } from '../../../lib/sanity'
 
 export async function getStaticPaths() {
-  const slugs = await sanityClient.fetch(`
-    *[_type == "historicalClip" && isVisible != false] { "slug": slug.current }
-  `)
-  return slugs.filter((s: any) => s.slug).map((s: any) => ({ params: { slug: s.slug } }))
+  return getHistoricalClipPaths()
 }
 
 const { slug } = Astro.params
 
-const c = await sanityClient.fetch(`
-  *[_type == "historicalClip" && slug.current == $slug && isVisible != false][0] {
-    _id, "slug": slug.current,
-    title, year, broadcaster, show, category,
-    description, videoUrl, videoUrlAlt, source,
-    featuredImage { asset->{ url }, alt, caption },
-    magician-> {
-      _id, name, "slug": slug.current,
-      artistName, nationality, years, shortBio, tags,
-      mainImage { asset->{ url }, alt },
-      links[] { label, type, url }
-    }
-  }
-`, { slug })
+const c = await getHistoricalClipBySlug(slug!)
 
 if (!c) return Astro.redirect('/tryllehistorie/historiske-opptak')
 
 // Andre opptak av samme magiker
-const otherClips = c.magician ? await sanityClient.fetch(`
-  *[_type == "historicalClip" && slug.current != $slug && magician._ref == $magicianId && isVisible != false] | order(year asc) {
-    "slug": slug.current, title, year
-  }
-`, { slug, magicianId: c.magician._id }) : []
+const otherClips = c.magician ? await getOtherHistoricalClips(slug!, c.magician._id) : []
 
 function youtubeEmbedUrl(url: string): string | null {
   const m = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&?]+)/)
