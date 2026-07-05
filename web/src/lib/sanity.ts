@@ -1678,3 +1678,81 @@ export async function getMagicOrganizationPaths() {
     .filter((o: { slug?: string }) => o.slug)
     .map((o: { slug: string }) => ({ params: { slug: o.slug } }))
 }
+
+// ── Typer: Tryllequiz ────────────────────────────────────────────
+
+export interface QuizAnswer {
+  text:       string
+  isCorrect?: boolean
+}
+
+export interface QuizQuestion {
+  _id:             string
+  question:        string
+  image?:          { asset: { _ref: string; url: string }; alt?: string }
+  answers:         QuizAnswer[]
+  explanation?:    string
+  learnMoreUrl?:   string
+  learnMoreLabel?: string
+  difficulty:      'lett' | 'middels' | 'vanskelig'
+  themeSlugs?:     string[]
+}
+
+export interface QuizTheme {
+  _id:          string
+  title:        string
+  slug:         string
+  icon?:        string
+  description?: string
+  order?:       number
+}
+
+export interface QuizResultLevel {
+  minPercent: number
+  title:      string
+  message?:   string
+}
+
+export interface QuizConfig {
+  isActive?:          boolean
+  title?:             string
+  intro?:             string
+  comingSoonTitle?:   string
+  comingSoonText?:    string
+  questionsPerRound?: number
+  resultLevels?:      QuizResultLevel[]
+}
+
+// ── Spørringer: Tryllequiz ───────────────────────────────────────
+
+export async function getQuizConfig(): Promise<QuizConfig | null> {
+  return sanityClient.fetch(`
+    *[_type == "quizConfig"][0] {
+      isActive, title, intro,
+      comingSoonTitle, comingSoonText,
+      questionsPerRound,
+      resultLevels[] { minPercent, title, message }
+    }
+  `)
+}
+
+export async function getAllQuizThemes(): Promise<QuizTheme[]> {
+  return sanityClient.fetch(`
+    *[_type == "quizTheme" && isVisible != false] | order(order asc, title asc) {
+      _id, title, "slug": slug.current, icon, description, order
+    }
+  `)
+}
+
+export async function getAllQuizQuestions(): Promise<QuizQuestion[]> {
+  return sanityClient.fetch(`
+    *[_type == "quizQuestion" && isVisible != false && defined(difficulty) && count(answers) >= 2] {
+      _id, question,
+      image { asset->{ _ref, url }, alt },
+      answers[] { text, isCorrect },
+      explanation, learnMoreUrl, learnMoreLabel,
+      difficulty,
+      "themeSlugs": themes[]->slug.current
+    }
+  `)
+}

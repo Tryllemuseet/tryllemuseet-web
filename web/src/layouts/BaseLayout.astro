@@ -1,6 +1,6 @@
 ---
 // src/layouts/BaseLayout.astro
-import { getSiteConfig } from '../lib/sanity'
+import { getSiteConfig, getQuizConfig } from '../lib/sanity'
 import Analytics from '@vercel/analytics/astro'
 
 export interface Props {
@@ -12,8 +12,9 @@ const {
   description,
 } = Astro.props;
 
-const site = await getSiteConfig()
+const [site, quizConfig] = await Promise.all([getSiteConfig(), getQuizConfig()])
 const metaDescription = description ?? site.seoDescription
+const quizActive = quizConfig?.isActive === true
 
 // Flat liste for footer og mobil
 const allNavLinks = [
@@ -79,12 +80,13 @@ const isActive = (href: string) =>
 
           <!-- Aktiviteter med dropdown -->
           <li class="has-dropdown">
-            <a href="/aktiviteter" class:list={['nav-link', { active: isActive('/aktiviteter') || isActive('/arrangementer') || isActive('/barn') }]}>
+            <a href="/aktiviteter" class:list={['nav-link', { active: isActive('/aktiviteter') || isActive('/arrangementer') || isActive('/barn') || isActive('/tryllequiz') }]}>
               Aktiviteter <span class="nav-chevron">▾</span>
             </a>
             <ul class="dropdown" role="list">
               <li><a href="/aktiviteter" class="dropdown-link">Oversikt</a></li>
               <li><a href="/barn" class="dropdown-link">Barn &amp; unge</a></li>
+              {quizActive && <li><a href="/tryllequiz" class="dropdown-link">Tryllequiz</a></li>}
               <li><a href="/aktiviteter/tryllekunstnere" class="dropdown-link">Bestill tryllekunstner</a></li>
             </ul>
           </li>
@@ -161,10 +163,11 @@ const isActive = (href: string) =>
         </li>
 
         <li class="mobile-section">
-          <a href="/aktiviteter" class:list={['mobile-nav-link', { active: isActive('/aktiviteter') || isActive('/barn') }]}>Aktiviteter</a>
+          <a href="/aktiviteter" class:list={['mobile-nav-link', { active: isActive('/aktiviteter') || isActive('/barn') || isActive('/tryllequiz') }]}>Aktiviteter</a>
           <ul class="mobile-sub">
             <li><a href="/aktiviteter"                      class="mobile-sub-link">Oversikt</a></li>
             <li><a href="/barn"                             class="mobile-sub-link">Barn &amp; unge</a></li>
+            {quizActive && <li><a href="/tryllequiz"        class="mobile-sub-link">Tryllequiz</a></li>}
             <li><a href="/aktiviteter/tryllekunstnere"      class="mobile-sub-link">Bestill tryllekunstner</a></li>
           </ul>
         </li>

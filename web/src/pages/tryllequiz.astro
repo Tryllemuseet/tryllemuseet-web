@@ -1,0 +1,455 @@
+---
+// src/pages/tryllequiz.astro
+import BaseLayout from '../layouts/BaseLayout.astro'
+import { getQuizConfig, getAllQuizThemes, getAllQuizQuestions, urlFor } from '../lib/sanity'
+import type { QuizResultLevel } from '../lib/sanity'
+
+const [config, allThemes, questions] = await Promise.all([
+  getQuizConfig(),
+  getAllQuizThemes(),
+  getAllQuizQuestions(),
+])
+
+// The quiz is live only when the master switch is on AND there is content.
+const isActive = config?.isActive === true && questions.length > 0
+
+const comingSoonTitle = config?.comingSoonTitle ?? 'Tryllequizen kommer snart!'
+const comingSoonText  = config?.comingSoonText  ??
+  'Vi jobber med spørsmålene bak sceneteppet. Kom tilbake litt senere — eller besøk oss på Årvoll gård i mellomtiden!'
+
+const quizTitle = config?.title ?? 'Tryllequiz'
+const quizIntro = config?.intro ??
+  'Hvor mye kan du om magiens verden? Velg tema og vanskelighetsgrad — og test deg selv!'
+
+// Only offer themes that actually have questions
+const themes = allThemes.filter(t =>
+  questions.some(q => q.themeSlugs?.includes(t.slug))
+)
+
+const DEFAULT_LEVELS: QuizResultLevel[] = [
+  { minPercent: 0,  title: 'Nysgjerrig lærling',     message: 'Alle store magikere startet et sted! Utforsk museet og nettsiden — og prøv igjen.' },
+  { minPercent: 40, title: 'Lovende tryllekunstner', message: 'Ikke verst! Du kan mer enn de fleste — men magiens verden har flere hemmeligheter å by på.' },
+  { minPercent: 70, title: 'Erfaren illusjonist',    message: 'Imponerende! Du har god oversikt over magiens verden.' },
+  { minPercent: 90, title: 'Stormester i magi',      message: 'Simsalabim! Du kan nesten mer enn museet selv. Kom innom, så kan vi lære av deg!' },
+]
+
+const levels = (config?.resultLevels?.length ? config.resultLevels : DEFAULT_LEVELS)
+  .slice()
+  .sort((a, b) => a.minPercent - b.minPercent)
+
+const payload = {
+  questionsPerRound: config?.questionsPerRound ?? 10,
+  resultLevels: levels,
+  questions: questions.map(q => ({
+    id:             q._id,
+    question:       q.question,
+    image:          q.image?.asset ? urlFor(q.image).width(720).format('webp').url() : null,
+    imageAlt:       q.image?.alt ?? '',
+    answers:        (q.answers ?? []).map(a => ({ text: a.text, correct: a.isCorrect === true })),
+    explanation:    q.explanation ?? '',
+    learnMoreUrl:   q.learnMoreUrl ?? '',
+    learnMoreLabel: q.learnMoreLabel ?? 'Les mer',
+    difficulty:     q.difficulty,
+    themes:         q.themeSlugs ?? [],
+  })),
+}
+
+// <-escape so a literal "</script>" in content can never break the page
+const payloadJson = JSON.stringify(payload).replace(/</g, '\\u003c')
+
+const difficulties = [
+  { value: 'lett',      label: 'Lett',      icon: '🟢', hint: 'For barn og nybegynnere' },
+  { value: 'middels',   label: 'Middels',   icon: '🟡', hint: 'For hele familien' },
+  { value: 'vanskelig', label: 'Vanskelig', icon: '🔴', hint: 'For entusiaster' },
+  { value: 'blandet',   label: 'Blandet',   icon: '🎲', hint: 'Litt av alt' },
+]
+---
+
+<BaseLayout
+  title="Tryllequiz — Tryllemuseet"
+  description="Test hvor mye du kan om magiens verden! Tryllemuseets quiz med spørsmål om norske legender, magiens historie og mye mer."
+>
+
+  <section class="hero">
+    <div class="container">
+      <p class="section-label">Tryllemuseet</p>
+      <h1 class="display-title">{isActive ? quizTitle : 'Tryllequiz'}</h1>
+      {isActive && <p class="hero-sub">{quizIntro}</p>}
+    </div>
+  </section>
+
+  {!isActive ? (
+    <main class="container quiz-main">
+      <div class="coming-soon">
+        <span class="coming-soon-icon" aria-hidden="true">🎩✨</span>
+        <h2>{comingSoonTitle}</h2>
+        <p>{comingSoonText}</p>
+        <a href="/utstillingen" class="btn-gold">Utforsk utstillingen →</a>
+      </div>
+    </main>
+  ) : (
+    <main class="container quiz-main">
+
+      <!-- ── STARTSKJERM ─────────────────────────────────────────── -->
+      <section class="quiz-panel" id="quiz-setup" aria-labelledby="setup-heading">
+        <h2 id="setup-heading" class="panel-heading">Velg din quiz</h2>
+
+        <p class="choice-label">Tema</p>
+        <div class="chip-row" role="group" aria-label="Velg tema">
+          <button class="chip chip--theme active" data-theme="all">
+            <span class="chip-icon" aria-hidden="true">✨</span>
+            <span class="chip-text">Alle tema</span>
+          </button>
+          {themes.map(t => (
+            <button class="chip chip--theme" data-theme={t.slug} title={t.description}>
+              {t.icon && <span class="chip-icon" aria-hidden="true">{t.icon}</span>}
+              <span class="chip-text">{t.title}</span>
+            </button>
+          ))}
+        </div>
+
+        <p class="choice-label">Vanskelighetsgrad</p>
+        <div class="chip-row" role="group" aria-label="Velg vanskelighetsgrad">
+          {difficulties.map(d => (
+            <button
+              class:list={['chip chip--difficulty', { active: d.value === 'blandet' }]}
+              data-difficulty={d.value}
+              title={d.hint}
+            >
+              <span class="chip-icon" aria-hidden="true">{d.icon}</span>
+              <span class="chip-text">{d.label}</span>
+            </button>
+          ))}
+        </div>
+
+        <div class="setup-footer">
+          <p class="available-count" id="available-count" aria-live="polite"></p>
+          <button class="btn-gold btn-start" id="btn-start">Start quizen 🪄</button>
+        </div>
+      </section>
+
+      <!-- ── SPILLSKJERM ─────────────────────────────────────────── -->
+      <section class="quiz-panel" id="quiz-play" hidden aria-labelledby="play-progress">
+        <div class="play-head">
+          <p class="play-progress" id="play-progress">Spørsmål 1 av 10</p>
+          <div class="progress-track" aria-hidden="true">
+            <div class="progress-fill" id="progress-fill"></div>
+          </div>
+        </div>
+
+        <figure class="q-image" id="q-image" hidden>
+          <img id="q-image-img" src="" alt="" loading="lazy" />
+        </figure>
+
+        <h2 class="q-text" id="q-text"></h2>
+
+        <div class="answers" id="answers"></div>
+
+        <div class="feedback" id="feedback" aria-live="polite" hidden>
+          <p class="feedback-verdict" id="feedback-verdict"></p>
+          <p class="feedback-explanation" id="feedback-explanation"></p>
+          <a class="feedback-link" id="feedback-link" href="" hidden></a>
+        </div>
+
+        <div class="play-footer">
+          <button class="btn-quiet" id="btn-quit">Avbryt</button>
+          <button class="btn-gold" id="btn-next" hidden>Neste spørsmål →</button>
+        </div>
+      </section>
+
+      <!-- ── RESULTATSKJERM ──────────────────────────────────────── -->
+      <section class="quiz-panel quiz-panel--result" id="quiz-result" hidden aria-labelledby="result-title">
+        <span class="result-icon" aria-hidden="true">🎩</span>
+        <p class="result-score" id="result-score"></p>
+        <h2 class="result-title" id="result-title"></h2>
+        <p class="result-message" id="result-message"></p>
+        <div class="result-actions">
+          <button class="btn-gold" id="btn-replay">Spill igjen 🔁</button>
+          <button class="btn-quiet" id="btn-new">Velg nytt tema</button>
+        </div>
+      </section>
+
+      <script type="application/json" id="quiz-data" set:html={payloadJson} />
+    </main>
+  )}
+
+</BaseLayout>
+
+<script>
+  interface QAnswer { text: string; correct: boolean }
+  interface QItem {
+    id: string; question: string
+    image: string | null; imageAlt: string
+    answers: QAnswer[]
+    explanation: string; learnMoreUrl: string; learnMoreLabel: string
+    difficulty: string; themes: string[]
+  }
+  interface QLevel { minPercent: number; title: string; message?: string }
+  interface QData { questionsPerRound: number; resultLevels: QLevel[]; questions: QItem[] }
+
+  const dataEl = document.getElementById('quiz-data')
+  if (dataEl) {
+    const data: QData = JSON.parse(dataEl.textContent ?? '{}')
+
+    // ── Elementer ────────────────────────────────────────────────
+    const $ = (id: string) => document.getElementById(id)!
+    const setupPanel  = $('quiz-setup')
+    const playPanel   = $('quiz-play')
+    const resultPanel = $('quiz-result')
+
+    const themeChips = Array.from(document.querySelectorAll<HTMLButtonElement>('.chip--theme'))
+    const diffChips  = Array.from(document.querySelectorAll<HTMLButtonElement>('.chip--difficulty'))
+    const countEl    = $('available-count')
+    const startBtn   = $('btn-start') as HTMLButtonElement
+
+    const progressEl   = $('play-progress')
+    const progressFill = $('progress-fill')
+    const qImageFig    = $('q-image')
+    const qImageImg    = $('q-image-img') as HTMLImageElement
+    const qTextEl      = $('q-text')
+    const answersEl    = $('answers')
+    const feedbackEl   = $('feedback')
+    const verdictEl    = $('feedback-verdict')
+    const explainEl    = $('feedback-explanation')
+    const linkEl       = $('feedback-link') as HTMLAnchorElement
+    const nextBtn      = $('btn-next') as HTMLButtonElement
+
+    // ── Tilstand ─────────────────────────────────────────────────
+    let theme = 'all'
+    let difficulty = 'blandet'
+    let round: QItem[] = []
+    let index = 0
+    let correctCount = 0
+
+    function shuffle<T>(arr: T[]): T[] {
+      const a = arr.slice()
+      for (let i = a.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1))
+        ;[a[i], a[j]] = [a[j], a[i]]
+      }
+      return a
+    }
+
+    function matching(): QItem[] {
+      return data.questions.filter(q =>
+        (theme === 'all' || q.themes.includes(theme)) &&
+        (difficulty === 'blandet' || q.difficulty === difficulty)
+      )
+    }
+
+    function updateSetup() {
+      const n = matching().length
+      countEl.textContent = n === 0
+        ? 'Ingen spørsmål i denne kombinasjonen ennå — prøv et annet valg.'
+        : n === 1 ? '1 spørsmål tilgjengelig' : `${n} spørsmål tilgjengelig`
+      startBtn.disabled = n === 0
+    }
+
+    function show(panel: HTMLElement) {
+      for (const p of [setupPanel, playPanel, resultPanel]) p.hidden = p !== panel
+      panel.scrollIntoView({ block: 'nearest', behavior: 'smooth' })
+    }
+
+    // ── Startskjerm ──────────────────────────────────────────────
+    themeChips.forEach(chip => chip.addEventListener('click', () => {
+      theme = chip.dataset.theme ?? 'all'
+      themeChips.forEach(c => c.classList.toggle('active', c === chip))
+      updateSetup()
+    }))
+    diffChips.forEach(chip => chip.addEventListener('click', () => {
+      difficulty = chip.dataset.difficulty ?? 'blandet'
+      diffChips.forEach(c => c.classList.toggle('active', c === chip))
+      updateSetup()
+    }))
+
+    function startRound() {
+      round = shuffle(matching()).slice(0, Math.max(1, data.questionsPerRound))
+      index = 0
+      correctCount = 0
+      show(playPanel)
+      renderQuestion()
+    }
+    startBtn.addEventListener('click', startRound)
+
+    // ── Spillskjerm ──────────────────────────────────────────────
+    function renderQuestion() {
+      const q = round[index]
+
+      progressEl.textContent = `Spørsmål ${index + 1} av ${round.length}`
+      progressFill.style.width = `${(index / round.length) * 100}%`
+
+      if (q.image) {
+        qImageImg.src = q.image
+        qImageImg.alt = q.imageAlt
+        qImageFig.hidden = false
+      } else {
+        qImageImg.src = ''
+        qImageFig.hidden = true
+      }
+
+      qTextEl.textContent = q.question
+
+      answersEl.innerHTML = ''
+      const shuffled = shuffle(q.answers)
+      const buttons = shuffled.map(a => {
+        const btn = document.createElement('button')
+        btn.className = 'answer-btn'
+        btn.textContent = a.text
+        answersEl.appendChild(btn)
+        return btn
+      })
+      shuffled.forEach((a, i) => {
+        buttons[i].addEventListener('click', () => answer(q, shuffled, a, buttons, i))
+      })
+
+      feedbackEl.hidden = true
+      nextBtn.hidden = true
+    }
+
+    function answer(q: QItem, shuffled: QAnswer[], chosen: QAnswer, buttons: HTMLButtonElement[], chosenIndex: number) {
+      buttons.forEach(b => { b.disabled = true })
+
+      const correctText = shuffled.find(a => a.correct)?.text ?? ''
+      shuffled.forEach((a, i) => {
+        if (a.correct) buttons[i].classList.add('is-correct')
+      })
+
+      if (chosen.correct) {
+        correctCount++
+        verdictEl.textContent = 'Riktig! ✨'
+        feedbackEl.classList.remove('feedback--wrong')
+        feedbackEl.classList.add('feedback--right')
+      } else {
+        buttons[chosenIndex].classList.add('is-wrong')
+        verdictEl.textContent = `Ikke helt — riktig svar er «${correctText}».`
+        feedbackEl.classList.remove('feedback--right')
+        feedbackEl.classList.add('feedback--wrong')
+      }
+
+      explainEl.textContent = q.explanation
+      explainEl.hidden = !q.explanation
+      if (q.learnMoreUrl) {
+        linkEl.href = q.learnMoreUrl
+        linkEl.textContent = `${q.learnMoreLabel} →`
+        linkEl.hidden = false
+      } else {
+        linkEl.hidden = true
+      }
+
+      feedbackEl.hidden = false
+      nextBtn.textContent = index + 1 < round.length ? 'Neste spørsmål →' : 'Se resultatet 🎩'
+      nextBtn.hidden = false
+      nextBtn.focus()
+    }
+
+    nextBtn.addEventListener('click', () => {
+      index++
+      if (index < round.length) renderQuestion()
+      else showResult()
+    })
+
+    $('btn-quit').addEventListener('click', () => {
+      updateSetup()
+      show(setupPanel)
+    })
+
+    // ── Resultatskjerm ───────────────────────────────────────────
+    function showResult() {
+      const percent = Math.round((correctCount / round.length) * 100)
+      let level = data.resultLevels[0]
+      for (const l of data.resultLevels) {
+        if (percent >= l.minPercent) level = l
+      }
+      $('result-score').textContent = `Du fikk ${correctCount} av ${round.length} riktige (${percent} %)`
+      $('result-title').textContent = level?.title ?? ''
+      $('result-message').textContent = level?.message ?? ''
+      show(resultPanel)
+    }
+
+    $('btn-replay').addEventListener('click', startRound)
+    $('btn-new').addEventListener('click', () => {
+      updateSetup()
+      show(setupPanel)
+    })
+
+    updateSetup()
+  }
+</script>
+
+<style>
+  /* ── HERO ──────────────────────────────────────────────────────── */
+  .hero { background: var(--burgundy-dk); padding: 3.5rem 0 2.5rem; border-bottom: 2px solid var(--gold-dark); color: var(--cream); }
+  .hero h1 { font-size: clamp(2rem, 5vw, 3rem); color: var(--cream); margin: 0.5rem 0 0.75rem; }
+  .hero-sub { font-family: var(--font-ui); font-size: 1rem; opacity: 0.8; max-width: 560px; line-height: 1.6; }
+
+  .quiz-main { padding: 2.5rem 1.5rem 5rem; max-width: 760px; }
+
+  /* ── FELLES PANEL ──────────────────────────────────────────────── */
+  .quiz-panel { background: white; border: 1px solid var(--cream-dark); border-radius: 10px; padding: 2rem 1.75rem; box-shadow: var(--shadow); }
+  .panel-heading { font-family: var(--font-display); font-size: 1.4rem; color: var(--burgundy); margin-bottom: 1.25rem; }
+
+  .btn-gold { display: inline-block; font-family: var(--font-ui); font-size: 0.95rem; font-weight: 700; color: var(--burgundy-dk); background: var(--gold); border-radius: 6px; padding: 0.7rem 1.5rem; transition: background 150ms; }
+  .btn-gold:hover { background: var(--gold-light); }
+  .btn-gold:disabled { opacity: 0.4; cursor: not-allowed; }
+  .btn-quiet { font-family: var(--font-ui); font-size: 0.875rem; font-weight: 600; color: var(--grey); padding: 0.7rem 1rem; border-radius: 6px; transition: color 150ms; }
+  .btn-quiet:hover { color: var(--burgundy); }
+
+  /* ── STARTSKJERM ───────────────────────────────────────────────── */
+  .choice-label { font-family: var(--font-ui); font-size: 0.7rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.15em; color: var(--gold-dark); margin: 1.25rem 0 0.5rem; }
+  .chip-row { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+  .chip { display: inline-flex; align-items: center; gap: 0.4rem; font-family: var(--font-ui); font-size: 0.875rem; font-weight: 600; color: var(--ink-mid); background: var(--cream); border: 1.5px solid var(--cream-dark); border-radius: 999px; padding: 0.45rem 1rem; transition: border-color 150ms, background 150ms, color 150ms; }
+  .chip:hover { border-color: var(--gold); }
+  .chip.active { background: var(--burgundy); border-color: var(--burgundy); color: var(--cream); }
+  .chip-icon { font-size: 1rem; line-height: 1; }
+
+  .setup-footer { display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; margin-top: 1.75rem; padding-top: 1.25rem; border-top: 1px solid var(--cream-dark); }
+  .available-count { font-family: var(--font-ui); font-size: 0.85rem; color: var(--grey); }
+  .btn-start { font-size: 1.05rem; padding: 0.8rem 1.9rem; }
+
+  /* ── SPILLSKJERM ───────────────────────────────────────────────── */
+  .play-head { margin-bottom: 1.5rem; }
+  .play-progress { font-family: var(--font-ui); font-size: 0.8rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.12em; color: var(--gold-dark); margin-bottom: 0.5rem; }
+  .progress-track { height: 6px; background: var(--cream-dark); border-radius: 3px; overflow: hidden; }
+  .progress-fill { height: 100%; width: 0; background: linear-gradient(90deg, var(--gold-dark), var(--gold)); border-radius: 3px; transition: width 300ms ease; }
+
+  .q-image { margin: 0 0 1.25rem; }
+  .q-image img { max-height: 320px; width: auto; max-width: 100%; margin: 0 auto; border-radius: 8px; border: 1px solid var(--cream-dark); }
+
+  .q-text { font-family: var(--font-body); font-size: 1.3rem; font-weight: 600; line-height: 1.45; color: var(--ink); margin-bottom: 1.5rem; }
+
+  .answers { display: grid; gap: 0.6rem; }
+  .answer-btn { font-family: var(--font-ui); font-size: 0.95rem; font-weight: 600; text-align: left; color: var(--ink); background: var(--cream); border: 1.5px solid var(--cream-dark); border-radius: 8px; padding: 0.85rem 1.1rem; transition: border-color 150ms, background 150ms, transform 100ms; }
+  .answer-btn:hover:not(:disabled) { border-color: var(--gold); transform: translateY(-1px); }
+  .answer-btn:disabled { cursor: default; opacity: 0.75; }
+  .answer-btn.is-correct { background: #E8F5E9; border-color: #2E7D32; color: #1B5E20; opacity: 1; }
+  .answer-btn.is-wrong   { background: #FDECEA; border-color: #C62828; color: #B71C1C; opacity: 1; }
+
+  .feedback { margin-top: 1.25rem; border-radius: 8px; padding: 1rem 1.2rem; font-family: var(--font-ui); }
+  .feedback--right { background: #E8F5E9; border: 1px solid #A5D6A7; }
+  .feedback--wrong { background: #FDECEA; border: 1px solid #EF9A9A; }
+  .feedback-verdict { font-weight: 700; font-size: 0.95rem; color: var(--ink); }
+  .feedback-explanation { font-size: 0.9rem; color: var(--ink-mid); line-height: 1.55; margin-top: 0.4rem; }
+  .feedback-explanation[hidden] { display: none; }
+  .feedback-link { display: inline-block; font-size: 0.85rem; font-weight: 700; color: var(--burgundy); text-decoration: underline; margin-top: 0.5rem; }
+
+  .play-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 1.5rem; }
+
+  /* ── RESULTATSKJERM ────────────────────────────────────────────── */
+  .quiz-panel--result { text-align: center; padding: 3rem 2rem; }
+  .result-icon { font-size: 3rem; display: block; margin-bottom: 0.75rem; }
+  .result-score { font-family: var(--font-ui); font-size: 0.9rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; color: var(--gold-dark); margin-bottom: 0.5rem; }
+  .result-title { font-family: var(--font-display); font-size: clamp(1.6rem, 4vw, 2.2rem); color: var(--burgundy); margin-bottom: 0.75rem; }
+  .result-message { font-family: var(--font-ui); font-size: 1rem; color: var(--ink-mid); line-height: 1.6; max-width: 460px; margin: 0 auto 1.75rem; }
+  .result-actions { display: flex; gap: 0.75rem; justify-content: center; flex-wrap: wrap; }
+
+  /* ── KOMMER SNART ──────────────────────────────────────────────── */
+  .coming-soon { text-align: center; background: white; border: 1px solid var(--cream-dark); border-radius: 10px; padding: 4rem 2rem; box-shadow: var(--shadow); }
+  .coming-soon-icon { font-size: 3rem; display: block; margin-bottom: 1rem; }
+  .coming-soon h2 { font-family: var(--font-display); font-size: clamp(1.4rem, 4vw, 2rem); color: var(--burgundy); margin-bottom: 0.75rem; }
+  .coming-soon p { font-family: var(--font-ui); font-size: 1rem; color: var(--ink-mid); line-height: 1.6; max-width: 480px; margin: 0 auto 1.75rem; }
+
+  @media (max-width: 560px) {
+    .quiz-panel { padding: 1.5rem 1.1rem; }
+    .setup-footer { flex-direction: column; align-items: stretch; text-align: center; }
+  }
+</style>
