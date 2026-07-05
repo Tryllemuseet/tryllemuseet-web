@@ -27,6 +27,9 @@ import signageQuote        from './signageQuote'
 import signageConfig       from './signageConfig'
 import signageVideo        from './signageVideo'
 import magicOrganization   from './magicOrganization'
+import { quizConfig }      from './quizConfig'
+import { quizTheme }       from './quizTheme'
+import { quizQuestion }    from './quizQuestion'
 
 export const schemaTypes = [
   // Sidetyper
@@ -57,6 +60,9 @@ export const schemaTypes = [
   artifact,
   partner,
   magicOrganization,
+  quizConfig,
+  quizTheme,
+  quizQuestion,
   siteConfig,
   // Objekttyper
   contentSection,

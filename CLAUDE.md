@@ -14,7 +14,7 @@ The site serves dual audiences: children (with interactive exhibitions and activ
 
 ### Content Layer (Sanity CMS)
 
-The schema defines 27 registered content types in `/schemaTypes` (see `schemaTypes/index.ts`):
+The schema defines 32 registered content types in `/schemaTypes` (see `schemaTypes/index.ts`):
 
 **Page Types** (singletons):
 - `homepage.ts` — Hero, exhibitions focus, sections, partnerships
@@ -42,6 +42,7 @@ The schema defines 27 registered content types in `/schemaTypes` (see `schemaTyp
 - `artifact.ts` — Museum objects: origin, materials, condition, gallery images
 - `partner.ts` — Sponsors/partners with category grouping
 - `signageConfig.ts`, `signageVideo.ts`, `signageQuote.ts` — Content for the physical info screen (`/skjerm.html`)
+- `quizConfig.ts`, `quizTheme.ts`, `quizQuestion.ts` — Tryllequiz (`/tryllequiz`): settings singleton with `isActive` master switch, selectable themes, and questions with difficulty + validated answers (see `docs/tryllequiz-concept.md`)
 
 **Helper Types** (object types used inline by document types):
 - `contentSection.ts` — Reusable heading + rich text block
@@ -60,6 +61,7 @@ The schema defines 27 registered content types in `/schemaTypes` (see `schemaTyp
 **Page Structure** (`/web/src/pages`):
 - `index.astro` — Homepage: fetches magicians, events, homepage config, partners in parallel
 - `barn.astro`, `besok.astro`, `arrangementer.astro`, `om-oss.astro`, `kontakt.astro`, `bibliotek.astro`, `personvern.astro` — Main pages
+- `tryllequiz.astro` — Interactive quiz; renders a "coming soon" teaser until `quizConfig.isActive` is on (the nav link in `BaseLayout.astro` follows the same flag)
 - `om-oss/i-media/` — Museum press coverage
 - `aktiviteter/`, `ressurser/` — Section landing pages
 - `utstillingen/` — Exhibition: `index`, `[slug]` (magician detail), `artefakter` (+ `[slug]`), `tryllebutikken`
@@ -218,7 +220,7 @@ The `daily-rebuild.yml` workflow runs automatically at 05:30 UTC every day and c
 
 ## Visibility / Unpublish Convention
 
-All content document types (`magician`, `biography`, `legend`, `event`, `tvAppearance`, `historicalClip`, `book`, `artifact`, `partner`) have a boolean field `isVisible` with `initialValue: true`.
+All content document types (`magician`, `biography`, `legend`, `event`, `tvAppearance`, `historicalClip`, `book`, `artifact`, `partner`, `quizTheme`, `quizQuestion`) have a boolean field `isVisible` with `initialValue: true`.
 
 **Rules:**
 - Default is always `true` — new documents are visible automatically

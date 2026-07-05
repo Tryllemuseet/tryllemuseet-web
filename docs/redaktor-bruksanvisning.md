@@ -22,6 +22,7 @@ Denne bruksanvisningen dekker de oppgavene en redaktør utfører til daglig.
 13. [Sideinnhold](#13-sideinnhold)
 14. [Skjule innhold uten å slette](#14-skjule-innhold-uten-å-slette)
 15. [Vanlige oppgaver — steg for steg](#15-vanlige-oppgaver--steg-for-steg)
+16. [Tryllequiz](#16-tryllequiz)
 
 > **Veiledning til kapittel 12 (Infoskjerm):** Seksjonene 12a–12c dekker de tre dokumenttypene som styrer skjermen. Start med 12a hvis du er ny, og legg til videoer via 12c.
 
@@ -547,6 +548,65 @@ Videoen hoppes over i spillelisten til du slår **Aktiv** på igjen.
 1. Gå til **Infoskjerm – konfigurasjon**.
 2. Endre **Infopanel — visningsvarighet (sekunder)**. Lavere tall = raskere bytte; høyere tall gir mer lesetid.
 3. Klikk **Publiser**.
+
+---
+
+## 16. Tryllequiz
+
+Quizen på `/tryllequiz` styres av tre dokumenttyper i Studio:
+
+| Type | Hva den gjør |
+|---|---|
+| **Quiz: Innstillinger** | Ett felles dokument med av/på-bryteren, tekster og resultatnivåer |
+| **Quiz: Tema** | Temaene besøkende kan velge mellom (f.eks. «Norske legender») |
+| **Quiz: Spørsmål** | Selve spørsmålene med svaralternativer |
+
+### Slik fungerer quizen
+
+Besøkende velger **tema** og **vanskelighetsgrad** og får en runde tilfeldige
+spørsmål fra utvalget (standard 10). Etter hvert svar vises riktig svar,
+forklaringen din og en eventuell «Les mer»-lenke til nettsidens eget innhold.
+Til slutt får de en morsom tittel basert på poengsummen — fra «Nysgjerrig
+lærling» til «Stormester i magi».
+
+### Legge til et spørsmål
+
+1. Klikk **+ → Quiz: Spørsmål**.
+2. Skriv **Spørsmål** — kort og tydelig, gjerne med et snev av humor.
+3. Legg inn **2–4 svaralternativer** og huk av **Riktig svar** på nøyaktig ett
+   av dem. (Studio nekter å publisere hvis null eller flere enn ett er markert.)
+   Rekkefølgen stokkes automatisk på nettsiden.
+4. Skriv en **Forklaring** («Visste du at …») — den vises uansett om svaret var
+   riktig eller galt, og er quizens viktigste læringsverktøy.
+5. Legg gjerne inn en **Les mer-lenke** til en side på tryllemuseet.no,
+   f.eks. `/tryllehistorie/norske-legender/henrik-ibsen`.
+6. Velg **Vanskelighetsgrad**:
+   - **Lett** — barn og nybegynnere: kjente navn, korte spørsmål
+   - **Middels** — hele familien: ting en nysgjerrig besøkende plukker opp
+   - **Vanskelig** — entusiaster: godbiter fra arkivet og biblioteket
+7. Velg ett eller flere **Tema**. Spørsmål uten tema er bare med i «Alle tema».
+8. Klikk **Publiser**.
+
+### Legge til et tema
+
+1. Klikk **+ → Quiz: Tema**.
+2. Gi temaet navn, en emoji som ikon og en kort beskrivelse.
+3. Sett **Rekkefølge** (lavest tall vises først) og klikk **Publiser**.
+
+Tema uten publiserte spørsmål vises ikke på nettsiden, så det er trygt å
+opprette tema før spørsmålene er klare.
+
+### Aktivere quizen
+
+1. Åpne **Quiz: Innstillinger** (opprett dokumentet hvis det ikke finnes).
+2. Slå på **Quizen er aktiv** og klikk **Publiser**.
+3. Quizen (og menypunktet «Tryllequiz» under Aktiviteter) dukker opp ved neste
+   nattlige bygging av nettsiden — eller be teknisk ansvarlig kjøre
+   **Daily rebuild** i GitHub Actions med én gang.
+
+Så lenge bryteren er av, viser `/tryllequiz` bare en «kommer snart»-hilsen, og
+quizen er skjult fra menyen. Enkeltspørsmål og tema kan når som helst skjules
+med **Vis på nettsted**-bryteren, akkurat som alt annet innhold (se kapittel 14).
 
 ---
 
