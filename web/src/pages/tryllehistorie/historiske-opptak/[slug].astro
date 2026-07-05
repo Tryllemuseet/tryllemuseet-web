@@ -26,6 +26,10 @@ const embedUrlAlt = c.videoUrlAlt ? youtubeEmbedUrl(c.videoUrlAlt) : null
 const broadcasterLabels: Record<string, string> = {
   nrk: 'NRK', tv2: 'TV 2', filmavisen: 'Filmavisen', annet: 'Annet', ukjent: 'Ukjent'
 }
+
+const description   = c.description ?? []
+const magicianTags  = c.magician?.tags ?? []
+const magicianLinks = c.magician?.links ?? []
 ---
 
 <BaseLayout
@@ -62,10 +66,10 @@ const broadcasterLabels: Record<string, string> = {
   <div class="container detail-body">
     <div class="detail-main">
 
-      {c.description?.length > 0 && (
+      {description.length > 0 && (
         <section class="detail-section">
           <h2 class="detail-heading">Om opptaket</h2>
-          <div class="prose" set:html={portableTextToHtml(c.description)} />
+          <div class="prose" set:html={portableTextToHtml(description)} />
         </section>
       )}
 
@@ -148,14 +152,14 @@ const broadcasterLabels: Record<string, string> = {
               <p class="sidebar-meta">{c.magician.nationality}{c.magician?.years ? ` · ${c.magician.years}` : ''}</p>
             )}
             {c.magician.shortBio && <p class="sidebar-bio">{c.magician.shortBio}</p>}
-            {c.magician.tags?.length > 0 && (
+            {magicianTags.length > 0 && (
               <div class="sidebar-tags">
-                {c.magician.tags.map((tag: string) => <span class="sidebar-tag">{tag}</span>)}
+                {magicianTags.map((tag: string) => <span class="sidebar-tag">{tag}</span>)}
               </div>
             )}
-            {c.magician.links?.length > 0 && (
+            {magicianLinks.length > 0 && (
               <ul class="sidebar-links">
-                {c.magician.links.filter((l: any) => l.url).map((link: any) => (
+                {magicianLinks.filter((l: any) => l.url).map((link: any) => (
                   <li>
                     <a href={link.url} class="sidebar-link" target="_blank" rel="noopener">
                       {link.label} ↗

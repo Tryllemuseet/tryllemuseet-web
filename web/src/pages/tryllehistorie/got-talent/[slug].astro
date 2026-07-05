@@ -22,6 +22,10 @@ function youtubeEmbedUrl(url: string): string | null {
 const embedUrl = a.videoUrl ? youtubeEmbedUrl(a.videoUrl) : null
 const showLabel   = showLabels[a.show]   ?? a.show
 const resultLabel = resultLabels[a.result] ?? a.result
+
+const description   = a.description ?? []
+const magicianTags  = a.magician?.tags ?? []
+const magicianLinks = a.magician?.links ?? []
 ---
 
 <BaseLayout
@@ -64,10 +68,10 @@ const resultLabel = resultLabels[a.result] ?? a.result
   <div class="container detail-body">
     <div class="detail-main">
 
-      {a.description?.length > 0 && (
+      {description.length > 0 && (
         <section class="detail-section">
           <h2 class="detail-heading">Om opptredenen</h2>
-          <div class="prose" set:html={portableTextToHtml(a.description)} />
+          <div class="prose" set:html={portableTextToHtml(description)} />
         </section>
       )}
 
@@ -127,14 +131,14 @@ const resultLabel = resultLabels[a.result] ?? a.result
           <p class="sidebar-meta">{a.magician.nationality}{a.magician?.years ? ` · ${a.magician.years}` : ''}</p>
         )}
         {a.magician?.shortBio && <p class="sidebar-bio">{a.magician.shortBio}</p>}
-        {a.magician?.tags?.length > 0 && (
+        {magicianTags.length > 0 && (
           <div class="sidebar-tags">
-            {a.magician.tags.map((tag: string) => <span class="sidebar-tag">{tag}</span>)}
+            {magicianTags.map((tag: string) => <span class="sidebar-tag">{tag}</span>)}
           </div>
         )}
-        {a.magician?.links?.length > 0 && (
+        {magicianLinks.length > 0 && (
           <ul class="sidebar-links">
-            {a.magician.links.map((link: any) => {
+            {magicianLinks.map((link: any) => {
               const href = link.type === 'article' && link.internalSlug
                 ? `/tryllehistorie/got-talent/${link.internalSlug}`
                 : link.url
