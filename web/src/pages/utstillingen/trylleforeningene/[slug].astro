@@ -21,9 +21,11 @@ const bodyHtml = portableTextToHtml(org.body)
 
 const currentLogo = org.logoHistory?.at(-1)?.logo ?? org.logo
 
+// Destructure after the null guard — TS narrowing does not reach into functions
+const { foundedYear, dissolutionYear } = org
 function yearRange(): string {
-  if (org.foundedYear && org.dissolutionYear) return `${org.foundedYear}–${org.dissolutionYear}`
-  if (org.foundedYear) return `Stiftet ${org.foundedYear}`
+  if (foundedYear && dissolutionYear) return `${foundedYear}–${dissolutionYear}`
+  if (foundedYear) return `Stiftet ${foundedYear}`
   return ''
 }
 ---

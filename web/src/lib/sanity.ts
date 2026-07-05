@@ -1109,9 +1109,9 @@ export interface Biography {
   videos?:     BiographyVideo[]
   links?:      BiographyLink[]
   legendRef?:    { _ref: string; slug: string }
-  sources?:      { label: string; url?: string }
+  sources?:      { label: string; url?: string }[]
   lastVerified?: string
-  needsUpdate?:  boolean[]
+  needsUpdate?:  boolean
 }
 
 // ── Typer: Legend ────────────────────────────────────────────────
