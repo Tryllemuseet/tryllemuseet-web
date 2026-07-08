@@ -2,10 +2,10 @@
 // src/pages/om-oss.astro
 import BaseLayout from '../layouts/BaseLayout.astro'
 import AnimateIn from '../components/AnimateIn.astro'
-import { getOmOssPage, getAllPartners } from '../lib/sanity'
+import { getOmOssPage, getAllPartners, getSiteConfig } from '../lib/sanity'
 import { toHTML } from '@portabletext/to-html'
 
-const [p, partnerDocs] = await Promise.all([getOmOssPage(), getAllPartners()])
+const [p, partnerDocs, site] = await Promise.all([getOmOssPage(), getAllPartners(), getSiteConfig()])
 
 const hero = p?.hero ?? {
   label: 'Om Tryllemuseet',
@@ -14,9 +14,12 @@ const hero = p?.hero ?? {
   ingress: 'Tryllemuseet er dedikert til å bevare, formidle og feire tryllekunstens rike arv.',
 }
 const om       = p?.omMuseet   ?? { historieHeading: 'Vår historie', historieTekst: [], formalHeading: 'Formål', formalTekst: '' }
-const fakta    = p?.faktaboks  ?? { stiftet: '', organisasjonsform: '', tilknytning: '', adresse: '', epost: '', orgnr: '' }
+const fakta    = p?.faktaboks  ?? { stiftet: '', organisasjonsform: '', tilknytning: '', adresse: '', orgnr: '' }
 const styret   = p?.styret     ?? { heading: 'Styret', ingress: '', medlemmer: [] }
-const medlem   = p?.medlemskap ?? { heading: 'Bli medlem', ingress: '', motivasjonsTekst: '', nivaaer: [], vippsNummer: '', vippsInfo: '' }
+const medlem   = p?.medlemskap ?? { heading: 'Bli medlem', ingress: '', motivasjonsTekst: '', nivaaer: [], vippsInfo: '' }
+
+// Faktaboksens adresse kan overstyres per side; ellers gjelder Globale innstillinger
+const faktaAdresse = fakta.adresse || site.address?.replace(/\n/g, ', ')
 const presse   = p?.presse     ?? { label: '', heading: 'Pressekontakt', tekst: '', knappLabel: 'Send pressehenvendelse', knappHref: '/kontakt' }
 const partnere = p?.partnere   ?? { heading: 'Samarbeidspartnere', liste: [] }
 
@@ -72,8 +75,8 @@ const historieHtml = om.historieTekst?.length ? toHTML(om.historieTekst) : ''
           {fakta.stiftet            && <><dt>Stiftet</dt><dd>{fakta.stiftet}</dd></>}
           {fakta.organisasjonsform  && <><dt>Organisasjonsform</dt><dd>{fakta.organisasjonsform}</dd></>}
           {fakta.tilknytning        && <><dt>Tilknytning</dt><dd>{fakta.tilknytning}</dd></>}
-          {fakta.adresse            && <><dt>Adresse</dt><dd>{fakta.adresse}</dd></>}
-          {fakta.epost              && <><dt>E-post</dt><dd><a href={`mailto:${fakta.epost}`}>{fakta.epost}</a></dd></>}
+          {faktaAdresse             && <><dt>Adresse</dt><dd>{faktaAdresse}</dd></>}
+          {site.email               && <><dt>E-post</dt><dd><a href={`mailto:${site.email}`}>{site.email}</a></dd></>}
           {fakta.orgnr              && <><dt>Org.nr</dt><dd>{fakta.orgnr}</dd></>}
         </dl>
       </aside>
@@ -86,7 +89,7 @@ const historieHtml = om.historieTekst?.length ? toHTML(om.historieTekst) : ''
     <div class="container">
       <h2 class="section-title">{styret.heading}</h2>
       {styret.ingress && (
-        <p class="section-ingress" set:html={styret.ingress.replace('post@tryllemuseet.no', '<a href="mailto:post@tryllemuseet.no">post@tryllemuseet.no</a>')} />
+        <p class="section-ingress" set:html={styret.ingress.replace(site.email, `<a href="mailto:${site.email}">${site.email}</a>`)} />
       )}
       <AnimateIn direction="up">
       <div class="styre-grid">
@@ -136,12 +139,12 @@ const historieHtml = om.historieTekst?.length ? toHTML(om.historieTekst) : ''
       </div>
       </AnimateIn>
 
-      {medlem.vippsNummer && (
+      {site.vippsNumber && (
         <div class="vipps-boks">
           <p>Du kan også støtte oss direkte via Vipps:</p>
           <div class="vipps-nummer">
             <span class="vipps-label">Vipps-nummer</span>
-            <span class="vipps-tall">{medlem.vippsNummer}</span>
+            <span class="vipps-tall">{site.vippsNumber}</span>
           </div>
           {medlem.vippsInfo && <p class="vipps-info">{medlem.vippsInfo}</p>}
         </div>

@@ -112,14 +112,14 @@ const isActive = (href: string) =>
 
           <!-- Arkivet med dropdown -->
           <li class="has-dropdown">
-            <a href="/tryllehistorie" class:list={['nav-link', { active: isActive('/tryllehistorie') || isActive('/bibliotek') }]}>
+            <a href="/tryllehistorie" class:list={['nav-link', { active: isActive('/tryllehistorie') || isActive('/ressurser') }]}>
               Arkivet <span class="nav-chevron">▾</span>
             </a>
             <ul class="dropdown" role="list">
               <li><a href="/tryllehistorie/magiens-hvem-er-hvem" class="dropdown-link">Hvem er hvem</a></li>
               <li><a href="/tryllehistorie/norske-legender" class="dropdown-link">Norske legender</a></li>
               <li><a href="/tryllehistorie/historiske-artikler" class="dropdown-link">Historiske artikler</a></li>
-              <li><a href="/bibliotek" class="dropdown-link">Bibliotek</a></li>
+              <li><a href="/ressurser/bibliotek" class="dropdown-link">Bibliotek</a></li>
               <li><a href="/ressurser" class="dropdown-link">Ressurser</a></li>
             </ul>
           </li>
@@ -182,12 +182,12 @@ const isActive = (href: string) =>
         </li>
 
         <li class="mobile-section">
-          <a href="/tryllehistorie" class:list={['mobile-nav-link', { active: isActive('/tryllehistorie') || isActive('/bibliotek') }]}>Arkivet</a>
+          <a href="/tryllehistorie" class:list={['mobile-nav-link', { active: isActive('/tryllehistorie') || isActive('/ressurser') }]}>Arkivet</a>
           <ul class="mobile-sub">
             <li><a href="/tryllehistorie/magiens-hvem-er-hvem"   class="mobile-sub-link">Hvem er hvem</a></li>
             <li><a href="/tryllehistorie/norske-legender"         class="mobile-sub-link">Norske legender</a></li>
             <li><a href="/tryllehistorie/historiske-artikler"     class="mobile-sub-link">Historiske artikler</a></li>
-            <li><a href="/bibliotek"                              class="mobile-sub-link">Bibliotek</a></li>
+            <li><a href="/ressurser/bibliotek"                    class="mobile-sub-link">Bibliotek</a></li>
             <li><a href="/ressurser"                              class="mobile-sub-link">Ressurser</a></li>
           </ul>
         </li>

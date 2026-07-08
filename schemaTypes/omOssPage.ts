@@ -61,8 +61,13 @@ export const omOssPage = defineType({
         defineField({ name: 'stiftet', title: 'Stiftet', type: 'string' }),
         defineField({ name: 'organisasjonsform', title: 'Organisasjonsform', type: 'string' }),
         defineField({ name: 'tilknytning', title: 'Tilknytning', type: 'string' }),
-        defineField({ name: 'adresse', title: 'Adresse', type: 'string' }),
-        defineField({ name: 'epost', title: 'E-post', type: 'string' }),
+        defineField({
+          name: 'adresse',
+          title: 'Adresse',
+          type: 'string',
+          description: 'La stå tom for å bruke adressen fra Globale innstillinger. Fyll kun inn hvis den registrerte adressen avviker fra besøksadressen.',
+        }),
+        // E-post vises alltid fra Globale innstillinger (siteConfig.email).
         defineField({ name: 'orgnr', title: 'Organisasjonsnummer', type: 'string' }),
       ],
     }),
@@ -133,7 +138,7 @@ export const omOssPage = defineType({
             preview: { select: { title: 'type', subtitle: 'pris' } },
           }],
         }),
-        defineField({ name: 'vippsNummer', title: 'Vipps-nummer', type: 'string' }),
+        // Vipps-nummeret vises alltid fra Globale innstillinger (siteConfig.vippsNumber).
         defineField({ name: 'vippsInfo', title: 'Vipps-info', type: 'string' }),
       ],
     }),

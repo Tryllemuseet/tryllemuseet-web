@@ -109,7 +109,8 @@ export const homepage = defineType({
         defineField({ name: 'heading', title: 'Overskrift', type: 'string' }),
         defineField({ name: 'tekst', title: 'Tekst', type: 'text', rows: 3 }),
         defineField({ name: 'knappLabel', title: 'Knapp — tekst', type: 'string' }),
-        defineField({ name: 'knappUrl', title: 'Knapp — URL', type: 'url' }),
+        // Button URL comes from siteConfig.membershipUrl — one source for all
+        // «Bli medlem» links across the site.
       ],
     }),
 

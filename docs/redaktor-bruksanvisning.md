@@ -83,12 +83,12 @@ Dette er ett enkelt dokument som styrer informasjon som går igjen på hele nett
 | Telefon | Kontaktside |
 | Adresse (full) | Footer og kontaktside |
 | Adresse (kort) | Header-stripe og kompakte visninger |
-| Google Maps-lenke | Kartlenke på besøkssiden |
-| Åpningstider (kort) | Header-stripe, footer, hero |
+| Google Maps-lenke | «Åpne i Google Maps»-lenkene |
+| Google Maps embed-URL | Selve kartet på Besøk oss-siden (se feltbeskrivelsen for hvordan du henter URL-en) |
+| Åpningstider (kort) | Header-stripe, footer, hero, kontakt- og butikksiden |
 | Åpningstider (tillegg) | Tekst etter kortteksten, f.eks. «og etter avtale» |
-| Åpningstider (utvidet) | Rik tekst på Besøk oss-siden |
-| Bli medlem — URL | Alle «Bli medlem»-knapper |
-| Vipps-nummer | Betalingsinformasjon |
+| Bli medlem — URL | Alle «Bli medlem»-knapper på hele nettsiden |
+| Vipps-nummer | Vises i Tryllebutikken og i Bli medlem-seksjonen på Om oss |
 | Facebook / Instagram / YouTube | Lenker i footer |
 | Standard meta-beskrivelse | Google-beskrivelse for alle sider som ikke har egen |
 
@@ -259,7 +259,7 @@ Dokumenterer norske magikeres opptredener på Got Talent, Fool Us og lignende pr
 
 **Meny:** Bok
 
-Bibliotekskatalogen over bøker om tryllekunst. Vises på `/bibliotek`.
+Bibliotekskatalogen over bøker om tryllekunst. Vises på `/ressurser/bibliotek` (kortadressen `/bibliotek` videresender dit).
 
 ### Legge til en bok
 
@@ -468,6 +468,10 @@ Disse dokumentene styrer innholdet på de faste sidene. De finnes som singletons
 
 > **Merk:** Noen sider har ikke noe Sanity-dokument og styres direkte i koden — blant annet **Tryllebutikken** (`/utstillingen/tryllebutikken`) og **Bestill tryllekunstner** (`/aktiviteter/tryllekunstnere`). Endringer der går via Trond.
 
+> **Automatiske antall:** På Tryllehistorie-siden telles tallene i arkivkortene («… biografier», «… opptredener» osv.) automatisk hver gang nettsiden bygges. Badge-feltet i Sanity trenger bare fylles ut for kort som ikke er arkivsider — f.eks. «Kommer snart».
+
+> **Ett felles hjem for kontaktinfo:** E-post, Vipps-nummer og «Bli medlem»-lenken hentes alltid fra **Globale innstillinger** — også i faktaboksen og Bli medlem-seksjonen på Om oss-siden. Endrer du dem der, endres de overalt.
+
 ---
 
 ## 14. Skjule innhold uten å slette
@@ -487,12 +491,11 @@ Slå av «Vis på nettsted» for å fjerne dokumentet fra nettsiden uten å slet
 
 ### Oppdatere åpningstidene
 
-1. Gå til **Globale innstillinger**.
-2. Oppdater feltet **Åpningstider (kort)** (brukes i header og footer).
-3. Oppdater **Åpningstider (utvidet)** (brukes på Besøk oss-siden).
-4. Klikk **Publiser**.
-5. Gå deretter til **Infoskjerm – konfigurasjon** og oppdater **Åpningstider (fritekst)** der også.
-6. Klikk **Publiser**.
+Åpningstidene finnes tre steder — husk alle:
+
+1. **Globale innstillinger** → **Åpningstider (kort)** — den korte teksten som brukes i header, footer, forside, kontakt- og butikksiden. Klikk **Publiser**.
+2. **Besøk oss**-dokumentet → **Åpningstider**-tabellen (dag for dag). Klikk **Publiser**.
+3. **Infoskjerm – konfigurasjon** → **Åpningstider (fritekst)** — skjermen i museet. Klikk **Publiser**.
 
 ### Legge til et arrangement
 
@@ -641,12 +644,6 @@ med **Vis på nettsted**-bryteren, akkurat som alt annet innhold (se kapittel 14
 Arkivet over gamle avisartikler om tryllekunst, hentet fra Nasjonalbibliotekets
 aviskorpus (nb.no). Artiklene vises på `/tryllehistorie/historiske-artikler`,
 og den nyeste vises i tillegg en periode på forsiden.
-
-> **⚠️ To typer med samme navn:** Studio-menyen viser i dag *to* innslag som
-> heter «Historisk avisartikkel». Bruk den som har faner øverst i dokumentet
-> (**Innhold · Original kilde · Rettigheter & bilder · SoMe · Metadata**).
-> Den andre er en utfaset forgjenger som ikke lenger vises på nettsiden —
-> ikke opprett nye dokumenter der.
 
 ### Anbefalt arbeidsflyt
 

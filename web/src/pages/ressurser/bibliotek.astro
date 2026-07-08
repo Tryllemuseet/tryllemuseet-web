@@ -1,7 +1,7 @@
 ---
-// src/pages/bibliotek.astro
-import BaseLayout from '../layouts/BaseLayout.astro'
-import { getAllBooks } from '../lib/sanity'
+// src/pages/ressurser/bibliotek.astro
+import BaseLayout from '../../layouts/BaseLayout.astro'
+import { getAllBooks } from '../../lib/sanity'
 
 const books = await getAllBooks()
 const total = books.length

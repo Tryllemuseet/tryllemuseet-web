@@ -59,6 +59,12 @@ export const siteConfig = defineType({
       type: 'url',
       initialValue: 'https://maps.google.com/?q=Årvollveien+35,+0590+Oslo',
     }),
+    defineField({
+      name: 'mapEmbedUrl',
+      title: 'Google Maps embed-URL',
+      type: 'url',
+      description: 'Kartet som vises på Besøk oss-siden. Hentes fra Google Maps → Del → «Bygg inn kart» → kopier URL-en fra src="…" i iframe-koden. La stå tom for å bruke standardkartet.',
+    }),
 
     // ─── ÅPNINGSTIDER ───────────────────────────────────────────
     defineField({
@@ -75,14 +81,6 @@ export const siteConfig = defineType({
       initialValue: 'og etter avtale',
       description: 'Vises etter kortteksten — f.eks. «og etter avtale»',
     }),
-    defineField({
-      name: 'openingHours',
-      title: 'Åpningstider (utvidet)',
-      type: 'array',
-      of: [{ type: 'block' }],
-      description: 'Rik tekst til Besøk oss-siden',
-    }),
-
     // ─── MEDLEMSKAP ─────────────────────────────────────────────
     defineField({
       name: 'membershipUrl',

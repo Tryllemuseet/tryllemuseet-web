@@ -6,7 +6,8 @@
  *
  *   npx sanity dataset export production pressclipping-backup-<YYYYMMDD>.tar.gz
  *
- * The pressClipping schema itself is left untouched — this removes data only.
+ * The pressClipping schema type is retired and no longer registered in the
+ * Studio — this script removes any remaining documents of that type (data only).
  *
  * Required env vars:
  *   SANITY_TOKEN    — Sanity API token (editor or write)

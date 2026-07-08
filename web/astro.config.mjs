@@ -10,6 +10,8 @@ export default defineConfig({
     '/norske-legender':             '/tryllehistorie/norske-legender',
     '/hvem-er-hvem':                '/tryllehistorie/magiens-hvem-er-hvem',
     '/tryllehistorie/hvem-er-hvem': '/tryllehistorie/magiens-hvem-er-hvem',
+    // Library moved under /ressurser (2026-07); short URL kept working
+    '/bibliotek':                   '/ressurser/bibliotek',
     // Info screen lives as a static file in public/
     '/skjerm':                      '/skjerm.html',
   },

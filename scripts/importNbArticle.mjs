@@ -2,11 +2,12 @@
  * importNbArticle.mjs
  *
  * Fetches metadata from Nasjonalbiblioteket (api.nb.no) for a digitized
- * newspaper article and creates a draft pressClipping document in Sanity.
+ * newspaper article and creates a hidden historiskeKlippNb document in Sanity.
  *
  * The script auto-fills: sourceName, originalDate, sourceUrl, and uploads
- * the IIIF thumbnail as a Sanity image asset.
- * The editor must complete: title, teaser (and optionally commentary, someText).
+ * the IIIF thumbnail as the first facsimile image.
+ * The editor must complete: title, teaser, rewrittenText (and optionally
+ * originalFullText, commentary, someText).
  *
  * Required env vars:
  *   SANITY_TOKEN    — Sanity API token (editor or write)
@@ -161,7 +162,7 @@ try {
 
   // Build the Sanity document (editor must fill in title + teaser)
   const doc = {
-    _type:        'pressClipping',
+    _type:        'historiskeKlippNb',
     isVisible:    false,   // hidden until editor has completed title + teaser
     title:        `[TITTEL MANGLER] — ${sourceName} ${originalDate}`,
     slug:         { _type: 'slug', current: `nb-${urn.slice(-16).toLowerCase().replace(/[^a-z0-9]/g, '-')}` },
@@ -188,10 +189,14 @@ try {
       contentType: 'image/jpeg',
     })
     console.log(`   ✅ Bilde lastet opp: ${imageAsset._id}`)
-    doc.image = {
-      _type: 'image',
-      asset: { _type: 'reference', _ref: imageAsset._id },
-    }
+    doc.images = [
+      {
+        _type: 'faksimile',
+        _key: `nb-import-${Date.now().toString(36)}`,
+        asset: { _type: 'reference', _ref: imageAsset._id },
+        alt: `Faksimile fra ${sourceName || 'avis'} ${originalDate}`.trim(),
+      },
+    ]
   } catch (imgErr) {
     console.warn(`   ⚠️  Bilde-opplasting feilet: ${imgErr.message}`)
     console.warn(`   Legg til bilde manuelt i Studio (IIIF-URL: ${thumbUrl})`)
@@ -200,11 +205,11 @@ try {
   // Create draft document in Sanity
   console.log('\n💾 Oppretter Sanity-dokument...')
   const created = await sanity.create(doc)
-  const studioUrl = `https://tryllemuseet.sanity.studio/structure/pressClipping;${created._id}`
+  const studioUrl = `https://tryllemuseet-no.sanity.studio/structure/historiskeKlippNb;${created._id}`
 
   console.log(`\n✅ Ferdig!`)
   console.log(`   Dokument-ID: ${created._id}`)
-  console.log(`   Åpne i Studio og fyll inn tittel og ingress:`)
+  console.log(`   Åpne i Studio og fyll inn tittel, ingress og omskrevet tekst:`)
   console.log(`   ${studioUrl}`)
   console.log(`\n⚠️  Husk: sett isVisible = true og publiser når artikkelen er ferdig.`)
 
