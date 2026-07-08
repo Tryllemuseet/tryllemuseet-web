@@ -14,7 +14,7 @@ The site serves dual audiences: children (with interactive exhibitions and activ
 
 ### Content Layer (Sanity CMS)
 
-The schema defines 32 registered content types in `/schemaTypes` (see `schemaTypes/index.ts`):
+The schema defines 31 registered content types in `/schemaTypes` (see `schemaTypes/index.ts`):
 
 **Page Types** (singletons):
 - `homepage.ts` — Hero, exhibitions focus, sections, partnerships
@@ -35,7 +35,7 @@ The schema defines 32 registered content types in `/schemaTypes` (see `schemaTyp
 - `legend.ts` — Notable historical magicians with video, images, birth/death dates
 - `tvAppearance.ts` — TV show appearances (Got Talent formats, Penn & Teller: Fool Us)
 - `historicalClip.ts` — Archival video clips with metadata (synced daily from YouTube via GitHub Actions)
-- `pressClipping.ts` — Historical newspaper articles (nb.no references)
+- `historiskeKlippNb.ts` — Historical newspaper articles (nb.no references, rewritten text, 70-year copyright gating for facsimiles)
 - `mediaAppearance.ts` — The museum's own press/media coverage ("I media")
 - `book.ts` — Library catalog with author, publication, availability status
 - `event.ts` — Upcoming events/courses with dates, pricing, booking

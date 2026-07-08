@@ -144,7 +144,7 @@ tryllemuseet-web/               ← Git root
 │   ├── index.ts                ← Schema registry (registers active types)
 │   ├── magician.ts
 │   ├── biography.ts
-│   └── ...                     ← 30+ schema files (32 registered types)
+│   └── ...                     ← 30+ schema files (31 registered types)
 ├── package.json                ← Sanity Studio dependencies
 ├── scripts/                    ← Utility/import scripts
 ├── .github/workflows/          ← GitHub Actions automation

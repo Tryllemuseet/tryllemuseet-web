@@ -642,12 +642,6 @@ Arkivet over gamle avisartikler om tryllekunst, hentet fra Nasjonalbibliotekets
 aviskorpus (nb.no). Artiklene vises på `/tryllehistorie/historiske-artikler`,
 og den nyeste vises i tillegg en periode på forsiden.
 
-> **⚠️ To typer med samme navn:** Studio-menyen viser i dag *to* innslag som
-> heter «Historisk avisartikkel». Bruk den som har faner øverst i dokumentet
-> (**Innhold · Original kilde · Rettigheter & bilder · SoMe · Metadata**).
-> Den andre er en utfaset forgjenger som ikke lenger vises på nettsiden —
-> ikke opprett nye dokumenter der.
-
 ### Anbefalt arbeidsflyt
 
 Dokumentet er delt i faner. Jobb i denne rekkefølgen:

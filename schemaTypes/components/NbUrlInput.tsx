@@ -1,7 +1,7 @@
 /**
  * NbUrlInput.tsx
  *
- * Custom Sanity Studio input for the pressClipping.sourceUrl field.
+ * Custom Sanity Studio input for the historiskeKlippNb.sourceUrl field.
  * When the URL matches nb.no, a "Hent metadata" button appears.
  * Clicking it fetches api.nb.no and auto-fills sourceName + originalDate.
  */
