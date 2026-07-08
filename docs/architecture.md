@@ -2,7 +2,7 @@
 
 > **Document type:** Operations Routine / Architecture Reference
 > **Scope:** tryllemuseet-web monorepo — Sanity Studio + Astro frontend
-> **Last updated:** 2026-06-24
+> **Last updated:** 2026-07-08
 
 ---
 
@@ -39,6 +39,7 @@ The system consists of three distinct layers that each have a clearly defined re
 ┌─────────────────────────────────────────────────────────────┐
 │  SERVING LAYER          Vercel Edge Network (CDN)           │
 │  Serves pre-rendered static files globally, zero server     │
+│  test.tryllemuseet.no (main)  │  tryllemuseet.no (prod)     │
 └─────────────────────────────────────────────────────────────┘
 ```
 
@@ -82,10 +83,19 @@ All dynamic routes in the project follow this pattern:
 | `tryllehistorie/magiens-hvem-er-hvem/[slug].astro` | `biography` | `getBiographyPaths()` |
 | `tryllehistorie/got-talent/[slug].astro` | `tvAppearance` | `getTvAppearancePaths()` |
 | `tryllehistorie/fool-us/[slug].astro` | `tvAppearance` | `getTvAppearancePaths()` |
-| `tryllehistorie/nordisk-tv-magi/[slug].astro` | `tvAppearance` | `getTvAppearancePaths()` |
-| `tryllehistorie/historiske-opptak/[slug].astro` | `historicalClip` | (own paths query) |
+| `tryllehistorie/nordisk-tv-magi/[slug].astro` | `tvAppearance` | `getTvAppearancePaths()` (301-redirects to got-talent/fool-us) |
+| `tryllehistorie/historiske-opptak/[slug].astro` | `historicalClip` | `getHistoricalClipPaths()` |
+| `utstillingen/trylleforeningene/[slug].astro` | `magicOrganization` | `getMagicOrganizationPaths()` |
 
 All `getStaticPaths()` calls filter on `isVisible != false`, ensuring hidden documents never get static pages generated.
+
+### Redirects and the One Client-Side Exception
+
+Short URLs used on print material and QR codes (e.g., `/got-talent`, `/hvem-er-hvem`) are defined centrally in `web/astro.config.mjs` under `redirects` and resolve to their canonical paths at build time. `/skjerm` redirects to `/skjerm.html`.
+
+`web/public/skjerm.html` (the physical info screen) is the **only** part of the site that queries Sanity client-side at runtime instead of at build time — by design, so the screen picks up content changes (videos, quotes, events) within minutes without a rebuild. It also fetches live bus departures from the Entur API. Everything else on the site is pure SSG.
+
+The quiz page (`/tryllequiz`) and its nav link are gated by the `quizConfig.isActive` flag in Sanity: when the flag is off, the page builds as a "coming soon" teaser and the nav link is hidden. Toggling the flag requires a rebuild to take effect.
 
 ### Sanity Client Configuration
 
@@ -114,7 +124,7 @@ The CDN caches read queries for approximately 60 seconds in production. During l
 
 ### Sanity Studio
 
-The Sanity Studio (`/`) runs as a separate React application, hosted at `https://tryllemuseet.sanity.studio` (deployed via `npm run deploy` from the repo root). It connects to the same `production` dataset. Schema changes require a studio redeploy to become active in the editor UI.
+The Sanity Studio (`/`) runs as a separate React application, hosted at `https://tryllemuseet-no.sanity.studio` (deployed via `npm run deploy` from the repo root; the host is set by `studioHost: 'tryllemuseet-no'` in `sanity.cli.ts`). It connects to the same `production` dataset. Schema changes require a studio redeploy to become active in the editor UI.
 
 The Studio and the Astro frontend share the same **dataset** but are entirely independent applications. A schema change in a `schemaTypes/` file must be deployed to the Studio before editors can use it, and affects what the frontend receives in GROQ responses immediately upon publication.
 
@@ -134,7 +144,7 @@ tryllemuseet-web/               ← Git root
 │   ├── index.ts                ← Schema registry (registers active types)
 │   ├── magician.ts
 │   ├── biography.ts
-│   └── ...                     ← 25+ schema files
+│   └── ...                     ← 30+ schema files (32 registered types)
 ├── package.json                ← Sanity Studio dependencies
 ├── scripts/                    ← Utility/import scripts
 ├── .github/workflows/          ← GitHub Actions automation
@@ -165,9 +175,10 @@ Git tracks **all code and configuration** for both the Studio and the Astro fron
 | Query layer | `web/src/lib/sanity.ts` |
 | Pages & components | `web/src/pages/**/*.astro`, `web/src/layouts/**`, `web/src/components/**` |
 | Automation | `.github/workflows/*.yml` |
-| Static assets | `web/public/` (logos, favicons, fonts) |
+| Static assets | `web/public/` (logos, favicons, fonts, `skjerm.html`) |
 | Lock files | `package-lock.json`, `web/package-lock.json` |
 | Project docs | `docs/*.md`, `CLAUDE.md` |
+| Env documentation | `web/.env.example` (documents all frontend env vars, no secrets) |
 
 **What Git never tracks (always `.gitignore`d):**
 
@@ -178,9 +189,9 @@ Git tracks **all code and configuration** for both the Studio and the Astro fron
 | Build output | `dist/` | Generated at deploy time |
 | Sanity runtime | `.sanity/` | Temporary dev-server state |
 | Astro generated | `.astro/` | Auto-generated type definitions |
-| Import data | `*.ndjson` | One-off seed files, not application code |
+| Import data | `*.ndjson`, `/nb-verifisering.csv` | One-off seed/work files, not application code |
 
-> **Important:** The web `.gitignore` ignores **both** `.env` and `.env.*`. This means neither the public config file (`.env`) nor the local secrets file (`.env.local`) are tracked in version control. Public values (`PUBLIC_SANITY_PROJECT_ID`, `PUBLIC_SANITY_DATASET`) have hardcoded fallbacks directly in `sanity.ts` as a resilience measure.
+> **Important:** The web `.gitignore` ignores **both** `.env` and `.env.*` — neither the public config file (`.env`) nor the local secrets file (`.env.local`) are tracked in version control. The tracked `web/.env.example` documents every variable without containing secrets. Public values (`PUBLIC_SANITY_PROJECT_ID`, `PUBLIC_SANITY_DATASET`) have hardcoded fallbacks directly in `sanity.ts` as a resilience measure.
 
 ### Content vs. Configuration Separation
 
@@ -223,7 +234,7 @@ The `sanity.ts` file is the **single location for all GROQ queries** in the code
 | `PUBLIC_VERCEL_ENV` | Public | No | Injected automatically by Vercel |
 | `SANITY_PREVIEW_TOKEN` | Secret | No | `.env.local` locally only |
 | `VERCEL_DEPLOY_HOOK_TEST` | Secret | No | GitHub Actions secret |
-| `VERCEL_DEPLOY_HOOK_PROD` | Secret | No | GitHub Actions secret (prepared, not yet active) |
+| `VERCEL_DEPLOY_HOOK_PROD` | Secret | No | GitHub Actions secret |
 | `YOUTUBE_API_KEY` | Secret | No | GitHub Actions secret |
 | `SANITY_TOKEN` | Secret | No | GitHub Actions secret |
 
@@ -237,7 +248,7 @@ Astro enforces a naming convention for environment variables: only variables pre
 
 ### Local Development Setup
 
-A developer setting up the project locally needs a `.env.local` file in `/web/`:
+All frontend environment variables are documented in the tracked file `web/.env.example`. A developer setting up the project locally needs a `.env.local` file in `/web/`:
 
 ```
 # web/.env.local  (never committed)
@@ -266,10 +277,12 @@ The automation workflows require secrets stored in the GitHub repository under *
 
 | Secret | Used by | Purpose |
 |---|---|---|
-| `VERCEL_DEPLOY_HOOK_TEST` | `daily-rebuild.yml` | URL to trigger a Vercel rebuild |
-| `VERCEL_DEPLOY_HOOK_PROD` | `daily-rebuild.yml` | Production hook (prepared, commented out) |
+| `VERCEL_DEPLOY_HOOK_TEST` | `daily-rebuild.yml` | URL to trigger a Vercel rebuild of `main` → test.tryllemuseet.no |
+| `VERCEL_DEPLOY_HOOK_PROD` | `daily-rebuild.yml` | URL to trigger a Vercel rebuild of `prod` → tryllemuseet.no |
 | `YOUTUBE_API_KEY` | `sync-youtube.yml` | YouTube Data API v3 key |
 | `SANITY_TOKEN` | `sync-youtube.yml` | Write token for the Sanity dataset |
+
+Both deploy-hook steps in `daily-rebuild.yml` **fail loudly** if their secret is empty or unset (`::error::` + exit 1). This guard exists because an empty hook secret silently broke the test rebuild between June 28 and July 1, 2026 — `curl -X POST ""` succeeded as a no-op and nothing was rebuilt.
 
 These secrets are injected as environment variables into the GitHub Actions runner at execution time and are never written to disk or exposed in logs.
 
@@ -277,19 +290,23 @@ These secrets are injected as environment variables into the GitHub Actions runn
 
 ## 4. CI/CD and Deployment Pipeline
 
-### Web Frontend: Git Push → Vercel Auto-Deploy
+### Web Frontend: Two Environments, Hook-Triggered Deploys
+
+The web frontend runs as **two Vercel environments** fed from two Git branches:
+
+| Environment | Branch | URL | Deploy hook secret |
+|---|---|---|---|
+| Test | `main` | `test.tryllemuseet.no` | `VERCEL_DEPLOY_HOOK_TEST` |
+| Production | `prod` | `tryllemuseet.no` | `VERCEL_DEPLOY_HOOK_PROD` |
+
+The frontend is **not** auto-deployed on push. Builds are triggered by calling the Vercel **deploy hooks**, which GitHub Actions does daily (see below) — or manually via **Actions → Daily rebuild → Run workflow** on GitHub.
 
 ```
-Developer (VS Code)
+Deploy hook POST (from daily-rebuild.yml or manual workflow run)
        │
-       │  git commit + git push origin main
-       ▼
-GitHub repository (tryllemuseet/tryllemuseet-web)
-       │
-       │  Vercel GitHub integration (webhook on push)
        ▼
 Vercel Build Environment
-  1. git clone repository
+  1. git clone repository (branch tip: main or prod)
   2. cd web && npm ci
   3. astro build
      ├── Fetches all content from Sanity GROQ API
@@ -298,12 +315,16 @@ Vercel Build Environment
        │
        │  Upload to Vercel CDN
        ▼
-Live site at tryllemuseet.no
+test.tryllemuseet.no (main)  /  tryllemuseet.no (prod)
 ```
 
-Vercel monitors the GitHub repository via a webhook. Every push to `main` triggers a production build. Pushes to other branches trigger preview deployments at temporary URLs.
+**Consequences of this model:**
 
-The build takes approximately 1–3 minutes, after which the new static files are globally available. There is no zero-downtime swap concern — Vercel atomically promotes the new deployment.
+- A deploy hook rebuilds **whatever is on its branch tip** with fresh Sanity content — a hook call alone never ships new code beyond what is already merged to that branch.
+- New code reaches production in two steps: merge/push to the `prod` branch, then trigger the production hook (or wait for the nightly run).
+- Everyday code work happens against `main` and is visible on `test.tryllemuseet.no` after the next test rebuild.
+
+The build takes approximately 1–3 minutes, after which the new static files are globally available. Vercel atomically promotes the new deployment, so there is no zero-downtime swap concern.
 
 ### Sanity Studio: Manual Deploy
 
@@ -337,13 +358,19 @@ Two cron jobs run daily via GitHub Actions:
        │
        ▼
 GitHub Actions runner
-  curl -X POST "$VERCEL_DEPLOY_HOOK_TEST"
-       │
-       ▼
-Vercel rebuild (same process as push-triggered build)
+  curl --fail -X POST "$VERCEL_DEPLOY_HOOK_TEST"   → rebuild main  (test)
+  curl --fail -X POST "$VERCEL_DEPLOY_HOOK_PROD"   → rebuild prod  (production)
 ```
 
-**Purpose:** Scheduled content (e.g., events with future dates, press clippings with `publishedAt` in the future) becomes visible once the date passes — but only after a rebuild. The daily trigger ensures such content appears within 24 hours of its scheduled date without any manual action.
+Both hooks fire on every run (both scheduled and manual `workflow_dispatch`), and each step fails the workflow loudly if its secret is empty.
+
+**Purpose:** Several content rules are evaluated **at build time**, so the site must be rebuilt daily for them to take effect without manual action:
+
+- Newspaper articles (`historiskeKlippNb`) with `publishedAt` in the future become visible once the date passes.
+- The homepage "latest article" spot expires after the article's `featuredDurationDays` window.
+- The 70-year copyright rule for newspaper facsimiles (`copyrightOverride: 'auto'`) is recomputed from the original print date on every build.
+- Media coverage featured on the homepage (`mediaAppearance.frontpageUntil`) drops off after its end date.
+- Events with passed dates disappear from "upcoming" lists.
 
 #### 2. YouTube Sync (`sync-youtube.yml`)
 
@@ -373,12 +400,14 @@ When an editor publishes a document in Sanity Studio, the following sequence det
 
 | Trigger | Time to live |
 |---|---|
-| Editor publishes in Studio → manual Vercel rebuild | ~1–3 minutes |
-| Editor publishes in Studio → waits for daily cron | Up to 24 hours |
-| Code push to `main` → Vercel auto-deploys | ~1–3 minutes |
+| Editor publishes in Studio → manual **Daily rebuild** workflow run | ~2–5 minutes (both test and prod) |
+| Editor publishes in Studio → waits for daily cron (05:30 UTC) | Up to 24 hours |
+| Editor publishes signage content (videos, quotes, config) | ≤ 5 minutes — `skjerm.html` fetches live, no rebuild |
+| Code merged to `main` → next test rebuild | Visible on test.tryllemuseet.no |
+| Code merged to `prod` → next prod rebuild (or manual run) | Visible on tryllemuseet.no |
 | Schema change + `npm run deploy` (Studio) | Immediate for UI; no rebuild needed for API |
 
-> **No webhooks from Sanity to Vercel are currently configured.** Content changes require either a manual redeploy or the daily scheduled rebuild. Adding a Sanity GROQ webhook pointing to the `VERCEL_DEPLOY_HOOK_PROD` URL would enable near-instant content updates.
+> **No webhooks from Sanity to Vercel are currently configured.** Content changes require either a manual workflow run or the daily scheduled rebuild. Adding a Sanity GROQ webhook pointing to the deploy hook URLs would enable near-instant content updates.
 
 ### Build Verification
 
