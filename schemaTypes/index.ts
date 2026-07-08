@@ -26,6 +26,8 @@ import signageQuote        from './signageQuote'
 import signageConfig       from './signageConfig'
 import signageVideo        from './signageVideo'
 import magicOrganization   from './magicOrganization'
+import { exhibitionShow }    from './exhibitionShow'
+import { exhibitionStation } from './exhibitionStation'
 import { quizConfig }      from './quizConfig'
 import { quizTheme }       from './quizTheme'
 import { quizQuestion }    from './quizQuestion'
@@ -58,6 +60,8 @@ export const schemaTypes = [
   artifact,
   partner,
   magicOrganization,
+  exhibitionShow,
+  exhibitionStation,
   quizConfig,
   quizTheme,
   quizQuestion,
