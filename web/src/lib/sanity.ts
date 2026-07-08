@@ -124,6 +124,63 @@ export async function getMagicianByQR(qrNumber: number): Promise<Magician | null
   `, { qrNumber })
 }
 
+// ── Utstillinger (exhibitionShow / exhibitionStation) ────────────
+
+export interface ExhibitionStation {
+  _id:             string
+  title:           string
+  slug?:           string
+  order?:          number
+  year?:           string
+  image?:          { asset: { _ref: string; url: string }; alt?: string }
+  textKids?:       string
+  textAdults?:     string
+  activityPrompt?: string
+}
+
+export interface ExhibitionShow {
+  _id:              string
+  title:            string
+  slug:             string
+  subtitle?:        string
+  heroImage?:       { asset: { _ref: string; url: string }; alt?: string }
+  introKids?:       string
+  introAdults?:     string
+  relatedMagician?: { name: string; slug: string; isVisible?: boolean }
+  stations?:        ExhibitionStation[]
+  sources?:         { label: string; url?: string }[]
+}
+
+// Én utstilling via slug — stasjonene følger rekkefølgen i stations-arrayet
+export async function getExhibitionShowBySlug(slug: string): Promise<ExhibitionShow | null> {
+  return sanityClient.fetch(`
+    *[_type == "exhibitionShow" && slug.current == $slug && isVisible != false][0] {
+      _id, title, "slug": slug.current, subtitle,
+      heroImage { asset->{ _ref, url }, alt },
+      introKids, introAdults,
+      "relatedMagician": relatedMagician->{ name, "slug": slug.current, isVisible },
+      "stations": stations[]->{
+        _id, title, "slug": slug.current,
+        order, year,
+        image { asset->{ _ref, url }, alt },
+        textKids, textAdults, activityPrompt,
+        isVisible
+      }[isVisible != false],
+      sources[] { label, url }
+    }
+  `, { slug })
+}
+
+// Statiske stier for utstillinger — brukes i utstillingen/[slug].astro
+export async function getExhibitionShowPaths() {
+  const shows = await sanityClient.fetch(`
+    *[_type == "exhibitionShow" && isVisible != false] { "slug": slug.current }
+  `)
+  return shows
+    .filter((s: { slug?: string }) => s.slug)
+    .map((s: { slug: string }) => ({ params: { slug: s.slug } }))
+}
+
 // Kommende arrangementer
 export async function getUpcomingEvents(limit = 3): Promise<Event[]> {
   return sanityClient.fetch(`
