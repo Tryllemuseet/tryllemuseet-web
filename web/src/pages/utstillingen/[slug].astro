@@ -1,25 +1,42 @@
 ---
 // src/pages/utstillingen/[slug].astro
 import BaseLayout from '../../layouts/BaseLayout.astro'
-import { getAllMagicians, getMagicianBySlug, getBooksByMagician } from '../../lib/sanity'
+import ExhibitionView from '../../components/ExhibitionView.astro'
+import {
+  getAllMagicians,
+  getMagicianBySlug,
+  getBooksByMagician,
+  getExhibitionShowBySlug,
+  getExhibitionShowPaths,
+} from '../../lib/sanity'
 import { toHTML } from '@portabletext/to-html'
 
 export async function getStaticPaths() {
-  const magicians = await getAllMagicians()
-  return magicians
-    .filter(m => m.slug && typeof m.slug === 'string')
+  // Exhibitions (exhibitionShow) and wall panels (magician) share this
+  // route; an exhibition takes over the URL when the slugs collide.
+  const [exhibitionPaths, magicians] = await Promise.all([
+    getExhibitionShowPaths(),
+    getAllMagicians(),
+  ])
+  const exhibitionSlugs = new Set(
+    exhibitionPaths.map((p: { params: { slug: string } }) => p.params.slug)
+  )
+  const magicianPaths = magicians
+    .filter(m => m.slug && typeof m.slug === 'string' && !exhibitionSlugs.has(String(m.slug)))
     .map(m => ({ params: { slug: String(m.slug) } }))
+  return [...exhibitionPaths, ...magicianPaths]
 }
 
 const { slug } = Astro.params
-const m = await getMagicianBySlug(slug!)
+const exhibition = await getExhibitionShowBySlug(slug!)
+const m = exhibition ? null : await getMagicianBySlug(slug!)
 
-if (!m) return Astro.redirect('/utstillingen', 301)
+if (!exhibition && !m) return Astro.redirect('/utstillingen', 301)
 
-const books = await getBooksByMagician(m._id)
+const books = m ? await getBooksByMagician(m._id) : []
 
-const adultHtml = m.adultText ? toHTML(m.adultText) : ''
-const sectionsHtml = m.mobileSections?.map(s => ({
+const adultHtml = m?.adultText ? toHTML(m.adultText) : ''
+const sectionsHtml = m?.mobileSections?.map(s => ({
   heading: s.heading,
   html: s.body ? toHTML(s.body) : ''
 })) ?? []
@@ -32,6 +49,9 @@ const availabilityLabel: Record<string, string> = {
 }
 ---
 
+{exhibition ? (
+  <ExhibitionView exhibition={exhibition} />
+) : m && (
 <BaseLayout
   title={`${m.title} — Tryllemuseet`}
   description={m.mobileIntro ?? `Les om ${m.title} på Tryllemuseet`}
@@ -176,6 +196,7 @@ const availabilityLabel: Record<string, string> = {
 
   </div>
 </BaseLayout>
+)}
 
 <style>
   /* ── HERO ──────────────────────────────────────────────────────── */
