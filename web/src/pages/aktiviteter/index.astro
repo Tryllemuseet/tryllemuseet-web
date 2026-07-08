@@ -2,7 +2,7 @@
 // src/pages/aktiviteter/index.astro
 import BaseLayout from '../../layouts/BaseLayout.astro'
 import AnimateIn from '../../components/AnimateIn.astro'
-import { getAllEvents } from '../../lib/sanity'
+import { getAllEvents, getSiteConfig } from '../../lib/sanity'
 import { getMagiskeCirkelEvents } from '../../lib/icalendar'
 
 interface Activity {
@@ -19,9 +19,10 @@ interface Activity {
   featured?:  boolean
 }
 
-const [tmEvents, mcEvents] = await Promise.all([
+const [tmEvents, mcEvents, site] = await Promise.all([
   getAllEvents(),
   getMagiskeCirkelEvents(),
+  getSiteConfig(),
 ])
 
 const activities: Activity[] = [
@@ -166,7 +167,7 @@ function formatTime(d: string) {
       <span class="no-results-icon" aria-hidden="true">🎩</span>
       <p>Ingen aktiviteter i denne visningen akkurat nå.</p>
       <p class="no-results-sub">
-        Følg oss på <a href="https://www.facebook.com/tryllemuseet" target="_blank" rel="noopener noreferrer">Facebook</a>
+        Følg oss på <a href={site.facebook} target="_blank" rel="noopener noreferrer">Facebook</a>
         for å bli varslet om nye kurs og forestillinger.
       </p>
     </div>

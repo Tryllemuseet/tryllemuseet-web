@@ -31,7 +31,7 @@ const hero = hp?.hero ?? {
 const infoBadges = hp?.infoBadges ?? [
   { label: 'Gratis inngang' },
   { label: '4000 år med magi' },
-  { label: 'Søndager 12–15' },
+  { label: config.openingHoursShort },
 ]
 const utstilling = hp?.utstillingsFokus ?? {
   eraLabel: 'Gullalderen 1845–1930',
@@ -90,10 +90,7 @@ function formatTime(d: string) {
 }
 ---
 
-<BaseLayout
-  title="Tryllemuseet — Norges mest magiske museum"
-  description="Norges minste, merkeligste og mest magiske museum. Besøk oss på Årvoll i Oslo — søndager 12–15. Gratis inngang."
->
+<BaseLayout title="Tryllemuseet — Norges mest magiske museum">
 
   <!-- ══ HERO ════════════════════════════════════════════════════ -->
   <section class="hero" aria-label="Velkommen til Tryllemuseet">

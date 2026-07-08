@@ -2,10 +2,10 @@
 // src/pages/om-oss.astro
 import BaseLayout from '../layouts/BaseLayout.astro'
 import AnimateIn from '../components/AnimateIn.astro'
-import { getOmOssPage, getAllPartners } from '../lib/sanity'
+import { getOmOssPage, getAllPartners, getSiteConfig } from '../lib/sanity'
 import { toHTML } from '@portabletext/to-html'
 
-const [p, partnerDocs] = await Promise.all([getOmOssPage(), getAllPartners()])
+const [p, partnerDocs, site] = await Promise.all([getOmOssPage(), getAllPartners(), getSiteConfig()])
 
 const hero = p?.hero ?? {
   label: 'Om Tryllemuseet',
@@ -86,7 +86,7 @@ const historieHtml = om.historieTekst?.length ? toHTML(om.historieTekst) : ''
     <div class="container">
       <h2 class="section-title">{styret.heading}</h2>
       {styret.ingress && (
-        <p class="section-ingress" set:html={styret.ingress.replace('post@tryllemuseet.no', '<a href="mailto:post@tryllemuseet.no">post@tryllemuseet.no</a>')} />
+        <p class="section-ingress" set:html={styret.ingress.replace(site.email, `<a href="mailto:${site.email}">${site.email}</a>`)} />
       )}
       <AnimateIn direction="up">
       <div class="styre-grid">
