@@ -35,7 +35,7 @@ export const ressurserPage = defineType({
             name: 'href',
             title: 'URL',
             type: 'string',
-            description: 'Intern URL (f.eks. /bibliotek) eller ekstern URL (https://...). Ekstern åpnes i ny fane automatisk.',
+            description: 'Intern URL (f.eks. /ressurser/bibliotek) eller ekstern URL (https://...). Ekstern åpnes i ny fane automatisk.',
           }),
           defineField({
             name: 'soon',

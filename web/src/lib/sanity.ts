@@ -331,7 +331,6 @@ export interface Homepage {
     heading:    string
     tekst:      string
     knappLabel: string
-    knappUrl:   string
   }
   omMuseet: {
     heading:     string
@@ -380,7 +379,7 @@ export async function getHomepage(): Promise<Homepage | null> {
         heading, ingress, features,
         sitater[] { emoji, tekst, kilde }
       },
-      medlemSeksjon { heading, tekst, knappLabel, knappUrl },
+      medlemSeksjon { heading, tekst, knappLabel },
       omMuseet { heading, tekst, sitat, sitatKilde },
       ibsenSeksjon { heading, ingress, sitat, sitatKilde, lenkLabel, lenkHref },
       kursSeksjon { heading, ingress, detaljer, pris, prisLabel, fondsBadge, knappLabel, knappHref },
@@ -408,7 +407,7 @@ export interface BarnPage {
 export interface OmOssPage {
   hero: { label: string; heading: string; headingEm: string; ingress: string }
   omMuseet: { historieHeading: string; historieTekst: any[]; formalHeading: string; formalTekst: string }
-  faktaboks: { stiftet: string; organisasjonsform: string; tilknytning: string; adresse: string; epost: string; orgnr: string }
+  faktaboks: { stiftet: string; organisasjonsform: string; tilknytning: string; adresse: string; orgnr: string }
   styret: {
     heading: string; ingress: string
     medlemmer: { navn: string; rolle: string }[]
@@ -416,7 +415,7 @@ export interface OmOssPage {
   medlemskap: {
     heading: string; ingress: string; motivasjonsTekst: string
     nivaaer: { type: string; pris: string; anbefalt: boolean; fordeler: string[]; knappLabel: string; knappUrl: string }[]
-    vippsNummer: string; vippsInfo: string
+    vippsInfo: string
   }
   presse: { label: string; heading: string; tekst: string; knappLabel: string; knappHref: string }
   partnere: { heading: string; liste: { navn: string; beskrivelse: string; url?: string }[] }
@@ -439,12 +438,12 @@ export async function getOmOssPage(): Promise<OmOssPage | null> {
     *[_type == "omOssPage"][0] {
       hero { label, heading, headingEm, ingress },
       omMuseet { historieHeading, historieTekst, formalHeading, formalTekst },
-      faktaboks { stiftet, organisasjonsform, tilknytning, adresse, epost, orgnr },
+      faktaboks { stiftet, organisasjonsform, tilknytning, adresse, orgnr },
       styret { heading, ingress, medlemmer[] { navn, rolle } },
       medlemskap {
         heading, ingress, motivasjonsTekst,
         nivaaer[] { type, pris, anbefalt, fordeler, knappLabel, knappUrl },
-        vippsNummer, vippsInfo
+        vippsInfo
       },
       presse { label, heading, tekst, knappLabel, knappHref },
       partnere { heading, liste[] { navn, beskrivelse, url } }
@@ -578,29 +577,59 @@ export interface TryllehistoriePage {
 }
 
 export async function getTryllehistoriePage(): Promise<TryllehistoriePage> {
-  const d = await sanityClient.fetch(`
+  const [d, counts] = await Promise.all([
+    sanityClient.fetch(`
     *[_type == "tryllehistoriePage"][0] {
       hero { label, heading, ingress },
       seksjoner[] { href, emoji, title, sub, desc, badge, soon },
       tidslinjeHeading,
       tidslinje[] { aar, hendelse, siste }
     }
-  `)
+  `),
+    sanityClient.fetch(`{
+      "biografier": count(*[_type == "biography" && isVisible != false]),
+      "legender":   count(*[_type == "legend" && isVisible != false]),
+      "gotTalent":  count(*[_type == "tvAppearance" && show in $shows && isVisible != false]),
+      "foolUs":     count(*[_type == "tvAppearance" && show == "fool-us" && isVisible != false]),
+      "opptak":     count(*[_type == "historicalClip" && isVisible != false]),
+      "artikler":   count(*[_type == "historiskeKlippNb" && isVisible != false && publishedAt <= now()]),
+      "magikere":   count(*[_type == "magician" && isVisible != false])
+    }`, { shows: GOT_TALENT_SHOWS }),
+  ])
+
+  // Archive-card badges are counted at build time so they never go stale.
+  // Cards whose href isn't listed here keep their editor-entered badge.
+  const autoBadge: Record<string, string> = {
+    '/tryllehistorie/magiens-hvem-er-hvem': `${counts.biografier} biografier`,
+    '/tryllehistorie/norske-legender':      `${counts.legender} portretter`,
+    '/tryllehistorie/got-talent':           `${counts.gotTalent} opptredener`,
+    '/tryllehistorie/fool-us':              `${counts.foolUs} opptredener`,
+    '/tryllehistorie/historiske-opptak':    `${counts.opptak} opptak`,
+    '/tryllehistorie/historiske-artikler':  `${counts.artikler} artikler`,
+    '/utstillingen':                        `${counts.magikere} utstillingsfelt`,
+  }
+  const withAutoBadges = (seksjoner: TryllehistorieSeksjon[]) =>
+    seksjoner.map(s => {
+      if (s.soon) return s
+      const auto = autoBadge[s.href?.replace(/\/+$/, '') ?? '']
+      return auto ? { ...s, badge: auto } : s
+    })
+
   return {
     hero: {
       label:   d?.hero?.label   ?? 'Tryllemuseet',
       heading: d?.hero?.heading ?? 'Tryllehistorie',
       ingress: d?.hero?.ingress ?? 'Fra begerspillet i Egypt for 4000 år siden til gullalderens store scenemagikere og norske tryllekunstnere i dag — magiens lange historie.',
     },
-    seksjoner: d?.seksjoner ?? [
-      { href: '/tryllehistorie/magiens-hvem-er-hvem',        emoji: '📖', title: 'Magiens Hvem er Hvem',               sub: 'Norske tryllekunstnere',      desc: '173 biografier over norske tryllekunstnere fra Terje Nordheims standardverk. Søk på navn, kunstnernavn og spesialitet.',                                                                    badge: '173 biografier',  soon: false },
+    seksjoner: withAutoBadges(d?.seksjoner ?? [
+      { href: '/tryllehistorie/magiens-hvem-er-hvem',        emoji: '📖', title: 'Magiens Hvem er Hvem',               sub: 'Norske tryllekunstnere',      desc: 'Biografier over norske tryllekunstnere fra Terje Nordheims standardverk. Søk på navn, kunstnernavn og spesialitet.',                                                                    badge: 'Biografier',  soon: false },
       { href: '/utstillingen',                                emoji: '🎩', title: 'Gullalderen 1845–1930',              sub: 'Internasjonal tryllehistorie', desc: 'Robert-Houdin, Herrmann, Kellar, Thurston og Houdini — magikerne som forandret verden og skapte scenetryllingens gylne epoke.',                                                          badge: '7 utstillingsfelt', soon: false },
       { href: '/tryllehistorie/norske-legender/henrik-ibsen', emoji: '🎭', title: 'Henrik Ibsen som tryllekunstner',    sub: 'Norsk kulturhistorie',        desc: 'Visste du at Henrik Ibsen tryllet? Den store dramatikeren hadde en ukjent side som tryllekunstner i sin ungdom.',                                                                          badge: 'Artikkel',         soon: false },
       { href: '/tryllehistorie/begerspillet',                 emoji: '🏺', title: 'Begerspillet',                       sub: 'Magiens opprinnelse',         desc: 'Verdens eldste kjente trylletriks — avbildet i Egypt for over 4000 år siden. Historien om magiens aller første triks.',                                                                     badge: 'Kommer snart',    soon: true  },
       { href: '/tryllehistorie/norske-legender',              emoji: '⭐', title: 'Norske legender',                    sub: 'Portretter',                  desc: 'Egelo, Jan Crosby, Davido, Arnardo og andre norske tryllekunstnere som har satt spor. Dyptgående portretter.',                                                                                badge: '7 artikler',      soon: false },
       { href: '/tryllehistorie/got-talent',                   emoji: '🏆', title: 'Got Talent',                         sub: 'Nordisk TV-magi',             desc: 'Norske, svenske, danske og finske tryllekunstnere i Norske Talenter, Talang, Danmark har Talent og Talent Suomi.',                                                                          badge: '35 opptredener',  soon: false },
-      { href: '/tryllehistorie/fool-us',                      emoji: '🎯', title: 'Penn & Teller: Fool Us',             sub: 'Nordisk TV-magi',             desc: 'Nordiske magikere som har møtt Penn & Teller i den prestisjetunge fagduellen fra Las Vegas. 7 klarte å lure dem.',                                                                            badge: '12 opptredener',  soon: false },
-    ],
+      { href: '/tryllehistorie/fool-us',                      emoji: '🎯', title: 'Penn & Teller: Fool Us',             sub: 'Nordisk TV-magi',             desc: 'Nordiske magikere som har møtt Penn & Teller i den prestisjetunge fagduellen fra Las Vegas. 7 klarte å lure dem.',                                                                            badge: 'Opptredener',  soon: false },
+    ]),
     tidslinjeHeading: d?.tidslinjeHeading ?? '4000 år med magi',
     tidslinje: d?.tidslinje ?? [
       { aar: 'ca. 2000 f.Kr.', hendelse: 'Begerspillet avbildes i Egypt — verdens eldste kjente trylletriks',                               siste: false },
@@ -644,13 +673,13 @@ export async function getRessurserPage(): Promise<RessurserPage> {
       ingress: d?.hero?.ingress ?? 'Tryllekatalog, bibliotek, kunstnerregister og mer.',
     },
     ressurser: d?.ressurser ?? [
-      { emoji: '📚', title: 'Bibliotek',                  beskrivelse: 'Norske tryllebøker og faglitteratur om illusjonismens kunst.',                                           href: '/bibliotek',                                            soon: false },
+      { emoji: '📚', title: 'Bibliotek',                  beskrivelse: 'Norske tryllebøker og faglitteratur om illusjonismens kunst.',                                           href: '/ressurser/bibliotek',                                  soon: false },
       { emoji: '🪄', title: 'Hvem er hvem',               beskrivelse: 'Biografiregister over norske og nordiske tryllekunstnere.',                                              href: '/tryllehistorie/magiens-hvem-er-hvem',                  soon: false },
       { emoji: '📺', title: 'Nordiske magikere på TV',    beskrivelse: 'Oversikt over nordiske tryllekunstnere i Got Talent og Penn & Teller: Fool Us.',                        href: '/tryllehistorie/nordisk-tv-magi',                       soon: false },
       { emoji: '🎩', title: 'Tryllekatalogen ↗',          beskrivelse: 'Magiske Cirkel Norges katalog over norske tryllekunstnere.',                                            href: 'https://www.magiskecirkel.no/tryllekatalogen',           soon: false },
       { emoji: '🎭', title: 'Tryllekunstnere',            beskrivelse: 'Register over tryllekunstnere tilknyttet museet og MCN.',                                               href: '',                                                       soon: true  },
       { emoji: '✨', title: 'Magiske øyeblikk',           beskrivelse: 'Høydepunkter og øyeblikk fra museets liv og arrangementer.',                                            href: '',                                                       soon: true  },
-      { emoji: '📰', title: 'Historiske avisartikler',    beskrivelse: 'Pekere til historiske artikler om norsk tryllekunst fra nb.no og Riksarkivet.',                        href: '',                                                       soon: true  },
+      { emoji: '📰', title: 'Historiske avisartikler',    beskrivelse: 'Gamle avisartikler om norsk tryllekunst fra Nasjonalbibliotekets arkiv.',                              href: '/tryllehistorie/historiske-artikler',                    soon: false },
     ],
   }
 }
@@ -728,8 +757,8 @@ export async function getUtstillingPage(): Promise<UtstillingPage> {
     seksjoner: d?.seksjoner ?? [
       { icon: '🇳🇴', label: 'Norsk tryllekunst',  title: 'Norske legender',    description: 'Fra Arnardo til Finn Jon — tryllekunstnerne som skapte norsk magi.',                        slug: 'norske-legender',    ready: false },
       { icon: '🎩',   label: 'Samlingen',           title: 'Artefakter',         description: 'Sjeldne rekvisitter, historiske gjenstander og mysterier fra museets samling.',              slug: 'artefakter',         ready: true  },
-      { icon: '♣',    label: 'Organisasjonene',     title: 'Trylleforeningene',  description: 'Magisk Cirkel Norge og Det Magiske Råd — fellesskapet bak kunsten.',                        slug: 'trylleforeningene',  ready: false },
-      { icon: '🛍',   label: 'Butikken',             title: 'Tryllebutikken',     description: 'Bøker, rekvisitter og kuriositeter for den nysgjerrige.',                                   slug: 'tryllebutikken',     ready: false },
+      { icon: '♣',    label: 'Organisasjonene',     title: 'Trylleforeningene',  description: 'Magiske Cirkel Norge og Den magiske ring — fellesskapet bak kunsten.',                      slug: 'trylleforeningene',  ready: true  },
+      { icon: '🛍',   label: 'Butikken',             title: 'Tryllebutikken',     description: 'Bøker, rekvisitter og kuriositeter for den nysgjerrige.',                                   slug: 'tryllebutikken',     ready: true  },
     ],
   }
 }
@@ -743,6 +772,7 @@ export interface SiteConfig {
   address:           string
   addressShort:      string
   mapUrl:            string
+  mapEmbedUrl?:      string
   openingHoursShort: string
   openingHoursNote:  string
   membershipUrl:     string
@@ -762,7 +792,7 @@ export async function getSiteConfig(): Promise<SiteConfig> {
   const config = await sanityClient.fetch(`
     *[_type == "siteConfig"][0] {
       siteName, siteTagline, email, phone,
-      address, addressShort, mapUrl,
+      address, addressShort, mapUrl, mapEmbedUrl,
       openingHoursShort, openingHoursNote,
       membershipUrl, vippsNumber,
       facebook, instagram, youtube,

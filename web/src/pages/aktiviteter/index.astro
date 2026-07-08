@@ -53,7 +53,7 @@ const upcomingCount = activities.filter(a => new Date(a.date).getTime() >= now).
 
 const sourceLabels: Record<string, string> = {
   tryllemuseet:  'Tryllemuseet',
-  magiskecirkel: 'Magiske Cirkel',
+  magiskecirkel: 'MCN',
 }
 
 function formatDate(d: string) {
@@ -96,7 +96,7 @@ function formatTime(d: string) {
         <select id="filter-source" class="filter-select">
           <option value="">Alle</option>
           <option value="tryllemuseet">Tryllemuseet</option>
-          <option value="magiskecirkel">Magiske Cirkel</option>
+          <option value="magiskecirkel">Magiske Cirkel Norge</option>
         </select>
       </div>
       <button class="filter-sort" id="sort-toggle" aria-live="polite">Dato ↑</button>
@@ -186,8 +186,8 @@ function formatTime(d: string) {
       <div class="sources-item">
         <span class="sources-icon" aria-hidden="true">🪄</span>
         <div>
-          <strong>Den Magiske Cirkel Norge</strong>
-          <p>Aktiviteter i tryllemiljøet hentes fra <a href="https://www.magiskecirkel.no/kalender" target="_blank" rel="noopener noreferrer">magiskecirkel.no/kalender</a>.</p>
+          <strong>Magiske Cirkel Norge (MCN)</strong>
+          <p>Aktiviteter i tryllemiljøet hentes fra <a href="https://www.magiskecirkel.no/kalender" target="_blank" rel="noopener noreferrer">magiskecirkel.no/kalender</a>. Les mer om <a href="/utstillingen/trylleforeningene">trylleforeningene</a>.</p>
         </div>
       </div>
     </aside>

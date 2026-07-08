@@ -60,11 +60,11 @@ The schema defines 31 registered content types in `/schemaTypes` (see `schemaTyp
 
 **Page Structure** (`/web/src/pages`):
 - `index.astro` — Homepage: fetches magicians, events, homepage config, partners in parallel
-- `barn.astro`, `besok.astro`, `arrangementer.astro`, `om-oss.astro`, `kontakt.astro`, `bibliotek.astro`, `personvern.astro` — Main pages
+- `barn.astro`, `besok.astro`, `arrangementer.astro`, `om-oss.astro`, `kontakt.astro`, `personvern.astro` — Main pages
 - `tryllequiz.astro` — Interactive quiz; renders a "coming soon" teaser until `quizConfig.isActive` is on (the nav link in `BaseLayout.astro` follows the same flag)
 - `om-oss/i-media/` — Museum press coverage
-- `aktiviteter/`, `ressurser/` — Section landing pages
-- `utstillingen/` — Exhibition: `index`, `[slug]` (magician detail), `artefakter` (+ `[slug]`), `tryllebutikken`
+- `aktiviteter/`, `ressurser/` — Section landing pages; the library lives at `ressurser/bibliotek.astro` (`/bibliotek` redirects there)
+- `utstillingen/` — Exhibition: `index`, `[slug]` (magician detail), `artefakter` (+ `[slug]`), `trylleforeningene/` (+ `[slug]`), `tryllebutikken`
 - `tryllehistorie/` — Magic history archive:
   - `magiens-hvem-er-hvem` (+ `[slug]`) — biography directory
   - `norske-legender/` (+ `[slug]`) — legend portraits (incl. `henrik-ibsen` as a slug)

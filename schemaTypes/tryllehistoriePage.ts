@@ -32,7 +32,7 @@ export const tryllehistoriePage = defineType({
           defineField({ name: 'title',  title: 'Tittel',          type: 'string', validation: R => R.required() }),
           defineField({ name: 'sub',    title: 'Underoverskrift', type: 'string' }),
           defineField({ name: 'desc',   title: 'Beskrivelse',     type: 'text', rows: 3 }),
-          defineField({ name: 'badge',  title: 'Badge-tekst',     type: 'string', description: 'F.eks. «7 artikler» eller «Kommer snart»' }),
+          defineField({ name: 'badge',  title: 'Badge-tekst',     type: 'string', description: 'For kjente arkivsider (Hvem er hvem, legender, TV-arkivene, opptak, artikler, utstillingen) telles antallet automatisk ved bygging og overstyrer dette feltet. Brukes som den er ellers — f.eks. «Kommer snart» eller «Artikkel».' }),
           defineField({ name: 'href',   title: 'Lenke (URL)',     type: 'string', description: 'Intern URL, f.eks. /tryllehistorie/norske-legender' }),
           defineField({
             name: 'soon',
