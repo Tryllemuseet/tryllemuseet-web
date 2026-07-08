@@ -23,6 +23,10 @@ Denne bruksanvisningen dekker de oppgavene en redaktør utfører til daglig.
 14. [Skjule innhold uten å slette](#14-skjule-innhold-uten-å-slette)
 15. [Vanlige oppgaver — steg for steg](#15-vanlige-oppgaver--steg-for-steg)
 16. [Tryllequiz](#16-tryllequiz)
+17. [Historiske avisartikler](#17-historiske-avisartikler)
+18. [Historiske TV-opptak](#18-historiske-tv-opptak)
+19. [Tryllemuseet i media](#19-tryllemuseet-i-media)
+20. [Trylleforeninger](#20-trylleforeninger)
 
 > **Veiledning til kapittel 12 (Infoskjerm):** Seksjonene 12a–12c dekker de tre dokumenttypene som styrer skjermen. Start med 12a hvis du er ny, og legg til videoer via 12c.
 
@@ -30,7 +34,7 @@ Denne bruksanvisningen dekker de oppgavene en redaktør utfører til daglig.
 
 ## 1. Komme i gang
 
-**Adresse:** `https://tryllemuseet.sanity.studio`
+**Adresse:** `https://tryllemuseet-no.sanity.studio`
 
 Logg inn med Google-kontoen din (samme som du bruker til museets øvrige Google-tjenester). Ta kontakt med Trond hvis du ikke har tilgang.
 
@@ -88,7 +92,7 @@ Dette er ett enkelt dokument som styrer informasjon som går igjen på hele nett
 | Facebook / Instagram / YouTube | Lenker i footer |
 | Standard meta-beskrivelse | Google-beskrivelse for alle sider som ikke har egen |
 
-**Etter endring:** Publiser dokumentet. Endringer i header og footer vises umiddelbart, men siden nettsiden er statisk generert vil noen endringer kreve at Trond gjør en ny deploy.
+**Etter endring:** Publiser dokumentet. Nettsiden er statisk generert og bygges på nytt automatisk hver natt — endringene vises derfor på nettsiden senest neste morgen. Haster det, kan Trond (eller den som har GitHub-tilgang) kjøre **Daily rebuild** manuelt i GitHub Actions, så er endringen ute på noen minutter. Infoskjermen er unntaket: den henter innhold direkte og oppdaterer seg selv innen 5 minutter.
 
 ---
 
@@ -165,7 +169,7 @@ Legg til lenker til Wikipedia, fagbøker o.l. under **Kilder — eksterne lenker
 
 **Meny:** Magiker — Hvem er hvem
 
-Registeret over norske tryllekunstnere (over 170 registrerte). Disse vises på `/tryllehistorie/hvem-er-hvem`.
+Registeret over norske tryllekunstnere (over 170 registrerte). Disse vises på `/tryllehistorie/magiens-hvem-er-hvem`.
 
 ### Legge til en ny person
 
@@ -203,7 +207,7 @@ Husk å slå av «Trenger oppdatering» og fylle inn **Sist verifisert** etter a
 
 **Meny:** Norsk legende
 
-Dypere profiler av de mest fremstående norske tryllekunstnerne. Vises på `/norske-legender`.
+Dypere profiler av de mest fremstående norske tryllekunstnerne. Vises på `/tryllehistorie/norske-legender`.
 
 | Felt | Merknad |
 |---|---|
@@ -255,7 +259,7 @@ Dokumenterer norske magikeres opptredener på Got Talent, Fool Us og lignende pr
 
 **Meny:** Bok
 
-Bibliotekskatalogen over bøker om tryllekunst. Vises på `/ressurser/boker`.
+Bibliotekskatalogen over bøker om tryllekunst. Vises på `/bibliotek`.
 
 ### Legge til en bok
 
@@ -462,6 +466,8 @@ Disse dokumentene styrer innholdet på de faste sidene. De finnes som singletons
 
 Åpne riktig dokument, rediger tekst og bilder, og publiser. Siden disse er statisk genererte sider vil noen endringer (f.eks. forsideinnhold) kreve ny deploy av Trond.
 
+> **Merk:** Noen sider har ikke noe Sanity-dokument og styres direkte i koden — blant annet **Tryllebutikken** (`/utstillingen/tryllebutikken`) og **Bestill tryllekunstner** (`/aktiviteter/tryllekunstnere`). Endringer der går via Trond.
+
 ---
 
 ## 14. Skjule innhold uten å slette
@@ -549,6 +555,24 @@ Videoen hoppes over i spillelisten til du slår **Aktiv** på igjen.
 2. Endre **Infopanel — visningsvarighet (sekunder)**. Lavere tall = raskere bytte; høyere tall gir mer lesetid.
 3. Klikk **Publiser**.
 
+### Publisere en historisk avisartikkel
+
+Se [Historiske avisartikler](#17-historiske-avisartikler) → «Anbefalt arbeidsflyt».
+Husk: sett **Publiseres på tryllemuseet.no** til ønsket dato — artikkelen dukker
+opp av seg selv når datoen passeres (ved neste nattlige bygging).
+
+### Legge inn en mediesak om museet
+
+Se [Tryllemuseet i media](#19-tryllemuseet-i-media). Slå på **Fremhev på
+forsiden** hvis saken også skal vises på forsiden.
+
+### Koble et historisk TV-opptak til en magiker
+
+1. Sjekk at personen finnes i **Hvem er hvem**-registeret.
+2. Åpne klippet under **Historisk TV-opptak** og fyll inn **Magiker / person**.
+3. Sett **Tilkoblingsstatus** til ✅ Koblet (eller 🔍 Gjennomgått).
+4. Klikk **Publiser**.
+
 ---
 
 ## 16. Tryllequiz
@@ -607,6 +631,163 @@ opprette tema før spørsmålene er klare.
 Så lenge bryteren er av, viser `/tryllequiz` bare en «kommer snart»-hilsen, og
 quizen er skjult fra menyen. Enkeltspørsmål og tema kan når som helst skjules
 med **Vis på nettsted**-bryteren, akkurat som alt annet innhold (se kapittel 14).
+
+---
+
+## 17. Historiske avisartikler
+
+**Meny:** Historisk avisartikkel (📰)
+
+Arkivet over gamle avisartikler om tryllekunst, hentet fra Nasjonalbibliotekets
+aviskorpus (nb.no). Artiklene vises på `/tryllehistorie/historiske-artikler`,
+og den nyeste vises i tillegg en periode på forsiden.
+
+> **⚠️ To typer med samme navn:** Studio-menyen viser i dag *to* innslag som
+> heter «Historisk avisartikkel». Bruk den som har faner øverst i dokumentet
+> (**Innhold · Original kilde · Rettigheter & bilder · SoMe · Metadata**).
+> Den andre er en utfaset forgjenger som ikke lenger vises på nettsiden —
+> ikke opprett nye dokumenter der.
+
+### Anbefalt arbeidsflyt
+
+Dokumentet er delt i faner. Jobb i denne rekkefølgen:
+
+**1. Fanen «Original kilde»** — gjør dette først:
+
+| Felt | Merknad |
+|---|---|
+| Lenke til nb.no | Påkrevd. Lim inn URL-en til artikkelen på nb.no |
+| 🔒 Original fulltekst | Lim inn hele den transkriberte avisteksten. **Kun internt** — vises aldri på nettsiden |
+| Original liten tittel (kicker) | Teksten over hovedoverskriften, f.eks. «Vi besøker:» |
+| Original stor tittel | Hovedoverskriften slik den sto i avisen |
+| Original ingress | Ingressboksen, hvis avisen hadde en |
+| Avis/kilde | F.eks. «Aftenposten» |
+| Avisens dato | Når artikkelen sto på trykk. **Styrer 70-årsregelen for bilder** |
+
+**2. Fanen «Innhold»** — det besøkende faktisk leser:
+
+| Felt | Merknad |
+|---|---|
+| Tittel (redaksjonell) | Påkrevd. Deres egen tittel — kan avvike fra originalen |
+| URL-slug | Genereres fra tittelen |
+| Ingress / teaser | Påkrevd. Maks ~200 tegn, vises i kortlisten |
+| Omskrevet artikkeltekst | **Deres egen frie gjengivelse i egne ord.** Dette — ikke originalteksten — er det besøkende leser |
+| Museets kommentar | Kort kontekst som vises i arkivet |
+| Omtalte tryllekunstnere | Koble til personer i Hvem er hvem — lenkes automatisk til profilen |
+
+**3. Fanen «Rettigheter & bilder»:**
+
+- Last opp **faksimiler/utsnitt** med alt-tekst og bildetekst.
+- **Opphavsrettsvurdering** står normalt på *Automatisk*: bildene vises først
+  når artikkelen er over 70 år gammel (regnet fra avisens dato). Vurderingen
+  beregnes på nytt ved hvert nattlige bygg, så bilder «låses opp» av seg selv
+  når tiden er inne. Bruk «Tving vis» / «Tving skjul» kun etter en konkret
+  vurdering.
+
+**4. Fanen «Metadata»:**
+
+| Felt | Merknad |
+|---|---|
+| Publiseres på tryllemuseet.no | Påkrevd. Sett en **fremtidig dato** for planlagt publisering — artikkelen dukker opp av seg selv fra denne datoen |
+| Fremhevet på forsiden i antall dager | Standard 7. Hvor lenge artikkelen vises som «siste artikkel» på forsiden. Den blir uansett liggende i arkivet permanent |
+| Kategori | Artist / Forestilling / Presseomtale / Annonse / Kuriosa / Annet |
+| ⚠️ Trenger verifisering | Slå på hvis kilde-URL eller dato er usikker. Fjern haken når verifisert mot nb.no |
+
+**5. Fanen «SoMe»** (valgfri): Ferdige posttekster for Facebook/Instagram og
+TikTok. Disse vises ikke på nettsiden — de er kun til å kopiere inn i Meta
+Business Suite når artikkelen deles.
+
+**6. Klikk Publiser.**
+
+> **Viktig om opphavsrett:** Originaltekst og faksimiler fra aviser yngre enn
+> 70 år skal ikke vises offentlig. Derfor vises alltid den *omskrevne* teksten,
+> og bildene styres av 70-årsvurderingen. Original fulltekst-feltet er en
+> intern arbeidskopi og hentes aldri ut på nettsiden.
+
+---
+
+## 18. Historiske TV-opptak
+
+**Meny:** Historisk TV-opptak
+
+Arkivet over gamle TV-klipp, vises på `/tryllehistorie/historiske-opptak`.
+
+**Disse dokumentene opprettes automatisk:** Hver natt (kl. 06:00 UTC) synkroniseres
+spillelisten fra YouTube-kanalen *Egelos videosamling*, og nye klipp legges inn
+av seg selv. Du trenger normalt ikke opprette dokumenter her manuelt.
+
+### Hva redaktøren gjør
+
+Synkroniseringen henter bare rådata. Redaktørens jobb er å berike klippene:
+
+| Felt | Merknad |
+|---|---|
+| Magiker / person | Koble til personen i Hvem er hvem-registeret |
+| Kanal / kringkaster | NRK, TV 2, Filmavisen … |
+| Program / kontekst | Hvilket program klippet er fra |
+| Kategori | TV-opptreden, barneprogram, nyheter osv. |
+| År | Settes automatisk fra YouTube, men kan overstyres — beholdes da |
+| Tilkoblingsstatus | ⬜ Ikke koblet → ✅ Koblet → 🔍 Gjennomgått. Bruk denne som arbeidsliste |
+| Redaksjonell merknad | Intern — vises ikke på nettsiden |
+
+> **Ikke rediger disse feltene:** *Tittel*, *video-URL*, *miniatyrbilde* og
+> *publisert på YouTube* overskrives fra YouTube ved hver nattlige synk.
+> Alt annet du fyller inn beholdes.
+
+Klipp kan skjules fra nettsiden med **Vis på nettsted**, som alt annet innhold.
+
+---
+
+## 19. Tryllemuseet i media
+
+**Meny:** Tryllemuseet i media
+
+Museets egen presseomtale — avisoppslag, TV-innslag, radio og podkast om
+Tryllemuseet. Vises på `/om-oss/i-media`.
+
+| Felt | Påkrevd | Merknad |
+|---|---|---|
+| Tittel | Ja | Oppslagets tittel |
+| URL-slug | Ja | Genereres fra tittelen |
+| Type | Ja | Avis / Nettavis / TV / Radio / Podkast |
+| Publisert av kilden | Ja | Dato oppslaget ble publisert |
+| Kilde | Ja | F.eks. «Aftenposten» |
+| Ingress til kortet | Ja | Kort tekst som vises i oversikten |
+| Lenke til originalartikkel | Nei | URL til kildens egen side |
+| Faksimile eller pressefoto | Nei | Husk alt-tekst |
+| Sitat/utdrag | Nei | Maks 2–3 setninger. Husk kildehenvisning |
+| Video-URL / YouTube-ID | Nei | Vises kun når Type = TV. YouTube-ID gir innebygd avspilling |
+
+### Fremheve en mediesak på forsiden
+
+1. Slå på **Fremhev på forsiden**.
+2. Sett eventuelt **Fremhev til og med** — saken fjernes automatisk fra
+   forsiden etter denne datoen (men blir liggende på I media-siden).
+   La feltet stå tomt for å fremheve inntil videre.
+3. Klikk **Publiser**.
+
+---
+
+## 20. Trylleforeninger
+
+**Meny:** Trylleforening
+
+Presentasjon av norske og nordiske trylleforeninger (f.eks. Magiske Cirkel
+Norge). Vises på `/utstillingen/trylleforeningene` med egen side per forening.
+
+| Felt | Merknad |
+|---|---|
+| Navn | Påkrevd |
+| Forkortelse | F.eks. «MCN» |
+| URL-slug | Genereres fra navnet |
+| Land | F.eks. «Norge» |
+| Grunnlagt (år) / Oppløst (år) | Oppløst fylles kun inn for nedlagte foreninger |
+| Nettside | Ekstern lenke til foreningens egne sider |
+| Ingress | Maks 280 tegn — til listevisning |
+| Logohistorikk | Logoer i kronologisk rekkefølge (år + logo + merknad). Nyeste vises som aktiv logo |
+| Brødtekst | Rik tekst. Kan lenke direkte til personer i Hvem er hvem via «Intern lenke» |
+| Sentrale skikkelser | Koble personer fra Hvem er hvem med rolle og periode, f.eks. «Formann 1952–1960» |
+| Underartikler | Lengre fordypningstekster knyttet til foreningen |
 
 ---
 
