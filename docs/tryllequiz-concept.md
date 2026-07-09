@@ -67,6 +67,11 @@ query). Answer order is irrelevant in Sanity — the frontend shuffles it.
   is client-side vanilla TS. No backend, no tracking, no localStorage.
 - Themes with zero questions are hidden; a round uses
   `min(questionsPerRound, available)` questions.
+- In **Blandet** mode the round is drawn evenly across difficulties
+  (round-robin from shuffled per-difficulty pools), so a 10-question round
+  over a bank of 15 "lett" (children) + 15 "vanskelig" (adults) questions
+  always splits 5 + 5. The Houdini bank is seeded with
+  `scripts/seed-houdini-quiz-questions.mjs`.
 - Only the malformed are excluded at query level: questions must have a
   difficulty and at least 2 answers.
 

@@ -262,8 +262,30 @@ const difficulties = [
       updateSetup()
     }))
 
+    // In "blandet" mode the round is drawn evenly across difficulties
+    // (round-robin from shuffled per-difficulty pools), so e.g. a 10-question
+    // round over a children's + adults' bank always splits 5 + 5.
+    function drawRound(n: number): QItem[] {
+      const pool = matching()
+      if (difficulty !== 'blandet') return shuffle(pool).slice(0, n)
+
+      const groups = new Map<string, QItem[]>()
+      for (const q of shuffle(pool)) {
+        const group = groups.get(q.difficulty) ?? []
+        group.push(q)
+        groups.set(q.difficulty, group)
+      }
+      const lists = Array.from(groups.values())
+      const picked: QItem[] = []
+      for (let i = 0; picked.length < n && lists.some(l => l.length > 0); i++) {
+        const item = lists[i % lists.length].shift()
+        if (item) picked.push(item)
+      }
+      return shuffle(picked)
+    }
+
     function startRound() {
-      round = shuffle(matching()).slice(0, Math.max(1, data.questionsPerRound))
+      round = drawRound(Math.max(1, data.questionsPerRound))
       index = 0
       correctCount = 0
       show(playPanel)
