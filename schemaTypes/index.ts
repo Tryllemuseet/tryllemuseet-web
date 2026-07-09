@@ -31,6 +31,7 @@ import { exhibitionStation } from './exhibitionStation'
 import { quizConfig }      from './quizConfig'
 import { quizTheme }       from './quizTheme'
 import { quizQuestion }    from './quizQuestion'
+import { trick }           from './trick'
 
 export const schemaTypes = [
   // Sidetyper
@@ -65,6 +66,7 @@ export const schemaTypes = [
   quizConfig,
   quizTheme,
   quizQuestion,
+  trick,
   siteConfig,
   // Objekttyper
   contentSection,
