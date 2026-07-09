@@ -445,6 +445,20 @@ export async function getHomepage(): Promise<Homepage | null> {
   `)
 }
 
+// ── Typer: Triks (Lær et triks) ───────────────────────────────────
+export interface Trick {
+  _id: string
+  title: string
+  slug: string
+  difficulty: 'enkel' | 'middels'
+  shortDescription: string
+  materials?: string[]
+  instructions?: any[]
+  videoUrl?: string
+  externalUrl?: string
+  order?: number
+}
+
 // ── Typer: Barn & unge ───────────────────────────────────────────
 export interface BarnPage {
   hero: {
@@ -488,6 +502,30 @@ export async function getBarnPage(): Promise<BarnPage | null> {
       kursBanner { heading, tekst, knappLabel, knappHref }
     }
   `)
+}
+
+// ── Spørringer: Triks (Lær et triks) ──────────────────────────────
+
+// Alle aktive triks, sortert — til /barn/laer-et-triks
+export async function getAllTricks(): Promise<Trick[]> {
+  return sanityClient.fetch(`
+    *[_type == "trick" && isVisible != false] | order(coalesce(order, 9999) asc, title asc) {
+      _id, title, "slug": slug.current,
+      difficulty, shortDescription, materials, instructions,
+      videoUrl, externalUrl, order
+    }
+  `)
+}
+
+// Ett triks via slug — hvis vi senere vil ha egne detaljsider
+export async function getTrickBySlug(slug: string): Promise<Trick | null> {
+  return sanityClient.fetch(`
+    *[_type == "trick" && slug.current == $slug && isVisible != false][0] {
+      _id, title, "slug": slug.current,
+      difficulty, shortDescription, materials, instructions,
+      videoUrl, externalUrl, order
+    }
+  `, { slug })
 }
 
 export async function getOmOssPage(): Promise<OmOssPage | null> {

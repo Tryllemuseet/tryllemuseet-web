@@ -1,0 +1,305 @@
+---
+// src/pages/barn/laer-et-triks.astro
+import BaseLayout from '../../layouts/BaseLayout.astro'
+import AnimateIn from '../../components/AnimateIn.astro'
+import { getAllTricks, portableTextToHtml } from '../../lib/sanity'
+
+const tricks = await getAllTricks()
+
+const DIFFICULTY_LABELS: Record<string, string> = {
+  enkel: 'Enkel',
+  middels: 'Litt vanskeligere',
+}
+
+function youtubeEmbedUrl(url?: string): string | null {
+  if (!url) return null
+  const m = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&?]+)/)
+  return m ? `https://www.youtube-nocookie.com/embed/${m[1]}` : null
+}
+---
+
+<BaseLayout
+  title="Lær et triks — Tryllemuseet"
+  description="Lær enkle trylletriks du kan vise fram til familie og venner."
+>
+
+  <nav class="breadcrumb container">
+    <a href="/barn">Barn & unge</a>
+    <span>›</span>
+    <span aria-current="page">Lær et triks</span>
+  </nav>
+
+  <section class="triks-hero">
+    <div class="container">
+      <span class="hero-label">For barn og unge</span>
+      <h1>Lær et triks</h1>
+      <p class="hero-ingress">
+        Her finner du noen enkle trylletriks du kan øve på hjemme. Ta deg god tid —
+        de fleste tryllekunstnere har øvd hundrevis av ganger før de viste trikset til noen andre.
+      </p>
+    </div>
+  </section>
+
+  <section class="triks-liste section-pad">
+    <div class="container">
+
+      {tricks.length === 0 && (
+        <AnimateIn direction="up">
+          <p class="tom-liste">Vi jobber med å legge inn triks her — kom tilbake litt senere!</p>
+        </AnimateIn>
+      )}
+
+      <div class="triks-grid">
+        {tricks.map(t => {
+          const embedUrl = youtubeEmbedUrl(t.videoUrl)
+          return (
+            <AnimateIn direction="up">
+              <article class="triks-kort" id={t.slug}>
+                <div class="triks-kort-header">
+                  <h2>{t.title}</h2>
+                  <span class={`vanskelighet vanskelighet-${t.difficulty}`}>
+                    {DIFFICULTY_LABELS[t.difficulty] ?? t.difficulty}
+                  </span>
+                </div>
+
+                <p class="triks-beskrivelse">{t.shortDescription}</p>
+
+                {t.materials && t.materials.length > 0 && (
+                  <div class="triks-materialer">
+                    <span class="materialer-label">Du trenger:</span>
+                    <ul>
+                      {t.materials.map(m => <li>{m}</li>)}
+                    </ul>
+                  </div>
+                )}
+
+                {embedUrl && (
+                  <div class="triks-video-wrap">
+                    <iframe
+                      src={embedUrl}
+                      title={`Video: ${t.title}`}
+                      loading="lazy"
+                      allow="accelerometer; encrypted-media; gyroscope; picture-in-picture"
+                      allowfullscreen
+                    ></iframe>
+                  </div>
+                )}
+
+                {!embedUrl && t.externalUrl && (
+                  <a href={t.externalUrl} target="_blank" rel="noopener" class="triks-ekstern-lenke">
+                    Se trikset →
+                  </a>
+                )}
+
+                {t.instructions && t.instructions.length > 0 && (
+                  <div class="prose triks-instruksjoner" set:html={portableTextToHtml(t.instructions)} />
+                )}
+              </article>
+            </AnimateIn>
+          )
+        })}
+      </div>
+
+    </div>
+  </section>
+
+  <section class="diplom-banner">
+    <div class="container diplom-banner-inner">
+      <div>
+        <h2>Klarte du trikset?</h2>
+        <p>Fint jobbet! Øv litt til, og vis det gjerne fram neste gang du er innom museet.</p>
+      </div>
+      <a href="/barn" class="btn btn-gold">Tilbake til Barn & unge</a>
+    </div>
+  </section>
+
+</BaseLayout>
+
+<style>
+  .breadcrumb {
+    padding-block: 1.5rem 0;
+    font-family: var(--font-ui);
+    font-size: 0.85rem;
+    color: #777;
+  }
+  .breadcrumb a { color: var(--burgundy); text-decoration: none; }
+  .breadcrumb a:hover { text-decoration: underline; }
+  .breadcrumb span[aria-current] { color: #999; }
+
+  .triks-hero {
+    padding-block: 3rem 2rem;
+    background: var(--cream);
+  }
+  .hero-label {
+    display: inline-block;
+    font-family: var(--font-ui);
+    font-size: 0.75rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--gold);
+    border-bottom: 1px solid var(--gold);
+    padding-bottom: 0.2em;
+    margin-bottom: 1rem;
+  }
+  .triks-hero h1 {
+    font-family: var(--font-display);
+    font-size: clamp(1.8rem, 4vw, 2.6rem);
+    color: var(--burgundy);
+    margin-bottom: 1rem;
+  }
+  .hero-ingress {
+    font-family: var(--font-body);
+    font-size: 1.05rem;
+    color: #555;
+    line-height: 1.7;
+    max-width: 620px;
+  }
+
+  .section-pad { padding-block: 3rem 5rem; }
+
+  .tom-liste {
+    font-family: var(--font-body);
+    font-size: 1.05rem;
+    color: #777;
+    text-align: center;
+    padding: 3rem 0;
+  }
+
+  .triks-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 2.5rem;
+  }
+
+  .triks-kort {
+    background: white;
+    border: 1px solid rgba(107,15,26,0.12);
+    border-radius: 4px;
+    padding: 2rem;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+  }
+
+  .triks-kort-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 0.75rem;
+  }
+  .triks-kort-header h2 {
+    font-family: var(--font-display);
+    font-size: 1.3rem;
+    color: var(--burgundy);
+    line-height: 1.3;
+  }
+
+  .vanskelighet {
+    flex-shrink: 0;
+    font-family: var(--font-ui);
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    padding: 0.3em 0.7em;
+    border-radius: 12px;
+    white-space: nowrap;
+  }
+  .vanskelighet-enkel { background: rgba(76,175,80,0.12); color: #2e7d32; }
+  .vanskelighet-middels { background: rgba(212,168,67,0.18); color: #8a6a10; }
+
+  .triks-beskrivelse {
+    font-family: var(--font-body);
+    font-size: 1rem;
+    color: #444;
+    line-height: 1.65;
+    margin-bottom: 1.25rem;
+  }
+
+  .triks-materialer {
+    background: var(--cream);
+    border-radius: 4px;
+    padding: 1rem 1.25rem;
+    margin-bottom: 1.5rem;
+  }
+  .materialer-label {
+    display: block;
+    font-family: var(--font-ui);
+    font-size: 0.78rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 0.5rem;
+  }
+  .triks-materialer ul {
+    margin: 0;
+    padding-left: 1.2rem;
+    font-family: var(--font-body);
+    font-size: 0.92rem;
+    color: #444;
+  }
+  .triks-materialer li { margin-bottom: 0.2rem; }
+
+  .triks-video-wrap {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16/9;
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: 1rem;
+    background: #000;
+  }
+  .triks-video-wrap iframe {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    border: 0;
+  }
+
+  .triks-ekstern-lenke {
+    display: inline-block;
+    font-family: var(--font-ui);
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--burgundy);
+    text-decoration: none;
+    border-bottom: 1px solid var(--gold);
+    padding-bottom: 0.1em;
+  }
+  .triks-ekstern-lenke:hover { color: var(--gold-dark, var(--gold)); }
+
+  .triks-instruksjoner {
+    margin-top: 1.25rem;
+    font-family: var(--font-body);
+    font-size: 0.95rem;
+    color: #444;
+    line-height: 1.7;
+  }
+
+  .diplom-banner { background: var(--burgundy); padding-block: 3.5rem; }
+  .diplom-banner-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 2rem;
+    flex-wrap: wrap;
+  }
+  .diplom-banner h2 { font-family: var(--font-display); font-size: 1.6rem; color: var(--cream); margin-bottom: 0.5rem; }
+  .diplom-banner p  { font-family: var(--font-body); font-size: 1rem; color: rgba(251,247,239,0.75); max-width: 520px; line-height: 1.6; }
+
+  .btn-gold {
+    font-family: var(--font-ui);
+    font-size: 1rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    text-decoration: none;
+    background: var(--gold);
+    color: var(--burgundy);
+    padding: 0.8em 2em;
+    border-radius: 2px;
+    transition: background 0.2s ease;
+    display: inline-block;
+  }
+  .btn-gold:hover { background: var(--gold-light); }
+</style>
