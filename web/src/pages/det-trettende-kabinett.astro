@@ -150,6 +150,77 @@ const DEFAULT_ROOMS: Record<string, RoomCopy> = {
       'Direktøren venter ved foten av en trapp som skrur seg opp i mørket. Ovenfra: lyden av et teater som gjør seg klart — tau som strammes, en kiste som låses. «Seks rom, lærling. Sju igjen. Men daggryet kommer, og teateret får vente til en annen natt.»',
     facts: [],
   },
+  frievalget: {
+    title: 'Det frie valget',
+    intro:
+      'Øverst i trappen: et lite kammer med et bord, tre gjenstander — og en forseglet konvolutt. «Spådommen der inne ble skrevet før du kom inn i huset,» sier Direktøren. «Nå skal du velge. Helt fritt. Det er det som er det vakre.»',
+    facts: [
+      {
+        text: 'teknikken kalles «magician\'s choice» (equivoque) og har vært brukt i århundrer: valget ditt er ekte — men hva valget skal bety, bestemmes først etterpå.',
+      },
+    ],
+  },
+  teateret: {
+    title: 'Teateret',
+    intro:
+      'Et varietéteater i full mørklagt prakt: fløyel, gasslamper, plakater med sterke menn og svevende damer. På scenen står en kiste med åpne lokk. «Utbryterkunstens gullalder,» sier Direktøren — og før du rekker å svare, har to sceneknekter løftet deg oppi. Lokket smeller. Hengelåsen klikker. Applaus.',
+    facts: [
+      {
+        text: 'Harry Houdini og kona Bess slo gjennom med «Metamorfose» på 1890-tallet: de byttet plass i en låst kiste — på sekunder.',
+        linkUrl: '/tryllehistorie/magiens-hvem-er-hvem',
+        linkLabel: 'Magiens hvem er hvem',
+      },
+      {
+        text: 'utbrytere sjelden «brøt seg ut» av noe de ikke kjente: utfordringskister og -jern ble som regel undersøkt, preparert eller valgt med omhu lenge før forestillingen.',
+      },
+    ],
+  },
+  kinoen: {
+    title: 'Kinoen',
+    intro:
+      'En sal med plysjseter og et lerret som flimrer hvitt. Bak deg surrer en prosjektor av messing. «Georges Méliès var tryllekunstner før han ble filmpioner,» sier Direktøren. «Han oppdaget at kameraet kunne gjøre det ingen scene kunne. Men filmen hans har falt fra hverandre — sett den sammen igjen.»',
+    facts: [
+      {
+        text: 'Georges Méliès var sceneillusjonist og drev Théâtre Robert-Houdin i Paris før han ble en av filmkunstens pionerer — trylleriet flyttet rett inn i det nye mediet.',
+      },
+      {
+        text: 'i «Escamotage d\'une dame» (1896) lot Méliès en dame forsvinne med stopptrikset: kameraet stanses, damen går ut av bildet, og filmen fortsetter som om ingenting hendte. Ifølge Méliès selv oppdaget han trikset ved en tilfeldighet, da kameraet hans kilte seg midt i et gateopptak.',
+        linkUrl: '/tryllehistorie/historiske-opptak',
+        linkLabel: 'Se historiske opptak',
+      },
+    ],
+  },
+  lerretet: {
+    title: 'Ånden på lerretet',
+    intro:
+      'Speilgangen ender i et kammer med ett eneste, tomt lerret. «Siste akt i kveldens forestilling,» sier Direktøren. «Nå skal øynene dine mane frem et bilde som ikke finnes. Ikke tro meg — se selv.»',
+    facts: [
+      {
+        text: 'etterbilder oppstår fordi synscellene «slites» når du stirrer lenge på noe sterkt farget — etterpå serverer hjernen deg et gjenferd i komplementærfargen, på helt tomme flater.',
+      },
+    ],
+  },
+  verkstedet: {
+    title: 'Verkstedet',
+    intro:
+      'Sagflis, blåkopier og halvbygde mirakler: et bord med falluker, et speil i vinkel, en kiste med dobbel bunn. «Her tegnes effekten baklengs,» sier Direktøren, «fra salens stol og innover. På bordet ligger en bestilling — og seks deler. Bare tre av dem hører hjemme i illusjonen.»',
+    facts: [
+      {
+        text: '«Sfinksen» (London 1865) regnes som gjennombruddet for speilillusjonene: et hode på et bord uten kropp — fordi vinklede speil mellom bordbeina viste publikum gulvet de trodde de så bak bordet.',
+      },
+      {
+        text: '«black art»-prinsippet — svart fløyel mot svart bakgrunn i presist lys — gjør gjenstander og hjelpere usynlige på åpen scene, og brukes fortsatt i teater og film.',
+        linkUrl: '/utstillingen',
+        linkLabel: 'Utforsk utstillingen',
+      },
+    ],
+  },
+  epilog3: {
+    title: 'Daggryets terskel',
+    intro:
+      'Direktøren står ved et vindu der nattemørket så vidt har begynt å gråne. «Ni rom, lærling. Fire igjen — studioet, gatehjørnet, vinterhagen … og det trettende. Men det trettende rommet åpner seg ikke for nøkler. Det åpner seg for en full kortstokk.»',
+    facts: [],
+  },
 }
 
 const overrides = new Map(chapters.map(c => [c.key, c]))
@@ -638,11 +709,232 @@ const payloadJson = JSON.stringify(payload).replace(/</g, '\\u003c')
           <p class="game-msg" id="ep2-deck-summary" aria-live="polite"></p>
           <p class="game-msg">«Og husk, lærling: alt du har sett i natt, står i glassmontere når solen er oppe. Kabinettet heter <strong>Tryllemuseet</strong> om dagen.»</p>
           <div class="btn-row">
+            <button class="btn-gold" id="ep2-act3">Opp trappen — Akt III venter →</button>
             <button class="btn-gold" id="ep2-poster">Last ned plakaten din 🖼️</button>
             <a class="btn-gold" href="/besok">Besøk museet i dagslys →</a>
             <button class="btn-quiet" id="ep2-deck">Se kortstokken 🃏</button>
           </div>
-          <p class="game-msg game-msg--dim">Akt III — med Teateret, den låste kisten og utbryterkunstens gullalder — venter bak neste natt.</p>
+        </div>
+      </section>
+
+      <!-- ═══ AKT III ══════════════════════════════════════════════ -->
+
+      <!-- ── SCENE: DET FRIE VALGET (SPEILGANGEN) ────────────────── -->
+      <section class="scene" id="sc-frievalget" hidden aria-labelledby="fv-heading">
+        <p class="scene-label">Mellomrommet · Ruter fem</p>
+        <h2 class="scene-heading" id="fv-heading">{rooms.frievalget.title}</h2>
+        <p class="scene-intro">{rooms.frievalget.intro}</p>
+
+        <div class="panel">
+          <p class="fv-envelope" id="fv-envelope" aria-label="En forseglet konvolutt">✉️ <em>«Spådom — skrevet i går kveld»</em></p>
+          <p class="game-msg" id="fv-msg" aria-live="polite">Tre gjenstander står på bordet. <strong>Pek på to av dem</strong> — helt fritt.</p>
+          <div class="fv-items" id="fv-items"></div>
+          <ol class="swap-log" id="fv-log" aria-label="Valgene dine"></ol>
+
+          <div id="fv-result" hidden>
+            <p class="game-msg game-msg--good" id="fv-verdict"></p>
+            <div class="btn-row">
+              <button class="btn-quiet" id="fv-reveal-btn">Vent litt — vis kvitteringene 🧾</button>
+            </div>
+            <div class="reveal" id="fv-reveal" hidden>
+              <p>Valgene dine var ekte — men <strong>hva de skulle bety, ble bestemt etterpå.</strong> Pekte du på speilet, «beholdt» du det. Pekte du på noe annet, «ryddet» Direktøren det bort. Alle veier endte ved speilet; du gikk bare én av dem.</p>
+              <ul class="hint-list" id="fv-receipts"></ul>
+              <div class="facts" id="fv-facts"></div>
+            </div>
+            <button class="btn-gold" id="fv-continue">Videre til Teateret →</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── SCENE: TEATERET ─────────────────────────────────────── -->
+      <section class="scene" id="sc-teateret" hidden aria-labelledby="te-heading">
+        <p class="scene-label">Sjuende rom · Sjuerne</p>
+        <h2 class="scene-heading" id="te-heading">{rooms.teateret.title}</h2>
+        <p class="scene-intro">{rooms.teateret.intro}</p>
+
+        <div class="panel" id="te-pathchoice">
+          <p class="field-label">Velg din vei gjennom rommet</p>
+          <div class="path-row">
+            <button class="path-btn" data-scene="te" data-path="laerling">
+              <strong>Lærlingens vei</strong>
+              <span>Direktørens stemme følger deg inn i mørket</span>
+            </button>
+            <button class="path-btn" data-scene="te" data-path="mester">
+              <strong>Mesterens vei</strong>
+              <span>Bare deg og kisten — løser du gåten uten hint, gylles sparkortet ditt</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="panel" id="te-game" hidden>
+          <p class="game-msg" id="te-pretext"></p>
+          <p class="game-msg">Det er trangt, mørkt og varmt. Publikum teller høyt der ute. <strong>Hva gjør du — og i hvilken rekkefølge?</strong></p>
+          <div class="te-actions" id="te-actions"></div>
+          <ol class="swap-log" id="te-log" aria-live="polite" aria-label="Det som skjer i kisten"></ol>
+          <button class="curiosity" id="te-ticket" aria-label="En gammel teaterbillett stikker frem av kistens fôr">🎟️</button>
+          <p class="game-msg" id="te-msg" aria-live="polite"></p>
+
+          <div class="hintbox">
+            <button class="btn-quiet" id="te-hint-btn">Direktørens hvisken (hint) 🤫</button>
+            <ul class="hint-list" id="te-hints"></ul>
+          </div>
+        </div>
+
+        <div class="panel panel--solved" id="te-solved" hidden>
+          <p class="solved-title">✨ Gåten er løst</p>
+          <p class="principle">«Du ruller ut bak kisten idet publikum når null. <strong>Metoden ble kjøpt lenge før effekten ble solgt</strong>, lærling: knotten satt der før teppet gikk opp. Utbryteren rømmer aldri fra kisten — han rømmer fra i går.»</p>
+          <div class="facts" id="te-facts"></div>
+          <button class="btn-gold" id="te-complete">Fullfør rommet →</button>
+        </div>
+      </section>
+
+      <!-- ── SCENE: KINOEN ───────────────────────────────────────── -->
+      <section class="scene" id="sc-kinoen" hidden aria-labelledby="ki-heading">
+        <p class="scene-label">Åttende rom · Åtterne</p>
+        <h2 class="scene-heading" id="ki-heading">{rooms.kinoen.title}</h2>
+        <p class="scene-intro">{rooms.kinoen.intro}</p>
+
+        <div class="panel" id="ki-pathchoice">
+          <p class="field-label">Velg din vei gjennom rommet</p>
+          <div class="path-row">
+            <button class="path-btn" data-scene="ki" data-path="laerling">
+              <strong>Lærlingens vei</strong>
+              <span>Direktøren minner deg om hvordan historien skal henge sammen</span>
+            </button>
+            <button class="path-btn" data-scene="ki" data-path="mester">
+              <strong>Mesterens vei</strong>
+              <span>Bare filmbitene — løser du gåten uten hint, gylles sparkortet ditt</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="panel" id="ki-game" hidden>
+          <p class="game-msg" id="ki-pretext"></p>
+          <div id="ki-phase1">
+            <p class="game-msg">Fem filmbiter ligger hulter til bulter. <strong>Trykk på dem i riktig rekkefølge</strong> — fra første til siste bilde.</p>
+            <div class="ki-strips" id="ki-strips"></div>
+          </div>
+          <div id="ki-phase2" hidden>
+            <p class="game-msg game-msg--good">Filmen løper: damen forsvinner — og salen gisper. Men Direktøren lener seg frem: <strong>«Hvor stanset kameraet første gang?»</strong></p>
+            <div class="mp-cups" id="ki-gaps"></div>
+          </div>
+          <button class="curiosity" id="ki-clip" aria-label="En avklippet filmbit ligger på gulvet">🎞️</button>
+          <p class="game-msg" id="ki-msg" aria-live="polite"></p>
+
+          <div class="hintbox">
+            <button class="btn-quiet" id="ki-hint-btn">Direktørens hvisken (hint) 🤫</button>
+            <ul class="hint-list" id="ki-hints"></ul>
+          </div>
+        </div>
+
+        <div class="panel panel--solved" id="ki-solved" hidden>
+          <p class="solved-title">✨ Gåten er løst</p>
+          <p class="principle">«<strong>Klippet er forsvinningsnummeret</strong>, lærling. Det umulige skjer aldri mens du ser på — det skjer mellom to bilder, der kameraet sto stille og verden fikk ordne seg. Méliès skjønte det før noen andre: filmen er en tryllekunstner som aldri blir avslørt av første rad.»</p>
+          <div class="facts" id="ki-facts"></div>
+          <button class="btn-gold" id="ki-complete">Fullfør rommet →</button>
+        </div>
+      </section>
+
+      <!-- ── SCENE: ÅNDEN PÅ LERRETET (SPEILGANGEN) ──────────────── -->
+      <section class="scene" id="sc-lerretet" hidden aria-labelledby="le-heading">
+        <p class="scene-label">Mellomrommet · Ruter seks</p>
+        <h2 class="scene-heading" id="le-heading">{rooms.lerretet.title}</h2>
+        <p class="scene-intro">{rooms.lerretet.intro}</p>
+
+        <div class="panel">
+          <div class="le-stage" id="le-stage">
+            <svg viewBox="0 0 400 220" role="img" aria-label="Et lerret. Når lampen tennes, vises en sterkt rosa lykt med en hvit prikk i midten.">
+              <rect x="0" y="0" width="400" height="220" fill="#241019" rx="6"/>
+              <g id="le-figure" style="display:none">
+                <circle cx="200" cy="105" r="62" fill="#ff2fa0"/>
+                <rect x="188" y="30" width="24" height="26" fill="#ff2fa0"/>
+                <rect x="170" y="166" width="60" height="14" fill="#ff2fa0"/>
+                <circle cx="200" cy="105" r="4" fill="#ffffff"/>
+              </g>
+              <text id="le-blank-text" x="200" y="112" text-anchor="middle" fill="#6b5560" font-family="Georgia, serif" font-size="15" font-style="italic">— lerretet er tomt —</text>
+            </svg>
+          </div>
+          <p class="game-msg" id="le-msg" aria-live="polite">Når lampen tennes: <strong>stirr på den hvite prikken i midten</strong> uten å flytte blikket, helt til lyset slukker.</p>
+          <div class="btn-row" id="le-controls">
+            <button class="btn-gold" id="le-light">Tenn lampen 🕯️</button>
+            <button class="btn-quiet" id="le-skip">Fortell meg hva jeg ville sett</button>
+          </div>
+          <div class="btn-row" id="le-after" hidden>
+            <button class="btn-gold" id="le-saw">Jeg ser det — et blekt gjenferd! 👻</button>
+            <button class="btn-quiet" id="le-nothing">Jeg ser ingenting</button>
+          </div>
+          <div class="reveal" id="le-reveal" hidden>
+            <p id="le-reveal-text">Gjenferdet på lerretet er <strong>ditt eget syn som dikter</strong>: synscellene som stirret på det rosa lyset er «slitne», og når lyset forsvinner, svarer de med komplementærfargen — et blekgrønt etterbilde av lykten, på et lerret som hele tiden var tomt. «Husk det,» sier Direktøren. «Publikum trenger ikke se noe for å se noe.»</p>
+            <div class="facts" id="le-facts"></div>
+          </div>
+          <button class="btn-gold" id="le-continue" hidden>Videre til Verkstedet →</button>
+        </div>
+      </section>
+
+      <!-- ── SCENE: VERKSTEDET ───────────────────────────────────── -->
+      <section class="scene" id="sc-verkstedet" hidden aria-labelledby="vs-heading">
+        <p class="scene-label">Niende rom · Nierne</p>
+        <h2 class="scene-heading" id="vs-heading">{rooms.verkstedet.title}</h2>
+        <p class="scene-intro">{rooms.verkstedet.intro}</p>
+
+        <div class="panel" id="vs-pathchoice">
+          <p class="field-label">Velg din vei gjennom rommet</p>
+          <div class="path-row">
+            <button class="path-btn" data-scene="vs" data-path="laerling">
+              <strong>Lærlingens vei</strong>
+              <span>Delene er merket med byggmesterens rene ord</span>
+            </button>
+            <button class="path-btn" data-scene="vs" data-path="mester">
+              <strong>Mesterens vei</strong>
+              <span>Bare verkstedets stikkord — løser du gåten uten hint, gylles sparkortet ditt</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="panel" id="vs-game" hidden>
+          <blockquote class="verse">
+            <p>Bestilling: «Den svevende damen».</p>
+            <p>Damen svever midt på åpen scene.</p>
+            <p>En ring føres langs hele kroppen hennes.</p>
+            <p>Salen ser henne hele tiden.</p>
+          </blockquote>
+          <p class="game-msg">Seks deler ligger på bordet — <strong>bare tre hører hjemme i illusjonen.</strong> Velg dem, og bygg.</p>
+          <ul class="se-list" id="vs-parts"></ul>
+          <div class="btn-row">
+            <button class="btn-gold" id="vs-submit">Bygg illusjonen 🔨</button>
+          </div>
+          <button class="curiosity" id="vs-screw" aria-label="En blank messingskrue ligger i sagflisen">🔩</button>
+          <p class="game-msg" id="vs-msg" aria-live="polite"></p>
+
+          <div class="hintbox">
+            <button class="btn-quiet" id="vs-hint-btn">Direktørens hvisken (hint) 🤫</button>
+            <ul class="hint-list" id="vs-hints"></ul>
+          </div>
+        </div>
+
+        <div class="panel panel--solved" id="vs-solved" hidden>
+          <p class="solved-title">✨ Gåten er løst</p>
+          <p class="principle">«Stålarmen bærer, motvekten holder, draperiet skjuler — og ringen glir langs den s-formede armen som om ingenting var der. <strong>Effekten tegnes baklengs fra salens stol</strong>, lærling: byggmesteren setter seg der publikum sitter, og fjerner alt de kan se.»</p>
+          <div class="facts" id="vs-facts"></div>
+          <button class="btn-gold" id="vs-complete">Fullfør rommet →</button>
+        </div>
+      </section>
+
+      <!-- ── SCENE: EPILOG AKT III ───────────────────────────────── -->
+      <section class="scene" id="sc-epilog3" hidden aria-labelledby="ep3-heading">
+        <p class="scene-label">Akt III er fullført</p>
+        <h2 class="scene-heading" id="ep3-heading">{rooms.epilog3.title}</h2>
+        <p class="scene-intro">{rooms.epilog3.intro}</p>
+
+        <div class="panel">
+          <p class="game-msg" id="ep3-deck-summary" aria-live="polite"></p>
+          <p class="game-msg">«Og når du savner nettene, lærling: Kabinettet står i dagslys på Årvoll gård. Der heter det <strong>Tryllemuseet</strong> — og dørene der trenger ingen full kortstokk.»</p>
+          <div class="btn-row">
+            <button class="btn-gold" id="ep3-poster">Last ned plakaten din 🖼️</button>
+            <a class="btn-gold" href="/besok">Besøk museet i dagslys →</a>
+            <button class="btn-quiet" id="ep3-deck">Se kortstokken 🃏</button>
+          </div>
+          <p class="game-msg game-msg--dim">Akt IV — med Studioet, Gatehjørnet, Vinterhagen og porten til det trettende rommet — venter bak neste natt.</p>
         </div>
       </section>
 
@@ -657,9 +949,9 @@ const payloadJson = JSON.stringify(payload).replace(/</g, '\\u003c')
           <h2 id="deck-heading">Kortstokken din</h2>
           <button class="btn-quiet" id="deck-close" aria-label="Lukk kortstokken">✕ Lukk</button>
         </div>
-        <p class="deck-sub">Tretten rom, fire kort i hvert — en hel kortstokk er nøkkelen til det trettende rommet. I Akt I og II kan du samle de seks første verdiene.</p>
+        <p class="deck-sub">Tretten rom, fire kort i hvert — en hel kortstokk er nøkkelen til det trettende rommet. I Akt I–III kan du samle de ni første verdiene.</p>
         <div id="deck-grid"></div>
-        <p class="deck-ghost">7–13 · konger inkludert — venter i Akt III og utover …</p>
+        <p class="deck-ghost">10–13 · konger inkludert — venter i Akt IV og finalen …</p>
         <div class="btn-row">
           <button class="btn-gold" id="poster-download" hidden>Last ned plakaten din 🖼️</button>
         </div>
@@ -702,13 +994,18 @@ const payloadJson = JSON.stringify(payload).replace(/</g, '\\u003c')
       4: { label: 'Fire', face: '4', room: 'Biblioteket' },
       5: { label: 'Fem',  face: '5', room: 'Salongen' },
       6: { label: 'Seks', face: '6', room: 'Seansen' },
+      7: { label: 'Sju',  face: '7', room: 'Teateret' },
+      8: { label: 'Åtte', face: '8', room: 'Kinoen' },
+      9: { label: 'Ni',   face: '9', room: 'Verkstedet' },
     }
-    const DECK_VALUES = [1, 2, 3, 4, 5, 6]
+    const DECK_VALUES = [1, 2, 3, 4, 5, 6, 7, 8, 9]
     const TOTAL_ACT1 = 12
-    const TOTAL_DECK = 24
+    const TOTAL_ACT2 = 24
+    const TOTAL_DECK = 36
 
     type Stage = 'brevet' | 'foajeen' | 'sandrommet' | 'speilgangen' | 'markedsplassen' | 'epilog'
       | 'galleriet' | 'biblioteket' | 'oyet' | 'salongen' | 'seansen' | 'epilog2'
+      | 'frievalget' | 'teateret' | 'kinoen' | 'lerretet' | 'verkstedet' | 'epilog3'
     interface SaveState {
       v: number
       stageName: string
@@ -803,6 +1100,12 @@ const payloadJson = JSON.stringify(payload).replace(/</g, '\\u003c')
       salongen:       $('sc-salongen'),
       seansen:        $('sc-seansen'),
       epilog2:        $('sc-epilog2'),
+      frievalget:     $('sc-frievalget'),
+      teateret:       $('sc-teateret'),
+      kinoen:         $('sc-kinoen'),
+      lerretet:       $('sc-lerretet'),
+      verkstedet:     $('sc-verkstedet'),
+      epilog3:        $('sc-epilog3'),
     }
 
     function goTo(stage: Stage) {
@@ -812,6 +1115,7 @@ const payloadJson = JSON.stringify(payload).replace(/</g, '\\u003c')
       window.scrollTo({ top: 0, behavior: reducedMotion ? 'auto' : 'smooth' })
       if (stage === 'epilog') renderEpilog()
       if (stage === 'epilog2') renderEpilog2()
+      if (stage === 'epilog3') renderEpilog3()
     }
 
     // ── Kortstokken (modal) ──────────────────────────────────────
@@ -835,13 +1139,13 @@ const payloadJson = JSON.stringify(payload).replace(/</g, '\\u003c')
           } else {
             const empty = document.createElement('span')
             empty.className = 'pcard pcard--empty'
-            const locked = (value === 5 || value === 6) && suit === 'ruter'
+            const locked = (value === 7 || value === 8 || value === 9) && suit === 'ruter'
             empty.setAttribute('role', 'img')
             empty.setAttribute('aria-label', locked
-              ? `${VALUES[value].label} i ruter — kommer i Akt III`
+              ? `${VALUES[value].label} i ruter — kommer i Akt IV`
               : `Mangler: ${VALUES[value].label} i ${SUITS[suit as Suit].name}. ${SUITS[suit as Suit].earn}.`)
             empty.innerHTML = `<span class="pcard-face">?</span><span class="pcard-suit">${SUITS[suit as Suit].sym}</span>`
-            empty.title = locked ? 'Kommer i Akt III' : SUITS[suit as Suit].earn
+            empty.title = locked ? 'Kommer i Akt IV' : SUITS[suit as Suit].earn
             slots.appendChild(empty)
           }
         }
@@ -886,11 +1190,15 @@ const payloadJson = JSON.stringify(payload).replace(/</g, '\\u003c')
       </svg>`
     }
     function downloadPoster() {
+      const inActThree = state.cards.some(c => parseInt(c) >= 7)
+        || ['frievalget', 'teateret', 'kinoen', 'lerretet', 'verkstedet', 'epilog3'].includes(state.stage)
       const inActTwo = state.cards.some(c => parseInt(c) >= 4)
         || ['galleriet', 'biblioteket', 'oyet', 'salongen', 'seansen', 'epilog2'].includes(state.stage)
-      const subtitle = inActTwo
-        ? '— akt I–II: nettene bak forhenget —'
-        : '— akt I: natten da porten gikk opp —'
+      const subtitle = inActThree
+        ? '— akt I–III: nettene som aldri tok slutt —'
+        : inActTwo
+          ? '— akt I–II: nettene bak forhenget —'
+          : '— akt I: natten da porten gikk opp —'
       const svg = posterSvg(state.stageName || 'Den navnløse', subtitle)
       const blob = new Blob([svg], { type: 'image/svg+xml;charset=utf-8' })
       const url = URL.createObjectURL(blob)
@@ -1707,23 +2015,501 @@ const payloadJson = JSON.stringify(payload).replace(/</g, '\\u003c')
 
     // ═══ EPILOG AKT II ═══════════════════════════════════════════
     function renderEpilog2() {
-      const n = state.cards.length
+      const n = state.cards.filter(c => parseInt(c) <= 6).length
       const gilded = state.gilded.length
-      let txt = `Etter to netter i Kabinettet har du ${n} av ${TOTAL_DECK} kort i kortstokken`
+      let txt = `Etter to netter i Kabinettet har du ${n} av ${TOTAL_ACT2} kort i kortstokken`
       txt += gilded > 0 ? ` — ${gilded === 1 ? 'ett av dem gylt' : `${gilded} av dem gylte`}. ` : '. '
-      txt += n >= TOTAL_DECK - 2
+      txt += n >= TOTAL_ACT2 - 2
         ? 'Direktøren nikker langsomt: «En samler. Det lover godt for det trettende rommet.»'
         : 'Rommene husker deg — det som ennå mangler, kan finnes en annen natt.'
       $('ep2-deck-summary').textContent = txt
     }
     $('ep2-poster').addEventListener('click', downloadPoster)
     $('ep2-deck').addEventListener('click', () => { renderDeck(); deckModal.showModal() })
+    $('ep2-act3').addEventListener('click', () => goTo('frievalget'))
+
+    // ═══ DET FRIE VALGET (SPEILGANGEN: EQUIVOQUE) ════════════════
+    const FV_ITEMS = [
+      { key: 'lykt',   icon: '🏮', name: 'Lykten' },
+      { key: 'speil',  icon: '🪞', name: 'Speilet' },
+      { key: 'kort',   icon: '🃏', name: 'Kortstokken' },
+    ]
+    const FV_TARGET = 'speil'
+    let fvPhase: 'pickTwo' | 'pickOne' | 'done' = 'pickTwo'
+    let fvPicked: string[] = []
+    let fvRemaining = FV_ITEMS.map(i => i.key)
+    let fvReceipts: string[] = []
+
+    function fvName(key: string) { return FV_ITEMS.find(i => i.key === key)!.name }
+
+    function fvRender() {
+      const box = $('fv-items')
+      box.innerHTML = ''
+      for (const item of FV_ITEMS) {
+        if (!fvRemaining.includes(item.key)) continue
+        const btn = document.createElement('button')
+        btn.className = 'fv-item' + (fvPicked.includes(item.key) ? ' fv-item--picked' : '')
+        btn.innerHTML = `<span class="fv-icon" aria-hidden="true">${item.icon}</span><span>${item.name}</span>`
+        btn.disabled = fvPhase === 'done'
+        btn.addEventListener('click', () => fvPick(item.key))
+        box.appendChild(btn)
+      }
+    }
+
+    function fvLogLine(text: string) {
+      const li = document.createElement('li')
+      li.textContent = text
+      $('fv-log').appendChild(li)
+    }
+
+    async function fvPick(key: string) {
+      if (fvPhase === 'pickTwo') {
+        if (fvPicked.includes(key)) {
+          fvPicked = fvPicked.filter(k => k !== key)
+          fvRender()
+          return
+        }
+        fvPicked.push(key)
+        fvRender()
+        if (fvPicked.length < 2) return
+        const keepPair = fvPicked.includes(FV_TARGET)
+        const other = FV_ITEMS.map(i => i.key).find(k => !fvPicked.includes(k))!
+        if (keepPair) {
+          fvLogLine(`Du pekte på ${fvName(fvPicked[0]).toLowerCase()} og ${fvName(fvPicked[1]).toLowerCase()}. «De to beholder vi,» sier Direktøren — og rydder bort ${fvName(other).toLowerCase()}.`)
+          fvReceipts.push(`Paret ditt inneholdt speilet → valget ble tolket som «behold».`)
+          fvRemaining = [...fvPicked]
+        } else {
+          fvLogLine(`Du pekte på ${fvName(fvPicked[0]).toLowerCase()} og ${fvName(fvPicked[1]).toLowerCase()}. «De to rydder vi bort,» sier Direktøren.`)
+          fvReceipts.push(`Paret ditt inneholdt ikke speilet → valget ble tolket som «fjern».`)
+          fvRemaining = [other]
+        }
+        fvPicked = []
+        await sleep(300)
+        if (fvRemaining.length === 2) {
+          fvPhase = 'pickOne'
+          $('fv-msg').innerHTML = 'To gjenstander igjen. <strong>Pek på én av dem</strong> — fortsatt helt fritt.'
+        } else {
+          fvFinish()
+        }
+        fvRender()
+      } else if (fvPhase === 'pickOne') {
+        if (key === FV_TARGET) {
+          fvLogLine(`Du pekte på speilet. «Det beholder du,» sier Direktøren — og rydder bort det siste.`)
+          fvReceipts.push(`Du pekte på speilet → valget ble tolket som «behold».`)
+          fvRemaining = [FV_TARGET]
+        } else {
+          fvLogLine(`Du pekte på ${fvName(key).toLowerCase()}. «Det rydder vi bort,» sier Direktøren.`)
+          fvReceipts.push(`Du pekte på noe annet enn speilet → valget ble tolket som «fjern».`)
+          fvRemaining = [FV_TARGET]
+        }
+        fvFinish()
+        fvRender()
+      }
+    }
+
+    function fvFinish() {
+      fvPhase = 'done'
+      $('fv-msg').textContent = 'Én gjenstand står igjen på bordet: speilet.'
+      $('fv-envelope').innerHTML = '✉️ <em>Direktøren bryter seglet og leser høyt: «Lærlingen velger fritt — og ender med speilet. Slik måtte det gå.»</em>'
+      $('fv-verdict').textContent = 'Spådommen stemmer. Selvfølgelig gjør den det.'
+      awardCard(5, 'ruter', 'Illusjonskortet fra Det frie valget')
+      $('fv-result').hidden = false
+    }
+
+    $('fv-reveal-btn').addEventListener('click', () => {
+      const list = $('fv-receipts')
+      list.innerHTML = ''
+      for (const r of fvReceipts) {
+        const li = document.createElement('li')
+        li.textContent = r
+        list.appendChild(li)
+      }
+      renderFacts('fv-facts', 'frievalget')
+      $('fv-reveal').hidden = false
+    })
+    $('fv-continue').addEventListener('click', () => goTo('teateret'))
+
+    // ═══ TEATERET ════════════════════════════════════════════════
+    interface TeAction { key: string; label: string; step?: number; wrongText?: string }
+    const TE_ACTIONS: TeAction[] = [
+      { key: 'lokk',   label: 'Dytt lokket med all kraft',
+        wrongText: 'Låst utenfra — selvsagt. Hele salen så hengelåsen klikke.' },
+      { key: 'rop',    label: 'Rop om hjelp',
+        wrongText: 'Orkesteret spiller bare høyere. Ingen redder en utbryter.' },
+      { key: 'som',    label: 'Kjenn langs sømmen i kistens kortside', step: 1 },
+      { key: 'knott',  label: 'Vri knotten en halv omdreining', step: 2 },
+      { key: 'panel',  label: 'Skyv panelet til side og smyg deg ut', step: 3 },
+      { key: 'morse',  label: 'Bank SOS i bunnplaten',
+        wrongText: 'Morse imponerer ingen når du er alene om å høre det.' },
+    ]
+    const TE_STEP_TEXT: Record<number, string> = {
+      1: 'Fingrene finner en forsenket knott i sømmen — en som ikke synes fra salen.',
+      2: 'Noe gir etter med et mykt klikk: sidepanelet er løst.',
+      3: 'Panelet glir til side. Du ruller ut i kulissene, bak kisten — usett.',
+    }
+    let tePath = state.path['teateret'] || ''
+    let teHintsUsed = 0
+    let teWrong = 0
+    let teStep = 0
+    let teDone = false
+
+    const TE_HINTS = [
+      'Effekten selges i kveld — metoden ble kjøpt i går, i verkstedet.',
+      'Ikke lokket. Publikum ser lokket. Tenk på det de ikke ser.',
+      'Kortsiden. Sømmen. En knott som ikke synes fra salen.',
+    ]
+    wireHints('te-hint-btn', 'te-hints', TE_HINTS, () => { teHintsUsed++ })
+
+    function teRender() {
+      const box = $('te-actions')
+      box.innerHTML = ''
+      for (const a of TE_ACTIONS) {
+        const btn = document.createElement('button')
+        btn.className = 'mp-cup'
+        btn.textContent = a.label
+        btn.disabled = teDone || (a.step !== undefined && a.step <= teStep)
+        btn.addEventListener('click', () => teAct(a))
+        box.appendChild(btn)
+      }
+    }
+
+    function teAct(a: TeAction) {
+      if (teDone) return
+      const log = $('te-log')
+      const li = document.createElement('li')
+      if (a.step === undefined) {
+        teWrong++
+        li.textContent = a.wrongText!
+        log.appendChild(li)
+        $('te-msg').textContent = 'Publikum teller videre. Prøv noe annet.'
+      } else if (a.step === teStep + 1) {
+        teStep = a.step
+        li.textContent = TE_STEP_TEXT[a.step]
+        log.appendChild(li)
+        $('te-msg').textContent = ''
+        if (teStep === 3) {
+          teDone = true
+          const gild = tePath === 'mester' && teHintsUsed === 0 && teWrong === 0
+          awardCard(7, 'spar', 'Sigillet fra Teateret')
+          if (gild && !state.gilded.includes('7-spar')) {
+            state.gilded.push('7-spar')
+            save()
+          }
+          renderFacts('te-facts', 'teateret')
+          $('te-solved').hidden = false
+          $('te-solved').scrollIntoView({ behavior: reducedMotion ? 'auto' : 'smooth', block: 'nearest' })
+        }
+      } else {
+        teWrong++
+        li.textContent = a.step === 2
+          ? 'Hvilken knott? Du famler i blinde mot glatt treverk.'
+          : 'Panelet sitter bom fast. Noe må løsne først.'
+        log.appendChild(li)
+      }
+      teRender()
+    }
+
+    document.querySelectorAll<HTMLButtonElement>('.path-btn[data-scene="te"]').forEach(btn =>
+      btn.addEventListener('click', () => {
+        tePath = btn.dataset.path || 'laerling'
+        state.path['teateret'] = tePath
+        save()
+        $('te-pathchoice').hidden = true
+        $('te-game').hidden = false
+        $('te-pretext').textContent = tePath === 'laerling'
+          ? 'Direktørens stemme, tett ved øret ditt enda han umulig kan være der: «En utbryter går aldri inn i noe han ikke kjenner. Kisten ble gjort klar for deg — let etter det som ble gjort klart.»'
+          : 'Mørke. Varme. Applausen utenfor stilner til taktfast klapping.'
+        teRender()
+      })
+    )
+
+    $('te-ticket').addEventListener('click', () => {
+      $('te-ticket').hidden = true
+      awardCard(7, 'klover', 'Kuriositeten: teaterbilletten i kistens fôr')
+    })
+
+    $('te-complete').addEventListener('click', () => {
+      awardCard(7, 'hjerter', 'Plakatkortet fra Teateret er trykket')
+      goTo('kinoen')
+    })
+
+    // ═══ KINOEN ══════════════════════════════════════════════════
+    const KI_STRIPS = [
+      'Damen tar plass i stolen',
+      'Kledet bres over henne',
+      'Kledet rives bort — stolen er tom',
+      'Magikeren maner — et skjelett sitter i stolen!',
+      'Damen er tilbake, og bukker mot salen',
+    ]
+    const KI_SHUFFLE = [2, 4, 0, 3, 1]  // fixed scramble of strip indices
+    let kiPath = state.path['kinoen'] || ''
+    let kiHintsUsed = 0
+    let kiWrong = 0
+    let kiNext = 0
+    let kiPhase = 1
+
+    const KI_HINTS = [
+      'Historien er enkel: en dame, et klede, en stol. Begynn der.',
+      'Det umulige skjer aldri mens du ser det. Det skjer mellom to bilder.',
+      'Kameraet stanset første gang i det kledet lå over stolen.',
+    ]
+    wireHints('ki-hint-btn', 'ki-hints', KI_HINTS, () => { kiHintsUsed++ })
+
+    function kiRenderStrips() {
+      const box = $('ki-strips')
+      box.innerHTML = ''
+      for (const idx of KI_SHUFFLE) {
+        const btn = document.createElement('button')
+        btn.className = 'ki-strip'
+        btn.innerHTML = `<span class="ki-frame" aria-hidden="true">🎞️</span><span>${KI_STRIPS[idx]}</span><span class="ki-order">${idx < kiNext ? idx + 1 : ''}</span>`
+        btn.disabled = idx < kiNext
+        if (idx < kiNext) btn.classList.add('ki-strip--placed')
+        btn.addEventListener('click', () => {
+          if (idx === kiNext) {
+            kiNext++
+            $('ki-msg').textContent = kiNext === KI_STRIPS.length ? '' : 'Riktig — filmen vokser.'
+            kiRenderStrips()
+            if (kiNext === KI_STRIPS.length) kiStartPhase2()
+          } else {
+            kiWrong++
+            $('ki-msg').textContent = 'Prosjektoren hakker: den biten hører ikke hjemme der.'
+          }
+        })
+        box.appendChild(btn)
+      }
+    }
+
+    function kiStartPhase2() {
+      kiPhase = 2
+      $('ki-phase1').hidden = true
+      const gaps = $('ki-gaps')
+      gaps.innerHTML = ''
+      for (let i = 0; i < KI_STRIPS.length - 1; i++) {
+        const btn = document.createElement('button')
+        btn.className = 'mp-cup'
+        btn.textContent = `Mellom ${i + 1} og ${i + 2}`
+        btn.addEventListener('click', () => {
+          if (i === 1) {
+            document.querySelectorAll<HTMLButtonElement>('#ki-gaps .mp-cup').forEach(b => { b.disabled = true })
+            $('ki-msg').textContent = 'Riktig: kledet lå over stolen, kameraet stanset — og damen gikk rolig ut av bildet.'
+            const gild = kiPath === 'mester' && kiHintsUsed === 0 && kiWrong === 0
+            awardCard(8, 'spar', 'Sigillet fra Kinoen')
+            if (gild && !state.gilded.includes('8-spar')) {
+              state.gilded.push('8-spar')
+              save()
+            }
+            renderFacts('ki-facts', 'kinoen')
+            $('ki-solved').hidden = false
+            $('ki-solved').scrollIntoView({ behavior: reducedMotion ? 'auto' : 'smooth', block: 'nearest' })
+          } else {
+            kiWrong++
+            $('ki-msg').textContent = 'Direktøren rister på hodet: «Der skjer det noe i bildet. Klippet gjemmer seg der ingenting ser ut til å skje.»'
+          }
+        })
+        gaps.appendChild(btn)
+      }
+      $('ki-phase2').hidden = false
+    }
+
+    document.querySelectorAll<HTMLButtonElement>('.path-btn[data-scene="ki"]').forEach(btn =>
+      btn.addEventListener('click', () => {
+        kiPath = btn.dataset.path || 'laerling'
+        state.path['kinoen'] = kiPath
+        save()
+        $('ki-pathchoice').hidden = true
+        $('ki-game').hidden = false
+        $('ki-pretext').textContent = kiPath === 'laerling'
+          ? 'Direktøren hvisker: «Fortell historien slik salen skal se den: damen kommer, damen forsvinner, noe umulig — og så triumfen.»'
+          : 'Prosjektoren surrer utålmodig. Filmbitene ligger som de falt.'
+        kiRenderStrips()
+      })
+    )
+
+    $('ki-clip').addEventListener('click', () => {
+      $('ki-clip').hidden = true
+      awardCard(8, 'klover', 'Kuriositeten: filmbiten fra klipperommet')
+    })
+
+    $('ki-complete').addEventListener('click', () => {
+      awardCard(8, 'hjerter', 'Plakatkortet fra Kinoen er trykket')
+      goTo('lerretet')
+    })
+
+    // ═══ ÅNDEN PÅ LERRETET (SPEILGANGEN: ETTERBILDE) ═════════════
+    // NB: the stare needs real seconds regardless of prefers-reduced-motion —
+    // this is exposure time for the eyes, not animation.
+    const LE_STARE_MS = 12000
+    let leLit = false
+
+    function leSetFigure(on: boolean) {
+      ;(document.getElementById('le-figure') as unknown as SVGGElement).style.display = on ? '' : 'none'
+      ;(document.getElementById('le-blank-text') as unknown as SVGTextElement).style.display = on ? 'none' : ''
+    }
+
+    $('le-light').addEventListener('click', () => {
+      if (leLit) return
+      leLit = true
+      ;($('le-light') as HTMLButtonElement).disabled = true
+      leSetFigure(true)
+      let left = LE_STARE_MS / 1000
+      $('le-msg').textContent = `Stirr på den hvite prikken … ${left}`
+      const timer = window.setInterval(() => {
+        left--
+        if (left > 0) {
+          $('le-msg').textContent = `Stirr på den hvite prikken … ${left}`
+        } else {
+          window.clearInterval(timer)
+          leSetFigure(false)
+          leLit = false
+          ;($('le-light') as HTMLButtonElement).disabled = false
+          ;($('le-light') as HTMLButtonElement).textContent = 'Tenn lampen igjen 🕯️'
+          $('le-msg').textContent = 'Lampen slukker. Se på det tomme lerretet — hva ser du?'
+          $('le-after').hidden = false
+        }
+      }, 1000)
+    })
+
+    function leFinish(sawIt: boolean) {
+      $('le-after').hidden = true
+      $('le-controls').hidden = true
+      $('le-msg').textContent = sawIt
+        ? 'Direktøren smiler i mørket. «Der. Kabinettets billigste spøkelse — og det bor i deg.»'
+        : 'Direktøren nikker. «Noen øyne er mer lettlurte enn andre. Her er det du ville sett:»'
+      awardCard(6, 'ruter', 'Illusjonskortet fra Ånden på lerretet')
+      renderFacts('le-facts', 'lerretet')
+      $('le-reveal').hidden = false
+      ;($('le-continue') as HTMLButtonElement).hidden = false
+    }
+
+    $('le-saw').addEventListener('click', () => leFinish(true))
+    let leNothingCount = 0
+    $('le-nothing').addEventListener('click', () => {
+      leNothingCount++
+      if (leNothingCount < 2) {
+        $('le-after').hidden = true
+        $('le-msg').textContent = 'Direktøren: «Tenn lampen igjen — og hold blikket helt, helt stille på prikken.»'
+      } else {
+        leFinish(false)
+      }
+    })
+    $('le-skip').addEventListener('click', () => leFinish(false))
+    $('le-continue').addEventListener('click', () => goTo('verkstedet'))
+
+    // ═══ VERKSTEDET ══════════════════════════════════════════════
+    interface VsPart { correct: boolean; laerling: string; mester: string }
+    const VS_PARTS: VsPart[] = [
+      { correct: true,  laerling: 'En s-formet stålarm («svanehals») fra en søyle bak sceneteppet',
+        mester: 'Stål som svinger seg dit ingen ser' },
+      { correct: false, laerling: 'Tynne tråder fra snorloftet',
+        mester: 'Det som henger, henger i noe' },
+      { correct: true,  laerling: 'En tung motvekt skjult under scenegulvet',
+        mester: 'Det som svever, hviler på det som ligger' },
+      { correct: false, laerling: 'En kraftig magnet under scenen',
+        mester: 'Jernvilje under gulvplankene' },
+      { correct: true,  laerling: 'Et draperi i samme farge som bakteppet, som skjuler armen',
+        mester: 'Fløyel mot fløyel: intet å se' },
+      { correct: false, laerling: 'Et vinklet speil foran damen',
+        mester: 'Salen ser det salen bør se' },
+    ]
+    let vsPath = state.path['verkstedet'] || ''
+    let vsHintsUsed = 0
+    let vsWrong = 0
+    let vsSolved = false
+
+    const VS_HINTS = [
+      'Les bestillingen igjen. Hvert krav dreper én løsning.',
+      'Ringen dreper trådene. «Salen ser henne hele tiden» dreper speilet — og en magnet som bærer en dame, ville låst hvert verktøy i huset.',
+      'Armen som bærer, vekten som holder, stoffet som skjuler.',
+    ]
+    wireHints('vs-hint-btn', 'vs-hints', VS_HINTS, () => { vsHintsUsed++ })
+
+    function vsRender() {
+      const list = $('vs-parts')
+      list.innerHTML = ''
+      VS_PARTS.forEach((p, i) => {
+        const li = document.createElement('li')
+        const label = document.createElement('label')
+        const box = document.createElement('input')
+        box.type = 'checkbox'
+        box.value = String(i)
+        label.appendChild(box)
+        label.appendChild(document.createTextNode(' ' + (vsPath === 'mester' ? p.mester : p.laerling)))
+        li.appendChild(label)
+        list.appendChild(li)
+      })
+    }
+
+    document.querySelectorAll<HTMLButtonElement>('.path-btn[data-scene="vs"]').forEach(btn =>
+      btn.addEventListener('click', () => {
+        vsPath = btn.dataset.path || 'laerling'
+        state.path['verkstedet'] = vsPath
+        save()
+        $('vs-pathchoice').hidden = true
+        $('vs-game').hidden = false
+        vsRender()
+      })
+    )
+
+    $('vs-submit').addEventListener('click', () => {
+      if (vsSolved) return
+      const checked = Array.from(document.querySelectorAll<HTMLInputElement>('#vs-parts input:checked')).map(b => Number(b.value))
+      if (checked.length !== 3) {
+        $('vs-msg').textContent = 'Illusjonen trenger nøyaktig tre deler — verken flere eller færre.'
+        return
+      }
+      const correct = checked.filter(i => VS_PARTS[i].correct).length
+      if (correct === 3) {
+        vsSolved = true
+        document.querySelectorAll<HTMLInputElement>('#vs-parts input').forEach(b => { b.disabled = true })
+        ;($('vs-submit') as HTMLButtonElement).disabled = true
+        $('vs-msg').textContent = 'Delene finner hverandre som om de har ventet: armen, vekten, draperiet. På prøvescenen svever damen.'
+        const gild = vsPath === 'mester' && vsHintsUsed === 0 && vsWrong === 0
+        awardCard(9, 'spar', 'Sigillet fra Verkstedet')
+        if (gild && !state.gilded.includes('9-spar')) {
+          state.gilded.push('9-spar')
+          save()
+        }
+        renderFacts('vs-facts', 'verkstedet')
+        $('vs-solved').hidden = false
+        $('vs-solved').scrollIntoView({ behavior: reducedMotion ? 'auto' : 'smooth', block: 'nearest' })
+      } else {
+        vsWrong++
+        $('vs-msg').textContent = vsPath === 'laerling'
+          ? `${correct} av tre deler stemmer med bestillingen. Sjekk kravene — ringen, den åpne scenen, blikket som aldri slipper henne.`
+          : '«Bygget faller sammen på generalprøven,» sier Direktøren tørt. Prøv igjen.'
+      }
+    })
+
+    $('vs-screw').addEventListener('click', () => {
+      $('vs-screw').hidden = true
+      awardCard(9, 'klover', 'Kuriositeten: messingskruen fra Sfinks-bordet')
+    })
+
+    $('vs-complete').addEventListener('click', () => {
+      awardCard(9, 'hjerter', 'Plakatkortet fra Verkstedet er trykket')
+      goTo('epilog3')
+    })
+
+    // ═══ EPILOG AKT III ══════════════════════════════════════════
+    function renderEpilog3() {
+      const n = state.cards.length
+      const gilded = state.gilded.length
+      let txt = `Etter tre netter i Kabinettet har du ${n} av ${TOTAL_DECK} kort i kortstokken`
+      txt += gilded > 0 ? ` — ${gilded === 1 ? 'ett av dem gylt' : `${gilded} av dem gylte`}. ` : '. '
+      txt += n >= TOTAL_DECK - 3
+        ? 'Direktøren stryker over kortene: «Tre netter — og en nesten full stokk. Det trettende rommet har begynt å lytte.»'
+        : 'Rommene husker deg — det som ennå mangler, kan finnes en annen natt.'
+      $('ep3-deck-summary').textContent = txt
+    }
+    $('ep3-poster').addEventListener('click', downloadPoster)
+    $('ep3-deck').addEventListener('click', () => { renderDeck(); deckModal.showModal() })
 
     // ── Init ─────────────────────────────────────────────────────
     updateDeckCount()
     sgRenderStep1()
     gaRender()
     seRender()
+    fvRender()
     if (state.stage !== 'brevet') {
       // Resume: rebuild the small bits of scene state the stages need
       if (state.stageName) $('fj-book-line').textContent = `~ ${state.stageName} ~`
@@ -1748,6 +2534,18 @@ const payloadJson = JSON.stringify(payload).replace(/</g, '\\u003c')
       if (state.stage === 'seansen') {
         $('se-pathchoice').hidden = false
         $('se-game').hidden = true
+      }
+      if (state.stage === 'teateret') {
+        $('te-pathchoice').hidden = false
+        $('te-game').hidden = true
+      }
+      if (state.stage === 'kinoen') {
+        $('ki-pathchoice').hidden = false
+        $('ki-game').hidden = true
+      }
+      if (state.stage === 'verkstedet') {
+        $('vs-pathchoice').hidden = false
+        $('vs-game').hidden = true
       }
       toast(`Velkommen tilbake${state.stageName ? ', ' + state.stageName : ''} — Kabinettet husker deg. 🕯️`)
     } else {
@@ -1860,9 +2658,10 @@ const payloadJson = JSON.stringify(payload).replace(/</g, '\\u003c')
   /* ── MARKEDSPLASSEN ────────────────────────────────────────────── */
   .verse { font-family: var(--font-body); font-style: italic; font-size: 1.05rem; line-height: 1.8; border-left: 3px solid var(--gold); padding-left: 1.1rem; margin: 1.25rem 0; }
   .mp-cups { display: flex; gap: 0.6rem; flex-wrap: wrap; margin: 0.75rem 0; }
-  .mp-cup { font-family: var(--font-ui); font-size: 0.95rem; font-weight: 700; color: var(--cream); background: #ffffff14; border: 1.5px solid var(--gold-dark); border-radius: 8px; padding: 0.85rem 1.3rem; transition: background 150ms, border-color 150ms; }
-  .mp-cup:not(:disabled):hover { background: #ffffff26; border-color: var(--gold); }
-  .mp-cup:disabled { opacity: 0.6; cursor: default; }
+  /* :global — Teateret and Kinoen create .mp-cup buttons at runtime */
+  :global(.mp-cup) { font-family: var(--font-ui); font-size: 0.95rem; font-weight: 700; color: var(--cream); background: #ffffff14; border: 1.5px solid var(--gold-dark); border-radius: 8px; padding: 0.85rem 1.3rem; transition: background 150ms, border-color 150ms; }
+  :global(.mp-cup:not(:disabled):hover) { background: #ffffff26; border-color: var(--gold); }
+  :global(.mp-cup:disabled) { opacity: 0.6; cursor: default; }
 
   /* ── GALLERIET ─────────────────────────────────────────────────── */
   .gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 0.75rem; margin: 1rem 0; }
@@ -1899,6 +2698,30 @@ const payloadJson = JSON.stringify(payload).replace(/</g, '\\u003c')
   .se-list :global(label:hover) { background: #ffffff1e; }
   .se-list :global(input) { margin-top: 0.25rem; accent-color: var(--gold); flex-shrink: 0; }
   .se-list :global(input:disabled) { opacity: 0.7; }
+
+  /* ── DET FRIE VALGET ───────────────────────────────────────────── */
+  .fv-envelope { font-family: var(--font-ui); font-size: 0.95rem; background: var(--cream); color: var(--ink); border: 1px dashed var(--gold-dark); border-radius: 6px; padding: 0.7rem 1rem; margin-bottom: 1rem; }
+  .fv-items { display: flex; gap: 0.75rem; flex-wrap: wrap; margin: 1rem 0; }
+  :global(.fv-item) { display: flex; flex-direction: column; align-items: center; gap: 0.4rem; font-family: var(--font-ui); font-size: 0.9rem; font-weight: 600; color: var(--cream); background: #ffffff10; border: 1.5px solid var(--gold-dark); border-radius: 8px; padding: 1rem 1.4rem; transition: background 150ms, border-color 150ms; }
+  :global(.fv-item:not(:disabled):hover) { background: #ffffff22; border-color: var(--gold); }
+  :global(.fv-item--picked) { background: #ffffff26; border-color: var(--gold); box-shadow: 0 0 0 2px var(--gold); }
+  :global(.fv-icon) { font-size: 2rem; line-height: 1; }
+
+  /* ── TEATERET ──────────────────────────────────────────────────── */
+  .te-actions { display: grid; gap: 0.6rem; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); margin: 0.75rem 0; }
+  .te-actions :global(.mp-cup) { text-align: left; }
+
+  /* ── KINOEN ────────────────────────────────────────────────────── */
+  .ki-strips { display: flex; flex-direction: column; gap: 0.5rem; margin: 1rem 0; }
+  :global(.ki-strip) { display: flex; align-items: center; gap: 0.6rem; text-align: left; font-family: var(--font-ui); font-size: 0.92rem; line-height: 1.45; color: var(--cream); background: #ffffff10; border: 1.5px solid var(--gold-dark); border-radius: 8px; padding: 0.7rem 0.9rem; transition: background 150ms, border-color 150ms; }
+  :global(.ki-strip:not(:disabled):hover) { background: #ffffff22; border-color: var(--gold); }
+  :global(.ki-strip--placed) { opacity: 0.55; border-style: dashed; cursor: default; }
+  :global(.ki-frame) { font-size: 1.2rem; line-height: 1; }
+  :global(.ki-order) { margin-left: auto; font-weight: 700; color: var(--gold); }
+
+  /* ── LERRETET ──────────────────────────────────────────────────── */
+  .le-stage { background: #241019; border: 1px solid var(--gold-dark); border-radius: 8px; margin: 0.9rem 0; overflow: hidden; }
+  .le-stage svg { display: block; width: 100%; height: auto; }
 
   /* ── KORTSTOKK-MODAL ───────────────────────────────────────────── */
   .deck-modal { background: var(--burgundy-dk); color: var(--cream); border: 1px solid var(--gold-dark); border-radius: 10px; padding: 1.75rem 1.5rem; max-width: 560px; width: calc(100% - 2rem); }

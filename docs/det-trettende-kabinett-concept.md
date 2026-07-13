@@ -1,6 +1,6 @@
 # Det trettende kabinett — Game Concept (Vision)
 
-> **Status: Acts I and II are implemented** and dormant behind the `isActive`
+> **Status: Acts I–III are implemented** and dormant behind the `isActive`
 > master switch (see "Implementation status" at the end). This document captures the
 > creative vision for a browser game on tryllemuseet.no, shaped through an
 > interview with the museum (July 2026). It is deliberately ambitious; the
@@ -237,12 +237,12 @@ Everything else — remaining rooms, curiosities, diploma, episode cadence —
 layers on without rework. Historical facts are QA'd by the museum before
 each act ships.
 
-## Implementation status — Acts I & II (July 2026)
+## Implementation status — Acts I–III (July 2026)
 
-Acts I and II are built and follow the Tryllequiz architecture. They ship
-dormant: `/det-trettende-kabinett` shows a "kommer snart" teaser (and no menu
-entry) until the **Kabinettet: Innstillinger** document's `isActive` switch
-is on.
+Acts I, II and III are built and follow the Tryllequiz architecture. They
+ship dormant: `/det-trettende-kabinett` shows a "kommer snart" teaser (and no
+menu entry) until the **Kabinettet: Innstillinger** document's `isActive`
+switch is on.
 
 **What's in Act I:**
 
@@ -283,6 +283,26 @@ forhenget"):
   `seansen`, `epilog2`).
 - The deck now spans values 1–6 (24 cards); ♦5 and ♦6 are visibly locked
   "Akt III". The shareable poster subtitle updates once Act II is reached.
+
+**What's in Act III** (continues from the Act II epilogue — "Opp trappen"):
+
+- **Det frie valget** (Speilgangen: equivoque) — a sealed prediction and
+  three objects; every "free" choice is interpreted after the fact, and the
+  reveal shows the receipts. Grants ♦5. → **Teateret** (the sevens; escape
+  acts) — locked inside the stage trunk, find the pre-rigged way out in the
+  right order. → **Kinoen** (the eights; Méliès) — reorder five film strips
+  from "Escamotage d'une dame", then point at where the stop-trick cut
+  hides. → **Ånden på lerretet** (Speilgangen: afterimage) — stare at the
+  lamp, see a ghost on the empty canvas; real 12-second exposure timer
+  (deliberately not shortened under reduced motion — it is eye physiology,
+  not animation), with a "tell me instead" path. Grants ♦6. →
+  **Verkstedet** (the nines; illusion builders) — pick the three blueprint
+  parts that satisfy the levitation commission's constraints. →
+  **Epilog III** (Act IV tease: Studioet, Gatehjørnet, Vinterhagen).
+- Same per-room machinery; new curiosities (teaterbilletten 🎟️, filmbiten
+  🎞️, messingskruen 🔩); Sanity room keys `frievalget`, `teateret`,
+  `kinoen`, `lerretet`, `verkstedet`, `epilog3`.
+- The deck spans values 1–9 (36 cards); ♦7–♦9 are visibly locked "Akt IV".
 
 **Editorial model:** puzzle logic and default copy live in the page code;
 `gameChapter` documents (one per room key) override intro texts and replace

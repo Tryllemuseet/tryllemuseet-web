@@ -17,6 +17,12 @@ const ROOM_KEYS = [
   { title: 'Salongen (automatene — 5)',           value: 'salongen' },
   { title: 'Seansen (spiritismen — 6)',           value: 'seansen' },
   { title: 'Epilog (Akt II)',                     value: 'epilog2' },
+  { title: 'Speilgangen: Det frie valget',        value: 'frievalget' },
+  { title: 'Teateret (utbryterne — 7)',           value: 'teateret' },
+  { title: 'Kinoen (Méliès — 8)',                 value: 'kinoen' },
+  { title: 'Speilgangen: Ånden på lerretet',      value: 'lerretet' },
+  { title: 'Verkstedet (illusjonsbyggerne — 9)',  value: 'verkstedet' },
+  { title: 'Epilog (Akt III)',                    value: 'epilog3' },
 ]
 
 export const gameChapter = defineType({
