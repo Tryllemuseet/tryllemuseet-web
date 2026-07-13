@@ -31,6 +31,8 @@ import { exhibitionStation } from './exhibitionStation'
 import { quizConfig }      from './quizConfig'
 import { quizTheme }       from './quizTheme'
 import { quizQuestion }    from './quizQuestion'
+import { gameConfig }      from './gameConfig'
+import { gameChapter }     from './gameChapter'
 import { trick }           from './trick'
 import { worldRecordTrick } from './worldRecordTrick'
 import { competitionResult } from './competitionResult'
@@ -68,6 +70,8 @@ export const schemaTypes = [
   quizConfig,
   quizTheme,
   quizQuestion,
+  gameConfig,
+  gameChapter,
   trick,
   worldRecordTrick,
   competitionResult,

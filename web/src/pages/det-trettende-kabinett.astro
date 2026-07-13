@@ -1,0 +1,1138 @@
+---
+// src/pages/det-trettende-kabinett.astro
+// "Det trettende kabinett" — Act I of the museum's story game.
+// Concept: docs/det-trettende-kabinett-concept.md. Puzzle logic lives here;
+// editors override room copy via the gameChapter documents in Sanity.
+import BaseLayout from '../layouts/BaseLayout.astro'
+import { getGameConfig, getAllGameChapters } from '../lib/sanity'
+import type { GameFact } from '../lib/sanity'
+
+const [config, chapters] = await Promise.all([
+  getGameConfig(),
+  getAllGameChapters(),
+])
+
+const isActive = config?.isActive === true
+
+const comingSoonTitle = config?.comingSoonTitle ?? 'Dørene er ennå låst …'
+const comingSoonText  = config?.comingSoonText  ??
+  'Det trettende kabinett åpner snart for sin neste lærling. Kom tilbake litt senere — eller besøk oss på Årvoll gård i mellomtiden!'
+
+const gameTitle = config?.title ?? 'Det trettende kabinett'
+const gameIntro = config?.intro ??
+  'Et tryllemuseum som bare finnes mellom midnatt og daggry. Direktøren tar opp én lærling per generasjon — og i natt står dørene åpne.'
+
+// Default room copy. A gameChapter document with the same key overrides
+// title/intro and replaces the facts list.
+interface RoomCopy { title: string; intro: string; facts: GameFact[] }
+
+const DEFAULT_ROOMS: Record<string, RoomCopy> = {
+  foajeen: {
+    title: 'Foajeen',
+    intro:
+      'Porten gir etter, og du står i en foajé av fløyel og gull. Ingen mennesker — bare en talerstol med en oppslått gjestebok, og en stemme som ser ut til å komme fra lysekronen: «Velkommen, lærling. Skriv deg inn. Kabinettet liker å vite hvem det lurer.»',
+    facts: [],
+  },
+  sandrommet: {
+    title: 'Sandrommet',
+    intro:
+      'Rommet lukter varm sand og gammelt krydder. På et lavt bord står tre kopper av leire, og bak bordet: en skikkelse i skygge som stokker dem med hender eldre enn skrift. «Begre og kuler,» hvisker Direktøren. «Verdens eldste triks. Følg kulen — om du klarer.»',
+    facts: [
+      {
+        text: 'Et rundt 4000 år gammelt gravmaleri fra Beni Hasan i Egypt er blitt tolket som verdens eldste avbildning av begre og kuler — selv om forskere fortsatt diskuterer hva maleriet egentlig viser.',
+      },
+      {
+        text: 'I Westcar-papyrusen fortelles det om magikeren Dedi, som skal ha opptrådt for farao Khufu for om lag 4500 år siden — historiens eldste navngitte tryllekunstner.',
+        linkUrl: '/utstillingen',
+        linkLabel: 'Utforsk utstillingen',
+      },
+    ],
+  },
+  speilgangen: {
+    title: 'Speilgangen',
+    intro:
+      'En smal gang kledd med speil i gullrammer. Ett av speilene er ikke et speil. «Her opptrer Kabinettet for deg,» sier Direktøren. «Du skal ikke løse noe. Du skal bare bli lurt.»',
+    facts: [
+      {
+        text: 'Hjernen din lagrer bare det du gir oppmerksomhet. Resten fyller den inn selv — og merker ikke engang at den gjør det.',
+      },
+    ],
+  },
+  markedsplassen: {
+    title: 'Markedsplassen',
+    intro:
+      'Du trer ut på en middelaldersk markedsplass — inne i museet, umulig nok. En gjøgler i fillete fløyel roper over mengden du ikke kan se, og tre krus står på tønna foran ham. «Taskenspillerne,» sier Direktøren. «De gjemte aldri noe i hendene. De gjemte det i ordene.»',
+    facts: [
+      {
+        text: 'Ordet «hokus pokus» dukker opp i england på 1600-tallet — trolig fra en gjøglers liksom-latin, laget for å høres magisk ut.',
+      },
+      {
+        text: 'Middelalderens taskenspillere balanserte på en farlig grense: det samme trikset kunne gi applaus på markedet og en anklage om trolldom i retten.',
+        linkUrl: '/tryllehistorie',
+        linkLabel: 'Dykk ned i tryllehistorien',
+      },
+    ],
+  },
+  epilog: {
+    title: 'Bak forhenget',
+    intro:
+      'Direktøren møter deg ved et tungt, rødt forheng. Bak det: en trapp videre opp i mørket. «Du har kommet lenger enn de fleste, lærling. Men Kabinettet har tretten rom, og natten er ikke lang nok for dem alle. Kom tilbake — dørene husker deg nå.»',
+    facts: [],
+  },
+}
+
+const overrides = new Map(chapters.map(c => [c.key, c]))
+const rooms: Record<string, RoomCopy> = {}
+for (const [key, def] of Object.entries(DEFAULT_ROOMS)) {
+  const o = overrides.get(key)
+  rooms[key] = {
+    title: o?.title || def.title,
+    intro: o?.intro || def.intro,
+    facts: o?.facts?.length ? o.facts : def.facts,
+  }
+}
+
+const payload = { rooms }
+// <-escape so a literal "</script>" in content can never break the page
+const payloadJson = JSON.stringify(payload).replace(/</g, '\\u003c')
+---
+
+<BaseLayout
+  title={`${gameTitle} — Tryllemuseet`}
+  description="Et tryllemuseum som bare finnes om natten. Løs gåtene, samle kortstokken og bli Direktørens lærling — Tryllemuseets historiespill."
+>
+
+  <section class="hero">
+    <div class="container">
+      <p class="section-label">Tryllemuseet presenterer</p>
+      <h1 class="display-title">{gameTitle}</h1>
+      <p class="hero-sub">{gameIntro}</p>
+    </div>
+  </section>
+
+  {!isActive ? (
+    <main class="container game-main">
+      <div class="coming-soon">
+        <span class="coming-soon-icon" aria-hidden="true">🚪🕯️</span>
+        <h2>{comingSoonTitle}</h2>
+        <p>{comingSoonText}</p>
+        <a href="/utstillingen" class="btn-gold">Utforsk utstillingen →</a>
+      </div>
+    </main>
+  ) : (
+    <main class="container game-main" id="game-root">
+      <noscript>
+        <div class="coming-soon">
+          <h2>Kabinettet trenger JavaScript</h2>
+          <p>Spillet er en interaktiv opplevelse og krever at JavaScript er slått på i nettleseren.</p>
+        </div>
+      </noscript>
+
+      <!-- ── SPILL-LINJE ─────────────────────────────────────────── -->
+      <div class="gamebar">
+        <button class="gamebar-btn" id="deck-btn" aria-haspopup="dialog">🃏 Kortstokken <span id="deck-count">0/12</span></button>
+        <button class="gamebar-btn gamebar-btn--quiet" id="restart-btn">Begynn på nytt</button>
+      </div>
+
+      <!-- ── SCENE: BREVET ───────────────────────────────────────── -->
+      <section class="scene scene--letter" id="sc-brevet" aria-labelledby="brevet-heading">
+        <div class="letter">
+          <p class="letter-seal" aria-hidden="true">🕯️</p>
+          <h2 id="brevet-heading" class="letter-heading">Et forseglet brev</h2>
+          <p class="letter-body">
+            «Til den som finner dette: Kabinettet åpner i natt, mellom midnatt og daggry.
+            Direktøren tar opp én lærling per generasjon. Tolv rom kjenner vi.
+            Det trettende har ingen lærling noensinne funnet.
+            Ta med deg et navn du tør å skrive, og bank tre ganger.»
+          </p>
+          <p class="letter-sign">— uleselig signatur, men blekket er ferskt</p>
+          <button class="btn-gold" id="btn-knock">Bank på porten 🚪</button>
+        </div>
+      </section>
+
+      <!-- ── SCENE: FOAJEEN ──────────────────────────────────────── -->
+      <section class="scene" id="sc-foajeen" hidden aria-labelledby="fj-heading">
+        <p class="scene-label">Første rom · Essene</p>
+        <h2 class="scene-heading" id="fj-heading">{rooms.foajeen.title}</h2>
+        <p class="scene-intro">{rooms.foajeen.intro}</p>
+
+        <div class="panel">
+          <div class="guestbook" id="fj-book" aria-live="polite">
+            <p class="guestbook-label">Gjesteboken</p>
+            <p class="guestbook-line" id="fj-book-line">&nbsp;</p>
+          </div>
+
+          <form id="fj-form">
+            <label class="field-label" for="fj-name">Scenenavnet ditt</label>
+            <div class="field-row">
+              <input type="text" id="fj-name" maxlength="24" autocomplete="off" placeholder="Den store …" required />
+              <button type="submit" class="btn-gold" id="fj-write">Skriv med fjærpennen ✒️</button>
+            </div>
+          </form>
+
+          <p class="game-msg" id="fj-msg" aria-live="polite" hidden></p>
+          <button class="btn-gold" id="fj-lookaway" hidden>Se bort et øyeblikk 👀</button>
+
+          <div id="fj-aces" hidden>
+            <p class="game-msg game-msg--good">Boken tar imot navnet ditt. Fra et sted bak talerstolen rekker Direktøren deg fire kort — <strong>essene</strong>. «Resten av stokken må du gjøre deg fortjent til.»</p>
+            <div class="card-row" id="fj-aces-cards" aria-label="Fire ess"></div>
+            <button class="btn-gold" id="fj-continue">Ta imot kortene og gå videre →</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── SCENE: SANDROMMET ───────────────────────────────────── -->
+      <section class="scene" id="sc-sandrommet" hidden aria-labelledby="sr-heading">
+        <p class="scene-label">Andre rom · Toerne</p>
+        <h2 class="scene-heading" id="sr-heading">{rooms.sandrommet.title}</h2>
+        <p class="scene-intro">{rooms.sandrommet.intro}</p>
+
+        <div class="panel" id="sr-pathchoice">
+          <p class="field-label">Velg din vei gjennom rommet</p>
+          <div class="path-row">
+            <button class="path-btn" data-scene="sr" data-path="laerling">
+              <strong>Lærlingens vei</strong>
+              <span>Rolig tempo og hjelp underveis</span>
+            </button>
+            <button class="path-btn" data-scene="sr" data-path="mester">
+              <strong>Mesterens vei</strong>
+              <span>Raskere stokking, ingen slingring — løser du gåten uten hint, gylles sparkortet ditt</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="panel" id="sr-game" hidden>
+          <p class="round-label" id="sr-round-label"></p>
+          <div class="cup-stage" id="sr-stage">
+            <button class="cup" data-cup="0" disabled><span class="cup-glyph" aria-hidden="true">🏺</span><span class="cup-ball" hidden aria-hidden="true">⚪</span><span class="sr-only-label">Kopp</span></button>
+            <button class="cup" data-cup="1" disabled><span class="cup-glyph" aria-hidden="true">🏺</span><span class="cup-ball" hidden aria-hidden="true">⚪</span><span class="sr-only-label">Kopp</span></button>
+            <button class="cup" data-cup="2" disabled><span class="cup-glyph" aria-hidden="true">🏺</span><span class="cup-ball" hidden aria-hidden="true">⚪</span><span class="sr-only-label">Kopp</span></button>
+            <button class="cup cup--hand" id="sr-hand" hidden disabled><span class="cup-glyph" aria-hidden="true">✋</span><span class="sr-only-label">Magikerens hånd</span></button>
+          </div>
+          <button class="curiosity" id="sr-scarab" hidden aria-label="En skarabé piler over bordet">🪲</button>
+          <p class="game-msg" id="sr-msg" aria-live="polite"></p>
+          <ol class="swap-log" id="sr-log" aria-live="polite" aria-label="Stokkeloggen"></ol>
+
+          <div class="hintbox">
+            <button class="btn-quiet" id="sr-hint-btn" hidden>Direktørens hvisken (hint) 🤫</button>
+            <ul class="hint-list" id="sr-hints"></ul>
+          </div>
+        </div>
+
+        <div class="panel panel--solved" id="sr-solved" hidden>
+          <p class="solved-title">✨ Gåten er løst</p>
+          <p class="principle">«Hånden er ikke raskere enn øyet, lærling. Den trenger ikke være det. <strong>Oppmerksomheten din styres</strong> — og mens du fulgte koppene, fulgte ingen magikeren.»</p>
+          <div class="facts" id="sr-facts"></div>
+          <button class="btn-gold" id="sr-complete">Fullfør rommet →</button>
+        </div>
+      </section>
+
+      <!-- ── SCENE: SPEILGANGEN ──────────────────────────────────── -->
+      <section class="scene" id="sc-speilgangen" hidden aria-labelledby="sg-heading">
+        <p class="scene-label">Mellomrommet · Ruter to</p>
+        <h2 class="scene-heading" id="sg-heading">{rooms.speilgangen.title}</h2>
+        <p class="scene-intro">{rooms.speilgangen.intro}</p>
+
+        <div class="panel">
+          <div id="sg-step1">
+            <p class="game-msg">Speilet viser seks kort. <strong>Velg ett av dem — bare i tankene.</strong> Ikke pek, ikke klikk. Stirr på kortet ditt til du er sikker på at du husker det.</p>
+            <div class="card-row card-row--big" id="sg-cards"></div>
+            <button class="btn-gold" id="sg-memorized">Jeg har memorert kortet mitt</button>
+          </div>
+
+          <div id="sg-step2" hidden>
+            <p class="game-msg game-msg--think" id="sg-thinking">Speilet dugger til … Kabinettet gransker tankene dine …</p>
+          </div>
+
+          <div id="sg-step3" hidden>
+            <p class="game-msg game-msg--good"><strong>Kortet ditt er borte.</strong> Speilet har fjernet nøyaktig det kortet du tenkte på:</p>
+            <div class="card-row card-row--big" id="sg-cards-after"></div>
+            <div class="btn-row">
+              <button class="btn-gold" id="sg-again">Utrolig — gjør det igjen 🔁</button>
+              <button class="btn-quiet" id="sg-reveal-btn">Løft forhenget: hvordan? 🎭</button>
+            </div>
+            <div class="reveal" id="sg-reveal" hidden>
+              <p>Se nøye: <strong>alle</strong> kortene ble byttet ut. Du husket bare ditt eget kort — så du merket ikke at de fem andre også forsvant. Hjernen din lagret det du ga oppmerksomhet, og fylte inn resten selv.</p>
+              <div class="reveal-compare" id="sg-compare"></div>
+              <div class="facts" id="sg-facts"></div>
+            </div>
+            <button class="btn-gold" id="sg-continue" hidden>Videre til neste rom →</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── SCENE: MARKEDSPLASSEN ───────────────────────────────── -->
+      <section class="scene" id="sc-markedsplassen" hidden aria-labelledby="mp-heading">
+        <p class="scene-label">Tredje rom · Treerne</p>
+        <h2 class="scene-heading" id="mp-heading">{rooms.markedsplassen.title}</h2>
+        <p class="scene-intro">{rooms.markedsplassen.intro}</p>
+
+        <div class="panel" id="mp-pathchoice">
+          <p class="field-label">Velg din vei gjennom rommet</p>
+          <div class="path-row">
+            <button class="path-btn" data-scene="mp" data-path="laerling">
+              <strong>Lærlingens vei</strong>
+              <span>Direktøren minner deg om hvor gjøglere gjemmer hemmeligheter</span>
+            </button>
+            <button class="path-btn" data-scene="mp" data-path="mester">
+              <strong>Mesterens vei</strong>
+              <span>Bare verset og ørene dine — løser du gåten uten hint, gylles sparkortet ditt</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="panel" id="mp-game" hidden>
+          <p class="game-msg" id="mp-pretext"></p>
+          <blockquote class="verse" id="mp-verse">
+            <p>Mine damer og herrer, kom nærmere nå!</p>
+            <p>Ingen har øyne som klarer å slå</p>
+            <p>Den flinkeste hånd på torget i dag.</p>
+            <p>Tre krus og en ert — et lurendreiers slag!</p>
+            <p>Ei skal dere tro det dere <em>ser</em>,</p>
+            <p>Nei — hør etter nøye, så vinner du mer!</p>
+          </blockquote>
+          <p class="game-msg">Under hvilket krus ligger erten? Gjøgleren har allerede røpet det — for den som legger merke til det.</p>
+          <div class="mp-cups">
+            <button class="mp-cup" data-pick="venstre">Venstre krus</button>
+            <button class="mp-cup" data-pick="midten">Midterste krus</button>
+            <button class="mp-cup" data-pick="hoyre">Høyre krus</button>
+          </div>
+          <button class="curiosity curiosity--mouse" id="mp-mouse" aria-label="Ei lita mus med noe i munnen">🐁</button>
+          <p class="game-msg" id="mp-msg" aria-live="polite"></p>
+
+          <div class="hintbox">
+            <button class="btn-quiet" id="mp-hint-btn">Direktørens hvisken (hint) 🤫</button>
+            <ul class="hint-list" id="mp-hints"></ul>
+          </div>
+        </div>
+
+        <div class="panel panel--solved" id="mp-solved" hidden>
+          <p class="solved-title">✨ Gåten er løst</p>
+          <p class="principle">«<strong>Språket er misdireksjon</strong>, lærling. Gjøgleren pekte aldri med hånden — han pekte med verset. Første bokstav i hver linje: M-I-D-T-E-N. Folk hører historien og overser bokstavene.»</p>
+          <div class="facts" id="mp-facts"></div>
+          <button class="btn-gold" id="mp-complete">Fullfør rommet →</button>
+        </div>
+      </section>
+
+      <!-- ── SCENE: EPILOG ───────────────────────────────────────── -->
+      <section class="scene" id="sc-epilog" hidden aria-labelledby="ep-heading">
+        <p class="scene-label">Akt I er fullført</p>
+        <h2 class="scene-heading" id="ep-heading">{rooms.epilog.title}</h2>
+        <p class="scene-intro">{rooms.epilog.intro}</p>
+
+        <div class="panel">
+          <p class="game-msg" id="ep-deck-summary" aria-live="polite"></p>
+          <p class="game-msg">«…Og skulle du savne magien i dagslys: Kabinettet finnes på dagtid også. Da heter det <strong>Tryllemuseet</strong>, og det står på Årvoll gård.»</p>
+          <div class="btn-row">
+            <button class="btn-gold" id="ep-poster">Last ned plakaten din 🖼️</button>
+            <a class="btn-gold" href="/besok">Besøk museet i dagslys →</a>
+            <button class="btn-quiet" id="ep-deck">Se kortstokken 🃏</button>
+          </div>
+          <p class="game-msg game-msg--dim">Akt II — med Biblioteket, Seansen og flere av Kabinettets rom — er under bygging bak forhenget.</p>
+        </div>
+      </section>
+
+      <!-- ── OVERLEGG: SE BORT ───────────────────────────────────── -->
+      <div class="lookaway" id="look-away-overlay" hidden aria-hidden="true">
+        <p>Du ser bort. Bak deg skraper en penn mot papir …</p>
+      </div>
+
+      <!-- ── KORTSTOKK-MODAL ─────────────────────────────────────── -->
+      <dialog class="deck-modal" id="deck-modal" aria-labelledby="deck-heading">
+        <div class="deck-head">
+          <h2 id="deck-heading">Kortstokken din</h2>
+          <button class="btn-quiet" id="deck-close" aria-label="Lukk kortstokken">✕ Lukk</button>
+        </div>
+        <p class="deck-sub">Tretten rom, fire kort i hvert — en hel kortstokk er nøkkelen til det trettende rommet. I Akt I kan du samle de tre første verdiene.</p>
+        <div id="deck-grid"></div>
+        <p class="deck-ghost">4–13 · konger inkludert — venter i Akt II og utover …</p>
+        <div class="btn-row">
+          <button class="btn-gold" id="poster-download" hidden>Last ned plakaten din 🖼️</button>
+        </div>
+      </dialog>
+
+      <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+
+      <script type="application/json" id="kabinett-data" set:html={payloadJson} />
+    </main>
+  )}
+
+</BaseLayout>
+
+<script>
+  interface GFact { text: string; linkUrl?: string; linkLabel?: string }
+  interface GRoom { title: string; intro: string; facts: GFact[] }
+  interface GData { rooms: Record<string, GRoom> }
+
+  const dataEl = document.getElementById('kabinett-data')
+  if (dataEl) {
+    const data: GData = JSON.parse(dataEl.textContent ?? '{}')
+
+    const $ = (id: string) => document.getElementById(id)!
+    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    const sleep = (ms: number) => new Promise(r => setTimeout(r, reducedMotion ? Math.min(ms, 120) : ms))
+
+    // ── Kort og tilstand ─────────────────────────────────────────
+    const SUITS = {
+      spar:    { sym: '♠', name: 'spar',    red: false, earn: 'Løs rommets gåte' },
+      hjerter: { sym: '♥', name: 'hjerter', red: true,  earn: 'Fullfør rommet' },
+      ruter:   { sym: '♦', name: 'ruter',   red: true,  earn: 'Opplev Speilgangen' },
+      klover:  { sym: '♣', name: 'kløver',  red: false, earn: 'Finn rommets kuriositet' },
+    } as const
+    type Suit = keyof typeof SUITS
+    const SUIT_ORDER: Suit[] = ['spar', 'hjerter', 'ruter', 'klover']
+    const VALUES: Record<number, { label: string; face: string; room: string }> = {
+      1: { label: 'Ess', face: 'A', room: 'Foajeen' },
+      2: { label: 'To',  face: '2', room: 'Sandrommet' },
+      3: { label: 'Tre', face: '3', room: 'Markedsplassen' },
+    }
+    const TOTAL_ACT1 = 12
+
+    type Stage = 'brevet' | 'foajeen' | 'sandrommet' | 'speilgangen' | 'markedsplassen' | 'epilog'
+    interface SaveState {
+      v: number
+      stageName: string
+      stage: Stage
+      cards: string[]
+      gilded: string[]
+      path: Record<string, string>
+    }
+    const STORAGE_KEY = 'kabinett-akt1-v1'
+    const blank = (): SaveState => ({ v: 1, stageName: '', stage: 'brevet', cards: [], gilded: [], path: {} })
+
+    let state = blank()
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY)
+      if (raw) {
+        const parsed = JSON.parse(raw)
+        if (parsed && parsed.v === 1) state = { ...blank(), ...parsed }
+      }
+    } catch { /* private mode etc. — play without saving */ }
+
+    function save() {
+      try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)) } catch { /* ignore */ }
+    }
+
+    // ── Felles UI ────────────────────────────────────────────────
+    const toastEl = $('toast')
+    let toastTimer = 0
+    function toast(html: string) {
+      toastEl.innerHTML = html
+      toastEl.hidden = false
+      window.clearTimeout(toastTimer)
+      toastTimer = window.setTimeout(() => { toastEl.hidden = true }, 4200)
+    }
+
+    function cardCode(value: number, suit: Suit) { return `${value}-${suit}` }
+
+    function awardCard(value: number, suit: Suit, note: string) {
+      const code = cardCode(value, suit)
+      if (state.cards.includes(code)) return
+      state.cards.push(code)
+      save()
+      updateDeckCount()
+      const s = SUITS[suit]
+      toast(`🃏 Nytt kort: <strong>${VALUES[value].face}${s.sym}</strong> — ${note}`)
+    }
+
+    function miniCard(value: number, suit: Suit, gilded = false): HTMLElement {
+      const s = SUITS[suit]
+      const el = document.createElement('span')
+      el.className = 'pcard' + (s.red ? ' pcard--red' : '') + (gilded ? ' pcard--gilded' : '')
+      el.setAttribute('role', 'img')
+      el.setAttribute('aria-label', `${VALUES[value].label} i ${s.name}${gilded ? ' (gylt)' : ''}`)
+      el.innerHTML = `<span class="pcard-face">${VALUES[value].face}</span><span class="pcard-suit">${s.sym}</span>`
+      return el
+    }
+
+    function updateDeckCount() {
+      $('deck-count').textContent = `${state.cards.length}/${TOTAL_ACT1}`
+    }
+
+    function renderFacts(containerId: string, roomKey: string) {
+      const box = $(containerId)
+      box.innerHTML = ''
+      const facts = data.rooms[roomKey]?.facts ?? []
+      for (const f of facts) {
+        const p = document.createElement('p')
+        p.className = 'fact'
+        p.textContent = `Visste du at … ${f.text}`
+        if (f.linkUrl) {
+          const a = document.createElement('a')
+          a.href = f.linkUrl
+          a.textContent = ` ${f.linkLabel || 'Les mer'} →`
+          p.appendChild(a)
+        }
+        box.appendChild(p)
+      }
+    }
+
+    // ── Scener ───────────────────────────────────────────────────
+    const SCENES: Record<Stage, HTMLElement> = {
+      brevet:         $('sc-brevet'),
+      foajeen:        $('sc-foajeen'),
+      sandrommet:     $('sc-sandrommet'),
+      speilgangen:    $('sc-speilgangen'),
+      markedsplassen: $('sc-markedsplassen'),
+      epilog:         $('sc-epilog'),
+    }
+
+    function goTo(stage: Stage) {
+      state.stage = stage
+      save()
+      for (const [key, el] of Object.entries(SCENES)) el.hidden = key !== stage
+      window.scrollTo({ top: 0, behavior: reducedMotion ? 'auto' : 'smooth' })
+      if (stage === 'epilog') renderEpilog()
+    }
+
+    // ── Kortstokken (modal) ──────────────────────────────────────
+    const deckModal = $('deck-modal') as HTMLDialogElement
+    function renderDeck() {
+      const grid = $('deck-grid')
+      grid.innerHTML = ''
+      for (const value of [1, 2, 3]) {
+        const row = document.createElement('div')
+        row.className = 'deck-row'
+        const label = document.createElement('p')
+        label.className = 'deck-row-label'
+        label.textContent = `${VALUES[value].label} · ${VALUES[value].room}`
+        row.appendChild(label)
+        const slots = document.createElement('div')
+        slots.className = 'deck-slots'
+        for (const suit of SUIT_ORDER) {
+          const code = cardCode(value, suit as Suit)
+          if (state.cards.includes(code)) {
+            slots.appendChild(miniCard(value, suit as Suit, state.gilded.includes(code)))
+          } else {
+            const empty = document.createElement('span')
+            empty.className = 'pcard pcard--empty'
+            const locked = value === 3 && suit === 'ruter'
+            empty.setAttribute('role', 'img')
+            empty.setAttribute('aria-label', locked
+              ? `Ruter tre — kommer i Akt II`
+              : `Mangler: ${VALUES[value].label} i ${SUITS[suit as Suit].name}. ${SUITS[suit as Suit].earn}.`)
+            empty.innerHTML = `<span class="pcard-face">?</span><span class="pcard-suit">${SUITS[suit as Suit].sym}</span>`
+            empty.title = locked ? 'Kommer i Akt II' : SUITS[suit as Suit].earn
+            slots.appendChild(empty)
+          }
+        }
+        row.appendChild(slots)
+        grid.appendChild(row)
+      }
+      const posterBtn = $('poster-download') as HTMLButtonElement
+      posterBtn.hidden = !state.cards.some(c => c.endsWith('-hjerter'))
+    }
+    $('deck-btn').addEventListener('click', () => { renderDeck(); deckModal.showModal() })
+    $('deck-close').addEventListener('click', () => deckModal.close())
+    deckModal.addEventListener('click', e => { if (e.target === deckModal) deckModal.close() })
+
+    $('restart-btn').addEventListener('click', () => {
+      if (!confirm('Begynne helt på nytt? Kortene og fremdriften din slettes.')) return
+      state = blank()
+      save()
+      updateDeckCount()
+      location.reload()
+    })
+
+    // ── Plakaten (SVG → PNG) ─────────────────────────────────────
+    function escapeXml(s: string) {
+      return s.replace(/[<>&'"]/g, c => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;', "'": '&apos;', '"': '&quot;' }[c] as string))
+    }
+    function posterSvg(name: string): string {
+      const n = escapeXml(name.toUpperCase())
+      return `<svg xmlns="http://www.w3.org/2000/svg" width="900" height="1200" viewBox="0 0 900 1200">
+        <rect width="900" height="1200" fill="#3D0E15"/>
+        <rect x="30" y="30" width="840" height="1140" fill="none" stroke="#C9A227" stroke-width="6"/>
+        <rect x="50" y="50" width="800" height="1100" fill="none" stroke="#C9A227" stroke-width="2"/>
+        <text x="450" y="170" text-anchor="middle" fill="#C9A227" font-family="Georgia, serif" font-size="34" letter-spacing="8">TRYLLEMUSEET PRESENTERER</text>
+        <text x="450" y="330" text-anchor="middle" fill="#F5EBD8" font-family="Georgia, serif" font-size="76" font-weight="bold">DET TRETTENDE</text>
+        <text x="450" y="420" text-anchor="middle" fill="#F5EBD8" font-family="Georgia, serif" font-size="76" font-weight="bold">KABINETT</text>
+        <text x="450" y="530" text-anchor="middle" fill="#C9A227" font-family="Georgia, serif" font-size="30" font-style="italic">— akt I: natten da porten gikk opp —</text>
+        <text x="450" y="660" text-anchor="middle" fill="#C9A227" font-family="Georgia, serif" font-size="30" letter-spacing="6">MED DEN LOVENDE LÆRLINGEN</text>
+        <text x="450" y="770" text-anchor="middle" fill="#F5EBD8" font-family="Georgia, serif" font-size="60" font-weight="bold">${n}</text>
+        <text x="450" y="870" text-anchor="middle" fill="#C9A227" font-family="Georgia, serif" font-size="26" font-style="italic">opptatt av Direktøren selv</text>
+        <text x="450" y="1000" text-anchor="middle" fill="#F5EBD8" font-family="Georgia, serif" font-size="42">♠ ♥ ♦ ♣</text>
+        <text x="450" y="1100" text-anchor="middle" fill="#C9A227" font-family="Georgia, serif" font-size="24" letter-spacing="4">KUN ÉN FORESTILLING · MELLOM MIDNATT OG DAGGRY</text>
+      </svg>`
+    }
+    function downloadPoster() {
+      const svg = posterSvg(state.stageName || 'Den navnløse')
+      const blob = new Blob([svg], { type: 'image/svg+xml;charset=utf-8' })
+      const url = URL.createObjectURL(blob)
+      const img = new Image()
+      img.onload = () => {
+        const canvas = document.createElement('canvas')
+        canvas.width = 900
+        canvas.height = 1200
+        canvas.getContext('2d')!.drawImage(img, 0, 0)
+        URL.revokeObjectURL(url)
+        const a = document.createElement('a')
+        a.href = canvas.toDataURL('image/png')
+        a.download = 'det-trettende-kabinett-plakat.png'
+        a.click()
+      }
+      img.onerror = () => {
+        URL.revokeObjectURL(url)
+        // Fallback: offer the SVG itself
+        const a = document.createElement('a')
+        a.href = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg)
+        a.download = 'det-trettende-kabinett-plakat.svg'
+        a.click()
+      }
+      img.src = url
+    }
+    $('poster-download').addEventListener('click', downloadPoster)
+
+    // ── Hint-hjelper ─────────────────────────────────────────────
+    function wireHints(btnId: string, listId: string, hints: string[], onUse: () => void) {
+      const btn = $(btnId) as HTMLButtonElement
+      const list = $(listId)
+      let idx = 0
+      btn.addEventListener('click', () => {
+        if (idx >= hints.length) return
+        const li = document.createElement('li')
+        li.textContent = `«${hints[idx]}»`
+        list.appendChild(li)
+        idx++
+        onUse()
+        if (idx >= hints.length) btn.disabled = true
+      })
+    }
+
+    // ═══ FOAJEEN ═════════════════════════════════════════════════
+    const fjForm = $('fj-form') as HTMLFormElement
+    const fjName = $('fj-name') as HTMLInputElement
+    const fjMsg = $('fj-msg')
+    let fjTriedOnce = false
+
+    $('btn-knock').addEventListener('click', () => goTo('foajeen'))
+
+    fjForm.addEventListener('submit', e => {
+      e.preventDefault()
+      const name = fjName.value.trim()
+      if (!name) return
+      state.stageName = name
+      save()
+      if (!fjTriedOnce) {
+        fjTriedOnce = true
+        fjMsg.textContent = 'Blekket renner av arket og samler seg i en liten, fornærmet dam. Gjesteboken vil tydeligvis ikke bli sett på mens den tar imot navn.'
+        fjMsg.hidden = false
+        $('fj-lookaway').hidden = false
+      } else {
+        fjMsg.textContent = 'Samme resultat. Boken er sta — og sjenert.'
+        fjMsg.hidden = false
+      }
+    })
+
+    $('fj-lookaway').addEventListener('click', async () => {
+      const overlay = $('look-away-overlay')
+      overlay.hidden = false
+      await sleep(1900)
+      overlay.hidden = true
+      $('fj-book-line').textContent = `~ ${state.stageName} ~`
+      fjMsg.hidden = true
+      ;($('fj-lookaway') as HTMLButtonElement).hidden = true
+      fjForm.hidden = true
+      for (const suit of SUIT_ORDER) {
+        state.cards.includes(cardCode(1, suit)) || state.cards.push(cardCode(1, suit))
+        $('fj-aces-cards').appendChild(miniCard(1, suit))
+      }
+      save()
+      updateDeckCount()
+      toast('🃏 Fire nye kort: <strong>essene</strong> — Direktørens forskudd')
+      $('fj-aces').hidden = false
+    })
+
+    $('fj-continue').addEventListener('click', () => goTo('sandrommet'))
+
+    // ═══ SANDROMMET ══════════════════════════════════════════════
+    const srCups = Array.from(document.querySelectorAll<HTMLButtonElement>('#sr-stage .cup:not(.cup--hand)'))
+    const srHand = $('sr-hand') as HTMLButtonElement
+    const srMsg = $('sr-msg')
+    const srLog = $('sr-log')
+    let srRound = 1
+    let srBallCup = -1           // cup element index holding the ball (-1 = the hand)
+    let srPos = [0, 1, 2]        // srPos[cupIdx] = visual position
+    let srHintsUsed = 0
+    let srWrong = 0
+    let srPath = state.path['sandrommet'] || ''
+
+    const SR_HINTS = [
+      'Du fulgte koppene, lærling. Men fulgte du magikeren?',
+      'Kulen forlot bordet før første bytte.',
+      'Se på hånden som «hviler» på bordkanten.',
+    ]
+    wireHints('sr-hint-btn', 'sr-hints', SR_HINTS, () => { srHintsUsed++ })
+
+    document.querySelectorAll<HTMLButtonElement>('.path-btn[data-scene="sr"]').forEach(btn =>
+      btn.addEventListener('click', () => {
+        srPath = btn.dataset.path || 'laerling'
+        state.path['sandrommet'] = srPath
+        save()
+        $('sr-pathchoice').hidden = true
+        $('sr-game').hidden = false
+        srStartRound(1)
+      })
+    )
+
+    function srApplyPositions(animated: boolean) {
+      // offsetLeft ignores transforms, so it always gives the original slot
+      const slots = srCups.map(c => c.offsetLeft)
+      srCups.forEach((cup, idx) => {
+        cup.style.transition = animated && !reducedMotion ? 'transform 320ms ease' : 'none'
+        cup.style.transform = `translateX(${slots[srPos[idx]] - slots[idx]}px)`
+      })
+    }
+
+    function srSetCupsEnabled(on: boolean) {
+      srCups.forEach(c => { c.disabled = !on })
+      srHand.disabled = !on || Boolean(srHand.hidden)
+    }
+
+    const POS_NAMES = ['til venstre', 'i midten', 'til høyre']
+
+    async function srSwap(a: number, b: number, delay: number) {
+      // a/b are visual positions; find the cups currently there
+      const cupA = srPos.indexOf(a)
+      const cupB = srPos.indexOf(b)
+      const li = document.createElement('li')
+      li.textContent = `Koppen ${POS_NAMES[a]} bytter plass med koppen ${POS_NAMES[b]}.`
+      srLog.appendChild(li)
+      ;[srPos[cupA], srPos[cupB]] = [srPos[cupB], srPos[cupA]]
+      srApplyPositions(true)
+      await sleep(delay)
+    }
+
+    async function srStartRound(round: number) {
+      srRound = round
+      srPos = [0, 1, 2]
+      srApplyPositions(false)
+      srLog.innerHTML = ''
+      srSetCupsEnabled(false)
+      srCups.forEach(c => { (c.querySelector('.cup-ball') as HTMLElement).hidden = true; c.classList.remove('cup--empty') })
+      ;($('sr-hint-btn') as HTMLButtonElement).hidden = round < 3
+      srHand.hidden = round < 3
+
+      const fast = srPath === 'mester'
+      const stepDelay = fast ? 420 : 750
+
+      if (round < 3) {
+        $('sr-round-label').textContent = `Runde ${round} av 3 — følg kulen`
+        srBallCup = Math.floor(Math.random() * 3)
+        srMsg.textContent = `Kulen legges under koppen ${POS_NAMES[srPos[srBallCup]]}. Følg nøye med …`
+        const ballEl = srCups[srBallCup].querySelector('.cup-ball') as HTMLElement
+        ballEl.hidden = false
+        await sleep(1300)
+        ballEl.hidden = true
+
+        const swapCount = (round === 1 ? 3 : 4) + (fast ? 2 : 0)
+        for (let i = 0; i < swapCount; i++) {
+          const a = Math.floor(Math.random() * 3)
+          let b = Math.floor(Math.random() * 3)
+          while (b === a) b = Math.floor(Math.random() * 3)
+          if (round === 2 && i === Math.floor(swapCount / 2)) {
+            const li = document.createElement('li')
+            li.textContent = 'I det samme piler noe blankt over bordet — en skarabé!'
+            srLog.appendChild(li)
+            $('sr-scarab').hidden = false
+          }
+          await srSwap(a, b, stepDelay)
+        }
+        srMsg.textContent = 'Hvor er kulen? Trykk på koppen.'
+        srSetCupsEnabled(true)
+      } else {
+        $('sr-round-label').textContent = 'Siste runde — følg kulen. Om du kan.'
+        srBallCup = -1
+        const startCup = Math.floor(Math.random() * 3)
+        srMsg.textContent = `Kulen legges under koppen ${POS_NAMES[srPos[startCup]]}. Magikerens frie hånd legger seg til ro på bordkanten.`
+        const ballEl = srCups[startCup].querySelector('.cup-ball') as HTMLElement
+        ballEl.hidden = false
+        await sleep(1300)
+        ballEl.hidden = true
+
+        const swapCount = fast ? 6 : 4
+        for (let i = 0; i < swapCount; i++) {
+          const a = Math.floor(Math.random() * 3)
+          let b = Math.floor(Math.random() * 3)
+          while (b === a) b = Math.floor(Math.random() * 3)
+          if (i === 1) {
+            const li = document.createElement('li')
+            li.textContent = 'Magikerens frie hånd stryker langs bordkanten, rolig som en katt.'
+            srLog.appendChild(li)
+          }
+          await srSwap(a, b, stepDelay)
+        }
+        srMsg.textContent = 'Hvor er kulen?'
+        srSetCupsEnabled(true)
+      }
+    }
+
+    srCups.forEach(cup =>
+      cup.addEventListener('click', async () => {
+        if (cup.disabled) return
+        srSetCupsEnabled(false)
+        const idx = srCups.indexOf(cup)
+        if (srRound < 3) {
+          if (idx === srBallCup) {
+            ;(cup.querySelector('.cup-ball') as HTMLElement).hidden = false
+            srMsg.textContent = 'Riktig! Kulen er der. «Ikke verst,» sier skikkelsen — og stokker videre.'
+            await sleep(1600)
+            srStartRound(srRound + 1)
+          } else {
+            srWrong++
+            ;(srCups[srBallCup].querySelector('.cup-ball') as HTMLElement).hidden = false
+            srMsg.textContent = `Tomt! Kulen lå ${POS_NAMES[srPos[srBallCup]]}. «Igjen,» sier skikkelsen, og samler koppene.`
+            await sleep(1900)
+            srStartRound(srRound)
+          }
+        } else {
+          srWrong++
+          cup.classList.add('cup--empty')
+          srMsg.textContent = 'Tomt. Alle koppene klinger hult. Men kulen forsvant jo ikke opp i røyk …'
+          srSetCupsEnabled(true)
+        }
+      })
+    )
+
+    srHand.addEventListener('click', () => {
+      if (srHand.disabled) return
+      srSetCupsEnabled(false)
+      srMsg.textContent = 'Skikkelsen åpner langsomt hånden. Der ligger kulen — den lå der før første bytte.'
+      const gild = srPath === 'mester' && srHintsUsed === 0 && srWrong === 0
+      awardCard(2, 'spar', 'Sigillet fra Sandrommet')
+      if (gild && !state.gilded.includes('2-spar')) {
+        state.gilded.push('2-spar')
+        save()
+      }
+      renderFacts('sr-facts', 'sandrommet')
+      $('sr-solved').hidden = false
+      $('sr-solved').scrollIntoView({ behavior: reducedMotion ? 'auto' : 'smooth', block: 'nearest' })
+    })
+
+    $('sr-scarab').addEventListener('click', () => {
+      $('sr-scarab').hidden = true
+      awardCard(2, 'klover', 'Kuriositeten: skarabeen fra Dedis tid')
+    })
+
+    $('sr-complete').addEventListener('click', () => {
+      awardCard(2, 'hjerter', 'Plakatkortet fra Sandrommet er trykket')
+      goTo('speilgangen')
+    })
+
+    // ═══ SPEILGANGEN ═════════════════════════════════════════════
+    interface PlayCard { rank: string; suit: Suit; label: string }
+    const SG_SET_A: PlayCard[] = [
+      { rank: 'K',  suit: 'hjerter', label: 'Kongen i hjerter' },
+      { rank: 'D',  suit: 'spar',    label: 'Damen i spar' },
+      { rank: 'Kn', suit: 'ruter',   label: 'Knekten i ruter' },
+      { rank: 'K',  suit: 'klover',  label: 'Kongen i kløver' },
+      { rank: 'D',  suit: 'ruter',   label: 'Damen i ruter' },
+      { rank: 'Kn', suit: 'spar',    label: 'Knekten i spar' },
+    ]
+    const SG_SET_B: PlayCard[] = [
+      { rank: 'K',  suit: 'spar',    label: 'Kongen i spar' },
+      { rank: 'D',  suit: 'hjerter', label: 'Damen i hjerter' },
+      { rank: 'Kn', suit: 'klover',  label: 'Knekten i kløver' },
+      { rank: 'K',  suit: 'ruter',   label: 'Kongen i ruter' },
+      { rank: 'D',  suit: 'klover',  label: 'Damen i kløver' },
+      { rank: 'Kn', suit: 'hjerter', label: 'Knekten i hjerter' },
+    ]
+    let sgBefore = SG_SET_A
+    let sgAfter = SG_SET_B
+
+    function bigCard(c: PlayCard): HTMLElement {
+      const s = SUITS[c.suit]
+      const el = document.createElement('span')
+      el.className = 'pcard pcard--big' + (s.red ? ' pcard--red' : '')
+      el.setAttribute('role', 'img')
+      el.setAttribute('aria-label', c.label)
+      el.innerHTML = `<span class="pcard-face">${c.rank}</span><span class="pcard-suit">${s.sym}</span>`
+      return el
+    }
+
+    function sgRenderStep1() {
+      const box = $('sg-cards')
+      box.innerHTML = ''
+      for (const c of sgBefore) box.appendChild(bigCard(c))
+      $('sg-step1').hidden = false
+      $('sg-step2').hidden = true
+      $('sg-step3').hidden = true
+    }
+
+    $('sg-memorized').addEventListener('click', async () => {
+      $('sg-step1').hidden = true
+      $('sg-step2').hidden = false
+      await sleep(2300)
+      $('sg-step2').hidden = true
+      const after = $('sg-cards-after')
+      after.innerHTML = ''
+      const shown = sgAfter.slice()
+      shown.splice(Math.floor(Math.random() * shown.length), 1)
+      for (const c of shown) after.appendChild(bigCard(c))
+      $('sg-step3').hidden = false
+      awardCard(2, 'ruter', 'Illusjonskortet fra Speilgangen')
+      ;($('sg-continue') as HTMLButtonElement).hidden = false
+    })
+
+    $('sg-again').addEventListener('click', () => {
+      ;[sgBefore, sgAfter] = [sgAfter, sgBefore]
+      sgBefore = sgBefore.slice().sort(() => Math.random() - 0.5)
+      $('sg-reveal').hidden = true
+      sgRenderStep1()
+    })
+
+    $('sg-reveal-btn').addEventListener('click', () => {
+      const cmp = $('sg-compare')
+      cmp.innerHTML = ''
+      const mk = (title: string, cards: PlayCard[]) => {
+        const col = document.createElement('div')
+        const h = document.createElement('p')
+        h.className = 'reveal-col-title'
+        h.textContent = title
+        col.appendChild(h)
+        const row = document.createElement('div')
+        row.className = 'card-row'
+        for (const c of cards) row.appendChild(bigCard(c))
+        col.appendChild(row)
+        return col
+      }
+      cmp.appendChild(mk('Kortene du fikk se:', sgBefore))
+      cmp.appendChild(mk('Kortene du fikk «igjen»:', sgAfter))
+      renderFacts('sg-facts', 'speilgangen')
+      $('sg-reveal').hidden = false
+    })
+
+    $('sg-continue').addEventListener('click', () => goTo('markedsplassen'))
+
+    // ═══ MARKEDSPLASSEN ══════════════════════════════════════════
+    let mpHintsUsed = 0
+    let mpWrong = 0
+    let mpPath = state.path['markedsplassen'] || ''
+
+    const MP_HINTS = [
+      'Svaret står i verset. Alt sammen gjør det.',
+      'Les nedover, ikke bortover.',
+      'Første bokstav i hver linje, lærling.',
+    ]
+    wireHints('mp-hint-btn', 'mp-hints', MP_HINTS, () => { mpHintsUsed++ })
+
+    document.querySelectorAll<HTMLButtonElement>('.path-btn[data-scene="mp"]').forEach(btn =>
+      btn.addEventListener('click', () => {
+        mpPath = btn.dataset.path || 'laerling'
+        state.path['markedsplassen'] = mpPath
+        save()
+        $('mp-pathchoice').hidden = true
+        $('mp-game').hidden = false
+        $('mp-pretext').textContent = mpPath === 'laerling'
+          ? 'Direktøren lener seg inntil øret ditt: «Gjøglere gjemmer alltid hemmelighetene sine i ordene. Hør på verset — ordentlig.»'
+          : 'Gjøgleren roper verset sitt én gang. Mer får du ikke.'
+      })
+    )
+
+    document.querySelectorAll<HTMLButtonElement>('.mp-cup').forEach(btn =>
+      btn.addEventListener('click', () => {
+        if (btn.dataset.pick === 'midten') {
+          document.querySelectorAll<HTMLButtonElement>('.mp-cup').forEach(b => { b.disabled = true })
+          $('mp-msg').textContent = 'Gjøgleren løfter det midterste kruset: erten! Han bukker dypt. «Endelig én som hører etter!»'
+          const gild = mpPath === 'mester' && mpHintsUsed === 0 && mpWrong === 0
+          awardCard(3, 'spar', 'Sigillet fra Markedsplassen')
+          if (gild && !state.gilded.includes('3-spar')) {
+            state.gilded.push('3-spar')
+            save()
+          }
+          renderFacts('mp-facts', 'markedsplassen')
+          $('mp-solved').hidden = false
+          $('mp-solved').scrollIntoView({ behavior: reducedMotion ? 'auto' : 'smooth', block: 'nearest' })
+        } else {
+          mpWrong++
+          $('mp-msg').textContent = 'Gjøgleren løfter kruset: tomt! Han ler rått. «Nei og nei! Hørte du ikke etter? Jeg sa jo hvor den lå!»'
+        }
+      })
+    )
+
+    $('mp-mouse').addEventListener('click', () => {
+      $('mp-mouse').hidden = true
+      awardCard(3, 'klover', 'Kuriositeten: musa med erten i munnen')
+    })
+
+    $('mp-complete').addEventListener('click', () => {
+      awardCard(3, 'hjerter', 'Plakatkortet fra Markedsplassen er trykket')
+      goTo('epilog')
+    })
+
+    // ═══ EPILOG ══════════════════════════════════════════════════
+    function renderEpilog() {
+      const n = state.cards.length
+      const gilded = state.gilded.length
+      let txt = `Du forlater Akt I med ${n} av ${TOTAL_ACT1} kort i kortstokken`
+      txt += gilded > 0 ? ` — ${gilded === 1 ? 'ett av dem gylt' : `${gilded} av dem gylte`}. ` : '. '
+      txt += n >= TOTAL_ACT1 - 1
+        ? 'Direktøren hever et øyenbryn: «Imponerende samling, lærling.»'
+        : 'Rommene husker deg — det som ennå mangler, kan finnes en annen natt.'
+      $('ep-deck-summary').textContent = txt
+    }
+    $('ep-poster').addEventListener('click', downloadPoster)
+    $('ep-deck').addEventListener('click', () => { renderDeck(); deckModal.showModal() })
+
+    // ── Init ─────────────────────────────────────────────────────
+    updateDeckCount()
+    sgRenderStep1()
+    if (state.stage !== 'brevet') {
+      // Resume: rebuild the small bits of scene state the stages need
+      if (state.stageName) $('fj-book-line').textContent = `~ ${state.stageName} ~`
+      goTo(state.stage)
+      if (state.stage === 'sandrommet') {
+        // Re-enter via the path choice so the shuffle state is fresh
+        $('sr-pathchoice').hidden = false
+        $('sr-game').hidden = true
+      }
+      if (state.stage === 'markedsplassen') {
+        $('mp-pathchoice').hidden = false
+        $('mp-game').hidden = true
+      }
+      toast(`Velkommen tilbake${state.stageName ? ', ' + state.stageName : ''} — Kabinettet husker deg. 🕯️`)
+    } else {
+      goTo('brevet')
+    }
+  }
+</script>
+
+<style>
+  /* ── HERO ──────────────────────────────────────────────────────── */
+  .hero { background: var(--burgundy-dk); padding: 3.5rem 0 2.5rem; border-bottom: 2px solid var(--gold-dark); color: var(--cream); }
+  .hero h1 { font-size: clamp(2rem, 5vw, 3rem); color: var(--cream); margin: 0.5rem 0 0.75rem; }
+  .hero-sub { font-family: var(--font-ui); font-size: 1rem; opacity: 0.8; max-width: 560px; line-height: 1.6; }
+
+  .game-main { padding: 2.5rem 1.5rem 5rem; max-width: 760px; }
+
+  /* ── SPILL-LINJE ───────────────────────────────────────────────── */
+  .gamebar { display: flex; justify-content: space-between; align-items: center; gap: 0.75rem; margin-bottom: 1.25rem; flex-wrap: wrap; }
+  .gamebar-btn { font-family: var(--font-ui); font-size: 0.85rem; font-weight: 700; color: var(--cream); background: var(--burgundy); border: 1.5px solid var(--gold-dark); border-radius: 999px; padding: 0.5rem 1.1rem; transition: background 150ms; }
+  .gamebar-btn:hover { background: var(--burgundy-dk); }
+  .gamebar-btn--quiet { background: transparent; color: var(--grey); border-color: var(--cream-dark); }
+  .gamebar-btn--quiet:hover { color: var(--burgundy); background: transparent; }
+
+  /* ── SCENER ────────────────────────────────────────────────────── */
+  .scene-label { font-family: var(--font-ui); font-size: 0.7rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.15em; color: var(--gold-dark); margin-bottom: 0.35rem; }
+  .scene-heading { font-family: var(--font-display); font-size: clamp(1.6rem, 4vw, 2.2rem); color: var(--burgundy); margin-bottom: 0.75rem; }
+  .scene-intro { font-family: var(--font-body); font-size: 1.05rem; line-height: 1.65; color: var(--ink-mid); margin-bottom: 1.5rem; max-width: 62ch; }
+
+  .panel { position: relative; background: var(--burgundy-dk); color: var(--cream); border: 1px solid var(--gold-dark); border-radius: 10px; padding: 1.75rem 1.5rem; box-shadow: var(--shadow); margin-bottom: 1.25rem; }
+  .panel--solved { background: white; color: var(--ink); }
+
+  .field-label { font-family: var(--font-ui); font-size: 0.7rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.15em; color: var(--gold); margin-bottom: 0.5rem; }
+  .panel--solved .field-label { color: var(--gold-dark); }
+
+  .btn-gold { display: inline-block; font-family: var(--font-ui); font-size: 0.95rem; font-weight: 700; color: var(--burgundy-dk); background: var(--gold); border-radius: 6px; padding: 0.7rem 1.5rem; transition: background 150ms; text-align: center; }
+  .btn-gold:hover { background: var(--gold-light); }
+  .btn-quiet { font-family: var(--font-ui); font-size: 0.875rem; font-weight: 600; color: var(--grey); padding: 0.7rem 1rem; border-radius: 6px; transition: color 150ms; }
+  .panel .btn-quiet { color: var(--cream); opacity: 0.75; }
+  .panel .btn-quiet:hover { opacity: 1; }
+  .btn-row { display: flex; gap: 0.75rem; flex-wrap: wrap; margin-top: 1rem; }
+
+  .game-msg { font-family: var(--font-ui); font-size: 0.95rem; line-height: 1.6; margin: 0.9rem 0; }
+  .game-msg--good { color: var(--gold-light, var(--gold)); }
+  .game-msg--dim { opacity: 0.65; font-size: 0.85rem; }
+  .game-msg--think { font-style: italic; opacity: 0.85; }
+
+  /* ── BREVET ────────────────────────────────────────────────────── */
+  .scene--letter { display: flex; justify-content: center; }
+  .letter { background: var(--cream); border: 1px solid var(--gold-dark); border-radius: 6px; padding: 2.5rem 2rem; max-width: 520px; text-align: center; box-shadow: var(--shadow); }
+  .letter-seal { font-size: 2.5rem; margin-bottom: 0.75rem; }
+  .letter-heading { font-family: var(--font-display); font-size: 1.5rem; color: var(--burgundy); margin-bottom: 1rem; }
+  .letter-body { font-family: var(--font-body); font-style: italic; line-height: 1.7; color: var(--ink); margin-bottom: 1rem; }
+  .letter-sign { font-family: var(--font-ui); font-size: 0.8rem; color: var(--grey); margin-bottom: 1.75rem; }
+
+  /* ── FOAJEEN ───────────────────────────────────────────────────── */
+  .guestbook { background: var(--cream); color: var(--ink); border-radius: 6px; padding: 1.25rem 1.5rem; margin-bottom: 1.25rem; border: 1px solid var(--gold-dark); }
+  .guestbook-label { font-family: var(--font-ui); font-size: 0.7rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.15em; color: var(--gold-dark); margin-bottom: 0.4rem; }
+  .guestbook-line { font-family: var(--font-display); font-size: 1.4rem; font-style: italic; color: var(--burgundy); border-bottom: 1px solid var(--cream-dark); min-height: 1.8rem; }
+  .field-row { display: flex; gap: 0.6rem; flex-wrap: wrap; }
+  .field-row input { flex: 1 1 200px; font-family: var(--font-ui); font-size: 1rem; padding: 0.65rem 0.9rem; border: 1.5px solid var(--gold-dark); border-radius: 6px; background: var(--cream); color: var(--ink); }
+
+  .lookaway { position: fixed; inset: 0; z-index: 100; background: #0a0507f2; color: var(--cream); display: flex; align-items: center; justify-content: center; text-align: center; padding: 2rem; font-family: var(--font-display); font-size: clamp(1.1rem, 3vw, 1.6rem); font-style: italic; }
+  .lookaway[hidden] { display: none; }
+
+  /* ── KORT ──────────────────────────────────────────────────────── */
+  .card-row { display: flex; gap: 0.5rem; flex-wrap: wrap; margin: 1rem 0; }
+  .pcard { display: inline-flex; flex-direction: column; align-items: center; justify-content: center; width: 52px; height: 74px; background: white; color: #1a1a1a; border: 1px solid #00000033; border-radius: 6px; font-family: var(--font-display); box-shadow: 0 2px 5px #00000040; }
+  .pcard--big { width: 64px; height: 92px; }
+  .pcard--red { color: #B0342C; }
+  .pcard--empty { background: #ffffff14; color: var(--cream); border-style: dashed; border-color: var(--gold-dark); opacity: 0.7; }
+  .pcard--gilded { box-shadow: 0 0 0 2px var(--gold), 0 2px 8px #c9a22766; }
+  .pcard-face { font-size: 1.3rem; font-weight: 700; line-height: 1; }
+  .pcard-suit { font-size: 1.15rem; line-height: 1.2; }
+
+  /* ── SANDROMMET ────────────────────────────────────────────────── */
+  .round-label { font-family: var(--font-ui); font-size: 0.8rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.12em; color: var(--gold); margin-bottom: 1rem; }
+  .cup-stage { display: flex; gap: 8%; justify-content: center; padding: 1.25rem 0 0.75rem; }
+  .cup { position: relative; background: none; border: none; cursor: pointer; display: flex; flex-direction: column; align-items: center; padding: 0.4rem; border-radius: 8px; }
+  .cup:not(:disabled):hover { background: #ffffff14; }
+  .cup:disabled { cursor: default; }
+  .cup-glyph { font-size: 2.6rem; line-height: 1; }
+  .cup-ball { font-size: 1rem; line-height: 1; margin-top: 0.2rem; }
+  .cup--empty .cup-glyph { opacity: 0.45; }
+  .cup--hand .cup-glyph { font-size: 2.2rem; }
+  .sr-only-label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+  .swap-log { font-family: var(--font-ui); font-size: 0.85rem; line-height: 1.6; opacity: 0.85; margin: 0.75rem 0 0 1.25rem; }
+
+  .curiosity { position: absolute; right: 0.9rem; bottom: 0.9rem; background: none; border: none; font-size: 1.15rem; cursor: pointer; opacity: 0.55; transition: opacity 150ms, transform 150ms; }
+  .curiosity:hover { opacity: 1; transform: scale(1.25); }
+
+  .hintbox { margin-top: 1rem; }
+  .hint-list { font-family: var(--font-ui); font-size: 0.9rem; font-style: italic; line-height: 1.6; color: var(--gold-light, var(--gold)); margin: 0.4rem 0 0 1.25rem; }
+
+  .solved-title { font-family: var(--font-ui); font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.15em; color: var(--gold-dark); margin-bottom: 0.75rem; }
+  .principle { font-family: var(--font-body); font-size: 1.05rem; line-height: 1.65; color: var(--ink); margin-bottom: 1rem; }
+  .facts { margin-bottom: 1.25rem; }
+  .fact { font-family: var(--font-ui); font-size: 0.9rem; line-height: 1.6; color: var(--ink-mid); background: var(--cream); border-left: 3px solid var(--gold); border-radius: 0 6px 6px 0; padding: 0.7rem 1rem; margin-bottom: 0.5rem; }
+  .fact a { font-weight: 700; color: var(--burgundy); text-decoration: underline; }
+
+  /* ── SPEILGANGEN ───────────────────────────────────────────────── */
+  .reveal { background: #ffffff10; border: 1px dashed var(--gold-dark); border-radius: 8px; padding: 1rem 1.2rem; margin-top: 1.25rem; font-family: var(--font-ui); font-size: 0.92rem; line-height: 1.6; }
+  .reveal-compare { display: grid; gap: 0.75rem; margin-top: 0.75rem; }
+  .reveal-col-title { font-family: var(--font-ui); font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--gold); }
+  .reveal .fact { color: var(--ink-mid); }
+
+  /* ── MARKEDSPLASSEN ────────────────────────────────────────────── */
+  .verse { font-family: var(--font-body); font-style: italic; font-size: 1.05rem; line-height: 1.8; border-left: 3px solid var(--gold); padding-left: 1.1rem; margin: 1.25rem 0; }
+  .mp-cups { display: flex; gap: 0.6rem; flex-wrap: wrap; margin: 0.75rem 0; }
+  .mp-cup { font-family: var(--font-ui); font-size: 0.95rem; font-weight: 700; color: var(--cream); background: #ffffff14; border: 1.5px solid var(--gold-dark); border-radius: 8px; padding: 0.85rem 1.3rem; transition: background 150ms, border-color 150ms; }
+  .mp-cup:not(:disabled):hover { background: #ffffff26; border-color: var(--gold); }
+  .mp-cup:disabled { opacity: 0.6; cursor: default; }
+
+  /* ── KORTSTOKK-MODAL ───────────────────────────────────────────── */
+  .deck-modal { background: var(--burgundy-dk); color: var(--cream); border: 1px solid var(--gold-dark); border-radius: 10px; padding: 1.75rem 1.5rem; max-width: 560px; width: calc(100% - 2rem); }
+  .deck-modal::backdrop { background: #0a0507cc; }
+  .deck-head { display: flex; justify-content: space-between; align-items: center; gap: 1rem; margin-bottom: 0.5rem; }
+  .deck-head h2 { font-family: var(--font-display); font-size: 1.4rem; color: var(--cream); }
+  .deck-sub { font-family: var(--font-ui); font-size: 0.85rem; line-height: 1.55; opacity: 0.8; margin-bottom: 1.25rem; }
+  .deck-row { margin-bottom: 1rem; }
+  .deck-row-label { font-family: var(--font-ui); font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.12em; color: var(--gold); margin-bottom: 0.4rem; }
+  .deck-slots { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+  .deck-ghost { font-family: var(--font-ui); font-size: 0.8rem; font-style: italic; opacity: 0.55; margin-top: 0.5rem; }
+
+  /* ── VEIVALG ───────────────────────────────────────────────────── */
+  .path-row { display: grid; gap: 0.75rem; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); }
+  .path-btn { text-align: left; font-family: var(--font-ui); color: var(--cream); background: #ffffff10; border: 1.5px solid var(--gold-dark); border-radius: 8px; padding: 1rem 1.2rem; transition: background 150ms, border-color 150ms; display: flex; flex-direction: column; gap: 0.35rem; }
+  .path-btn:hover { background: #ffffff22; border-color: var(--gold); }
+  .path-btn strong { font-size: 1rem; }
+  .path-btn span { font-size: 0.82rem; line-height: 1.5; opacity: 0.8; }
+
+  /* ── TOAST ─────────────────────────────────────────────────────── */
+  .toast { position: fixed; left: 50%; bottom: 1.25rem; transform: translateX(-50%); z-index: 110; background: var(--burgundy-dk); color: var(--cream); border: 1px solid var(--gold); border-radius: 999px; padding: 0.65rem 1.4rem; font-family: var(--font-ui); font-size: 0.9rem; box-shadow: 0 4px 16px #00000080; max-width: calc(100% - 2rem); text-align: center; }
+  .toast[hidden] { display: none; }
+
+  /* ── KOMMER SNART ──────────────────────────────────────────────── */
+  .coming-soon { text-align: center; background: white; border: 1px solid var(--cream-dark); border-radius: 10px; padding: 4rem 2rem; box-shadow: var(--shadow); }
+  .coming-soon-icon { font-size: 3rem; display: block; margin-bottom: 1rem; }
+  .coming-soon h2 { font-family: var(--font-display); font-size: clamp(1.4rem, 4vw, 2rem); color: var(--burgundy); margin-bottom: 0.75rem; }
+  .coming-soon p { font-family: var(--font-ui); font-size: 1rem; color: var(--ink-mid); line-height: 1.6; max-width: 480px; margin: 0 auto 1.75rem; }
+
+  @media (max-width: 560px) {
+    .panel { padding: 1.4rem 1.1rem; }
+    .cup-stage { gap: 5%; }
+    .field-row { flex-direction: column; }
+  }
+</style>
