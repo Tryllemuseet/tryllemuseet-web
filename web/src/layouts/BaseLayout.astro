@@ -1,6 +1,6 @@
 ---
 // src/layouts/BaseLayout.astro
-import { getSiteConfig, getQuizConfig } from '../lib/sanity'
+import { getSiteConfig, getQuizConfig, getGameConfig } from '../lib/sanity'
 import Analytics from '@vercel/analytics/astro'
 
 export interface Props {
@@ -12,9 +12,10 @@ const {
   description,
 } = Astro.props;
 
-const [site, quizConfig] = await Promise.all([getSiteConfig(), getQuizConfig()])
+const [site, quizConfig, gameConfig] = await Promise.all([getSiteConfig(), getQuizConfig(), getGameConfig()])
 const metaDescription = description ?? site.seoDescription
 const quizActive = quizConfig?.isActive === true
+const gameActive = gameConfig?.isActive === true
 
 // Flat liste for footer og mobil
 const allNavLinks = [
@@ -80,13 +81,14 @@ const isActive = (href: string) =>
 
           <!-- Aktiviteter med dropdown -->
           <li class="has-dropdown">
-            <a href="/aktiviteter" class:list={['nav-link', { active: isActive('/aktiviteter') || isActive('/arrangementer') || isActive('/barn') || isActive('/tryllequiz') }]}>
+            <a href="/aktiviteter" class:list={['nav-link', { active: isActive('/aktiviteter') || isActive('/arrangementer') || isActive('/barn') || isActive('/tryllequiz') || isActive('/det-trettende-kabinett') }]}>
               Aktiviteter <span class="nav-chevron">▾</span>
             </a>
             <ul class="dropdown" role="list">
               <li><a href="/aktiviteter" class="dropdown-link">Oversikt</a></li>
               <li><a href="/barn" class="dropdown-link">Barn &amp; unge</a></li>
               {quizActive && <li><a href="/tryllequiz" class="dropdown-link">Tryllequiz</a></li>}
+              {gameActive && <li><a href="/det-trettende-kabinett" class="dropdown-link">Det trettende kabinett</a></li>}
               <li><a href="/aktiviteter/tryllekunstnere" class="dropdown-link">Bestill tryllekunstner</a></li>
             </ul>
           </li>
@@ -165,11 +167,12 @@ const isActive = (href: string) =>
         </li>
 
         <li class="mobile-section">
-          <a href="/aktiviteter" class:list={['mobile-nav-link', { active: isActive('/aktiviteter') || isActive('/barn') || isActive('/tryllequiz') }]}>Aktiviteter</a>
+          <a href="/aktiviteter" class:list={['mobile-nav-link', { active: isActive('/aktiviteter') || isActive('/barn') || isActive('/tryllequiz') || isActive('/det-trettende-kabinett') }]}>Aktiviteter</a>
           <ul class="mobile-sub">
             <li><a href="/aktiviteter"                      class="mobile-sub-link">Oversikt</a></li>
             <li><a href="/barn"                             class="mobile-sub-link">Barn &amp; unge</a></li>
             {quizActive && <li><a href="/tryllequiz"        class="mobile-sub-link">Tryllequiz</a></li>}
+            {gameActive && <li><a href="/det-trettende-kabinett" class="mobile-sub-link">Det trettende kabinett</a></li>}
             <li><a href="/aktiviteter/tryllekunstnere"      class="mobile-sub-link">Bestill tryllekunstner</a></li>
           </ul>
         </li>

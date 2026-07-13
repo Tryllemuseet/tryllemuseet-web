@@ -1881,3 +1881,46 @@ export async function getAllQuizQuestions(): Promise<QuizQuestion[]> {
     }
   `)
 }
+
+// ── Typer: Det trettende kabinett ────────────────────────────────
+
+export interface GameFact {
+  text:       string
+  linkUrl?:   string
+  linkLabel?: string
+}
+
+export interface GameChapter {
+  key:    string
+  title?: string
+  intro?: string
+  facts?: GameFact[]
+}
+
+export interface GameConfig {
+  isActive?:        boolean
+  title?:           string
+  intro?:           string
+  comingSoonTitle?: string
+  comingSoonText?:  string
+}
+
+// ── Spørringer: Det trettende kabinett ───────────────────────────
+
+export async function getGameConfig(): Promise<GameConfig | null> {
+  return sanityClient.fetch(`
+    *[_type == "gameConfig"][0] {
+      isActive, title, intro,
+      comingSoonTitle, comingSoonText
+    }
+  `)
+}
+
+export async function getAllGameChapters(): Promise<GameChapter[]> {
+  return sanityClient.fetch(`
+    *[_type == "gameChapter" && isVisible != false && defined(key)] {
+      key, title, intro,
+      facts[] { text, linkUrl, linkLabel }
+    }
+  `)
+}

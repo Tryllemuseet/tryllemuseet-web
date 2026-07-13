@@ -1,10 +1,11 @@
 # Det trettende kabinett — Game Concept (Vision)
 
-> **Status: concept only — nothing is built.** This document captures the
+> **Status: Act I is implemented** and dormant behind the `isActive` master
+> switch (see "Implementation status" at the end). This document captures the
 > creative vision for a browser game on tryllemuseet.no, shaped through an
-> interview with the museum (July 2026). It is deliberately ambitious; a
-> scoped MVP is sketched at the end. Working title was *Nattkabinettet*;
-> renamed after the decisions below.
+> interview with the museum (July 2026). It is deliberately ambitious; the
+> scoped MVP at the end is what has been built. Working title was
+> *Nattkabinettet*; renamed after the decisions below.
 
 ## The pitch
 
@@ -235,3 +236,50 @@ client-side game engine, master switch:
 Everything else — remaining rooms, curiosities, diploma, episode cadence —
 layers on without rework. Historical facts are QA'd by the museum before
 each act ships.
+
+## Implementation status — Act I (July 2026)
+
+Act I is built and follows the Tryllequiz architecture. It ships dormant:
+`/det-trettende-kabinett` shows a "kommer snart" teaser (and no menu entry)
+until the **Kabinettet: Innstillinger** document's `isActive` switch is on.
+
+**What's in Act I:**
+
+- **Brevet** (title screen) → **Foajeen** (guest-book puzzle, grants the four
+  aces and the player's stage name) → **Sandrommet** (cups-and-balls with
+  animated shuffle + text log; the final round's answer is the magician's
+  hand) → **Speilgangen** ("Kortet du valgte" — the princess card trick,
+  with an optional lift-the-curtain reveal) → **Markedsplassen** (the
+  mountebank's acrostic verse) → **Epilog** (soft reveal of the real museum,
+  Act II tease).
+- Lærlingens/Mesterens vei per room, the three-step "Direktørens hvisken"
+  hint ladder, gilded spade cards for hint-free master runs.
+- The deck: 12 slots (values 1–3 × 4 suits); ♦3 is visibly locked "Akt II".
+  Curiosities: the scarab (Sandrommet) and the mouse (Markedsplassen).
+- Shareable varieté poster with the player's stage name (client-side
+  SVG → PNG download), available once any ♥ card is earned.
+- Progress in `localStorage` (`kabinett-akt1-v1`); reduced-motion support;
+  every step readable/solvable as text.
+
+**Editorial model:** puzzle logic and default copy live in the page code;
+`gameChapter` documents (one per room key) override intro texts and replace
+the "visste du at" facts. The default facts in code need the museum's QA
+before activation — or replace them from Sanity.
+
+**Activation checklist** (mirrors the quiz):
+
+1. Deploy the studio so the new types appear: `npm run deploy` (repo root).
+2. Review/override room copy via **Kabinettet: Rom** documents (optional).
+3. QA the "visste du at" facts (museum).
+4. Open **Kabinettet: Innstillinger** and toggle **Spillet er aktivt** on.
+5. Wait for the nightly rebuild or trigger **Daily rebuild** manually.
+   The game and its menu entry appear together.
+
+**Files:**
+
+| What | Where |
+|---|---|
+| Schemas | `schemaTypes/gameConfig.ts`, `schemaTypes/gameChapter.ts` |
+| Queries & types | `web/src/lib/sanity.ts` ("Det trettende kabinett" section) |
+| Page + game engine | `web/src/pages/det-trettende-kabinett.astro` |
+| Nav integration | `web/src/layouts/BaseLayout.astro` |
