@@ -30,6 +30,9 @@ const ROOM_KEYS = [
   { title: 'Speilgangen: Fargene som lyver',      value: 'fargene' },
   { title: 'Vinterhagen (Norden — dame)',         value: 'vinterhagen' },
   { title: 'Epilog (Akt IV)',                     value: 'epilog4' },
+  { title: 'Porten (finalen — terskelen)',        value: 'porten' },
+  { title: 'Det trettende kabinettet (konge)',    value: 'kabinettet' },
+  { title: 'Daggry (finalens epilog)',            value: 'daggry' },
 ]
 
 export const gameChapter = defineType({

@@ -1,8 +1,8 @@
 # Det trettende kabinett — Game Concept (Vision)
 
-> **Status: Acts I–IV are implemented** and dormant behind the `isActive`
-> master switch (see "Implementation status" at the end). Only the finale
-> (the thirteenth room) remains. This document captures the
+> **Status: the full game — Acts I–IV and the finale — is implemented** and
+> dormant behind the `isActive` master switch (see "Implementation status"
+> at the end). This document captures the
 > creative vision for a browser game on tryllemuseet.no, shaped through an
 > interview with the museum (July 2026). It is deliberately ambitious; the
 > scoped MVP at the end is what has been built. Working title was
@@ -238,12 +238,12 @@ Everything else — remaining rooms, curiosities, diploma, episode cadence —
 layers on without rework. Historical facts are QA'd by the museum before
 each act ships.
 
-## Implementation status — Acts I–IV (July 2026)
+## Implementation status — complete game (July 2026)
 
-Acts I–IV are built and follow the Tryllequiz architecture. They ship
-dormant: `/det-trettende-kabinett` shows a "kommer snart" teaser (and no
-menu entry) until the **Kabinettet: Innstillinger** document's `isActive`
-switch is on.
+Acts I–IV **and the finale** are built and follow the Tryllequiz
+architecture. Everything ships dormant: `/det-trettende-kabinett` shows a
+"kommer snart" teaser (and no menu entry) until the **Kabinettet:
+Innstillinger** document's `isActive` switch is on.
 
 **What's in Act I:**
 
@@ -326,8 +326,27 @@ Speilgangen"):
   ❄️); Sanity room keys `minnet`, `studioet`, `trekanten`, `gatehjornet`,
   `fargene`, `vinterhagen`, `epilog4`.
 - The deck spans values 1–12 (48 cards); ♦10–♦12 are visibly locked
-  "finalen". Only the finale (room 13, the kings, the empty-stage synthesis
-  and the daylight epilogue) remains to be built.
+  "finalen".
+
+**What's in the finale** (continues from the Act IV epilogue — "Gå til
+døren"):
+
+- **Porten** — the handle-less door with a deck-shaped recess. It counts
+  the twelve values; placing the deck grants the last three ♦ cards with
+  the Cabinet's final meta-lesson (the greatest illusionist all night was
+  the player themself). A complete 48-card deck earns a special door line;
+  no card is ever a hard gate.
+- **Det trettende kabinettet** — the empty stage. The apprentice composes
+  their own act: one effect, one method, one misdirection (4×4×4 choices,
+  no wrong answers), each option echoing a room from the journey. The
+  performance is narrated with the player's stage name, Direktøren delivers
+  the last lesson ("Kabinettet var aldri magisk — håndverket er det"), and
+  the four **kings** complete the deck (52).
+- **Daggry** — dawn epilogue: the Cabinet exists in daylight and is called
+  Tryllemuseet. Deck summary, rank by collection (Direktørens lærling /
+  Direktørens fortrolige at 49+ / Kabinettets mester at 52), and the
+  downloadable **lærlingbrev** diploma (client-side SVG → PNG, like the
+  poster). Sanity room keys `porten`, `kabinettet`, `daggry`.
 
 **Editorial model:** puzzle logic and default copy live in the page code;
 `gameChapter` documents (one per room key) override intro texts and replace

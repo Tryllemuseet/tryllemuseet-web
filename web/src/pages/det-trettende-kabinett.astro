@@ -302,6 +302,34 @@ const DEFAULT_ROOMS: Record<string, RoomCopy> = {
       'Direktøren venter ved en dør uten håndtak, uten nøkkelhull — bare et grunt, kortformet søkk i treverket. «Tolv rom, lærling. Ett igjen. Denne døren åpner seg ikke for deg. Den åpner seg for stokken din — når den er hel.»',
     facts: [],
   },
+  porten: {
+    title: 'Porten',
+    intro:
+      'Døren uten håndtak venter. Søkket i treverket har form som en kortstokk, og for første gang i natt senker Direktøren stemmen til noe som ligner ærefrykt. «Nå, lærling. Legg stokken din i døren.»',
+    facts: [],
+  },
+  kabinettet: {
+    title: 'Det trettende kabinettet',
+    intro:
+      'Rommet bak den siste døren er … en scene. Tom. Støvete gulvplanker, ett arbeidslys, en sal uten stoler. «Skuffet?» spør Direktøren. «Ikke vær det. Dette er Det trettende kabinettet: scenen som venter på sitt neste nummer. Ditt nummer.»',
+    facts: [
+      {
+        text: 'tryllekunstnere ofte beskriver et nummer i tre lag: effekten (det publikum opplever), metoden (det som faktisk skjer) og misdireksjonen (det som sørger for at de to aldri møtes).',
+      },
+    ],
+  },
+  daggry: {
+    title: 'Daggry',
+    intro:
+      'Bak scenen: en dobbeltdør av glass. Og bak den — ikke enda et rom, men morgen. «Kabinettets siste hemmelighet, lærling: det finnes i dagslys også. Da heter det Tryllemuseet, og det står på Årvoll gård. Rommene der er ekte. Historiene også.»',
+    facts: [
+      {
+        text: 'Tryllemuseet på Årvoll gård i Oslo forteller 4000 år med tryllekunstens historie — den samme historien du nettopp har vandret gjennom en fiksjonsversjon av, rom for rom.',
+        linkUrl: '/besok',
+        linkLabel: 'Planlegg besøket',
+      },
+    ],
+  },
 }
 
 const overrides = new Map(chapters.map(c => [c.key, c]))
@@ -1288,11 +1316,87 @@ const payloadJson = JSON.stringify(payload).replace(/</g, '\\u003c')
           <p class="game-msg" id="ep4-deck-summary" aria-live="polite"></p>
           <p class="game-msg">«Til du kommer tilbake, lærling: Kabinettet står i dagslys på Årvoll gård. Der heter det <strong>Tryllemuseet</strong> — og der er alle dører åpne.»</p>
           <div class="btn-row">
+            <button class="btn-gold" id="ep4-finale">Gå til døren 🚪</button>
             <button class="btn-gold" id="ep4-poster">Last ned plakaten din 🖼️</button>
             <a class="btn-gold" href="/besok">Besøk museet i dagslys →</a>
             <button class="btn-quiet" id="ep4-deck">Se kortstokken 🃏</button>
           </div>
-          <p class="game-msg game-msg--dim">Finalen — Det trettende kabinettet, med kongene og den siste lærdommen — åpner for den som bærer en full stokk.</p>
+        </div>
+      </section>
+
+      <!-- ═══ FINALEN ══════════════════════════════════════════════ -->
+
+      <!-- ── SCENE: PORTEN ───────────────────────────────────────── -->
+      <section class="scene" id="sc-porten" hidden aria-labelledby="po-heading">
+        <p class="scene-label">Terskelen · De siste ruterne</p>
+        <h2 class="scene-heading" id="po-heading">{rooms.porten.title}</h2>
+        <p class="scene-intro">{rooms.porten.intro}</p>
+
+        <div class="panel">
+          <p class="game-msg" id="po-msg" aria-live="polite"></p>
+          <div class="btn-row" id="po-place-row">
+            <button class="btn-gold" id="po-place">Legg stokken i døren 🃏</button>
+          </div>
+          <div id="po-lesson" hidden>
+            <p class="game-msg game-msg--good">Døren tar imot stokken — og gir tre kort tilbake: <strong>de tre siste ruterne.</strong></p>
+            <div class="card-row" id="po-cards"></div>
+            <p class="game-msg">«Illusjonskortene for de tre siste rommene?» Direktøren smiler skjevt. «De har vært dine hele natten. I Studioet lurte du deg selv med regnestykket. På Gatehjørnet valgte du selv å se bort. I Vinterhagen malte hjernen din nordlyset ferdig. Den største illusjonisten i Kabinettet, lærling — det var aldri meg.»</p>
+            <p class="game-msg" id="po-door-msg"></p>
+            <button class="btn-gold" id="po-enter">Gå inn i Det trettende kabinettet →</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── SCENE: DET TRETTENDE KABINETTET ─────────────────────── -->
+      <section class="scene" id="sc-kabinettet" hidden aria-labelledby="kb-heading">
+        <p class="scene-label">Trettende rom · Kongene</p>
+        <h2 class="scene-heading" id="kb-heading">{rooms.kabinettet.title}</h2>
+        <p class="scene-intro">{rooms.kabinettet.intro}</p>
+
+        <div class="panel" id="kb-compose">
+          <p class="game-msg">«Sett sammen nummeret ditt av det du har lært,» sier Direktøren. «Én effekt. Én metode. Én misdireksjon. Det finnes ingen gale svar — bare ditt svar.»</p>
+
+          <p class="field-label">Effekten — det salen skal oppleve</p>
+          <div class="sl-options" id="kb-effects"></div>
+
+          <p class="field-label">Metoden — det som faktisk skjer</p>
+          <div class="sl-options" id="kb-methods"></div>
+
+          <p class="field-label">Misdireksjonen — det som holder de to fra hverandre</p>
+          <div class="sl-options" id="kb-misdirections"></div>
+
+          <div class="btn-row">
+            <button class="btn-gold" id="kb-perform" disabled>Fremfør nummeret 🎭</button>
+          </div>
+        </div>
+
+        <div class="panel panel--solved" id="kb-performance" hidden>
+          <p class="solved-title">✨ Premiere</p>
+          <p class="principle" id="kb-act"></p>
+          <p class="principle">Direktøren applauderer — langsomt, og helt alene, og det er nok. «<strong>Kabinettet var aldri magisk, lærling. Håndverket er det.</strong> Det var den siste leksen.» Så rekker han deg fire kort: <strong>kongene.</strong></p>
+          <div class="card-row" id="kb-kings"></div>
+          <div class="facts" id="kb-facts"></div>
+          <button class="btn-gold" id="kb-continue">Mot lyset →</button>
+        </div>
+      </section>
+
+      <!-- ── SCENE: DAGGRY ───────────────────────────────────────── -->
+      <section class="scene" id="sc-daggry" hidden aria-labelledby="dg-heading">
+        <p class="scene-label">Epilog · Kabinettet i dagslys</p>
+        <h2 class="scene-heading" id="dg-heading">{rooms.daggry.title}</h2>
+        <p class="scene-intro">{rooms.daggry.intro}</p>
+
+        <div class="panel">
+          <p class="game-msg" id="dg-deck-summary" aria-live="polite"></p>
+          <p class="game-msg" id="dg-rank-line"></p>
+          <div class="facts" id="dg-facts"></div>
+          <div class="btn-row">
+            <button class="btn-gold" id="dg-diploma">Last ned lærlingbrevet 📜</button>
+            <button class="btn-gold" id="dg-poster">Last ned plakaten din 🖼️</button>
+            <a class="btn-gold" href="/besok">Besøk Tryllemuseet →</a>
+            <button class="btn-quiet" id="dg-deck">Se kortstokken 🃏</button>
+          </div>
+          <p class="game-msg game-msg--dim">Takk for at du var Kabinettets lærling. Rommene står her — og en ny natt kan alltid begynne på nytt fra spill-linjen øverst.</p>
         </div>
       </section>
 
@@ -1307,9 +1411,9 @@ const payloadJson = JSON.stringify(payload).replace(/</g, '\\u003c')
           <h2 id="deck-heading">Kortstokken din</h2>
           <button class="btn-quiet" id="deck-close" aria-label="Lukk kortstokken">✕ Lukk</button>
         </div>
-        <p class="deck-sub">Tretten rom, fire kort i hvert — en hel kortstokk er nøkkelen til det trettende rommet. I Akt I–IV kan du samle alle verdier til og med damene.</p>
+        <p class="deck-sub">Tretten rom, fire kort i hvert — 52 kort er hele stokken, og hele vandringen fra lærling til mester.</p>
         <div id="deck-grid"></div>
-        <p class="deck-ghost">Kongene — venter bak døren til Det trettende kabinettet …</p>
+        <p class="deck-ghost" id="deck-ghost-line">Kongene — venter bak døren til Det trettende kabinettet …</p>
         <div class="btn-row">
           <button class="btn-gold" id="poster-download" hidden>Last ned plakaten din 🖼️</button>
         </div>
@@ -1358,17 +1462,20 @@ const payloadJson = JSON.stringify(payload).replace(/</g, '\\u003c')
       10: { label: 'Ti',    face: '10', room: 'Studioet' },
       11: { label: 'Knekt', face: 'Kn', room: 'Gatehjørnet' },
       12: { label: 'Dame',  face: 'D',  room: 'Vinterhagen' },
+      13: { label: 'Konge', face: 'K',  room: 'Det trettende kabinettet' },
     }
-    const DECK_VALUES = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+    const DECK_VALUES = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]
     const TOTAL_ACT1 = 12
     const TOTAL_ACT2 = 24
     const TOTAL_ACT3 = 36
-    const TOTAL_DECK = 48
+    const TOTAL_ACT4 = 48
+    const TOTAL_DECK = 52
 
     type Stage = 'brevet' | 'foajeen' | 'sandrommet' | 'speilgangen' | 'markedsplassen' | 'epilog'
       | 'galleriet' | 'biblioteket' | 'oyet' | 'salongen' | 'seansen' | 'epilog2'
       | 'frievalget' | 'teateret' | 'kinoen' | 'lerretet' | 'verkstedet' | 'epilog3'
       | 'minnet' | 'studioet' | 'trekanten' | 'gatehjornet' | 'fargene' | 'vinterhagen' | 'epilog4'
+      | 'porten' | 'kabinettet' | 'daggry'
     interface SaveState {
       v: number
       stageName: string
@@ -1476,6 +1583,9 @@ const payloadJson = JSON.stringify(payload).replace(/</g, '\\u003c')
       fargene:        $('sc-fargene'),
       vinterhagen:    $('sc-vinterhagen'),
       epilog4:        $('sc-epilog4'),
+      porten:         $('sc-porten'),
+      kabinettet:     $('sc-kabinettet'),
+      daggry:         $('sc-daggry'),
     }
 
     function goTo(stage: Stage) {
@@ -1487,6 +1597,8 @@ const payloadJson = JSON.stringify(payload).replace(/</g, '\\u003c')
       if (stage === 'epilog2') renderEpilog2()
       if (stage === 'epilog3') renderEpilog3()
       if (stage === 'epilog4') renderEpilog4()
+      if (stage === 'porten') renderPorten()
+      if (stage === 'daggry') renderDaggry()
     }
 
     // ── Kortstokken (modal) ──────────────────────────────────────
@@ -1510,19 +1622,23 @@ const payloadJson = JSON.stringify(payload).replace(/</g, '\\u003c')
           } else {
             const empty = document.createElement('span')
             empty.className = 'pcard pcard--empty'
-            const locked = (value === 10 || value === 11 || value === 12) && suit === 'ruter'
+            const lockedFinale = (value === 10 || value === 11 || value === 12) && suit === 'ruter'
+            const lockedKing = value === 13
             empty.setAttribute('role', 'img')
-            empty.setAttribute('aria-label', locked
-              ? `${VALUES[value].label} i ruter — kommer i finalen`
-              : `Mangler: ${VALUES[value].label} i ${SUITS[suit as Suit].name}. ${SUITS[suit as Suit].earn}.`)
+            empty.setAttribute('aria-label', lockedKing
+              ? 'Konge — venter bak den siste døren'
+              : lockedFinale
+                ? `${VALUES[value].label} i ruter — kommer i finalen`
+                : `Mangler: ${VALUES[value].label} i ${SUITS[suit as Suit].name}. ${SUITS[suit as Suit].earn}.`)
             empty.innerHTML = `<span class="pcard-face">?</span><span class="pcard-suit">${SUITS[suit as Suit].sym}</span>`
-            empty.title = locked ? 'Kommer i finalen' : SUITS[suit as Suit].earn
+            empty.title = lockedKing ? 'Bak den siste døren' : lockedFinale ? 'Kommer i finalen' : SUITS[suit as Suit].earn
             slots.appendChild(empty)
           }
         }
         row.appendChild(slots)
         grid.appendChild(row)
       }
+      $('deck-ghost-line').hidden = state.cards.includes('13-spar')
       const posterBtn = $('poster-download') as HTMLButtonElement
       posterBtn.hidden = !state.cards.some(c => c.endsWith('-hjerter'))
     }
@@ -1561,13 +1677,17 @@ const payloadJson = JSON.stringify(payload).replace(/</g, '\\u003c')
       </svg>`
     }
     function downloadPoster() {
+      const inFinale = state.cards.some(c => parseInt(c) === 13)
+        || ['porten', 'kabinettet', 'daggry'].includes(state.stage)
       const inActFour = state.cards.some(c => parseInt(c) >= 10)
         || ['minnet', 'studioet', 'trekanten', 'gatehjornet', 'fargene', 'vinterhagen', 'epilog4'].includes(state.stage)
       const inActThree = state.cards.some(c => parseInt(c) >= 7)
         || ['frievalget', 'teateret', 'kinoen', 'lerretet', 'verkstedet', 'epilog3'].includes(state.stage)
       const inActTwo = state.cards.some(c => parseInt(c) >= 4)
         || ['galleriet', 'biblioteket', 'oyet', 'salongen', 'seansen', 'epilog2'].includes(state.stage)
-      const subtitle = inActFour
+      const subtitle = inFinale
+        ? '— alle tretten rom: natten som ble dag —'
+        : inActFour
         ? '— akt I–IV: den nest siste natten —'
         : inActThree
           ? '— akt I–III: nettene som aldri tok slutt —'
@@ -3276,17 +3396,205 @@ const payloadJson = JSON.stringify(payload).replace(/</g, '\\u003c')
 
     // ═══ EPILOG AKT IV ═══════════════════════════════════════════
     function renderEpilog4() {
-      const n = state.cards.length
+      const n = state.cards.filter(c => parseInt(c) <= 12).length
       const gilded = state.gilded.length
-      let txt = `Etter fire netter i Kabinettet har du ${n} av ${TOTAL_DECK} kort i kortstokken`
+      let txt = `Etter fire netter i Kabinettet har du ${n} av ${TOTAL_ACT4} kort i kortstokken`
       txt += gilded > 0 ? ` — ${gilded === 1 ? 'ett av dem gylt' : `${gilded} av dem gylte`}. ` : '. '
-      txt += n >= TOTAL_DECK - 3
+      txt += n >= TOTAL_ACT4 - 3
         ? 'Direktøren legger hånden mot døren uten håndtak. Innenfra svarer det — ett bank. «Den hører deg, lærling.»'
         : 'Døren uten håndtak tier ennå. Det som mangler i stokken, kan finnes en annen natt — rommene husker deg.'
       $('ep4-deck-summary').textContent = txt
     }
     $('ep4-poster').addEventListener('click', downloadPoster)
     $('ep4-deck').addEventListener('click', () => { renderDeck(); deckModal.showModal() })
+    $('ep4-finale').addEventListener('click', () => goTo('porten'))
+
+    // ═══ PORTEN ══════════════════════════════════════════════════
+    function renderPorten() {
+      const values = new Set(state.cards.map(c => parseInt(c)))
+      let all12 = true
+      for (let v = 1; v <= 12; v++) if (!values.has(v)) all12 = false
+      if (all12) {
+        $('po-msg').textContent = 'Søkket i treverket har nøyaktig stokkens form. Døren venter.'
+        ;($('po-place') as HTMLButtonElement).disabled = false
+      } else {
+        $('po-msg').textContent = 'Døren teller tolv verdier — og stokken din mangler noen. Rommene husker deg; en ny natt kan samle resten.'
+        ;($('po-place') as HTMLButtonElement).disabled = true
+      }
+    }
+
+    $('po-place').addEventListener('click', async () => {
+      $('po-place-row').hidden = true
+      const box = $('po-cards')
+      box.innerHTML = ''
+      for (const v of [10, 11, 12]) {
+        state.cards.includes(cardCode(v, 'ruter')) || state.cards.push(cardCode(v, 'ruter'))
+        box.appendChild(miniCard(v, 'ruter'))
+      }
+      save()
+      updateDeckCount()
+      toast('🃏 Tre nye kort: <strong>de siste ruterne</strong> — dørens gave')
+      const full = state.cards.filter(c => parseInt(c) <= 12).length === TOTAL_ACT4
+      $('po-door-msg').textContent = full
+        ? 'Døren gir etter med noe som ligner en akkord: hel stokk, hel dør. Den svinger opp uten en lyd.'
+        : 'Døren gir etter, tung og langsom. Den teller det som teller — og du har det med deg.'
+      await sleep(400)
+      $('po-lesson').hidden = false
+    })
+
+    $('po-enter').addEventListener('click', () => goTo('kabinettet'))
+
+    // ═══ DET TRETTENDE KABINETTET ════════════════════════════════
+    interface KbChoice { key: string; label: string; line: string }
+    const KB_EFFECTS: KbChoice[] = [
+      { key: 'forsvinner', label: 'Noe forsvinner',
+        line: 'lar museets gamle lykt forsvinne i løse luften' },
+      { key: 'svever', label: 'Noe svever',
+        line: 'lar speilet fra Speilgangen sveve fritt over scenekanten' },
+      { key: 'tanker', label: 'Tankene leses',
+        line: 'leser tanken til en fremmed i salen — riktig på første forsøk' },
+      { key: 'heles', label: 'Noe knust heles',
+        line: 'knuser Direktørens lommeur og gir det tilbake helt' },
+    ]
+    const KB_METHODS: KbChoice[] = [
+      { key: 'forberedt', label: 'Forberedt lenge før forestillingen',
+        line: 'metoden ble kjøpt i går, slik Teateret lærte deg' },
+      { key: 'teknikk', label: 'Skjult i mekanikken',
+        line: 'et håndverk av tannhjul og motvekter, arvet fra Salongen og Verkstedet' },
+      { key: 'sprak', label: 'Gjemt i ordene',
+        line: 'hemmeligheten ropes høyt i patteren, slik gjøgleren gjorde på Markedsplassen' },
+      { key: 'klipp', label: 'Lagt i øyeblikket ingen ser',
+        line: 'selve grepet skjer i et blunk, som Kinoens klipp og Galleriets bytte' },
+    ]
+    const KB_MISDIRECTIONS: KbChoice[] = [
+      { key: 'hvile', label: 'Den hvilende hånden',
+        line: 'mens alle øyne følger det som beveger seg, gjør den rolige hånden jobben — Sandrommets eldste lekse' },
+      { key: 'valg', label: 'Det frie valget',
+        line: 'publikums «frie» valg leder dem selv til utfallet, slik Speilgangen viste deg' },
+      { key: 'tro', label: 'Mørket og troen',
+        line: 'salen tror før den ser, og troen gjør halve trikset — Seansens lærdom' },
+      { key: 'ramme', label: 'Rammen',
+        line: 'du viser dem nøyaktig hvor de skal se, og aldri hvor de ikke skal — slik Studioet rammet inn blikket' },
+    ]
+    const kbPicked: Record<string, KbChoice | null> = { effect: null, method: null, mis: null }
+
+    function kbRenderGroup(containerId: string, choices: KbChoice[], slot: 'effect' | 'method' | 'mis') {
+      const box = $(containerId)
+      box.innerHTML = ''
+      for (const c of choices) {
+        const btn = document.createElement('button')
+        btn.className = 'mp-cup' + (kbPicked[slot]?.key === c.key ? ' mp-cup--picked' : '')
+        btn.textContent = c.label
+        btn.addEventListener('click', () => {
+          kbPicked[slot] = kbPicked[slot]?.key === c.key ? null : c
+          kbRenderAll()
+        })
+        box.appendChild(btn)
+      }
+    }
+
+    function kbRenderAll() {
+      kbRenderGroup('kb-effects', KB_EFFECTS, 'effect')
+      kbRenderGroup('kb-methods', KB_METHODS, 'method')
+      kbRenderGroup('kb-misdirections', KB_MISDIRECTIONS, 'mis')
+      ;($('kb-perform') as HTMLButtonElement).disabled = !(kbPicked.effect && kbPicked.method && kbPicked.mis)
+    }
+
+    $('kb-perform').addEventListener('click', () => {
+      if (!(kbPicked.effect && kbPicked.method && kbPicked.mis)) return
+      const name = (state.stageName || 'Den navnløse').toUpperCase()
+      $('kb-act').innerHTML =
+        `Arbeidslyset dør. Ett hjerteslag av mørke — så flammer scenen opp. PÅ SCENEN: <strong>${name}</strong>! ` +
+        `For et publikum som ikke finnes ennå, ${kbPicked.effect.line}. ` +
+        `Ingen i salen aner at ${kbPicked.method.line}. ` +
+        `Og ingen ser det — for ${kbPicked.mis.line}.`
+      const kingsBox = $('kb-kings')
+      kingsBox.innerHTML = ''
+      for (const suit of SUIT_ORDER) {
+        state.cards.includes(cardCode(13, suit)) || state.cards.push(cardCode(13, suit))
+        kingsBox.appendChild(miniCard(13, suit))
+      }
+      save()
+      updateDeckCount()
+      toast('🃏 Fire nye kort: <strong>kongene</strong> — Kabinettets siste gave')
+      renderFacts('kb-facts', 'kabinettet')
+      $('kb-compose').hidden = true
+      $('kb-performance').hidden = false
+      window.scrollTo({ top: 0, behavior: reducedMotion ? 'auto' : 'smooth' })
+    })
+
+    $('kb-continue').addEventListener('click', () => goTo('daggry'))
+
+    // ═══ DAGGRY ══════════════════════════════════════════════════
+    function daggryRank(): string {
+      const n = state.cards.length
+      if (n >= TOTAL_DECK) return 'Kabinettets mester'
+      if (n >= TOTAL_DECK - 3) return 'Direktørens fortrolige'
+      return 'Direktørens lærling'
+    }
+
+    function renderDaggry() {
+      const n = state.cards.length
+      const gilded = state.gilded.length
+      let txt = `Du går ut i morgenlyset med ${n} av ${TOTAL_DECK} kort`
+      txt += gilded > 0 ? ` — ${gilded === 1 ? 'ett av dem gylt' : `${gilded} av dem gylte`}. ` : '. '
+      txt += n >= TOTAL_DECK
+        ? 'En hel stokk. Direktøren sier ingenting — han bukker.'
+        : 'Det som mangler, venter i rommene: kuriositetene gjemmer seg fortsatt for den som begynner en ny natt.'
+      $('dg-deck-summary').textContent = txt
+      $('dg-rank-line').innerHTML = `Lærlingbrevet ditt er skrevet ut med tittelen <strong>${daggryRank()}</strong>.`
+      renderFacts('dg-facts', 'daggry')
+    }
+
+    function diplomaSvg(name: string, rank: string, cards: number): string {
+      const n = escapeXml(name.toUpperCase())
+      const r = escapeXml(rank)
+      return `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="900" viewBox="0 0 1200 900">
+        <rect width="1200" height="900" fill="#F5EBD8"/>
+        <rect x="30" y="30" width="1140" height="840" fill="none" stroke="#8a6a15" stroke-width="6"/>
+        <rect x="48" y="48" width="1104" height="804" fill="none" stroke="#8a6a15" stroke-width="2"/>
+        <text x="600" y="130" text-anchor="middle" fill="#8a6a15" font-family="Georgia, serif" font-size="30" letter-spacing="10">DET TRETTENDE KABINETT</text>
+        <text x="600" y="230" text-anchor="middle" fill="#3D0E15" font-family="Georgia, serif" font-size="72" font-weight="bold">LÆRLINGBREV</text>
+        <text x="600" y="320" text-anchor="middle" fill="#2b1a12" font-family="Georgia, serif" font-size="28" font-style="italic">Det bevitnes herved at</text>
+        <text x="600" y="410" text-anchor="middle" fill="#3D0E15" font-family="Georgia, serif" font-size="56" font-weight="bold">${n}</text>
+        <text x="600" y="490" text-anchor="middle" fill="#2b1a12" font-family="Georgia, serif" font-size="26">har vandret gjennom Kabinettets tretten rom, samlet ${cards} av 52 kort,</text>
+        <text x="600" y="530" text-anchor="middle" fill="#2b1a12" font-family="Georgia, serif" font-size="26">og opptas i lauget med tittelen</text>
+        <text x="600" y="610" text-anchor="middle" fill="#3D0E15" font-family="Georgia, serif" font-size="44" font-weight="bold" font-style="italic">${r}</text>
+        <text x="600" y="700" text-anchor="middle" fill="#8a6a15" font-family="Georgia, serif" font-size="34">♠ ♥ ♦ ♣</text>
+        <text x="600" y="770" text-anchor="middle" fill="#2b1a12" font-family="Georgia, serif" font-size="24" font-style="italic">gitt i daggryet, mellom natt og dag — Direktøren</text>
+        <text x="600" y="820" text-anchor="middle" fill="#8a6a15" font-family="Georgia, serif" font-size="20" letter-spacing="4">TRYLLEMUSEET · ÅRVOLL GÅRD</text>
+      </svg>`
+    }
+
+    function downloadDiploma() {
+      const svg = diplomaSvg(state.stageName || 'Den navnløse', daggryRank(), state.cards.length)
+      const blob = new Blob([svg], { type: 'image/svg+xml;charset=utf-8' })
+      const url = URL.createObjectURL(blob)
+      const img = new Image()
+      img.onload = () => {
+        const canvas = document.createElement('canvas')
+        canvas.width = 1200
+        canvas.height = 900
+        canvas.getContext('2d')!.drawImage(img, 0, 0)
+        URL.revokeObjectURL(url)
+        const a = document.createElement('a')
+        a.href = canvas.toDataURL('image/png')
+        a.download = 'det-trettende-kabinett-laerlingbrev.png'
+        a.click()
+      }
+      img.onerror = () => {
+        URL.revokeObjectURL(url)
+        const a = document.createElement('a')
+        a.href = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg)
+        a.download = 'det-trettende-kabinett-laerlingbrev.svg'
+        a.click()
+      }
+      img.src = url
+    }
+
+    $('dg-diploma').addEventListener('click', downloadDiploma)
+    $('dg-poster').addEventListener('click', downloadPoster)
+    $('dg-deck').addEventListener('click', () => { renderDeck(); deckModal.showModal() })
 
     // ── Init ─────────────────────────────────────────────────────
     updateDeckCount()
@@ -3294,6 +3602,7 @@ const payloadJson = JSON.stringify(payload).replace(/</g, '\\u003c')
     gaRender()
     seRender()
     fvRender()
+    kbRenderAll()
     if (state.stage !== 'brevet') {
       // Resume: rebuild the small bits of scene state the stages need
       if (state.stageName) $('fj-book-line').textContent = `~ ${state.stageName} ~`
@@ -3458,6 +3767,7 @@ const payloadJson = JSON.stringify(payload).replace(/</g, '\\u003c')
   :global(.mp-cup) { font-family: var(--font-ui); font-size: 0.95rem; font-weight: 700; color: var(--cream); background: #ffffff14; border: 1.5px solid var(--gold-dark); border-radius: 8px; padding: 0.85rem 1.3rem; transition: background 150ms, border-color 150ms; }
   :global(.mp-cup:not(:disabled):hover) { background: #ffffff26; border-color: var(--gold); }
   :global(.mp-cup:disabled) { opacity: 0.6; cursor: default; }
+  :global(.mp-cup--picked) { background: #ffffff26; border-color: var(--gold); box-shadow: 0 0 0 2px var(--gold); }
 
   /* ── GALLERIET ─────────────────────────────────────────────────── */
   .gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 0.75rem; margin: 1rem 0; }
