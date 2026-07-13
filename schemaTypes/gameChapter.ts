@@ -23,6 +23,13 @@ const ROOM_KEYS = [
   { title: 'Speilgangen: Ånden på lerretet',      value: 'lerretet' },
   { title: 'Verkstedet (illusjonsbyggerne — 9)',  value: 'verkstedet' },
   { title: 'Epilog (Akt III)',                    value: 'epilog3' },
+  { title: 'Speilgangen: Minnet som dikter',      value: 'minnet' },
+  { title: 'Studioet (TV-mentalisme — 10)',       value: 'studioet' },
+  { title: 'Speilgangen: Trekanten som ikke finnes', value: 'trekanten' },
+  { title: 'Gatehjørnet (nærmagi — knekt)',       value: 'gatehjornet' },
+  { title: 'Speilgangen: Fargene som lyver',      value: 'fargene' },
+  { title: 'Vinterhagen (Norden — dame)',         value: 'vinterhagen' },
+  { title: 'Epilog (Akt IV)',                     value: 'epilog4' },
 ]
 
 export const gameChapter = defineType({

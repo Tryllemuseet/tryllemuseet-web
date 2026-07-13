@@ -1,7 +1,8 @@
 # Det trettende kabinett — Game Concept (Vision)
 
-> **Status: Acts I–III are implemented** and dormant behind the `isActive`
-> master switch (see "Implementation status" at the end). This document captures the
+> **Status: Acts I–IV are implemented** and dormant behind the `isActive`
+> master switch (see "Implementation status" at the end). Only the finale
+> (the thirteenth room) remains. This document captures the
 > creative vision for a browser game on tryllemuseet.no, shaped through an
 > interview with the museum (July 2026). It is deliberately ambitious; the
 > scoped MVP at the end is what has been built. Working title was
@@ -237,10 +238,10 @@ Everything else — remaining rooms, curiosities, diploma, episode cadence —
 layers on without rework. Historical facts are QA'd by the museum before
 each act ships.
 
-## Implementation status — Acts I–III (July 2026)
+## Implementation status — Acts I–IV (July 2026)
 
-Acts I, II and III are built and follow the Tryllequiz architecture. They
-ship dormant: `/det-trettende-kabinett` shows a "kommer snart" teaser (and no
+Acts I–IV are built and follow the Tryllequiz architecture. They ship
+dormant: `/det-trettende-kabinett` shows a "kommer snart" teaser (and no
 menu entry) until the **Kabinettet: Innstillinger** document's `isActive`
 switch is on.
 
@@ -303,6 +304,30 @@ forhenget"):
   🎞️, messingskruen 🔩); Sanity room keys `frievalget`, `teateret`,
   `kinoen`, `lerretet`, `verkstedet`, `epilog3`.
 - The deck spans values 1–9 (36 cards); ♦7–♦9 are visibly locked "Akt IV".
+
+**What's in Act IV** (continues from the Act III epilogue — "Inn i
+Speilgangen"):
+
+- **Minnet som dikter** (Speilgangen: false memory, DRM-style) — read
+  twelve sleep-themed words, then swear that «søvn» was on the list. It
+  wasn't. Grants ♦7. → **Studioet** (the tens; TV mentalism) — the studio
+  "reads your mind" (the ×9 digit-sum force → a cat in Denmark), then the
+  puzzle is to point at the step where your freedom disappeared. →
+  **Trekanten som ikke finnes** (Speilgangen: Kanizsa illusory contours);
+  grants ♦8. → **Gatehjørnet** (the jacks; close-up/street magic) — watch
+  a coin-vanish routine beat by beat (replayable) and name the moment of
+  the move (the false transfer, sold by the relaxed hand). →
+  **Fargene som lyver** (Speilgangen: simultaneous contrast); grants ♦9.
+  → **Vinterhagen** (the queens; the Nordic room, aurora styling) — the
+  synthesis puzzle: match four scenarios to the room whose principle
+  explains them, with two decoy rooms. → **Epilog IV** (the handle-less
+  door: finale tease).
+- Same machinery; curiosities (manuskortet 🗒️, skillingen 🪙, snøfnugget
+  ❄️); Sanity room keys `minnet`, `studioet`, `trekanten`, `gatehjornet`,
+  `fargene`, `vinterhagen`, `epilog4`.
+- The deck spans values 1–12 (48 cards); ♦10–♦12 are visibly locked
+  "finalen". Only the finale (room 13, the kings, the empty-stage synthesis
+  and the daylight epilogue) remains to be built.
 
 **Editorial model:** puzzle logic and default copy live in the page code;
 `gameChapter` documents (one per room key) override intro texts and replace
