@@ -1,7 +1,7 @@
 # Det trettende kabinett — Game Concept (Vision)
 
-> **Status: Act I is implemented** and dormant behind the `isActive` master
-> switch (see "Implementation status" at the end). This document captures the
+> **Status: Acts I and II are implemented** and dormant behind the `isActive`
+> master switch (see "Implementation status" at the end). This document captures the
 > creative vision for a browser game on tryllemuseet.no, shaped through an
 > interview with the museum (July 2026). It is deliberately ambitious; the
 > scoped MVP at the end is what has been built. Working title was
@@ -237,11 +237,12 @@ Everything else — remaining rooms, curiosities, diploma, episode cadence —
 layers on without rework. Historical facts are QA'd by the museum before
 each act ships.
 
-## Implementation status — Act I (July 2026)
+## Implementation status — Acts I & II (July 2026)
 
-Act I is built and follows the Tryllequiz architecture. It ships dormant:
-`/det-trettende-kabinett` shows a "kommer snart" teaser (and no menu entry)
-until the **Kabinettet: Innstillinger** document's `isActive` switch is on.
+Acts I and II are built and follow the Tryllequiz architecture. They ship
+dormant: `/det-trettende-kabinett` shows a "kommer snart" teaser (and no menu
+entry) until the **Kabinettet: Innstillinger** document's `isActive` switch
+is on.
 
 **What's in Act I:**
 
@@ -258,8 +259,30 @@ until the **Kabinettet: Innstillinger** document's `isActive` switch is on.
   Curiosities: the scarab (Sandrommet) and the mouse (Markedsplassen).
 - Shareable varieté poster with the player's stage name (client-side
   SVG → PNG download), available once any ♥ card is earned.
-- Progress in `localStorage` (`kabinett-akt1-v1`); reduced-motion support;
-  every step readable/solvable as text.
+- Progress in `localStorage` (`kabinett-v1`; saves from the earlier
+  `kabinett-akt1-v1` key are migrated automatically); reduced-motion
+  support; every step readable/solvable as text.
+
+**What's in Act II** (continues from the Act I epilogue — "Løft
+forhenget"):
+
+- **Galleriet** (Speilgangen: change blindness) — six paintings, one swaps
+  its motif during a "blink"; spotting it (or giving up — no fail state)
+  grants ♦3, the card Act I showed as locked. → **Biblioteket** (the fours;
+  Reginald Scot, 1584) — match four woodcuts to the secrets they expose;
+  cryptic wording on Mesterens vei. → **Øyet som lyver** (Speilgangen:
+  optical illusions) — Müller-Lyer lines and Ebbinghaus circles as inline
+  SVG with a measuring-line reveal; grants ♦4. → **Salongen** (the fives;
+  the Chess Turk) — deduce the automaton's secret from staged observations.
+  → **Seansen** (the sixes; spiritualism) — flag the medium's three methods
+  among eight séance events; Lærlingens vei reports how many were right.
+  → **Epilog II** (Act III tease: Teateret).
+- Same per-room machinery as Act I: lærling/mester paths, hint ladders,
+  gilded spades, curiosities (bokormen, tannhjulet, klokka), Sanity copy
+  overrides per room key (`galleriet`, `biblioteket`, `oyet`, `salongen`,
+  `seansen`, `epilog2`).
+- The deck now spans values 1–6 (24 cards); ♦5 and ♦6 are visibly locked
+  "Akt III". The shareable poster subtitle updates once Act II is reached.
 
 **Editorial model:** puzzle logic and default copy live in the page code;
 `gameChapter` documents (one per room key) override intro texts and replace

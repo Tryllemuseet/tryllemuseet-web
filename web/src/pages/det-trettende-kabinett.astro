@@ -79,6 +79,77 @@ const DEFAULT_ROOMS: Record<string, RoomCopy> = {
       'Direktøren møter deg ved et tungt, rødt forheng. Bak det: en trapp videre opp i mørket. «Du har kommet lenger enn de fleste, lærling. Men Kabinettet har tretten rom, og natten er ikke lang nok for dem alle. Kom tilbake — dørene husker deg nå.»',
     facts: [],
   },
+  galleriet: {
+    title: 'Galleriet som endrer seg',
+    intro:
+      'Speilgangen har fått nye vegger siden sist: et galleri av malerier i tunge gullrammer. «Velkommen tilbake dit du ikke skal løse noe,» sier Direktøren. «Bare se. Se så godt du kan — og stol ikke på at det holder.»',
+    facts: [
+      {
+        text: 'fenomenet kalles endringsblindhet: selv store endringer rett foran øynene dine kan forsvinne helt når de skjer i et blunk eller bak en kort forstyrrelse. Hjernen lagrer en grov skisse — ikke bildet.',
+      },
+    ],
+  },
+  biblioteket: {
+    title: 'Biblioteket',
+    intro:
+      'Rommet er en katedral av bokrygger, og støvet står som røkelse i lyset fra én eneste lampe. På lesepulten ligger en bok slått opp, trykt i 1584. «Her,» sier Direktøren, «skjedde det farligste som kan skje et triks: noen skrev det ned.»',
+    facts: [
+      {
+        text: 'Reginald Scots «The Discoverie of Witchcraft» (1584) regnes som den første trykte boken som forklarer tryllekunster i detalj — skrevet for å forsvare mennesker som var anklaget for trolldom.',
+      },
+      {
+        text: 'samme år, 1584, kom også franskmannen Jean Prévosts bok om «subtile og fornøyelige oppfinnelser» — den eldste kjente boken viet utelukkende tryllekunst.',
+        linkUrl: '/ressurser/bibliotek',
+        linkLabel: 'Besøk museets bibliotek',
+      },
+    ],
+  },
+  oyet: {
+    title: 'Øyet som lyver',
+    intro:
+      'Speilgangen smalner, og på veggene henger ikke speil lenger, men plansjer og instrumenter. «Nå skal du få se med dine egne øyne,» sier Direktøren. «Det er nettopp det som er problemet.»',
+    facts: [
+      {
+        text: 'synsbedrag ikke oppstår i øyet, men i hjernen: den tolker alt du ser ut fra erfaring — og lar seg ikke overstyre selv når du vet fasiten.',
+      },
+    ],
+  },
+  salongen: {
+    title: 'Salongen',
+    intro:
+      'En salong fra en annen tid: silketapet, kandelabre — og midt i rommet en skikkelse i turban bak et sjakkbrett, montert på et skap av lakkert tre. Det tikker. «Maskinen som tenker,» sier Direktøren tørt. «Eller: det var det folk betalte for å tro.»',
+    facts: [
+      {
+        text: 'Wolfgang von Kempelens «sjakktyrker» (1770) forbløffet Europa i over 60 år og spilte mot både Napoleon og Benjamin Franklin — med en menneskelig sjakkspiller skjult i skapet.',
+      },
+      {
+        text: 'urmakeren Jean-Eugène Robert-Houdin, «den moderne tryllekunstens far», fylte 1800-tallets salonger med automater — og en ung amerikaner tok senere navn etter ham: Houdini.',
+        linkUrl: '/tryllehistorie',
+        linkLabel: 'Dykk ned i tryllehistorien',
+      },
+    ],
+  },
+  seansen: {
+    title: 'Seansen',
+    intro:
+      'Et rundt bord, sju stoler, gasslampen skrudd ned til en hvisken. Mediet sitter allerede klar med lukkede øyne. «Sett deg, lærling,» sier Direktøren fra mørket. «I dette rommet gjør troen halve trikset. Din jobb er å se hvem som gjør resten.»',
+    facts: [
+      {
+        text: 'den moderne spiritismen startet i 1848 med søstrene Fox i USA, som lot «åndene» banke svar i bordet — mange år senere tilsto Margaret Fox at lydene ble laget med tå- og kneledd.',
+      },
+      {
+        text: 'Harry Houdini brukte sine siste år på å avsløre falske medier — han kjente alle metodene deres fra scenen selv.',
+        linkUrl: '/tryllehistorie/magiens-hvem-er-hvem',
+        linkLabel: 'Magiens hvem er hvem',
+      },
+    ],
+  },
+  epilog2: {
+    title: 'Trappen videre',
+    intro:
+      'Direktøren venter ved foten av en trapp som skrur seg opp i mørket. Ovenfra: lyden av et teater som gjør seg klart — tau som strammes, en kiste som låses. «Seks rom, lærling. Sju igjen. Men daggryet kommer, og teateret får vente til en annen natt.»',
+    facts: [],
+  },
 }
 
 const overrides = new Map(chapters.map(c => [c.key, c]))
@@ -324,11 +395,254 @@ const payloadJson = JSON.stringify(payload).replace(/</g, '\\u003c')
           <p class="game-msg" id="ep-deck-summary" aria-live="polite"></p>
           <p class="game-msg">«…Og skulle du savne magien i dagslys: Kabinettet finnes på dagtid også. Da heter det <strong>Tryllemuseet</strong>, og det står på Årvoll gård.»</p>
           <div class="btn-row">
+            <button class="btn-gold" id="ep-act2">Løft forhenget — Akt II venter →</button>
             <button class="btn-gold" id="ep-poster">Last ned plakaten din 🖼️</button>
             <a class="btn-gold" href="/besok">Besøk museet i dagslys →</a>
             <button class="btn-quiet" id="ep-deck">Se kortstokken 🃏</button>
           </div>
-          <p class="game-msg game-msg--dim">Akt II — med Biblioteket, Seansen og flere av Kabinettets rom — er under bygging bak forhenget.</p>
+        </div>
+      </section>
+
+      <!-- ═══ AKT II ═══════════════════════════════════════════════ -->
+
+      <!-- ── SCENE: GALLERIET (SPEILGANGEN) ──────────────────────── -->
+      <section class="scene" id="sc-galleriet" hidden aria-labelledby="ga-heading">
+        <p class="scene-label">Mellomrommet · Ruter tre</p>
+        <h2 class="scene-heading" id="ga-heading">{rooms.galleriet.title}</h2>
+        <p class="scene-intro">{rooms.galleriet.intro}</p>
+
+        <div class="panel">
+          <p class="game-msg" id="ga-msg" aria-live="polite">Seks malerier henger på veggen. Se nøye på hvert av dem — så nøye du klarer.</p>
+          <div class="gallery" id="ga-wall"></div>
+          <div class="btn-row">
+            <button class="btn-gold" id="ga-blink-btn">Jeg har sett nok — blunk 👁️</button>
+            <button class="btn-quiet" id="ga-giveup" hidden>Gi meg svaret 🎭</button>
+          </div>
+          <div class="reveal" id="ga-reveal" hidden>
+            <p>Du så rett på veggen — og likevel glapp det. Hjernen din sammenligner ikke synet med forrige blikk; den stoler på en grov skisse og fyller inn resten selv. Alt som endres i et blunk, endres uten vitner.</p>
+            <div class="facts" id="ga-facts"></div>
+          </div>
+          <button class="btn-gold" id="ga-continue" hidden>Videre til Biblioteket →</button>
+          <div class="gallery-blink" id="ga-blink" hidden aria-hidden="true"><p>… blunk …</p></div>
+        </div>
+      </section>
+
+      <!-- ── SCENE: BIBLIOTEKET ──────────────────────────────────── -->
+      <section class="scene" id="sc-biblioteket" hidden aria-labelledby="bl-heading">
+        <p class="scene-label">Fjerde rom · Firerne</p>
+        <h2 class="scene-heading" id="bl-heading">{rooms.biblioteket.title}</h2>
+        <p class="scene-intro">{rooms.biblioteket.intro}</p>
+
+        <div class="panel" id="bl-pathchoice">
+          <p class="field-label">Velg din vei gjennom rommet</p>
+          <div class="path-row">
+            <button class="path-btn" data-scene="bl" data-path="laerling">
+              <strong>Lærlingens vei</strong>
+              <span>Bokens forklaringer står med rene ord</span>
+            </button>
+            <button class="path-btn" data-scene="bl" data-path="mester">
+              <strong>Mesterens vei</strong>
+              <span>Boken snakker i gåter — løser du alt uten hint, gylles sparkortet ditt</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="panel" id="bl-game" hidden>
+          <p class="game-msg">Fire tresnitt er revet løs fra boken, og fire forklaringer står igjen på siden. <strong>Sett hvert tresnitt sammen med hemmeligheten det avslører:</strong> trykk på et tresnitt, så på en forklaring.</p>
+          <div class="match-grid">
+            <div class="match-col" id="bl-woodcuts" aria-label="Tresnittene"></div>
+            <div class="match-col" id="bl-secrets" aria-label="Forklaringene"></div>
+          </div>
+          <button class="curiosity" id="bl-worm" aria-label="En liten bokorm titter frem mellom to bind">🐛</button>
+          <p class="game-msg" id="bl-msg" aria-live="polite"></p>
+
+          <div class="hintbox">
+            <button class="btn-quiet" id="bl-hint-btn">Direktørens hvisken (hint) 🤫</button>
+            <ul class="hint-list" id="bl-hints"></ul>
+          </div>
+        </div>
+
+        <div class="panel panel--solved" id="bl-solved" hidden>
+          <p class="solved-title">✨ Gåten er løst</p>
+          <p class="principle">«<strong>En nedskrevet hemmelighet er en bevæpnet hemmelighet</strong>, lærling. Scot skrev for å redde liv fra bålet — og bevæpnet i samme åndedrag fire hundre år med tryllekunstnere. Boken du nettopp bladde i, er stammor til alle tryllebøker.»</p>
+          <div class="facts" id="bl-facts"></div>
+          <button class="btn-gold" id="bl-complete">Fullfør rommet →</button>
+        </div>
+      </section>
+
+      <!-- ── SCENE: ØYET SOM LYVER (SPEILGANGEN) ─────────────────── -->
+      <section class="scene" id="sc-oyet" hidden aria-labelledby="oy-heading">
+        <p class="scene-label">Mellomrommet · Ruter fire</p>
+        <h2 class="scene-heading" id="oy-heading">{rooms.oyet.title}</h2>
+        <p class="scene-intro">{rooms.oyet.intro}</p>
+
+        <div class="panel">
+          <div id="oy-act1">
+            <p class="game-msg">Første plansje: to linjer. <strong>Hvilken er lengst?</strong></p>
+            <div class="oy-stage">
+              <svg viewBox="0 0 400 140" role="img" aria-label="To vannrette linjer: den øverste har piler som vender utover i endene, den nederste har piler som vender innover">
+                <line x1="100" y1="40" x2="300" y2="40" stroke="#3a2a20" stroke-width="4"/>
+                <path d="M100 40 L80 25 M100 40 L80 55 M300 40 L320 25 M300 40 L320 55" stroke="#3a2a20" stroke-width="4" fill="none"/>
+                <line x1="100" y1="100" x2="300" y2="100" stroke="#3a2a20" stroke-width="4"/>
+                <path d="M100 100 L120 85 M100 100 L120 115 M300 100 L280 85 M300 100 L280 115" stroke="#3a2a20" stroke-width="4" fill="none"/>
+                <g id="oy-ruler" style="display:none">
+                  <line x1="100" y1="18" x2="100" y2="122" stroke="#B0342C" stroke-width="2" stroke-dasharray="6 4"/>
+                  <line x1="300" y1="18" x2="300" y2="122" stroke="#B0342C" stroke-width="2" stroke-dasharray="6 4"/>
+                </g>
+              </svg>
+            </div>
+            <div class="btn-row" id="oy-a1-btns">
+              <button class="mp-cup" data-oy1="top">Den øverste</button>
+              <button class="mp-cup" data-oy1="bottom">Den nederste</button>
+              <button class="mp-cup" data-oy1="same">De er like lange</button>
+            </div>
+            <p class="game-msg" id="oy-a1-msg" aria-live="polite" hidden></p>
+          </div>
+
+          <div id="oy-act2" hidden>
+            <p class="game-msg">Andre plansje: to oransje sirkler. <strong>Hvilken er størst?</strong></p>
+            <div class="oy-stage">
+              <svg viewBox="0 0 400 160" role="img" aria-label="To oransje sirkler: den venstre omgitt av store grå sirkler, den høyre omgitt av små grå sirkler">
+                <g fill="#9a9a9a">
+                  <circle cx="158" cy="80" r="26"/><circle cx="129" cy="130" r="26"/><circle cx="71" cy="130" r="26"/>
+                  <circle cx="42" cy="80" r="26"/><circle cx="71" cy="30" r="26"/><circle cx="129" cy="30" r="26"/>
+                  <circle cx="334" cy="80" r="9"/><circle cx="324" cy="104" r="9"/><circle cx="300" cy="114" r="9"/>
+                  <circle cx="276" cy="104" r="9"/><circle cx="266" cy="80" r="9"/><circle cx="276" cy="56" r="9"/>
+                  <circle cx="300" cy="46" r="9"/><circle cx="324" cy="56" r="9"/>
+                </g>
+                <circle cx="100" cy="80" r="20" fill="#E8862E"/>
+                <circle cx="300" cy="80" r="20" fill="#E8862E"/>
+                <g id="oy-measure" style="display:none">
+                  <circle cx="100" cy="80" r="20" fill="none" stroke="#B0342C" stroke-width="2" stroke-dasharray="6 4"/>
+                  <circle cx="300" cy="80" r="20" fill="none" stroke="#B0342C" stroke-width="2" stroke-dasharray="6 4"/>
+                  <line x1="120" y1="80" x2="280" y2="80" stroke="#B0342C" stroke-width="2" stroke-dasharray="6 4"/>
+                </g>
+              </svg>
+            </div>
+            <div class="btn-row" id="oy-a2-btns">
+              <button class="mp-cup" data-oy2="left">Den venstre</button>
+              <button class="mp-cup" data-oy2="right">Den høyre</button>
+              <button class="mp-cup" data-oy2="same">De er like store</button>
+            </div>
+            <p class="game-msg" id="oy-a2-msg" aria-live="polite" hidden></p>
+          </div>
+
+          <div class="reveal" id="oy-reveal" hidden>
+            <p>Begge plansjene er ærlige — det er øynene dine som ikke er det. Selv nå, når du <em>vet</em> at linjene er like lange og sirklene like store, klarer ikke hjernen å se det. «Husk dette,» sier Direktøren. «Publikum tror de ser med øynene. De ser med vanene sine.»</p>
+            <div class="facts" id="oy-facts"></div>
+          </div>
+          <button class="btn-gold" id="oy-continue" hidden>Videre til Salongen →</button>
+        </div>
+      </section>
+
+      <!-- ── SCENE: SALONGEN ─────────────────────────────────────── -->
+      <section class="scene" id="sc-salongen" hidden aria-labelledby="sl-heading">
+        <p class="scene-label">Femte rom · Femerne</p>
+        <h2 class="scene-heading" id="sl-heading">{rooms.salongen.title}</h2>
+        <p class="scene-intro">{rooms.salongen.intro}</p>
+
+        <div class="panel" id="sl-pathchoice">
+          <p class="field-label">Velg din vei gjennom rommet</p>
+          <div class="path-row">
+            <button class="path-btn" data-scene="sl" data-path="laerling">
+              <strong>Lærlingens vei</strong>
+              <span>Direktøren hvisker et spørsmål som hjelper deg å tenke</span>
+            </button>
+            <button class="path-btn" data-scene="sl" data-path="mester">
+              <strong>Mesterens vei</strong>
+              <span>Bare observasjonene — løser du gåten uten hint, gylles sparkortet ditt</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="panel" id="sl-game" hidden>
+          <p class="game-msg">Tyrkeren spiller parti etter parti — og slår alle. Direktøren lar deg se tre forestillinger på rad. Observasjonene dine:</p>
+          <ol class="swap-log" id="sl-log"></ol>
+          <div id="sl-choices" hidden>
+            <p class="game-msg"><strong>Hva er maskinens hemmelighet?</strong></p>
+            <div class="sl-options">
+              <button class="mp-cup" data-sl="urverk">Et urverk avansert nok til å spille sjakk</button>
+              <button class="mp-cup" data-sl="magnet">Magneter under gulvet styrer brikkene</button>
+              <button class="mp-cup" data-sl="menneske">Det sitter et menneske gjemt i skapet</button>
+              <button class="mp-cup" data-sl="trader">Fremviseren trekker i usynlige tråder</button>
+            </div>
+          </div>
+          <button class="curiosity" id="sl-cog" aria-label="Et lite messingtannhjul ligger gjenglemt på teppet">⚙️</button>
+          <p class="game-msg" id="sl-msg" aria-live="polite"></p>
+
+          <div class="hintbox">
+            <button class="btn-quiet" id="sl-hint-btn">Direktørens hvisken (hint) 🤫</button>
+            <ul class="hint-list" id="sl-hints"></ul>
+          </div>
+        </div>
+
+        <div class="panel panel--solved" id="sl-solved" hidden>
+          <p class="solved-title">✨ Gåten er løst</p>
+          <p class="principle">«<strong>Teknologi utkledd som magi</strong>, lærling. Publikum stirret på tannhjulene — og tannhjulene var kostymet. Det eneste maskinen aldri kunne gjøre, var det eneste den måtte: tenke. Så tenkte noen for den.»</p>
+          <div class="facts" id="sl-facts"></div>
+          <button class="btn-gold" id="sl-complete">Fullfør rommet →</button>
+        </div>
+      </section>
+
+      <!-- ── SCENE: SEANSEN ──────────────────────────────────────── -->
+      <section class="scene" id="sc-seansen" hidden aria-labelledby="se-heading">
+        <p class="scene-label">Sjette rom · Sekserne</p>
+        <h2 class="scene-heading" id="se-heading">{rooms.seansen.title}</h2>
+        <p class="scene-intro">{rooms.seansen.intro}</p>
+
+        <div class="panel" id="se-pathchoice">
+          <p class="field-label">Velg din vei gjennom rommet</p>
+          <div class="path-row">
+            <button class="path-btn" data-scene="se" data-path="laerling">
+              <strong>Lærlingens vei</strong>
+              <span>Direktøren forteller deg hva du skal se etter — og hvor nære du er</span>
+            </button>
+            <button class="path-btn" data-scene="se" data-path="mester">
+              <strong>Mesterens vei</strong>
+              <span>Du får bare seansen — løser du gåten uten hint, gylles sparkortet ditt</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="panel" id="se-game" hidden>
+          <p class="game-msg" id="se-pretext"></p>
+          <p class="game-msg">Seansen tar til. Åtte ting skjer rundt bordet — <strong>tre av dem er mediets metoder</strong>, resten er undre og teater. Merk av de tre metodene:</p>
+          <ul class="se-list" id="se-events"></ul>
+          <button class="curiosity" id="se-bell" aria-label="En liten klokke er festet under bordkanten">🔔</button>
+          <div class="btn-row">
+            <button class="btn-gold" id="se-submit">Avslør mediet 🔍</button>
+          </div>
+          <p class="game-msg" id="se-msg" aria-live="polite"></p>
+
+          <div class="hintbox">
+            <button class="btn-quiet" id="se-hint-btn">Direktørens hvisken (hint) 🤫</button>
+            <ul class="hint-list" id="se-hints"></ul>
+          </div>
+        </div>
+
+        <div class="panel panel--solved" id="se-solved" hidden>
+          <p class="solved-title">✨ Gåten er løst</p>
+          <p class="principle">«<strong>Troen gjør halve trikset</strong>, lærling. Mørket, den frie hånden og den pratsomme assistenten gjorde resten. Og la du merke til én ting til? Åndene visste aldri noe som ikke gjestene visste fra før.»</p>
+          <div class="facts" id="se-facts"></div>
+          <button class="btn-gold" id="se-complete">Fullfør rommet →</button>
+        </div>
+      </section>
+
+      <!-- ── SCENE: EPILOG AKT II ────────────────────────────────── -->
+      <section class="scene" id="sc-epilog2" hidden aria-labelledby="ep2-heading">
+        <p class="scene-label">Akt II er fullført</p>
+        <h2 class="scene-heading" id="ep2-heading">{rooms.epilog2.title}</h2>
+        <p class="scene-intro">{rooms.epilog2.intro}</p>
+
+        <div class="panel">
+          <p class="game-msg" id="ep2-deck-summary" aria-live="polite"></p>
+          <p class="game-msg">«Og husk, lærling: alt du har sett i natt, står i glassmontere når solen er oppe. Kabinettet heter <strong>Tryllemuseet</strong> om dagen.»</p>
+          <div class="btn-row">
+            <button class="btn-gold" id="ep2-poster">Last ned plakaten din 🖼️</button>
+            <a class="btn-gold" href="/besok">Besøk museet i dagslys →</a>
+            <button class="btn-quiet" id="ep2-deck">Se kortstokken 🃏</button>
+          </div>
+          <p class="game-msg game-msg--dim">Akt III — med Teateret, den låste kisten og utbryterkunstens gullalder — venter bak neste natt.</p>
         </div>
       </section>
 
@@ -343,9 +657,9 @@ const payloadJson = JSON.stringify(payload).replace(/</g, '\\u003c')
           <h2 id="deck-heading">Kortstokken din</h2>
           <button class="btn-quiet" id="deck-close" aria-label="Lukk kortstokken">✕ Lukk</button>
         </div>
-        <p class="deck-sub">Tretten rom, fire kort i hvert — en hel kortstokk er nøkkelen til det trettende rommet. I Akt I kan du samle de tre første verdiene.</p>
+        <p class="deck-sub">Tretten rom, fire kort i hvert — en hel kortstokk er nøkkelen til det trettende rommet. I Akt I og II kan du samle de seks første verdiene.</p>
         <div id="deck-grid"></div>
-        <p class="deck-ghost">4–13 · konger inkludert — venter i Akt II og utover …</p>
+        <p class="deck-ghost">7–13 · konger inkludert — venter i Akt III og utover …</p>
         <div class="btn-row">
           <button class="btn-gold" id="poster-download" hidden>Last ned plakaten din 🖼️</button>
         </div>
@@ -382,13 +696,19 @@ const payloadJson = JSON.stringify(payload).replace(/</g, '\\u003c')
     type Suit = keyof typeof SUITS
     const SUIT_ORDER: Suit[] = ['spar', 'hjerter', 'ruter', 'klover']
     const VALUES: Record<number, { label: string; face: string; room: string }> = {
-      1: { label: 'Ess', face: 'A', room: 'Foajeen' },
-      2: { label: 'To',  face: '2', room: 'Sandrommet' },
-      3: { label: 'Tre', face: '3', room: 'Markedsplassen' },
+      1: { label: 'Ess',  face: 'A', room: 'Foajeen' },
+      2: { label: 'To',   face: '2', room: 'Sandrommet' },
+      3: { label: 'Tre',  face: '3', room: 'Markedsplassen' },
+      4: { label: 'Fire', face: '4', room: 'Biblioteket' },
+      5: { label: 'Fem',  face: '5', room: 'Salongen' },
+      6: { label: 'Seks', face: '6', room: 'Seansen' },
     }
+    const DECK_VALUES = [1, 2, 3, 4, 5, 6]
     const TOTAL_ACT1 = 12
+    const TOTAL_DECK = 24
 
     type Stage = 'brevet' | 'foajeen' | 'sandrommet' | 'speilgangen' | 'markedsplassen' | 'epilog'
+      | 'galleriet' | 'biblioteket' | 'oyet' | 'salongen' | 'seansen' | 'epilog2'
     interface SaveState {
       v: number
       stageName: string
@@ -397,16 +717,18 @@ const payloadJson = JSON.stringify(payload).replace(/</g, '\\u003c')
       gilded: string[]
       path: Record<string, string>
     }
-    const STORAGE_KEY = 'kabinett-akt1-v1'
+    const STORAGE_KEY = 'kabinett-v1'
+    const LEGACY_KEY  = 'kabinett-akt1-v1'
     const blank = (): SaveState => ({ v: 1, stageName: '', stage: 'brevet', cards: [], gilded: [], path: {} })
 
     let state = blank()
     try {
-      const raw = localStorage.getItem(STORAGE_KEY)
+      const raw = localStorage.getItem(STORAGE_KEY) ?? localStorage.getItem(LEGACY_KEY)
       if (raw) {
         const parsed = JSON.parse(raw)
         if (parsed && parsed.v === 1) state = { ...blank(), ...parsed }
       }
+      localStorage.removeItem(LEGACY_KEY)
     } catch { /* private mode etc. — play without saving */ }
 
     function save() {
@@ -446,7 +768,7 @@ const payloadJson = JSON.stringify(payload).replace(/</g, '\\u003c')
     }
 
     function updateDeckCount() {
-      $('deck-count').textContent = `${state.cards.length}/${TOTAL_ACT1}`
+      $('deck-count').textContent = `${state.cards.length}/${TOTAL_DECK}`
     }
 
     function renderFacts(containerId: string, roomKey: string) {
@@ -475,6 +797,12 @@ const payloadJson = JSON.stringify(payload).replace(/</g, '\\u003c')
       speilgangen:    $('sc-speilgangen'),
       markedsplassen: $('sc-markedsplassen'),
       epilog:         $('sc-epilog'),
+      galleriet:      $('sc-galleriet'),
+      biblioteket:    $('sc-biblioteket'),
+      oyet:           $('sc-oyet'),
+      salongen:       $('sc-salongen'),
+      seansen:        $('sc-seansen'),
+      epilog2:        $('sc-epilog2'),
     }
 
     function goTo(stage: Stage) {
@@ -483,6 +811,7 @@ const payloadJson = JSON.stringify(payload).replace(/</g, '\\u003c')
       for (const [key, el] of Object.entries(SCENES)) el.hidden = key !== stage
       window.scrollTo({ top: 0, behavior: reducedMotion ? 'auto' : 'smooth' })
       if (stage === 'epilog') renderEpilog()
+      if (stage === 'epilog2') renderEpilog2()
     }
 
     // ── Kortstokken (modal) ──────────────────────────────────────
@@ -490,7 +819,7 @@ const payloadJson = JSON.stringify(payload).replace(/</g, '\\u003c')
     function renderDeck() {
       const grid = $('deck-grid')
       grid.innerHTML = ''
-      for (const value of [1, 2, 3]) {
+      for (const value of DECK_VALUES) {
         const row = document.createElement('div')
         row.className = 'deck-row'
         const label = document.createElement('p')
@@ -506,13 +835,13 @@ const payloadJson = JSON.stringify(payload).replace(/</g, '\\u003c')
           } else {
             const empty = document.createElement('span')
             empty.className = 'pcard pcard--empty'
-            const locked = value === 3 && suit === 'ruter'
+            const locked = (value === 5 || value === 6) && suit === 'ruter'
             empty.setAttribute('role', 'img')
             empty.setAttribute('aria-label', locked
-              ? `Ruter tre — kommer i Akt II`
+              ? `${VALUES[value].label} i ruter — kommer i Akt III`
               : `Mangler: ${VALUES[value].label} i ${SUITS[suit as Suit].name}. ${SUITS[suit as Suit].earn}.`)
             empty.innerHTML = `<span class="pcard-face">?</span><span class="pcard-suit">${SUITS[suit as Suit].sym}</span>`
-            empty.title = locked ? 'Kommer i Akt II' : SUITS[suit as Suit].earn
+            empty.title = locked ? 'Kommer i Akt III' : SUITS[suit as Suit].earn
             slots.appendChild(empty)
           }
         }
@@ -538,8 +867,9 @@ const payloadJson = JSON.stringify(payload).replace(/</g, '\\u003c')
     function escapeXml(s: string) {
       return s.replace(/[<>&'"]/g, c => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;', "'": '&apos;', '"': '&quot;' }[c] as string))
     }
-    function posterSvg(name: string): string {
+    function posterSvg(name: string, subtitle: string): string {
       const n = escapeXml(name.toUpperCase())
+      const sub = escapeXml(subtitle)
       return `<svg xmlns="http://www.w3.org/2000/svg" width="900" height="1200" viewBox="0 0 900 1200">
         <rect width="900" height="1200" fill="#3D0E15"/>
         <rect x="30" y="30" width="840" height="1140" fill="none" stroke="#C9A227" stroke-width="6"/>
@@ -547,7 +877,7 @@ const payloadJson = JSON.stringify(payload).replace(/</g, '\\u003c')
         <text x="450" y="170" text-anchor="middle" fill="#C9A227" font-family="Georgia, serif" font-size="34" letter-spacing="8">TRYLLEMUSEET PRESENTERER</text>
         <text x="450" y="330" text-anchor="middle" fill="#F5EBD8" font-family="Georgia, serif" font-size="76" font-weight="bold">DET TRETTENDE</text>
         <text x="450" y="420" text-anchor="middle" fill="#F5EBD8" font-family="Georgia, serif" font-size="76" font-weight="bold">KABINETT</text>
-        <text x="450" y="530" text-anchor="middle" fill="#C9A227" font-family="Georgia, serif" font-size="30" font-style="italic">— akt I: natten da porten gikk opp —</text>
+        <text x="450" y="530" text-anchor="middle" fill="#C9A227" font-family="Georgia, serif" font-size="30" font-style="italic">${sub}</text>
         <text x="450" y="660" text-anchor="middle" fill="#C9A227" font-family="Georgia, serif" font-size="30" letter-spacing="6">MED DEN LOVENDE LÆRLINGEN</text>
         <text x="450" y="770" text-anchor="middle" fill="#F5EBD8" font-family="Georgia, serif" font-size="60" font-weight="bold">${n}</text>
         <text x="450" y="870" text-anchor="middle" fill="#C9A227" font-family="Georgia, serif" font-size="26" font-style="italic">opptatt av Direktøren selv</text>
@@ -556,7 +886,12 @@ const payloadJson = JSON.stringify(payload).replace(/</g, '\\u003c')
       </svg>`
     }
     function downloadPoster() {
-      const svg = posterSvg(state.stageName || 'Den navnløse')
+      const inActTwo = state.cards.some(c => parseInt(c) >= 4)
+        || ['galleriet', 'biblioteket', 'oyet', 'salongen', 'seansen', 'epilog2'].includes(state.stage)
+      const subtitle = inActTwo
+        ? '— akt I–II: nettene bak forhenget —'
+        : '— akt I: natten da porten gikk opp —'
+      const svg = posterSvg(state.stageName || 'Den navnløse', subtitle)
       const blob = new Blob([svg], { type: 'image/svg+xml;charset=utf-8' })
       const url = URL.createObjectURL(blob)
       const img = new Image()
@@ -960,9 +1295,9 @@ const payloadJson = JSON.stringify(payload).replace(/</g, '\\u003c')
       goTo('epilog')
     })
 
-    // ═══ EPILOG ══════════════════════════════════════════════════
+    // ═══ EPILOG AKT I ════════════════════════════════════════════
     function renderEpilog() {
-      const n = state.cards.length
+      const n = state.cards.filter(c => parseInt(c) <= 3).length
       const gilded = state.gilded.length
       let txt = `Du forlater Akt I med ${n} av ${TOTAL_ACT1} kort i kortstokken`
       txt += gilded > 0 ? ` — ${gilded === 1 ? 'ett av dem gylt' : `${gilded} av dem gylte`}. ` : '. '
@@ -973,22 +1308,446 @@ const payloadJson = JSON.stringify(payload).replace(/</g, '\\u003c')
     }
     $('ep-poster').addEventListener('click', downloadPoster)
     $('ep-deck').addEventListener('click', () => { renderDeck(); deckModal.showModal() })
+    $('ep-act2').addEventListener('click', () => goTo('galleriet'))
+
+    // ═══ GALLERIET (SPEILGANGEN: ENDRINGSBLINDHET) ═══════════════
+    interface Painting { title: string; a: string; b: string; descA: string; descB: string }
+    const GA_PAINTINGS: Painting[] = [
+      { title: 'Skip i storm',       a: '🚢', b: '⛵', descA: 'et dampskip på opprørt hav',      descB: 'en liten seilbåt på opprørt hav' },
+      { title: 'Kurv med frukt',     a: '🍎', b: '🍐', descA: 'et rødt eple øverst i kurven',    descB: 'en grønn pære øverst i kurven' },
+      { title: 'Husdyret',           a: '🐈‍⬛', b: '🐕', descA: 'en svart katt som sover',         descB: 'en liten hund som sover' },
+      { title: 'Natt over Årvoll',   a: '🌕', b: '🌙', descA: 'en rund fullmåne over gården',    descB: 'en smal månesigd over gården' },
+      { title: 'Blomster i vase',    a: '🌹', b: '🌷', descA: 'røde roser i vasen',              descB: 'røde tulipaner i vasen' },
+      { title: 'Direktørens hodeplagg', a: '🎩', b: '👒', descA: 'en høy, sort flosshatt',       descB: 'en bredbremmet sommerhatt' },
+    ]
+    let gaChanged = -1
+    let gaShowingB = false
+    let gaDone = false
+    let gaWrong = 0
+
+    function gaRender() {
+      const wall = $('ga-wall')
+      wall.innerHTML = ''
+      GA_PAINTINGS.forEach((p, i) => {
+        const btn = document.createElement('button')
+        btn.className = 'painting'
+        const showB = gaShowingB && i === gaChanged
+        btn.innerHTML = `<span class="painting-art" aria-hidden="true">${showB ? p.b : p.a}</span><span class="painting-title">${p.title}</span>`
+        btn.setAttribute('aria-label', `Maleri «${p.title}»: ${showB ? p.descB : p.descA}`)
+        btn.disabled = gaChanged < 0 || gaDone
+        if (gaDone && i === gaChanged) btn.classList.add('painting--found')
+        btn.addEventListener('click', () => gaPick(i))
+        wall.appendChild(btn)
+      })
+    }
+
+    async function gaBlink() {
+      const overlay = $('ga-blink')
+      overlay.hidden = false
+      await sleep(900)
+      if (gaChanged < 0) {
+        gaChanged = Math.floor(Math.random() * GA_PAINTINGS.length)
+        gaShowingB = true
+        $('ga-msg').textContent = 'Noe på veggen er ikke som det var. Trykk på maleriet som endret seg — eller blunk igjen om du trenger å sammenligne.'
+        $('ga-blink-btn').textContent = 'Blunk igjen 👁️'
+      } else {
+        gaShowingB = !gaShowingB
+      }
+      gaRender()
+      overlay.hidden = true
+    }
+
+    function gaFinish(byGivingUp: boolean) {
+      gaDone = true
+      gaShowingB = true
+      gaRender()
+      ;($('ga-blink-btn') as HTMLButtonElement).hidden = true
+      ;($('ga-giveup') as HTMLButtonElement).hidden = true
+      $('ga-msg').textContent = byGivingUp
+        ? `Direktøren peker på «${GA_PAINTINGS[gaChanged].title}». «Du så på det, lærling. To ganger. Det er hele poenget.»`
+        : `Riktig — «${GA_PAINTINGS[gaChanged].title}» byttet motiv rett foran øynene dine. Og de fleste netter går det ingen opp i.`
+      awardCard(3, 'ruter', 'Illusjonskortet fra Galleriet')
+      renderFacts('ga-facts', 'galleriet')
+      $('ga-reveal').hidden = false
+      ;($('ga-continue') as HTMLButtonElement).hidden = false
+    }
+
+    function gaPick(i: number) {
+      if (gaDone || gaChanged < 0) return
+      if (i === gaChanged) {
+        gaFinish(false)
+      } else {
+        gaWrong++
+        $('ga-msg').textContent = `«${GA_PAINTINGS[i].title}» henger som det alltid har hengt. Blunk igjen og sammenlign.`
+        if (gaWrong >= 2) ($('ga-giveup') as HTMLButtonElement).hidden = false
+      }
+    }
+
+    $('ga-blink-btn').addEventListener('click', gaBlink)
+    $('ga-giveup').addEventListener('click', () => gaFinish(true))
+    $('ga-continue').addEventListener('click', () => goTo('biblioteket'))
+
+    // ═══ BIBLIOTEKET ═════════════════════════════════════════════
+    interface BlPair { icon: string; name: string; laerling: string; mester: string }
+    const BL_PAIRS: BlPair[] = [
+      { icon: '🗡️', name: 'Kniven gjennom armen',
+        laerling: 'Bladet glir inn i skaftet — kniven var aldri hel.',
+        mester: 'Stålet viker hjem dit det kom fra.' },
+      { icon: '🍽️', name: 'Hodet på fatet',
+        laerling: 'Bordet har to hull — og plass til to gutter.',
+        mester: 'Fatet er ærlig. Møbelet lyver.' },
+      { icon: '🪙', name: 'Mynten som forsvinner',
+        laerling: 'Mynten forlater aldri hånden — den hviler skjult i grepet.',
+        mester: 'Det som forsvant, har aldri reist.' },
+      { icon: '🪢', name: 'Snoren som deles og heles',
+        laerling: 'En ekstra bit snor byttes inn — det er den som ofres for kniven.',
+        mester: 'Den som ofres, er ikke den du så.' },
+    ]
+    const BL_SECRET_ORDER = [2, 0, 3, 1]
+    let blPath = state.path['biblioteket'] || ''
+    let blHintsUsed = 0
+    let blWrong = 0
+    let blSelected = -1
+    let blMatched: number[] = []
+
+    const BL_HINTS = [
+      'Begynn med hodet på fatet: hva slags møbel trenger det trikset?',
+      'En kniv som ikke skader, er en kniv som ikke er hel.',
+      'Snoren som ble hel igjen, var aldri den som ble klippet.',
+    ]
+    wireHints('bl-hint-btn', 'bl-hints', BL_HINTS, () => { blHintsUsed++ })
+
+    function blRender() {
+      const wc = $('bl-woodcuts')
+      const sc = $('bl-secrets')
+      wc.innerHTML = ''
+      sc.innerHTML = ''
+      BL_PAIRS.forEach((p, i) => {
+        const btn = document.createElement('button')
+        btn.className = 'match-item'
+        btn.innerHTML = `<span class="match-icon" aria-hidden="true">${p.icon}</span><span>${p.name}</span>`
+        btn.disabled = blMatched.includes(i)
+        if (blMatched.includes(i)) btn.classList.add('match-item--done')
+        if (blSelected === i) btn.classList.add('match-item--selected')
+        btn.addEventListener('click', () => {
+          blSelected = blSelected === i ? -1 : i
+          blRender()
+        })
+        wc.appendChild(btn)
+      })
+      for (const i of BL_SECRET_ORDER) {
+        const p = BL_PAIRS[i]
+        const btn = document.createElement('button')
+        btn.className = 'match-item match-item--secret'
+        btn.textContent = blPath === 'mester' ? p.mester : p.laerling
+        btn.disabled = blMatched.includes(i)
+        if (blMatched.includes(i)) btn.classList.add('match-item--done')
+        btn.addEventListener('click', () => {
+          if (blSelected < 0) {
+            $('bl-msg').textContent = 'Velg et tresnitt først — så forklaringen som hører til.'
+            return
+          }
+          if (blSelected === i) {
+            blMatched.push(i)
+            blSelected = -1
+            $('bl-msg').textContent = blMatched.length < BL_PAIRS.length
+              ? 'Riktig — tresnittet legger seg til ro på siden sin.'
+              : ''
+            blRender()
+            if (blMatched.length === BL_PAIRS.length) blSolve()
+          } else {
+            blWrong++
+            blSelected = -1
+            $('bl-msg').textContent = 'Boken blafrer irritert med sidene. Det paret hører ikke sammen.'
+            blRender()
+          }
+        })
+        sc.appendChild(btn)
+      }
+    }
+
+    function blSolve() {
+      const gild = blPath === 'mester' && blHintsUsed === 0 && blWrong === 0
+      awardCard(4, 'spar', 'Sigillet fra Biblioteket')
+      if (gild && !state.gilded.includes('4-spar')) {
+        state.gilded.push('4-spar')
+        save()
+      }
+      renderFacts('bl-facts', 'biblioteket')
+      $('bl-solved').hidden = false
+      $('bl-solved').scrollIntoView({ behavior: reducedMotion ? 'auto' : 'smooth', block: 'nearest' })
+    }
+
+    document.querySelectorAll<HTMLButtonElement>('.path-btn[data-scene="bl"]').forEach(btn =>
+      btn.addEventListener('click', () => {
+        blPath = btn.dataset.path || 'laerling'
+        state.path['biblioteket'] = blPath
+        save()
+        $('bl-pathchoice').hidden = true
+        $('bl-game').hidden = false
+        blRender()
+      })
+    )
+
+    $('bl-worm').addEventListener('click', () => {
+      $('bl-worm').hidden = true
+      awardCard(4, 'klover', 'Kuriositeten: bokormen fra 1584')
+    })
+
+    $('bl-complete').addEventListener('click', () => {
+      awardCard(4, 'hjerter', 'Plakatkortet fra Biblioteket er trykket')
+      goTo('oyet')
+    })
+
+    // ═══ ØYET SOM LYVER (SPEILGANGEN: SYNSBEDRAG) ════════════════
+    document.querySelectorAll<HTMLButtonElement>('#oy-a1-btns .mp-cup').forEach(btn =>
+      btn.addEventListener('click', async () => {
+        document.querySelectorAll<HTMLButtonElement>('#oy-a1-btns .mp-cup').forEach(b => { b.disabled = true })
+        ;(document.getElementById('oy-ruler') as unknown as SVGGElement).style.display = ''
+        const msg = $('oy-a1-msg')
+        msg.textContent = btn.dataset.oy1 === 'same'
+          ? 'Riktig — de er nøyaktig like lange. Men se på dem: ser de like ut? Ikke i det hele tatt.'
+          : 'De er nøyaktig like lange — mål selv langs de røde strekene. Pilene i endene bestemmer hva hjernen din ser.'
+        msg.hidden = false
+        await sleep(600)
+        $('oy-act2').hidden = false
+      })
+    )
+
+    document.querySelectorAll<HTMLButtonElement>('#oy-a2-btns .mp-cup').forEach(btn =>
+      btn.addEventListener('click', () => {
+        document.querySelectorAll<HTMLButtonElement>('#oy-a2-btns .mp-cup').forEach(b => { b.disabled = true })
+        ;(document.getElementById('oy-measure') as unknown as SVGGElement).style.display = ''
+        const msg = $('oy-a2-msg')
+        msg.textContent = btn.dataset.oy2 === 'same'
+          ? 'Riktig — nøyaktig like store. Men den høyre ser fortsatt størst ut, gjør den ikke?'
+          : 'De er nøyaktig like store — selskapet rundt bestemmer hvor store de ser ut.'
+        msg.hidden = false
+        awardCard(4, 'ruter', 'Illusjonskortet fra Øyet som lyver')
+        renderFacts('oy-facts', 'oyet')
+        $('oy-reveal').hidden = false
+        ;($('oy-continue') as HTMLButtonElement).hidden = false
+      })
+    )
+
+    $('oy-continue').addEventListener('click', () => goTo('salongen'))
+
+    // ═══ SALONGEN ════════════════════════════════════════════════
+    const SL_OBS = [
+      'Fremviseren åpner skapet dør for dør — aldri alle dørene på én gang.',
+      'Midt i partiet hører du et lite host. Det kom ikke fra publikum.',
+      'Tyrkeren spiller strålende — men gjør slurvefeil i kveldens siste parti, som om noen begynner å bli trett.',
+    ]
+    let slPath = state.path['salongen'] || ''
+    let slHintsUsed = 0
+    let slWrong = 0
+
+    const SL_HINTS = [
+      'Hva gjør mennesker som maskiner aldri gjør?',
+      'Dørene åpnes én og én. Hvorfor ikke alle samtidig?',
+      'Det er plass til mer enn tannhjul i det skapet.',
+    ]
+    wireHints('sl-hint-btn', 'sl-hints', SL_HINTS, () => { slHintsUsed++ })
+
+    async function slShowObservations() {
+      const log = $('sl-log')
+      log.innerHTML = ''
+      const obs = slPath === 'laerling'
+        ? [...SL_OBS, 'Direktøren hvisker: «Spør deg selv hva hemmeligheten trenger. Plass. Luft. Og pauser.»']
+        : SL_OBS
+      for (const o of obs) {
+        const li = document.createElement('li')
+        li.textContent = o
+        log.appendChild(li)
+        await sleep(1000)
+      }
+      $('sl-choices').hidden = false
+    }
+
+    document.querySelectorAll<HTMLButtonElement>('.path-btn[data-scene="sl"]').forEach(btn =>
+      btn.addEventListener('click', () => {
+        slPath = btn.dataset.path || 'laerling'
+        state.path['salongen'] = slPath
+        save()
+        $('sl-pathchoice').hidden = true
+        $('sl-game').hidden = false
+        slShowObservations()
+      })
+    )
+
+    const SL_RETORTS: Record<string, string> = {
+      urverk: '«Et urverk hoster ikke, lærling — og blir ikke trett.» Prøv igjen.',
+      magnet: '«Magneter flytter brikker, kanskje. Men velger de trekk?» Prøv igjen.',
+      trader: '«Fremviseren sto ti skritt unna med hendene bak ryggen.» Prøv igjen.',
+    }
+
+    document.querySelectorAll<HTMLButtonElement>('#sl-choices .mp-cup').forEach(btn =>
+      btn.addEventListener('click', () => {
+        if (btn.dataset.sl === 'menneske') {
+          document.querySelectorAll<HTMLButtonElement>('#sl-choices .mp-cup').forEach(b => { b.disabled = true })
+          $('sl-msg').textContent = 'Direktøren banker to ganger på skapet — og innenfra banker det tilbake. «God kveld, mester Schlumberger. Partiet er over.»'
+          const gild = slPath === 'mester' && slHintsUsed === 0 && slWrong === 0
+          awardCard(5, 'spar', 'Sigillet fra Salongen')
+          if (gild && !state.gilded.includes('5-spar')) {
+            state.gilded.push('5-spar')
+            save()
+          }
+          renderFacts('sl-facts', 'salongen')
+          $('sl-solved').hidden = false
+          $('sl-solved').scrollIntoView({ behavior: reducedMotion ? 'auto' : 'smooth', block: 'nearest' })
+        } else {
+          slWrong++
+          $('sl-msg').textContent = SL_RETORTS[btn.dataset.sl || ''] || 'Prøv igjen.'
+        }
+      })
+    )
+
+    $('sl-cog').addEventListener('click', () => {
+      $('sl-cog').hidden = true
+      awardCard(5, 'klover', 'Kuriositeten: tannhjulet fra kostymet')
+    })
+
+    $('sl-complete').addEventListener('click', () => {
+      awardCard(5, 'hjerter', 'Plakatkortet fra Salongen er trykket')
+      goTo('seansen')
+    })
+
+    // ═══ SEANSEN ═════════════════════════════════════════════════
+    interface SeEvent { text: string; method: boolean }
+    const SE_EVENTS: SeEvent[] = [
+      { text: 'Mediet krever stummende mørke: «åndene skyr lyset».', method: true },
+      { text: 'Bordet vipper og løfter det ene beinet fra gulvet.', method: false },
+      { text: 'Mediet rykker nærmere bordet og ber begge naboene holde ekstra godt fast i hendene sine.', method: true },
+      { text: 'En trompet svever gjennom mørket og spiller en skjelvende tone.', method: false },
+      { text: 'Tidligere på kvelden pratet mediets assistent lenge og vennlig med hver eneste gjest i entreen.', method: true },
+      { text: 'Mediet faller i transe og snakker med en fremmed, dyp stemme.', method: false },
+      { text: 'Det banker i bordplaten: ett bank for ja, to for nei.', method: false },
+      { text: 'Ånden vet navnet på tante Agnes og hilser kjærlig fra henne.', method: false },
+    ]
+    let sePath = state.path['seansen'] || ''
+    let seHintsUsed = 0
+    let seWrong = 0
+    let seSolved = false
+
+    const SE_HINTS = [
+      'Ikke se på undrene. Se på det som gjorde undrene mulige.',
+      'Hva ba mediet om — før noe som helst begynte å skje?',
+      'Mørket. Hendene. Og samtalen i entreen.',
+    ]
+    wireHints('se-hint-btn', 'se-hints', SE_HINTS, () => { seHintsUsed++ })
+
+    function seRender() {
+      const list = $('se-events')
+      list.innerHTML = ''
+      SE_EVENTS.forEach((ev, i) => {
+        const li = document.createElement('li')
+        const label = document.createElement('label')
+        const box = document.createElement('input')
+        box.type = 'checkbox'
+        box.value = String(i)
+        label.appendChild(box)
+        label.appendChild(document.createTextNode(' ' + ev.text))
+        li.appendChild(label)
+        list.appendChild(li)
+      })
+    }
+
+    document.querySelectorAll<HTMLButtonElement>('.path-btn[data-scene="se"]').forEach(btn =>
+      btn.addEventListener('click', () => {
+        sePath = btn.dataset.path || 'laerling'
+        state.path['seansen'] = sePath
+        save()
+        $('se-pathchoice').hidden = true
+        $('se-game').hidden = false
+        $('se-pretext').textContent = sePath === 'laerling'
+          ? 'Direktøren hvisker: «Metoder er aldri undre, lærling. Metoder er forberedelser og betingelser — det som må på plass før noe kan skje.»'
+          : 'Mediet åpner øynene et halvt sekund og ser rett på deg. Så begynner seansen.'
+      })
+    )
+
+    $('se-submit').addEventListener('click', () => {
+      if (seSolved) return
+      const checked = Array.from(document.querySelectorAll<HTMLInputElement>('#se-events input:checked')).map(b => Number(b.value))
+      if (checked.length !== 3) {
+        $('se-msg').textContent = 'Mediet har nøyaktig tre metoder i sving. Merk av tre — verken flere eller færre.'
+        return
+      }
+      const correct = checked.filter(i => SE_EVENTS[i].method).length
+      if (correct === 3) {
+        seSolved = true
+        document.querySelectorAll<HTMLInputElement>('#se-events input').forEach(b => { b.disabled = true })
+        ;($('se-submit') as HTMLButtonElement).disabled = true
+        $('se-msg').textContent = 'Lyset skrus opp. Mediet ser på deg lenge — og bukker så, langsomt, som for en kollega.'
+        const gild = sePath === 'mester' && seHintsUsed === 0 && seWrong === 0
+        awardCard(6, 'spar', 'Sigillet fra Seansen')
+        if (gild && !state.gilded.includes('6-spar')) {
+          state.gilded.push('6-spar')
+          save()
+        }
+        renderFacts('se-facts', 'seansen')
+        $('se-solved').hidden = false
+        $('se-solved').scrollIntoView({ behavior: reducedMotion ? 'auto' : 'smooth', block: 'nearest' })
+      } else {
+        seWrong++
+        $('se-msg').textContent = sePath === 'laerling'
+          ? `${correct} av tre treff. Husk: metodene skjer før og rundt undrene — ikke i dem.`
+          : '«Åndene ler av deg,» sier Direktøren tørt. Prøv igjen.'
+      }
+    })
+
+    $('se-bell').addEventListener('click', () => {
+      $('se-bell').hidden = true
+      awardCard(6, 'klover', 'Kuriositeten: klokka under bordkanten')
+    })
+
+    $('se-complete').addEventListener('click', () => {
+      awardCard(6, 'hjerter', 'Plakatkortet fra Seansen er trykket')
+      goTo('epilog2')
+    })
+
+    // ═══ EPILOG AKT II ═══════════════════════════════════════════
+    function renderEpilog2() {
+      const n = state.cards.length
+      const gilded = state.gilded.length
+      let txt = `Etter to netter i Kabinettet har du ${n} av ${TOTAL_DECK} kort i kortstokken`
+      txt += gilded > 0 ? ` — ${gilded === 1 ? 'ett av dem gylt' : `${gilded} av dem gylte`}. ` : '. '
+      txt += n >= TOTAL_DECK - 2
+        ? 'Direktøren nikker langsomt: «En samler. Det lover godt for det trettende rommet.»'
+        : 'Rommene husker deg — det som ennå mangler, kan finnes en annen natt.'
+      $('ep2-deck-summary').textContent = txt
+    }
+    $('ep2-poster').addEventListener('click', downloadPoster)
+    $('ep2-deck').addEventListener('click', () => { renderDeck(); deckModal.showModal() })
 
     // ── Init ─────────────────────────────────────────────────────
     updateDeckCount()
     sgRenderStep1()
+    gaRender()
+    seRender()
     if (state.stage !== 'brevet') {
       // Resume: rebuild the small bits of scene state the stages need
       if (state.stageName) $('fj-book-line').textContent = `~ ${state.stageName} ~`
       goTo(state.stage)
+      // Re-enter puzzle rooms via the path choice so their state is fresh
       if (state.stage === 'sandrommet') {
-        // Re-enter via the path choice so the shuffle state is fresh
         $('sr-pathchoice').hidden = false
         $('sr-game').hidden = true
       }
       if (state.stage === 'markedsplassen') {
         $('mp-pathchoice').hidden = false
         $('mp-game').hidden = true
+      }
+      if (state.stage === 'biblioteket') {
+        $('bl-pathchoice').hidden = false
+        $('bl-game').hidden = true
+      }
+      if (state.stage === 'salongen') {
+        $('sl-pathchoice').hidden = false
+        $('sl-game').hidden = true
+      }
+      if (state.stage === 'seansen') {
+        $('se-pathchoice').hidden = false
+        $('se-game').hidden = true
       }
       toast(`Velkommen tilbake${state.stageName ? ', ' + state.stageName : ''} — Kabinettet husker deg. 🕯️`)
     } else {
@@ -1054,14 +1813,17 @@ const payloadJson = JSON.stringify(payload).replace(/</g, '\\u003c')
   .lookaway[hidden] { display: none; }
 
   /* ── KORT ──────────────────────────────────────────────────────── */
-  .card-row { display: flex; gap: 0.5rem; flex-wrap: wrap; margin: 1rem 0; }
-  .pcard { display: inline-flex; flex-direction: column; align-items: center; justify-content: center; width: 52px; height: 74px; background: white; color: #1a1a1a; border: 1px solid #00000033; border-radius: 6px; font-family: var(--font-display); box-shadow: 0 2px 5px #00000040; }
-  .pcard--big { width: 64px; height: 92px; }
-  .pcard--red { color: #B0342C; }
-  .pcard--empty { background: #ffffff14; color: var(--cream); border-style: dashed; border-color: var(--gold-dark); opacity: 0.7; }
-  .pcard--gilded { box-shadow: 0 0 0 2px var(--gold), 0 2px 8px #c9a22766; }
-  .pcard-face { font-size: 1.3rem; font-weight: 700; line-height: 1; }
-  .pcard-suit { font-size: 1.15rem; line-height: 1.2; }
+  /* :global() on everything the game engine creates at runtime — scoped
+     selectors only match elements stamped with the Astro scope attribute,
+     which JS-created nodes never get. */
+  :global(.card-row) { display: flex; gap: 0.5rem; flex-wrap: wrap; margin: 1rem 0; }
+  :global(.pcard) { display: inline-flex; flex-direction: column; align-items: center; justify-content: center; width: 52px; height: 74px; background: white; color: #1a1a1a; border: 1px solid #00000033; border-radius: 6px; font-family: var(--font-display); box-shadow: 0 2px 5px #00000040; }
+  :global(.pcard--big) { width: 64px; height: 92px; }
+  :global(.pcard--red) { color: #B0342C; }
+  :global(.pcard--empty) { background: #ffffff14; color: var(--cream); border-style: dashed; border-color: var(--gold-dark); opacity: 0.7; }
+  :global(.pcard--gilded) { box-shadow: 0 0 0 2px var(--gold), 0 2px 8px #c9a22766; }
+  :global(.pcard-face) { font-size: 1.3rem; font-weight: 700; line-height: 1; }
+  :global(.pcard-suit) { font-size: 1.15rem; line-height: 1.2; }
 
   /* ── SANDROMMET ────────────────────────────────────────────────── */
   .round-label { font-family: var(--font-ui); font-size: 0.8rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.12em; color: var(--gold); margin-bottom: 1rem; }
@@ -1086,14 +1848,14 @@ const payloadJson = JSON.stringify(payload).replace(/</g, '\\u003c')
   .solved-title { font-family: var(--font-ui); font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.15em; color: var(--gold-dark); margin-bottom: 0.75rem; }
   .principle { font-family: var(--font-body); font-size: 1.05rem; line-height: 1.65; color: var(--ink); margin-bottom: 1rem; }
   .facts { margin-bottom: 1.25rem; }
-  .fact { font-family: var(--font-ui); font-size: 0.9rem; line-height: 1.6; color: var(--ink-mid); background: var(--cream); border-left: 3px solid var(--gold); border-radius: 0 6px 6px 0; padding: 0.7rem 1rem; margin-bottom: 0.5rem; }
-  .fact a { font-weight: 700; color: var(--burgundy); text-decoration: underline; }
+  :global(.fact) { font-family: var(--font-ui); font-size: 0.9rem; line-height: 1.6; color: var(--ink-mid); background: var(--cream); border-left: 3px solid var(--gold); border-radius: 0 6px 6px 0; padding: 0.7rem 1rem; margin-bottom: 0.5rem; }
+  :global(.fact a) { font-weight: 700; color: var(--burgundy); text-decoration: underline; }
 
   /* ── SPEILGANGEN ───────────────────────────────────────────────── */
   .reveal { background: #ffffff10; border: 1px dashed var(--gold-dark); border-radius: 8px; padding: 1rem 1.2rem; margin-top: 1.25rem; font-family: var(--font-ui); font-size: 0.92rem; line-height: 1.6; }
   .reveal-compare { display: grid; gap: 0.75rem; margin-top: 0.75rem; }
-  .reveal-col-title { font-family: var(--font-ui); font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--gold); }
-  .reveal .fact { color: var(--ink-mid); }
+  :global(.reveal-col-title) { font-family: var(--font-ui); font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--gold); }
+  .reveal :global(.fact) { color: var(--ink-mid); }
 
   /* ── MARKEDSPLASSEN ────────────────────────────────────────────── */
   .verse { font-family: var(--font-body); font-style: italic; font-size: 1.05rem; line-height: 1.8; border-left: 3px solid var(--gold); padding-left: 1.1rem; margin: 1.25rem 0; }
@@ -1102,15 +1864,51 @@ const payloadJson = JSON.stringify(payload).replace(/</g, '\\u003c')
   .mp-cup:not(:disabled):hover { background: #ffffff26; border-color: var(--gold); }
   .mp-cup:disabled { opacity: 0.6; cursor: default; }
 
+  /* ── GALLERIET ─────────────────────────────────────────────────── */
+  .gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 0.75rem; margin: 1rem 0; }
+  :global(.painting) { display: flex; flex-direction: column; align-items: center; gap: 0.4rem; background: var(--cream); color: var(--ink); border: 4px solid var(--gold-dark); border-radius: 4px; padding: 0.9rem 0.5rem 0.6rem; box-shadow: 0 3px 8px #00000050; cursor: pointer; transition: transform 150ms, border-color 150ms; }
+  :global(.painting:not(:disabled):hover) { transform: scale(1.04); border-color: var(--gold); }
+  :global(.painting:disabled) { cursor: default; }
+  :global(.painting--found) { border-color: var(--gold); box-shadow: 0 0 0 3px var(--gold), 0 3px 10px #c9a22766; }
+  :global(.painting-art) { font-size: 2.2rem; line-height: 1; }
+  :global(.painting-title) { font-family: var(--font-ui); font-size: 0.7rem; font-weight: 600; text-align: center; color: var(--ink-mid); }
+  .gallery-blink { position: absolute; inset: 0; z-index: 5; background: #0a0507f7; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: var(--cream); font-family: var(--font-display); font-style: italic; font-size: 1.2rem; }
+  .gallery-blink[hidden] { display: none; }
+
+  /* ── BIBLIOTEKET ───────────────────────────────────────────────── */
+  .match-grid { display: grid; gap: 0.75rem; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); margin: 1rem 0; }
+  .match-col { display: flex; flex-direction: column; gap: 0.6rem; }
+  :global(.match-item) { display: flex; align-items: center; gap: 0.6rem; text-align: left; font-family: var(--font-ui); font-size: 0.9rem; line-height: 1.45; color: var(--cream); background: #ffffff10; border: 1.5px solid var(--gold-dark); border-radius: 8px; padding: 0.7rem 0.9rem; transition: background 150ms, border-color 150ms; }
+  :global(.match-item:not(:disabled):hover) { background: #ffffff22; border-color: var(--gold); }
+  :global(.match-item--selected) { background: #ffffff26; border-color: var(--gold); box-shadow: 0 0 0 2px var(--gold); }
+  :global(.match-item--secret) { font-style: italic; }
+  :global(.match-item--done) { opacity: 0.5; border-style: dashed; cursor: default; }
+  :global(.match-icon) { font-size: 1.4rem; line-height: 1; }
+
+  /* ── ØYET SOM LYVER ────────────────────────────────────────────── */
+  .oy-stage { background: var(--cream); border: 1px solid var(--gold-dark); border-radius: 8px; padding: 0.75rem; margin: 0.9rem 0; }
+  .oy-stage svg { display: block; width: 100%; height: auto; }
+
+  /* ── SALONGEN ──────────────────────────────────────────────────── */
+  .sl-options { display: grid; gap: 0.6rem; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); margin: 0.75rem 0; }
+  .sl-options .mp-cup { text-align: left; }
+
+  /* ── SEANSEN ───────────────────────────────────────────────────── */
+  .se-list { list-style: none; margin: 1rem 0; display: flex; flex-direction: column; gap: 0.5rem; }
+  .se-list :global(label) { display: flex; align-items: flex-start; gap: 0.6rem; font-family: var(--font-ui); font-size: 0.92rem; line-height: 1.5; background: #ffffff10; border: 1.5px solid var(--gold-dark); border-radius: 8px; padding: 0.65rem 0.9rem; cursor: pointer; transition: background 150ms; }
+  .se-list :global(label:hover) { background: #ffffff1e; }
+  .se-list :global(input) { margin-top: 0.25rem; accent-color: var(--gold); flex-shrink: 0; }
+  .se-list :global(input:disabled) { opacity: 0.7; }
+
   /* ── KORTSTOKK-MODAL ───────────────────────────────────────────── */
   .deck-modal { background: var(--burgundy-dk); color: var(--cream); border: 1px solid var(--gold-dark); border-radius: 10px; padding: 1.75rem 1.5rem; max-width: 560px; width: calc(100% - 2rem); }
   .deck-modal::backdrop { background: #0a0507cc; }
   .deck-head { display: flex; justify-content: space-between; align-items: center; gap: 1rem; margin-bottom: 0.5rem; }
   .deck-head h2 { font-family: var(--font-display); font-size: 1.4rem; color: var(--cream); }
   .deck-sub { font-family: var(--font-ui); font-size: 0.85rem; line-height: 1.55; opacity: 0.8; margin-bottom: 1.25rem; }
-  .deck-row { margin-bottom: 1rem; }
-  .deck-row-label { font-family: var(--font-ui); font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.12em; color: var(--gold); margin-bottom: 0.4rem; }
-  .deck-slots { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+  :global(.deck-row) { margin-bottom: 1rem; }
+  :global(.deck-row-label) { font-family: var(--font-ui); font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.12em; color: var(--gold); margin-bottom: 0.4rem; }
+  :global(.deck-slots) { display: flex; gap: 0.5rem; flex-wrap: wrap; }
   .deck-ghost { font-family: var(--font-ui); font-size: 0.8rem; font-style: italic; opacity: 0.55; margin-top: 0.5rem; }
 
   /* ── VEIVALG ───────────────────────────────────────────────────── */

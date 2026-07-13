@@ -6,11 +6,17 @@ import { defineType, defineField } from 'sanity'
 // (intro text, "visste du at" facts) per room. A room works without a
 // document — the code ships sensible Norwegian defaults.
 const ROOM_KEYS = [
-  { title: 'Foajeen (prolog — essene)',        value: 'foajeen' },
-  { title: 'Sandrommet (oldtiden — 2)',        value: 'sandrommet' },
-  { title: 'Speilgangen: Kortet du valgte',    value: 'speilgangen' },
-  { title: 'Markedsplassen (middelalder — 3)', value: 'markedsplassen' },
-  { title: 'Epilog (Akt I)',                   value: 'epilog' },
+  { title: 'Foajeen (prolog — essene)',           value: 'foajeen' },
+  { title: 'Sandrommet (oldtiden — 2)',           value: 'sandrommet' },
+  { title: 'Speilgangen: Kortet du valgte',       value: 'speilgangen' },
+  { title: 'Markedsplassen (middelalder — 3)',    value: 'markedsplassen' },
+  { title: 'Epilog (Akt I)',                      value: 'epilog' },
+  { title: 'Speilgangen: Galleriet som endrer seg', value: 'galleriet' },
+  { title: 'Biblioteket (renessansen — 4)',       value: 'biblioteket' },
+  { title: 'Speilgangen: Øyet som lyver',         value: 'oyet' },
+  { title: 'Salongen (automatene — 5)',           value: 'salongen' },
+  { title: 'Seansen (spiritismen — 6)',           value: 'seansen' },
+  { title: 'Epilog (Akt II)',                     value: 'epilog2' },
 ]
 
 export const gameChapter = defineType({
