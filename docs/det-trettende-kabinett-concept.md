@@ -1,7 +1,8 @@
 # Det trettende kabinett — Game Concept (Vision)
 
-> **Status: Act I is implemented** and dormant behind the `isActive` master
-> switch (see "Implementation status" at the end). This document captures the
+> **Status: the full game — Acts I–IV and the finale — is implemented** and
+> dormant behind the `isActive` master switch (see "Implementation status"
+> at the end). This document captures the
 > creative vision for a browser game on tryllemuseet.no, shaped through an
 > interview with the museum (July 2026). It is deliberately ambitious; the
 > scoped MVP at the end is what has been built. Working title was
@@ -237,11 +238,12 @@ Everything else — remaining rooms, curiosities, diploma, episode cadence —
 layers on without rework. Historical facts are QA'd by the museum before
 each act ships.
 
-## Implementation status — Act I (July 2026)
+## Implementation status — complete game (July 2026)
 
-Act I is built and follows the Tryllequiz architecture. It ships dormant:
-`/det-trettende-kabinett` shows a "kommer snart" teaser (and no menu entry)
-until the **Kabinettet: Innstillinger** document's `isActive` switch is on.
+Acts I–IV **and the finale** are built and follow the Tryllequiz
+architecture. Everything ships dormant: `/det-trettende-kabinett` shows a
+"kommer snart" teaser (and no menu entry) until the **Kabinettet:
+Innstillinger** document's `isActive` switch is on.
 
 **What's in Act I:**
 
@@ -258,8 +260,93 @@ until the **Kabinettet: Innstillinger** document's `isActive` switch is on.
   Curiosities: the scarab (Sandrommet) and the mouse (Markedsplassen).
 - Shareable varieté poster with the player's stage name (client-side
   SVG → PNG download), available once any ♥ card is earned.
-- Progress in `localStorage` (`kabinett-akt1-v1`); reduced-motion support;
-  every step readable/solvable as text.
+- Progress in `localStorage` (`kabinett-v1`; saves from the earlier
+  `kabinett-akt1-v1` key are migrated automatically); reduced-motion
+  support; every step readable/solvable as text.
+
+**What's in Act II** (continues from the Act I epilogue — "Løft
+forhenget"):
+
+- **Galleriet** (Speilgangen: change blindness) — six paintings, one swaps
+  its motif during a "blink"; spotting it (or giving up — no fail state)
+  grants ♦3, the card Act I showed as locked. → **Biblioteket** (the fours;
+  Reginald Scot, 1584) — match four woodcuts to the secrets they expose;
+  cryptic wording on Mesterens vei. → **Øyet som lyver** (Speilgangen:
+  optical illusions) — Müller-Lyer lines and Ebbinghaus circles as inline
+  SVG with a measuring-line reveal; grants ♦4. → **Salongen** (the fives;
+  the Chess Turk) — deduce the automaton's secret from staged observations.
+  → **Seansen** (the sixes; spiritualism) — flag the medium's three methods
+  among eight séance events; Lærlingens vei reports how many were right.
+  → **Epilog II** (Act III tease: Teateret).
+- Same per-room machinery as Act I: lærling/mester paths, hint ladders,
+  gilded spades, curiosities (bokormen, tannhjulet, klokka), Sanity copy
+  overrides per room key (`galleriet`, `biblioteket`, `oyet`, `salongen`,
+  `seansen`, `epilog2`).
+- The deck now spans values 1–6 (24 cards); ♦5 and ♦6 are visibly locked
+  "Akt III". The shareable poster subtitle updates once Act II is reached.
+
+**What's in Act III** (continues from the Act II epilogue — "Opp trappen"):
+
+- **Det frie valget** (Speilgangen: equivoque) — a sealed prediction and
+  three objects; every "free" choice is interpreted after the fact, and the
+  reveal shows the receipts. Grants ♦5. → **Teateret** (the sevens; escape
+  acts) — locked inside the stage trunk, find the pre-rigged way out in the
+  right order. → **Kinoen** (the eights; Méliès) — reorder five film strips
+  from "Escamotage d'une dame", then point at where the stop-trick cut
+  hides. → **Ånden på lerretet** (Speilgangen: afterimage) — stare at the
+  lamp, see a ghost on the empty canvas; real 12-second exposure timer
+  (deliberately not shortened under reduced motion — it is eye physiology,
+  not animation), with a "tell me instead" path. Grants ♦6. →
+  **Verkstedet** (the nines; illusion builders) — pick the three blueprint
+  parts that satisfy the levitation commission's constraints. →
+  **Epilog III** (Act IV tease: Studioet, Gatehjørnet, Vinterhagen).
+- Same per-room machinery; new curiosities (teaterbilletten 🎟️, filmbiten
+  🎞️, messingskruen 🔩); Sanity room keys `frievalget`, `teateret`,
+  `kinoen`, `lerretet`, `verkstedet`, `epilog3`.
+- The deck spans values 1–9 (36 cards); ♦7–♦9 are visibly locked "Akt IV".
+
+**What's in Act IV** (continues from the Act III epilogue — "Inn i
+Speilgangen"):
+
+- **Minnet som dikter** (Speilgangen: false memory, DRM-style) — read
+  twelve sleep-themed words, then swear that «søvn» was on the list. It
+  wasn't. Grants ♦7. → **Studioet** (the tens; TV mentalism) — the studio
+  "reads your mind" (the ×9 digit-sum force → a cat in Denmark), then the
+  puzzle is to point at the step where your freedom disappeared. →
+  **Trekanten som ikke finnes** (Speilgangen: Kanizsa illusory contours);
+  grants ♦8. → **Gatehjørnet** (the jacks; close-up/street magic) — watch
+  a coin-vanish routine beat by beat (replayable) and name the moment of
+  the move (the false transfer, sold by the relaxed hand). →
+  **Fargene som lyver** (Speilgangen: simultaneous contrast); grants ♦9.
+  → **Vinterhagen** (the queens; the Nordic room, aurora styling) — the
+  synthesis puzzle: match four scenarios to the room whose principle
+  explains them, with two decoy rooms. → **Epilog IV** (the handle-less
+  door: finale tease).
+- Same machinery; curiosities (manuskortet 🗒️, skillingen 🪙, snøfnugget
+  ❄️); Sanity room keys `minnet`, `studioet`, `trekanten`, `gatehjornet`,
+  `fargene`, `vinterhagen`, `epilog4`.
+- The deck spans values 1–12 (48 cards); ♦10–♦12 are visibly locked
+  "finalen".
+
+**What's in the finale** (continues from the Act IV epilogue — "Gå til
+døren"):
+
+- **Porten** — the handle-less door with a deck-shaped recess. It counts
+  the twelve values; placing the deck grants the last three ♦ cards with
+  the Cabinet's final meta-lesson (the greatest illusionist all night was
+  the player themself). A complete 48-card deck earns a special door line;
+  no card is ever a hard gate.
+- **Det trettende kabinettet** — the empty stage. The apprentice composes
+  their own act: one effect, one method, one misdirection (4×4×4 choices,
+  no wrong answers), each option echoing a room from the journey. The
+  performance is narrated with the player's stage name, Direktøren delivers
+  the last lesson ("Kabinettet var aldri magisk — håndverket er det"), and
+  the four **kings** complete the deck (52).
+- **Daggry** — dawn epilogue: the Cabinet exists in daylight and is called
+  Tryllemuseet. Deck summary, rank by collection (Direktørens lærling /
+  Direktørens fortrolige at 49+ / Kabinettets mester at 52), and the
+  downloadable **lærlingbrev** diploma (client-side SVG → PNG, like the
+  poster). Sanity room keys `porten`, `kabinettet`, `daggry`.
 
 **Editorial model:** puzzle logic and default copy live in the page code;
 `gameChapter` documents (one per room key) override intro texts and replace

@@ -13,7 +13,7 @@ const a = await getFoolUsAppearanceBySlug(slug!)
 
 if (!a) return Astro.redirect('/tryllehistorie/fool-us')
 
-const otherAppearances = await getOtherTvAppearances(slug!, a.magician._id)
+const otherAppearances = a.magician ? await getOtherTvAppearances(slug!, a.magician._id) : []
 
 function youtubeEmbedUrl(url: string): string | null {
   const m = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&?]+)/)
