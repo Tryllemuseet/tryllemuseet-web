@@ -1,0 +1,134 @@
+---
+// src/pages/tryllehistorie/verdens-mest.astro
+import BaseLayout from '../../layouts/BaseLayout.astro'
+import AnimateIn from '../../components/AnimateIn.astro'
+import { getAllWorldRecordTricks, portableTextToHtml } from '../../lib/sanity'
+
+const entries = await getAllWorldRecordTricks()
+
+const CATEGORY_LABELS: Record<string, string> = {
+  farligste:     '💀 Verdens farligste',
+  eldste:        '🕰️ Verdens eldste',
+  norske:        '🇳🇴 Verdens mest norske bidrag',
+  kopierte:      '🔁 Verdens mest kopierte',
+  dyreste:       '💰 Verdens dyreste illusjoner',
+  omdiskuterte:  '⚡ Verdens mest omdiskuterte',
+}
+
+// Behold rekkefølgen kategoriene er definert i over, ikke alfabetisk
+const categoryOrder = Object.keys(CATEGORY_LABELS)
+const grouped = categoryOrder
+  .map(cat => ({ cat, label: CATEGORY_LABELS[cat], items: entries.filter(e => e.category === cat) }))
+  .filter(g => g.items.length > 0)
+---
+
+<BaseLayout
+  title="Verdens mest… — Tryllemuseet"
+  description="Dramatiske, morsomme og overraskende fakta fra tryllekunstens historie."
+>
+
+  <nav class="breadcrumb container">
+    <a href="/tryllehistorie">Tryllehistorie</a>
+    <span>›</span>
+    <span aria-current="page">Verdens mest…</span>
+  </nav>
+
+  <section class="hero">
+    <div class="container">
+      <span class="hero-label">Fakta og historier</span>
+      <h1>Verdens mest…</h1>
+      <p class="hero-ingress">
+        Fra dødsfarlige kulefangst-triks til norske verdensrekorder — noen av de mest
+        oppsiktsvekkende historiene fra tryllekunstens verden.
+      </p>
+    </div>
+  </section>
+
+  <section class="innhold section-pad">
+    <div class="container">
+
+      {grouped.length === 0 && (
+        <p class="tom-liste">Vi jobber med å legge inn historier her — kom tilbake litt senere!</p>
+      )}
+
+      {grouped.map(group => (
+        <div class="kategori-blokk">
+          <h2 class="kategori-heading">{group.label}</h2>
+          <div class="kort-grid">
+            {group.items.map(item => (
+              <AnimateIn direction="up">
+                <article class="kort">
+                  <h3>{item.title}</h3>
+                  <p class="teaser">{item.teaserText}</p>
+                  <div class="prose fullstory" set:html={portableTextToHtml(item.fullStory)} />
+
+                  {item.relatedPerson?.slug && (
+                    <a class="person-lenke" href={`/tryllehistorie/magiens-hvem-er-hvem/${item.relatedPerson.slug}`}>
+                      Les mer om {item.relatedPerson.name} →
+                    </a>
+                  )}
+
+                  {item.sources && item.sources.length > 0 && (
+                    <details class="kilder">
+                      <summary>Kilder</summary>
+                      <ul>
+                        {item.sources.map(s => <li>{s}</li>)}
+                      </ul>
+                    </details>
+                  )}
+                </article>
+              </AnimateIn>
+            ))}
+          </div>
+        </div>
+      ))}
+
+    </div>
+  </section>
+
+</BaseLayout>
+
+<style>
+  .breadcrumb { padding-block: 1.5rem 0; font-family: var(--font-ui); font-size: 0.85rem; color: #777; }
+  .breadcrumb a { color: var(--burgundy); text-decoration: none; }
+  .breadcrumb a:hover { text-decoration: underline; }
+  .breadcrumb span[aria-current] { color: #999; }
+
+  .hero { padding-block: 3rem 2rem; background: var(--cream); }
+  .hero-label {
+    display: inline-block; font-family: var(--font-ui); font-size: 0.75rem;
+    letter-spacing: 0.18em; text-transform: uppercase; color: var(--gold);
+    border-bottom: 1px solid var(--gold); padding-bottom: 0.2em; margin-bottom: 1rem;
+  }
+  .hero h1 { font-family: var(--font-display); font-size: clamp(1.8rem, 4vw, 2.6rem); color: var(--burgundy); margin-bottom: 1rem; }
+  .hero-ingress { font-family: var(--font-body); font-size: 1.05rem; color: #555; line-height: 1.7; max-width: 620px; }
+
+  .section-pad { padding-block: 3rem 5rem; }
+  .tom-liste { font-family: var(--font-body); font-size: 1.05rem; color: #777; text-align: center; padding: 3rem 0; }
+
+  .kategori-blokk { margin-bottom: 4rem; }
+  .kategori-heading {
+    font-family: var(--font-display); font-size: 1.5rem; color: var(--burgundy);
+    margin-bottom: 1.5rem; padding-bottom: 0.5rem; border-bottom: 2px solid var(--gold);
+  }
+
+  .kort-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 2rem; }
+
+  .kort {
+    background: white; border: 1px solid rgba(107,15,26,0.12); border-radius: 4px;
+    padding: 1.75rem; box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+  }
+  .kort h3 { font-family: var(--font-display); font-size: 1.2rem; color: var(--burgundy); margin-bottom: 0.5rem; }
+  .teaser { font-family: var(--font-body); font-style: italic; color: #666; font-size: 0.95rem; margin-bottom: 1rem; }
+  .fullstory { font-family: var(--font-body); font-size: 0.95rem; color: #444; line-height: 1.7; }
+
+  .person-lenke {
+    display: inline-block; margin-top: 1rem; font-family: var(--font-ui); font-size: 0.88rem;
+    font-weight: 600; color: var(--burgundy); text-decoration: none; border-bottom: 1px solid var(--gold);
+  }
+  .person-lenke:hover { color: var(--gold-dark, var(--gold)); }
+
+  .kilder { margin-top: 1rem; font-family: var(--font-ui); font-size: 0.82rem; color: #888; }
+  .kilder summary { cursor: pointer; }
+  .kilder ul { margin: 0.5rem 0 0; padding-left: 1.2rem; }
+</style>
