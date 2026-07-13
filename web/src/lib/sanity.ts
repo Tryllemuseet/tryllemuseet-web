@@ -459,6 +459,33 @@ export interface Trick {
   order?: number
 }
 
+// ── Typer: Verdens mest… ──────────────────────────────────────────
+export interface WorldRecordTrick {
+  _id: string
+  category: 'farligste' | 'eldste' | 'norske' | 'kopierte' | 'dyreste' | 'omdiskuterte'
+  title: string
+  teaserText: string
+  fullStory: any[]
+  relatedPerson?: { slug: string; name: string }
+  sources?: string[]
+  needsVerification?: boolean
+  order?: number
+}
+
+// ── Typer: Konkurranseresultater ──────────────────────────────────
+export interface CompetitionResult {
+  _id: string
+  personName: string
+  personRef?: { slug: string; name: string }
+  country: 'NO' | 'SE' | 'DK' | 'FI' | 'IS'
+  competition: 'fism' | 'nordisk' | 'nm' | 'annet'
+  year: number
+  location?: string
+  category?: string
+  placement: string
+  source?: string
+}
+
 // ── Typer: Barn & unge ───────────────────────────────────────────
 export interface BarnPage {
   hero: {
@@ -526,6 +553,32 @@ export async function getTrickBySlug(slug: string): Promise<Trick | null> {
       videoUrl, externalUrl, order
     }
   `, { slug })
+}
+
+// ── Spørringer: Verdens mest… ──────────────────────────────────────
+
+// Alle synlige oppføringer, gruppert etter kategori på siden selv
+export async function getAllWorldRecordTricks(): Promise<WorldRecordTrick[]> {
+  return sanityClient.fetch(`
+    *[_type == "worldRecordTrick" && isVisible != false] | order(category asc, coalesce(order, 9999) asc) {
+      _id, category, title, teaserText, fullStory,
+      "relatedPerson": relatedPerson-> { "slug": slug.current, name },
+      sources, needsVerification, order
+    }
+  `)
+}
+
+// ── Spørringer: Konkurranseresultater ─────────────────────────────
+
+// Alle resultater, nyeste år først — til Norden-i-FISM-siden
+export async function getAllCompetitionResults(): Promise<CompetitionResult[]> {
+  return sanityClient.fetch(`
+    *[_type == "competitionResult" && isVisible != false] | order(year desc) {
+      _id, personName,
+      "personRef": personRef-> { "slug": slug.current, name },
+      country, competition, year, location, category, placement, source
+    }
+  `)
 }
 
 export async function getOmOssPage(): Promise<OmOssPage | null> {
