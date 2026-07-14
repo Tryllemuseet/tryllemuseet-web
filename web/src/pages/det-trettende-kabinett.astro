@@ -353,7 +353,7 @@ const payloadJson = JSON.stringify(payload).replace(/</g, '\\u003c')
   description="Et tryllemuseum som bare finnes om natten. Løs gåtene, samle kortstokken og bli Direktørens lærling — Tryllemuseets historiespill."
 >
 
-  <section class="hero">
+  <section class="hero" id="game-hero">
     <div class="container">
       <p class="section-label">Tryllemuseet presenterer</p>
       <h1 class="display-title">{gameTitle}</h1>
@@ -381,7 +381,10 @@ const payloadJson = JSON.stringify(payload).replace(/</g, '\\u003c')
 
       <!-- ── SPILL-LINJE ─────────────────────────────────────────── -->
       <div class="gamebar">
-        <button class="gamebar-btn" id="deck-btn" aria-haspopup="dialog">🃏 Kortstokken <span id="deck-count">0/12</span></button>
+        <div class="gamebar-group">
+          <button class="gamebar-btn" id="deck-btn" aria-haspopup="dialog">🃏 Kortstokken <span id="deck-count">0/12</span></button>
+          <button class="gamebar-btn" id="help-btn" aria-haspopup="dialog">❔ Hjelp</button>
+        </div>
         <button class="gamebar-btn gamebar-btn--quiet" id="restart-btn">Begynn på nytt</button>
       </div>
 
@@ -1419,6 +1422,35 @@ const payloadJson = JSON.stringify(payload).replace(/</g, '\\u003c')
         </div>
       </dialog>
 
+      <!-- ── HJELP-MODAL ─────────────────────────────────────────── -->
+      <dialog class="deck-modal" id="help-modal" aria-labelledby="help-heading">
+        <div class="deck-head">
+          <h2 id="help-heading">Hjelp — slik spiller du</h2>
+          <button class="btn-quiet" id="help-close" aria-label="Lukk hjelpen">✕ Lukk</button>
+        </div>
+        <div class="help-body">
+          <h3>Slik spiller du</h3>
+          <p>Kabinettet åpner ett rom om gangen. Les fortellingen, se deg rundt og løs rommets gåte. Du kan aldri tape — gale svar koster deg bare en spydig kommentar fra Direktøren, og du kan alltid prøve igjen.</p>
+          <h3>Veivalg</h3>
+          <p><strong>Lærlingens vei</strong> gir rolig tempo og hjelp underveis. <strong>Mesterens vei</strong> er samme gåte uten hjelp — løser du den uten hint og uten feil, gylles rommets sparkort.</p>
+          <h3>Hint — Direktørens hvisken</h3>
+          <p>Står du fast, trykk på <em>Direktørens hvisken</em> 🤫 nederst i rommet. Du får opptil tre hint per gåte, og hint koster aldri fremdrift — bare gyllingen på sparkortet.</p>
+          <h3>Kortstokken</h3>
+          <p>Hvert rom har fire kort: <strong>♠ spar</strong> for å løse gåten, <strong>♥ hjerter</strong> for å fullføre rommet, <strong>♦ ruter</strong> for Speilgangens opplevelser og <strong>♣ kløver</strong> for rommets skjulte kuriositet. Trykk på 🃏 Kortstokken øverst for å se samlingen din — og hva som mangler.</p>
+          <h3>Kuriositetene</h3>
+          <p>I hvert gåterom er det gjemt en liten ting i sceneriet — en skarabé, ei mus, et tannhjul … Hold øynene åpne, og trykk på det du finner.</p>
+          <h3>Fremdrift</h3>
+          <p>Spillet lagres automatisk i nettleseren din. Du kan lukke siden når som helst og fortsette senere fra samme rom. «Begynn på nytt» sletter kortene og fremdriften.</p>
+        </div>
+      </dialog>
+
+      <!-- ── ROM-OVERGANG ────────────────────────────────────────── -->
+      <div class="room-transition" id="room-transition" hidden aria-hidden="true">
+        <p class="room-transition-icon" id="room-transition-icon" aria-hidden="true">🚪</p>
+        <p class="room-transition-kicker" id="room-transition-kicker"></p>
+        <p class="room-transition-title" id="room-transition-title"></p>
+      </div>
+
       <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
 
       <script type="application/json" id="kabinett-data" set:html={payloadJson} />
@@ -1588,17 +1620,85 @@ const payloadJson = JSON.stringify(payload).replace(/</g, '\\u003c')
       daggry:         $('sc-daggry'),
     }
 
-    function goTo(stage: Stage) {
-      state.stage = stage
-      save()
+    // ── Toppteksten: krymper når spillet er i gang, trykk veksler ─
+    const heroEl = document.getElementById('game-hero')
+    function updateHero(collapse: boolean) {
+      if (!heroEl) return
+      const playing = state.stage !== 'brevet'
+      heroEl.classList.toggle('hero--playing', playing)
+      heroEl.classList.toggle('hero--compact', playing && collapse)
+      if (playing) {
+        heroEl.setAttribute('role', 'button')
+        heroEl.setAttribute('tabindex', '0')
+        heroEl.setAttribute('aria-label', 'Vis eller skjul introduksjonen til spillet')
+        heroEl.setAttribute('aria-expanded', String(!heroEl.classList.contains('hero--compact')))
+      } else {
+        heroEl.removeAttribute('role')
+        heroEl.removeAttribute('tabindex')
+        heroEl.removeAttribute('aria-label')
+        heroEl.removeAttribute('aria-expanded')
+      }
+    }
+    if (heroEl) {
+      const toggleHero = () => {
+        if (!heroEl.classList.contains('hero--playing')) return
+        heroEl.classList.toggle('hero--compact')
+        heroEl.setAttribute('aria-expanded', String(!heroEl.classList.contains('hero--compact')))
+      }
+      heroEl.addEventListener('click', toggleHero)
+      heroEl.addEventListener('keydown', e => {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleHero() }
+      })
+    }
+
+    // ── Rom-overganger ───────────────────────────────────────────
+    const transitionEl = $('room-transition')
+    const MIRROR_STAGES: Stage[] = ['speilgangen', 'galleriet', 'oyet', 'frievalget', 'lerretet', 'minnet', 'trekanten', 'fargene']
+    let transitioning = false
+
+    function showScene(stage: Stage) {
       for (const [key, el] of Object.entries(SCENES)) el.hidden = key !== stage
-      window.scrollTo({ top: 0, behavior: reducedMotion ? 'auto' : 'smooth' })
       if (stage === 'epilog') renderEpilog()
       if (stage === 'epilog2') renderEpilog2()
       if (stage === 'epilog3') renderEpilog3()
       if (stage === 'epilog4') renderEpilog4()
       if (stage === 'porten') renderPorten()
       if (stage === 'daggry') renderDaggry()
+      updateHero(true)
+    }
+
+    async function goTo(stage: Stage, instant = false) {
+      state.stage = stage
+      save()
+      if (instant || reducedMotion || transitioning) {
+        showScene(stage)
+        window.scrollTo({ top: 0, behavior: 'auto' })
+        return
+      }
+      transitioning = true
+      try {
+        const mirror = MIRROR_STAGES.includes(stage)
+        transitionEl.classList.toggle('room-transition--mirror', mirror)
+        $('room-transition-icon').textContent = mirror ? '🪞' : '🚪'
+        $('room-transition-kicker').textContent = mirror
+          ? (stage === 'speilgangen' ? 'Mellomrommet venter' : 'Ut i Speilgangen')
+          : 'Kabinettet åpner en ny dør'
+        $('room-transition-title').textContent = data.rooms[stage]?.title || ''
+        transitionEl.hidden = false
+        void transitionEl.offsetWidth // reflow so the opacity transition runs
+        transitionEl.classList.add('room-transition--visible')
+        await sleep(520)
+        if (state.stage === stage) {
+          showScene(stage)
+          window.scrollTo({ top: 0, behavior: 'auto' })
+        }
+        await sleep(950)
+        transitionEl.classList.remove('room-transition--visible')
+        await sleep(520)
+      } finally {
+        transitionEl.hidden = true
+        transitioning = false
+      }
     }
 
     // ── Kortstokken (modal) ──────────────────────────────────────
@@ -1645,6 +1745,12 @@ const payloadJson = JSON.stringify(payload).replace(/</g, '\\u003c')
     $('deck-btn').addEventListener('click', () => { renderDeck(); deckModal.showModal() })
     $('deck-close').addEventListener('click', () => deckModal.close())
     deckModal.addEventListener('click', e => { if (e.target === deckModal) deckModal.close() })
+
+    // ── Hjelp (modal) ────────────────────────────────────────────
+    const helpModal = $('help-modal') as HTMLDialogElement
+    $('help-btn').addEventListener('click', () => helpModal.showModal())
+    $('help-close').addEventListener('click', () => helpModal.close())
+    helpModal.addEventListener('click', e => { if (e.target === helpModal) helpModal.close() })
 
     $('restart-btn').addEventListener('click', () => {
       if (!confirm('Begynne helt på nytt? Kortene og fremdriften din slettes.')) return
@@ -2067,10 +2173,12 @@ const payloadJson = JSON.stringify(payload).replace(/</g, '\\u003c')
       })
     )
 
-    document.querySelectorAll<HTMLButtonElement>('.mp-cup').forEach(btn =>
+    // .mp-cup is a shared button class — later rooms (Øyet, Salongen, …) use
+    // it too, so both the listener and the disable must stay inside #mp-game.
+    document.querySelectorAll<HTMLButtonElement>('#mp-game .mp-cup').forEach(btn =>
       btn.addEventListener('click', () => {
         if (btn.dataset.pick === 'midten') {
-          document.querySelectorAll<HTMLButtonElement>('.mp-cup').forEach(b => { b.disabled = true })
+          document.querySelectorAll<HTMLButtonElement>('#mp-game .mp-cup').forEach(b => { b.disabled = true })
           $('mp-msg').textContent = 'Gjøgleren løfter det midterste kruset: erten! Han bukker dypt. «Endelig én som hører etter!»'
           const gild = mpPath === 'mester' && mpHintsUsed === 0 && mpWrong === 0
           awardCard(3, 'spar', 'Sigillet fra Markedsplassen')
@@ -3606,7 +3714,7 @@ const payloadJson = JSON.stringify(payload).replace(/</g, '\\u003c')
     if (state.stage !== 'brevet') {
       // Resume: rebuild the small bits of scene state the stages need
       if (state.stageName) $('fj-book-line').textContent = `~ ${state.stageName} ~`
-      goTo(state.stage)
+      goTo(state.stage, true)
       // Re-enter puzzle rooms via the path choice so their state is fresh
       if (state.stage === 'sandrommet') {
         $('sr-pathchoice').hidden = false
@@ -3654,21 +3762,31 @@ const payloadJson = JSON.stringify(payload).replace(/</g, '\\u003c')
       }
       toast(`Velkommen tilbake${state.stageName ? ', ' + state.stageName : ''} — Kabinettet husker deg. 🕯️`)
     } else {
-      goTo('brevet')
+      goTo('brevet', true)
     }
   }
 </script>
 
 <style>
   /* ── HERO ──────────────────────────────────────────────────────── */
-  .hero { background: var(--burgundy-dk); padding: 3.5rem 0 2.5rem; border-bottom: 2px solid var(--gold-dark); color: var(--cream); }
-  .hero h1 { font-size: clamp(2rem, 5vw, 3rem); color: var(--cream); margin: 0.5rem 0 0.75rem; }
+  .hero { background: var(--burgundy-dk); padding: 3.5rem 0 2.5rem; border-bottom: 2px solid var(--gold-dark); color: var(--cream); transition: padding 250ms ease; }
+  .hero h1 { font-size: clamp(2rem, 5vw, 3rem); color: var(--cream); margin: 0.5rem 0 0.75rem; transition: font-size 250ms ease; }
   .hero-sub { font-family: var(--font-ui); font-size: 1rem; opacity: 0.8; max-width: 560px; line-height: 1.6; }
+
+  /* Once the game is underway the hero shrinks to a slim bar; clicking
+     (or Enter/Space) toggles the full intro back. */
+  .hero--playing { cursor: pointer; }
+  .hero--playing h1::after { content: ' ▴'; font-size: 0.55em; opacity: 0.55; }
+  .hero--compact { padding: 0.8rem 0 0.7rem; }
+  .hero--compact h1 { font-size: 1.05rem; margin: 0; }
+  .hero--compact h1::after { content: ' ▾'; }
+  .hero--compact .section-label, .hero--compact .hero-sub { display: none; }
 
   .game-main { padding: 2.5rem 1.5rem 5rem; max-width: 760px; }
 
   /* ── SPILL-LINJE ───────────────────────────────────────────────── */
   .gamebar { display: flex; justify-content: space-between; align-items: center; gap: 0.75rem; margin-bottom: 1.25rem; flex-wrap: wrap; }
+  .gamebar-group { display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap; }
   .gamebar-btn { font-family: var(--font-ui); font-size: 0.85rem; font-weight: 700; color: var(--cream); background: var(--burgundy); border: 1.5px solid var(--gold-dark); border-radius: 999px; padding: 0.5rem 1.1rem; transition: background 150ms; }
   .gamebar-btn:hover { background: var(--burgundy-dk); }
   .gamebar-btn--quiet { background: transparent; color: var(--grey); border-color: var(--cream-dark); }
@@ -3698,7 +3816,9 @@ const payloadJson = JSON.stringify(payload).replace(/</g, '\\u003c')
   .game-msg--think { font-style: italic; opacity: 0.85; }
 
   /* ── BREVET ────────────────────────────────────────────────────── */
+  /* display:flex would otherwise beat the hidden attribute's display:none */
   .scene--letter { display: flex; justify-content: center; }
+  .scene--letter[hidden] { display: none; }
   .letter { background: var(--cream); border: 1px solid var(--gold-dark); border-radius: 6px; padding: 2.5rem 2rem; max-width: 520px; text-align: center; box-shadow: var(--shadow); }
   .letter-seal { font-size: 2.5rem; margin-bottom: 0.75rem; }
   .letter-heading { font-family: var(--font-display); font-size: 1.5rem; color: var(--burgundy); margin-bottom: 1rem; }
@@ -3859,8 +3979,22 @@ const payloadJson = JSON.stringify(payload).replace(/</g, '\\u003c')
   .path-btn strong { font-size: 1rem; }
   .path-btn span { font-size: 0.82rem; line-height: 1.5; opacity: 0.8; }
 
+  /* ── HJELP-MODAL ───────────────────────────────────────────────── */
+  .help-body h3 { font-family: var(--font-ui); font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.12em; color: var(--gold); margin: 1.2rem 0 0.35rem; }
+  .help-body h3:first-child { margin-top: 0; }
+  .help-body p { font-family: var(--font-ui); font-size: 0.92rem; line-height: 1.6; opacity: 0.92; }
+
+  /* ── ROM-OVERGANG ──────────────────────────────────────────────── */
+  .room-transition { position: fixed; inset: 0; z-index: 120; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.5rem; text-align: center; padding: 2rem; background: radial-gradient(120% 120% at 50% 40%, #2a0a10 0%, #0a0507 75%); color: var(--cream); opacity: 0; transition: opacity 480ms ease; }
+  .room-transition[hidden] { display: none; }
+  .room-transition--visible { opacity: 1; }
+  .room-transition--mirror { background: radial-gradient(120% 120% at 50% 40%, #16222e 0%, #05070a 75%); }
+  .room-transition-icon { font-size: 2.6rem; line-height: 1; margin-bottom: 0.4rem; }
+  .room-transition-kicker { font-family: var(--font-ui); font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.2em; color: var(--gold); }
+  .room-transition-title { font-family: var(--font-display); font-style: italic; font-size: clamp(1.6rem, 6vw, 2.4rem); }
+
   /* ── TOAST ─────────────────────────────────────────────────────── */
-  .toast { position: fixed; left: 50%; bottom: 1.25rem; transform: translateX(-50%); z-index: 110; background: var(--burgundy-dk); color: var(--cream); border: 1px solid var(--gold); border-radius: 999px; padding: 0.65rem 1.4rem; font-family: var(--font-ui); font-size: 0.9rem; box-shadow: 0 4px 16px #00000080; max-width: calc(100% - 2rem); text-align: center; }
+  .toast { position: fixed; left: 50%; bottom: 1.25rem; transform: translateX(-50%); z-index: 110; background: var(--burgundy-dk); color: var(--cream); border: 1px solid var(--gold); border-radius: 999px; padding: 0.65rem 1.4rem; font-family: var(--font-ui); font-size: 0.9rem; box-shadow: 0 4px 16px #00000080; max-width: calc(100% - 2rem); text-align: center; pointer-events: none; }
   .toast[hidden] { display: none; }
 
   /* ── KOMMER SNART ──────────────────────────────────────────────── */
