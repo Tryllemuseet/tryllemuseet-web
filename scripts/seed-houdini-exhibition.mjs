@@ -180,11 +180,14 @@ async function run() {
     },
   ]
 
-  // 3. Create the stations (fixed ids → published directly, re-runnable)
+  // 3. Create the stations (fixed ids → published directly, re-runnable).
+  // Stations and exhibition reference each other, so all documents go into a
+  // single transaction — Sanity validates references at commit time.
+  const tx = client.transaction()
   const stationIds = []
   for (const s of stations) {
     const _id = `houdini-station-${String(s.order).padStart(2, '0')}`
-    await client.createOrReplace({
+    tx.createOrReplace({
       _id,
       _type: 'exhibitionStation',
       isVisible: true,
@@ -197,7 +200,7 @@ async function run() {
   }
 
   // 4. Create the exhibition with stations in order
-  await client.createOrReplace({
+  tx.createOrReplace({
     _id: EXHIBITION_ID,
     _type: 'exhibitionShow',
     isVisible: true,
@@ -217,6 +220,7 @@ async function run() {
       { _type: 'sourceItem', _key: 'src-loc', label: 'Library of Congress – Houdini-samlingen', url: 'https://www.loc.gov/collections/' },
     ],
   })
+  await tx.commit()
   console.log(`✔ Utstilling: houdini-exhibition (${stationIds.length} stasjoner)`)
 
   console.log('')
