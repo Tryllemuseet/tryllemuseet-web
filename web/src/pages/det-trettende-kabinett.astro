@@ -4,12 +4,13 @@
 // Concept: docs/det-trettende-kabinett-concept.md. Puzzle logic lives here;
 // editors override room copy via the gameChapter documents in Sanity.
 import BaseLayout from '../layouts/BaseLayout.astro'
-import { getGameConfig, getAllGameChapters } from '../lib/sanity'
+import { getGameConfig, getAllGameChapters, getSiteConfig } from '../lib/sanity'
 import type { GameFact } from '../lib/sanity'
 
-const [config, chapters] = await Promise.all([
+const [config, chapters, siteConfig] = await Promise.all([
   getGameConfig(),
   getAllGameChapters(),
+  getSiteConfig(),
 ])
 
 const isActive = config?.isActive === true
@@ -40,6 +41,8 @@ const DEFAULT_ROOMS: Record<string, RoomCopy> = {
     facts: [
       {
         text: 'Et rundt 4000 år gammelt gravmaleri fra Beni Hasan i Egypt er blitt tolket som verdens eldste avbildning av begre og kuler — selv om forskere fortsatt diskuterer hva maleriet egentlig viser.',
+        linkUrl: 'https://en.wikipedia.org/wiki/Cups_and_balls',
+        linkLabel: 'Om begre og kuler — Wikipedia (engelsk)',
       },
       {
         text: 'I Westcar-papyrusen fortelles det om magikeren Dedi, som skal ha opptrådt for farao Khufu for om lag 4500 år siden — historiens eldste navngitte tryllekunstner.',
@@ -55,6 +58,8 @@ const DEFAULT_ROOMS: Record<string, RoomCopy> = {
     facts: [
       {
         text: 'Hjernen din lagrer bare det du gir oppmerksomhet. Resten fyller den inn selv — og merker ikke engang at den gjør det.',
+        linkUrl: 'https://en.wikipedia.org/wiki/Inattentional_blindness',
+        linkLabel: 'Om uoppmerksomhetsblindhet — Wikipedia (engelsk)',
       },
     ],
   },
@@ -86,6 +91,8 @@ const DEFAULT_ROOMS: Record<string, RoomCopy> = {
     facts: [
       {
         text: 'fenomenet kalles endringsblindhet: selv store endringer rett foran øynene dine kan forsvinne helt når de skjer i et blunk eller bak en kort forstyrrelse. Hjernen lagrer en grov skisse — ikke bildet.',
+        linkUrl: 'https://en.wikipedia.org/wiki/Change_blindness',
+        linkLabel: 'Om endringsblindhet — Wikipedia (engelsk)',
       },
     ],
   },
@@ -96,6 +103,8 @@ const DEFAULT_ROOMS: Record<string, RoomCopy> = {
     facts: [
       {
         text: 'Reginald Scots «The Discoverie of Witchcraft» (1584) regnes som den første trykte boken som forklarer tryllekunster i detalj — skrevet for å forsvare mennesker som var anklaget for trolldom.',
+        linkUrl: 'https://en.wikipedia.org/wiki/The_Discoverie_of_Witchcraft',
+        linkLabel: 'Om boken — Wikipedia (engelsk)',
       },
       {
         text: 'samme år, 1584, kom også franskmannen Jean Prévosts bok om «subtile og fornøyelige oppfinnelser» — den eldste kjente boken viet utelukkende tryllekunst.',
@@ -111,6 +120,8 @@ const DEFAULT_ROOMS: Record<string, RoomCopy> = {
     facts: [
       {
         text: 'synsbedrag ikke oppstår i øyet, men i hjernen: den tolker alt du ser ut fra erfaring — og lar seg ikke overstyre selv når du vet fasiten.',
+        linkUrl: 'https://en.wikipedia.org/wiki/M%C3%BCller-Lyer_illusion',
+        linkLabel: 'Om Müller-Lyer-illusjonen — Wikipedia (engelsk)',
       },
     ],
   },
@@ -121,6 +132,8 @@ const DEFAULT_ROOMS: Record<string, RoomCopy> = {
     facts: [
       {
         text: 'Wolfgang von Kempelens «sjakktyrker» (1770) forbløffet Europa i over 60 år og spilte mot både Napoleon og Benjamin Franklin — med en menneskelig sjakkspiller skjult i skapet.',
+        linkUrl: 'https://en.wikipedia.org/wiki/Mechanical_Turk',
+        linkLabel: 'Om sjakktyrkeren — Wikipedia (engelsk)',
       },
       {
         text: 'urmakeren Jean-Eugène Robert-Houdin, «den moderne tryllekunstens far», fylte 1800-tallets salonger med automater — og en ung amerikaner tok senere navn etter ham: Houdini.',
@@ -136,6 +149,8 @@ const DEFAULT_ROOMS: Record<string, RoomCopy> = {
     facts: [
       {
         text: 'den moderne spiritismen startet i 1848 med søstrene Fox i USA, som lot «åndene» banke svar i bordet — mange år senere tilsto Margaret Fox at lydene ble laget med tå- og kneledd.',
+        linkUrl: 'https://en.wikipedia.org/wiki/Fox_sisters',
+        linkLabel: 'Om søstrene Fox — Wikipedia (engelsk)',
       },
       {
         text: 'Harry Houdini brukte sine siste år på å avsløre falske medier — han kjente alle metodene deres fra scenen selv.',
@@ -182,6 +197,8 @@ const DEFAULT_ROOMS: Record<string, RoomCopy> = {
     facts: [
       {
         text: 'Georges Méliès var sceneillusjonist og drev Théâtre Robert-Houdin i Paris før han ble en av filmkunstens pionerer — trylleriet flyttet rett inn i det nye mediet.',
+        linkUrl: 'https://en.wikipedia.org/wiki/Georges_M%C3%A9li%C3%A8s',
+        linkLabel: 'Om Georges Méliès — Wikipedia (engelsk)',
       },
       {
         text: 'i «Escamotage d\'une dame» (1896) lot Méliès en dame forsvinne med stopptrikset: kameraet stanses, damen går ut av bildet, og filmen fortsetter som om ingenting hendte. Ifølge Méliès selv oppdaget han trikset ved en tilfeldighet, da kameraet hans kilte seg midt i et gateopptak.',
@@ -197,6 +214,8 @@ const DEFAULT_ROOMS: Record<string, RoomCopy> = {
     facts: [
       {
         text: 'etterbilder oppstår fordi synscellene «slites» når du stirrer lenge på noe sterkt farget — etterpå serverer hjernen deg et gjenferd i komplementærfargen, på helt tomme flater.',
+        linkUrl: 'https://en.wikipedia.org/wiki/Afterimage',
+        linkLabel: 'Om etterbilder — Wikipedia (engelsk)',
       },
     ],
   },
@@ -228,6 +247,8 @@ const DEFAULT_ROOMS: Record<string, RoomCopy> = {
     facts: [
       {
         text: 'hukommelsen ikke er et arkiv, men en gjenfortelling: hjernen lagrer meningen og dikter detaljene — derfor kan hele saler «huske» ting som aldri skjedde.',
+        linkUrl: 'https://en.wikipedia.org/wiki/False_memory',
+        linkLabel: 'Om falske minner — Wikipedia (engelsk)',
       },
     ],
   },
@@ -253,6 +274,8 @@ const DEFAULT_ROOMS: Record<string, RoomCopy> = {
     facts: [
       {
         text: 'hjernen tegner ferdig det øynene bare antyder: konturene «finnes» fordi synssystemet ditt fyller inn kanter der det forventer dem — helt gratis og helt uten lov.',
+        linkUrl: 'https://en.wikipedia.org/wiki/Illusory_contours',
+        linkLabel: 'Om illusoriske konturer — Wikipedia (engelsk)',
       },
     ],
   },
@@ -263,6 +286,8 @@ const DEFAULT_ROOMS: Record<string, RoomCopy> = {
     facts: [
       {
         text: 'begre og kuler på oldtidens markeder og «three card monte» på gatehjørnene i dag er samme håndverk: nærmagi, der trikset skjer en armlengde fra publikums øyne.',
+        linkUrl: 'https://en.wikipedia.org/wiki/Three-card_Monte',
+        linkLabel: 'Om three-card monte — Wikipedia (engelsk)',
       },
       {
         text: 'David Blaines TV-spesial «Street Magic» (1997) regnes som et vendepunkt for gatemagien: kameraet gikk tett på hendene — og enda tettere på publikums reaksjoner.',
@@ -336,14 +361,25 @@ const overrides = new Map(chapters.map(c => [c.key, c]))
 const rooms: Record<string, RoomCopy> = {}
 for (const [key, def] of Object.entries(DEFAULT_ROOMS)) {
   const o = overrides.get(key)
+  // Sanity facts win, but a fact whose text still matches the code default
+  // and has no link of its own inherits the default's source link — the
+  // seeded room documents carry the default texts without the newer links.
+  const defByText = new Map(def.facts.map(f => [f.text, f]))
+  const facts = o?.facts?.length
+    ? o.facts.map(f => {
+        const d = !f.linkUrl ? defByText.get(f.text) : undefined
+        return d?.linkUrl ? { ...f, linkUrl: d.linkUrl, linkLabel: f.linkLabel || d.linkLabel } : f
+      })
+    : def.facts
   rooms[key] = {
     title: o?.title || def.title,
     intro: o?.intro || def.intro,
-    facts: o?.facts?.length ? o.facts : def.facts,
+    facts,
   }
 }
 
-const payload = { rooms }
+const museumAddress = siteConfig?.address || 'Årvoll gård, Årvollveien 35\n0590 Oslo'
+const payload = { rooms, museumAddress }
 // <-escape so a literal "</script>" in content can never break the page
 const payloadJson = JSON.stringify(payload).replace(/</g, '\\u003c')
 ---
@@ -353,7 +389,7 @@ const payloadJson = JSON.stringify(payload).replace(/</g, '\\u003c')
   description="Et tryllemuseum som bare finnes om natten. Løs gåtene, samle kortstokken og bli Direktørens lærling — Tryllemuseets historiespill."
 >
 
-  <section class="hero">
+  <section class="hero" id="game-hero">
     <div class="container">
       <p class="section-label">Tryllemuseet presenterer</p>
       <h1 class="display-title">{gameTitle}</h1>
@@ -381,7 +417,10 @@ const payloadJson = JSON.stringify(payload).replace(/</g, '\\u003c')
 
       <!-- ── SPILL-LINJE ─────────────────────────────────────────── -->
       <div class="gamebar">
-        <button class="gamebar-btn" id="deck-btn" aria-haspopup="dialog">🃏 Kortstokken <span id="deck-count">0/12</span></button>
+        <div class="gamebar-group">
+          <button class="gamebar-btn" id="deck-btn" aria-haspopup="dialog">🃏 Kortstokken <span id="deck-count">0/12</span></button>
+          <button class="gamebar-btn" id="help-btn" aria-haspopup="dialog">❔ Hjelp</button>
+        </div>
         <button class="gamebar-btn gamebar-btn--quiet" id="restart-btn">Begynn på nytt</button>
       </div>
 
@@ -1419,6 +1458,48 @@ const payloadJson = JSON.stringify(payload).replace(/</g, '\\u003c')
         </div>
       </dialog>
 
+      <!-- ── HJELP-MODAL ─────────────────────────────────────────── -->
+      <dialog class="deck-modal" id="help-modal" aria-labelledby="help-heading">
+        <div class="deck-head">
+          <h2 id="help-heading">Hjelp — slik spiller du</h2>
+          <button class="btn-quiet" id="help-close" aria-label="Lukk hjelpen">✕ Lukk</button>
+        </div>
+        <div class="help-body">
+          <h3>Slik spiller du</h3>
+          <p>Kabinettet åpner ett rom om gangen. Les fortellingen, se deg rundt og løs rommets gåte. Du kan aldri tape — gale svar koster deg bare en spydig kommentar fra Direktøren, og du kan alltid prøve igjen.</p>
+          <h3>Veivalg</h3>
+          <p><strong>Lærlingens vei</strong> gir rolig tempo og hjelp underveis. <strong>Mesterens vei</strong> er samme gåte uten hjelp — løser du den uten hint og uten feil, gylles rommets sparkort.</p>
+          <h3>Hint — Direktørens hvisken</h3>
+          <p>Står du fast, trykk på <em>Direktørens hvisken</em> 🤫 nederst i rommet. Du får opptil tre hint per gåte, og hint koster aldri fremdrift — bare gyllingen på sparkortet.</p>
+          <h3>Kortstokken</h3>
+          <p>Hvert rom har fire kort: <strong>♠ spar</strong> for å løse gåten, <strong>♥ hjerter</strong> for å fullføre rommet, <strong>♦ ruter</strong> for Speilgangens opplevelser og <strong>♣ kløver</strong> for rommets skjulte kuriositet. Trykk på 🃏 Kortstokken øverst for å se samlingen din — og hva som mangler.</p>
+          <h3>Kuriositetene</h3>
+          <p>I hvert gåterom er det gjemt en liten ting i sceneriet — en skarabé, ei mus, et tannhjul … Hold øynene åpne, og trykk på det du finner.</p>
+          <h3>Fremdrift</h3>
+          <p>Spillet lagres automatisk i nettleseren din. Du kan lukke siden når som helst og fortsette senere fra samme rom. «Begynn på nytt» sletter kortene og fremdriften.</p>
+        </div>
+      </dialog>
+
+      <!-- ── FAKTA-MODAL ─────────────────────────────────────────── -->
+      <dialog class="deck-modal fact-modal" id="fact-modal" aria-labelledby="fact-modal-heading">
+        <div class="deck-head">
+          <h2 id="fact-modal-heading">✦ Visste du at …</h2>
+          <button class="btn-quiet" id="fact-close" aria-label="Lukk faktaboksen">✕ Lukk</button>
+        </div>
+        <p class="fact-modal-text" id="fact-modal-text"></p>
+        <p class="fact-modal-note" id="fact-modal-note" hidden>Lenken åpner i en ny fane, utenfor tryllemuseet.no.</p>
+        <div class="btn-row">
+          <a class="btn-gold" id="fact-modal-link" hidden></a>
+        </div>
+      </dialog>
+
+      <!-- ── ROM-OVERGANG ────────────────────────────────────────── -->
+      <div class="room-transition" id="room-transition" hidden aria-hidden="true">
+        <p class="room-transition-icon" id="room-transition-icon" aria-hidden="true">🚪</p>
+        <p class="room-transition-kicker" id="room-transition-kicker"></p>
+        <p class="room-transition-title" id="room-transition-title"></p>
+      </div>
+
       <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
 
       <script type="application/json" id="kabinett-data" set:html={payloadJson} />
@@ -1430,7 +1511,7 @@ const payloadJson = JSON.stringify(payload).replace(/</g, '\\u003c')
 <script>
   interface GFact { text: string; linkUrl?: string; linkLabel?: string }
   interface GRoom { title: string; intro: string; facts: GFact[] }
-  interface GData { rooms: Record<string, GRoom> }
+  interface GData { rooms: Record<string, GRoom>; museumAddress?: string }
 
   const dataEl = document.getElementById('kabinett-data')
   if (dataEl) {
@@ -1538,21 +1619,57 @@ const payloadJson = JSON.stringify(payload).replace(/</g, '\\u003c')
       $('deck-count').textContent = `${state.cards.length}/${TOTAL_DECK}`
     }
 
+    // Facts render as clickable cards; the full text + source link opens in a
+    // small popup, nudging players onward to the site or an external source.
+    const factModal = $('fact-modal') as HTMLDialogElement
+    function openFactModal(f: GFact) {
+      // The heading already reads «Visste du at …»; the text continues it
+      $('fact-modal-text').textContent = `… ${f.text}`
+      const link = $('fact-modal-link') as HTMLAnchorElement
+      const note = $('fact-modal-note')
+      if (f.linkUrl) {
+        const external = /^https?:\/\//i.test(f.linkUrl)
+        link.href = f.linkUrl
+        link.textContent = `${f.linkLabel || 'Les mer'} ${external ? '↗' : '→'}`
+        if (external) {
+          link.target = '_blank'
+          link.rel = 'noopener noreferrer'
+        } else {
+          link.removeAttribute('target')
+          link.removeAttribute('rel')
+        }
+        link.hidden = false
+        note.hidden = !external
+      } else {
+        link.hidden = true
+        note.hidden = true
+      }
+      factModal.showModal()
+    }
+    $('fact-close').addEventListener('click', () => factModal.close())
+    factModal.addEventListener('click', e => { if (e.target === factModal) factModal.close() })
+
     function renderFacts(containerId: string, roomKey: string) {
       const box = $(containerId)
       box.innerHTML = ''
       const facts = data.rooms[roomKey]?.facts ?? []
       for (const f of facts) {
-        const p = document.createElement('p')
-        p.className = 'fact'
-        p.textContent = `Visste du at … ${f.text}`
-        if (f.linkUrl) {
-          const a = document.createElement('a')
-          a.href = f.linkUrl
-          a.textContent = ` ${f.linkLabel || 'Les mer'} →`
-          p.appendChild(a)
-        }
-        box.appendChild(p)
+        const btn = document.createElement('button')
+        btn.type = 'button'
+        btn.className = 'fact-card'
+        const teaser = f.text.length > 96 ? f.text.slice(0, 96).trimEnd() + ' …' : f.text
+        const kicker = document.createElement('span')
+        kicker.className = 'fact-card-kicker'
+        kicker.textContent = '✦ Visste du at …'
+        const body = document.createElement('span')
+        body.className = 'fact-card-teaser'
+        body.textContent = teaser
+        const more = document.createElement('span')
+        more.className = 'fact-card-more'
+        more.textContent = f.linkUrl ? 'Les hele — og finn kilden →' : 'Les hele →'
+        btn.append(kicker, body, more)
+        btn.addEventListener('click', () => openFactModal(f))
+        box.appendChild(btn)
       }
     }
 
@@ -1588,17 +1705,92 @@ const payloadJson = JSON.stringify(payload).replace(/</g, '\\u003c')
       daggry:         $('sc-daggry'),
     }
 
-    function goTo(stage: Stage) {
-      state.stage = stage
-      save()
+    // ── Toppteksten: krymper når spillet er i gang, trykk veksler ─
+    const heroEl = document.getElementById('game-hero')
+    function updateHero(collapse: boolean) {
+      if (!heroEl) return
+      const playing = state.stage !== 'brevet'
+      // Night falls over the whole page once the apprentice steps inside
+      document.body.classList.toggle('kabinett-natt', playing)
+      heroEl.classList.toggle('hero--playing', playing)
+      heroEl.classList.toggle('hero--compact', playing && collapse)
+      if (playing) {
+        heroEl.setAttribute('role', 'button')
+        heroEl.setAttribute('tabindex', '0')
+        heroEl.setAttribute('aria-label', 'Vis eller skjul introduksjonen til spillet')
+        heroEl.setAttribute('aria-expanded', String(!heroEl.classList.contains('hero--compact')))
+      } else {
+        heroEl.removeAttribute('role')
+        heroEl.removeAttribute('tabindex')
+        heroEl.removeAttribute('aria-label')
+        heroEl.removeAttribute('aria-expanded')
+      }
+    }
+    if (heroEl) {
+      const toggleHero = () => {
+        if (!heroEl.classList.contains('hero--playing')) return
+        heroEl.classList.toggle('hero--compact')
+        heroEl.setAttribute('aria-expanded', String(!heroEl.classList.contains('hero--compact')))
+      }
+      heroEl.addEventListener('click', toggleHero)
+      heroEl.addEventListener('keydown', e => {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleHero() }
+      })
+    }
+
+    // ── Rom-overganger ───────────────────────────────────────────
+    const transitionEl = $('room-transition')
+    const MIRROR_STAGES: Stage[] = ['speilgangen', 'galleriet', 'oyet', 'frievalget', 'lerretet', 'minnet', 'trekanten', 'fargene']
+    let transitioning = false
+
+    function showScene(stage: Stage) {
       for (const [key, el] of Object.entries(SCENES)) el.hidden = key !== stage
-      window.scrollTo({ top: 0, behavior: reducedMotion ? 'auto' : 'smooth' })
+      // Re-trigger the slide-in animation for the scene's blocks
+      const scene = SCENES[stage]
+      scene.classList.remove('scene-enter')
+      void scene.offsetWidth
+      scene.classList.add('scene-enter')
       if (stage === 'epilog') renderEpilog()
       if (stage === 'epilog2') renderEpilog2()
       if (stage === 'epilog3') renderEpilog3()
       if (stage === 'epilog4') renderEpilog4()
       if (stage === 'porten') renderPorten()
       if (stage === 'daggry') renderDaggry()
+      updateHero(true)
+    }
+
+    async function goTo(stage: Stage, instant = false) {
+      state.stage = stage
+      save()
+      if (instant || reducedMotion || transitioning) {
+        showScene(stage)
+        window.scrollTo({ top: 0, behavior: 'auto' })
+        return
+      }
+      transitioning = true
+      try {
+        const mirror = MIRROR_STAGES.includes(stage)
+        transitionEl.classList.toggle('room-transition--mirror', mirror)
+        $('room-transition-icon').textContent = mirror ? '🪞' : '🚪'
+        $('room-transition-kicker').textContent = mirror
+          ? (stage === 'speilgangen' ? 'Mellomrommet venter' : 'Ut i Speilgangen')
+          : 'Kabinettet åpner en ny dør'
+        $('room-transition-title').textContent = data.rooms[stage]?.title || ''
+        transitionEl.hidden = false
+        void transitionEl.offsetWidth // reflow so the opacity transition runs
+        transitionEl.classList.add('room-transition--visible')
+        await sleep(520)
+        if (state.stage === stage) {
+          showScene(stage)
+          window.scrollTo({ top: 0, behavior: 'auto' })
+        }
+        await sleep(950)
+        transitionEl.classList.remove('room-transition--visible')
+        await sleep(520)
+      } finally {
+        transitionEl.hidden = true
+        transitioning = false
+      }
     }
 
     // ── Kortstokken (modal) ──────────────────────────────────────
@@ -1646,6 +1838,12 @@ const payloadJson = JSON.stringify(payload).replace(/</g, '\\u003c')
     $('deck-close').addEventListener('click', () => deckModal.close())
     deckModal.addEventListener('click', e => { if (e.target === deckModal) deckModal.close() })
 
+    // ── Hjelp (modal) ────────────────────────────────────────────
+    const helpModal = $('help-modal') as HTMLDialogElement
+    $('help-btn').addEventListener('click', () => helpModal.showModal())
+    $('help-close').addEventListener('click', () => helpModal.close())
+    helpModal.addEventListener('click', e => { if (e.target === helpModal) helpModal.close() })
+
     $('restart-btn').addEventListener('click', () => {
       if (!confirm('Begynne helt på nytt? Kortene og fremdriften din slettes.')) return
       state = blank()
@@ -1658,25 +1856,66 @@ const payloadJson = JSON.stringify(payload).replace(/</g, '\\u003c')
     function escapeXml(s: string) {
       return s.replace(/[<>&'"]/g, c => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;', "'": '&apos;', '"': '&quot;' }[c] as string))
     }
-    function posterSvg(name: string, subtitle: string): string {
+    // The logo must be inlined as a data URI: SVG rendered via <img> (for the
+    // canvas PNG export) is not allowed to load external resources. The source
+    // PNG has an opaque white background, so fade near-white pixels to
+    // transparent to get clean line art on the dark poster.
+    let logoDataUri: string | null = null
+    async function loadPosterLogo(): Promise<string> {
+      if (logoDataUri !== null) return logoDataUri
+      try {
+        const img = new Image()
+        img.src = '/Tryllemuseet_logo_hatt.png'
+        await img.decode()
+        const c = document.createElement('canvas')
+        c.width = img.naturalWidth
+        c.height = img.naturalHeight
+        const ctx = c.getContext('2d')!
+        ctx.drawImage(img, 0, 0)
+        const px = ctx.getImageData(0, 0, c.width, c.height)
+        const d = px.data
+        for (let i = 0; i < d.length; i += 4) {
+          const lightness = Math.min(d[i], d[i + 1], d[i + 2])
+          if (lightness > 200) {
+            d[i + 3] = Math.min(d[i + 3], Math.round(255 * (255 - lightness) / 55))
+          }
+        }
+        ctx.putImageData(px, 0, 0)
+        logoDataUri = c.toDataURL('image/png')
+      } catch {
+        logoDataUri = '' // render the poster without a logo if loading fails
+      }
+      return logoDataUri
+    }
+    function posterSvg(name: string, subtitle: string, logo: string): string {
       const n = escapeXml(name.toUpperCase())
       const sub = escapeXml(subtitle)
+      const address = escapeXml(
+        (data.museumAddress || 'Årvoll gård, Årvollveien 35\n0590 Oslo').trim().replace(/\s*\n+\s*/g, ' · '),
+      )
+      // Logo PNG is 316x287; keep the aspect ratio
+      const logoImg = logo
+        ? `<image x="384" y="80" width="132" height="120" href="${logo}"/>`
+        : ''
       return `<svg xmlns="http://www.w3.org/2000/svg" width="900" height="1200" viewBox="0 0 900 1200">
         <rect width="900" height="1200" fill="#3D0E15"/>
         <rect x="30" y="30" width="840" height="1140" fill="none" stroke="#C9A227" stroke-width="6"/>
         <rect x="50" y="50" width="800" height="1100" fill="none" stroke="#C9A227" stroke-width="2"/>
-        <text x="450" y="170" text-anchor="middle" fill="#C9A227" font-family="Georgia, serif" font-size="34" letter-spacing="8">TRYLLEMUSEET PRESENTERER</text>
-        <text x="450" y="330" text-anchor="middle" fill="#F5EBD8" font-family="Georgia, serif" font-size="76" font-weight="bold">DET TRETTENDE</text>
-        <text x="450" y="420" text-anchor="middle" fill="#F5EBD8" font-family="Georgia, serif" font-size="76" font-weight="bold">KABINETT</text>
-        <text x="450" y="530" text-anchor="middle" fill="#C9A227" font-family="Georgia, serif" font-size="30" font-style="italic">${sub}</text>
-        <text x="450" y="660" text-anchor="middle" fill="#C9A227" font-family="Georgia, serif" font-size="30" letter-spacing="6">MED DEN LOVENDE LÆRLINGEN</text>
-        <text x="450" y="770" text-anchor="middle" fill="#F5EBD8" font-family="Georgia, serif" font-size="60" font-weight="bold">${n}</text>
-        <text x="450" y="870" text-anchor="middle" fill="#C9A227" font-family="Georgia, serif" font-size="26" font-style="italic">opptatt av Direktøren selv</text>
-        <text x="450" y="1000" text-anchor="middle" fill="#F5EBD8" font-family="Georgia, serif" font-size="42">♠ ♥ ♦ ♣</text>
-        <text x="450" y="1100" text-anchor="middle" fill="#C9A227" font-family="Georgia, serif" font-size="24" letter-spacing="4">KUN ÉN FORESTILLING · MELLOM MIDNATT OG DAGGRY</text>
+        ${logoImg}
+        <text x="450" y="255" text-anchor="middle" fill="#C9A227" font-family="Georgia, serif" font-size="34" letter-spacing="8">TRYLLEMUSEET PRESENTERER</text>
+        <text x="450" y="395" text-anchor="middle" fill="#F5EBD8" font-family="Georgia, serif" font-size="76" font-weight="bold">DET TRETTENDE</text>
+        <text x="450" y="485" text-anchor="middle" fill="#F5EBD8" font-family="Georgia, serif" font-size="76" font-weight="bold">KABINETT</text>
+        <text x="450" y="580" text-anchor="middle" fill="#C9A227" font-family="Georgia, serif" font-size="30" font-style="italic">${sub}</text>
+        <text x="450" y="685" text-anchor="middle" fill="#C9A227" font-family="Georgia, serif" font-size="30" letter-spacing="6">MED DEN LOVENDE LÆRLINGEN</text>
+        <text x="450" y="780" text-anchor="middle" fill="#F5EBD8" font-family="Georgia, serif" font-size="60" font-weight="bold">${n}</text>
+        <text x="450" y="858" text-anchor="middle" fill="#C9A227" font-family="Georgia, serif" font-size="26" font-style="italic">opptatt av Direktøren selv</text>
+        <text x="450" y="945" text-anchor="middle" fill="#F5EBD8" font-family="Georgia, serif" font-size="42">♠ ♥ ♦ ♣</text>
+        <text x="450" y="1028" text-anchor="middle" fill="#C9A227" font-family="Georgia, serif" font-size="24" letter-spacing="4">KUN ÉN FORESTILLING</text>
+        <text x="450" y="1070" text-anchor="middle" fill="#C9A227" font-family="Georgia, serif" font-size="24" letter-spacing="4">MELLOM MIDNATT OG DAGGRY</text>
+        <text x="450" y="1122" text-anchor="middle" fill="#F5EBD8" font-family="Georgia, serif" font-size="20" font-style="italic">${address}</text>
       </svg>`
     }
-    function downloadPoster() {
+    async function downloadPoster() {
       const inFinale = state.cards.some(c => parseInt(c) === 13)
         || ['porten', 'kabinettet', 'daggry'].includes(state.stage)
       const inActFour = state.cards.some(c => parseInt(c) >= 10)
@@ -1694,7 +1933,8 @@ const payloadJson = JSON.stringify(payload).replace(/</g, '\\u003c')
           : inActTwo
             ? '— akt I–II: nettene bak forhenget —'
             : '— akt I: natten da porten gikk opp —'
-      const svg = posterSvg(state.stageName || 'Den navnløse', subtitle)
+      const logo = await loadPosterLogo()
+      const svg = posterSvg(state.stageName || 'Den navnløse', subtitle, logo)
       const blob = new Blob([svg], { type: 'image/svg+xml;charset=utf-8' })
       const url = URL.createObjectURL(blob)
       const img = new Image()
@@ -2067,10 +2307,12 @@ const payloadJson = JSON.stringify(payload).replace(/</g, '\\u003c')
       })
     )
 
-    document.querySelectorAll<HTMLButtonElement>('.mp-cup').forEach(btn =>
+    // .mp-cup is a shared button class — later rooms (Øyet, Salongen, …) use
+    // it too, so both the listener and the disable must stay inside #mp-game.
+    document.querySelectorAll<HTMLButtonElement>('#mp-game .mp-cup').forEach(btn =>
       btn.addEventListener('click', () => {
         if (btn.dataset.pick === 'midten') {
-          document.querySelectorAll<HTMLButtonElement>('.mp-cup').forEach(b => { b.disabled = true })
+          document.querySelectorAll<HTMLButtonElement>('#mp-game .mp-cup').forEach(b => { b.disabled = true })
           $('mp-msg').textContent = 'Gjøgleren løfter det midterste kruset: erten! Han bukker dypt. «Endelig én som hører etter!»'
           const gild = mpPath === 'mester' && mpHintsUsed === 0 && mpWrong === 0
           awardCard(3, 'spar', 'Sigillet fra Markedsplassen')
@@ -3606,7 +3848,7 @@ const payloadJson = JSON.stringify(payload).replace(/</g, '\\u003c')
     if (state.stage !== 'brevet') {
       // Resume: rebuild the small bits of scene state the stages need
       if (state.stageName) $('fj-book-line').textContent = `~ ${state.stageName} ~`
-      goTo(state.stage)
+      goTo(state.stage, true)
       // Re-enter puzzle rooms via the path choice so their state is fresh
       if (state.stage === 'sandrommet') {
         $('sr-pathchoice').hidden = false
@@ -3654,21 +3896,31 @@ const payloadJson = JSON.stringify(payload).replace(/</g, '\\u003c')
       }
       toast(`Velkommen tilbake${state.stageName ? ', ' + state.stageName : ''} — Kabinettet husker deg. 🕯️`)
     } else {
-      goTo('brevet')
+      goTo('brevet', true)
     }
   }
 </script>
 
 <style>
   /* ── HERO ──────────────────────────────────────────────────────── */
-  .hero { background: var(--burgundy-dk); padding: 3.5rem 0 2.5rem; border-bottom: 2px solid var(--gold-dark); color: var(--cream); }
-  .hero h1 { font-size: clamp(2rem, 5vw, 3rem); color: var(--cream); margin: 0.5rem 0 0.75rem; }
+  .hero { background: var(--burgundy-dk); padding: 3.5rem 0 2.5rem; border-bottom: 2px solid var(--gold-dark); color: var(--cream); transition: padding 250ms ease; }
+  .hero h1 { font-size: clamp(2rem, 5vw, 3rem); color: var(--cream); margin: 0.5rem 0 0.75rem; transition: font-size 250ms ease; }
   .hero-sub { font-family: var(--font-ui); font-size: 1rem; opacity: 0.8; max-width: 560px; line-height: 1.6; }
+
+  /* Once the game is underway the hero shrinks to a slim bar; clicking
+     (or Enter/Space) toggles the full intro back. */
+  .hero--playing { cursor: pointer; }
+  .hero--playing h1::after { content: ' ▴'; font-size: 0.55em; opacity: 0.55; }
+  .hero--compact { padding: 0.8rem 0 0.7rem; }
+  .hero--compact h1 { font-size: 1.05rem; margin: 0; }
+  .hero--compact h1::after { content: ' ▾'; }
+  .hero--compact .section-label, .hero--compact .hero-sub { display: none; }
 
   .game-main { padding: 2.5rem 1.5rem 5rem; max-width: 760px; }
 
   /* ── SPILL-LINJE ───────────────────────────────────────────────── */
   .gamebar { display: flex; justify-content: space-between; align-items: center; gap: 0.75rem; margin-bottom: 1.25rem; flex-wrap: wrap; }
+  .gamebar-group { display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap; }
   .gamebar-btn { font-family: var(--font-ui); font-size: 0.85rem; font-weight: 700; color: var(--cream); background: var(--burgundy); border: 1.5px solid var(--gold-dark); border-radius: 999px; padding: 0.5rem 1.1rem; transition: background 150ms; }
   .gamebar-btn:hover { background: var(--burgundy-dk); }
   .gamebar-btn--quiet { background: transparent; color: var(--grey); border-color: var(--cream-dark); }
@@ -3698,7 +3950,9 @@ const payloadJson = JSON.stringify(payload).replace(/</g, '\\u003c')
   .game-msg--think { font-style: italic; opacity: 0.85; }
 
   /* ── BREVET ────────────────────────────────────────────────────── */
+  /* display:flex would otherwise beat the hidden attribute's display:none */
   .scene--letter { display: flex; justify-content: center; }
+  .scene--letter[hidden] { display: none; }
   .letter { background: var(--cream); border: 1px solid var(--gold-dark); border-radius: 6px; padding: 2.5rem 2rem; max-width: 520px; text-align: center; box-shadow: var(--shadow); }
   .letter-seal { font-size: 2.5rem; margin-bottom: 0.75rem; }
   .letter-heading { font-family: var(--font-display); font-size: 1.5rem; color: var(--burgundy); margin-bottom: 1rem; }
@@ -3750,15 +4004,19 @@ const payloadJson = JSON.stringify(payload).replace(/</g, '\\u003c')
 
   .solved-title { font-family: var(--font-ui); font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.15em; color: var(--gold-dark); margin-bottom: 0.75rem; }
   .principle { font-family: var(--font-body); font-size: 1.05rem; line-height: 1.65; color: var(--ink); margin-bottom: 1rem; }
-  .facts { margin-bottom: 1.25rem; }
-  :global(.fact) { font-family: var(--font-ui); font-size: 0.9rem; line-height: 1.6; color: var(--ink-mid); background: var(--cream); border-left: 3px solid var(--gold); border-radius: 0 6px 6px 0; padding: 0.7rem 1rem; margin-bottom: 0.5rem; }
-  :global(.fact a) { font-weight: 700; color: var(--burgundy); text-decoration: underline; }
+  .facts { margin-bottom: 1.25rem; display: flex; flex-direction: column; gap: 0.5rem; }
+  /* :global — fact cards are created by the game engine at runtime */
+  :global(.fact-card) { display: flex; flex-direction: column; gap: 0.3rem; width: 100%; text-align: left; font-family: var(--font-ui); background: var(--cream); border: 1px solid var(--cream-dark); border-left: 3px solid var(--gold); border-radius: 0 6px 6px 0; padding: 0.7rem 1rem; cursor: pointer; box-shadow: 0 2px 0 #00000026; transition: transform 120ms ease, box-shadow 120ms ease; }
+  :global(.fact-card:hover) { transform: translateY(-1px); box-shadow: 0 3px 8px #00000033; }
+  :global(.fact-card:active) { transform: translateY(1px); box-shadow: none; }
+  :global(.fact-card-kicker) { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.12em; color: var(--gold-dark); }
+  :global(.fact-card-teaser) { font-size: 0.9rem; line-height: 1.55; color: var(--ink-mid); }
+  :global(.fact-card-more) { font-size: 0.8rem; font-weight: 700; color: var(--burgundy); }
 
   /* ── SPEILGANGEN ───────────────────────────────────────────────── */
   .reveal { background: #ffffff10; border: 1px dashed var(--gold-dark); border-radius: 8px; padding: 1rem 1.2rem; margin-top: 1.25rem; font-family: var(--font-ui); font-size: 0.92rem; line-height: 1.6; }
   .reveal-compare { display: grid; gap: 0.75rem; margin-top: 0.75rem; }
   :global(.reveal-col-title) { font-family: var(--font-ui); font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--gold); }
-  .reveal :global(.fact) { color: var(--ink-mid); }
 
   /* ── MARKEDSPLASSEN ────────────────────────────────────────────── */
   .verse { font-family: var(--font-body); font-style: italic; font-size: 1.05rem; line-height: 1.8; border-left: 3px solid var(--gold); padding-left: 1.1rem; margin: 1.25rem 0; }
@@ -3859,8 +4117,72 @@ const payloadJson = JSON.stringify(payload).replace(/</g, '\\u003c')
   .path-btn strong { font-size: 1rem; }
   .path-btn span { font-size: 0.82rem; line-height: 1.5; opacity: 0.8; }
 
+  /* ── SCENE-INNTOG ──────────────────────────────────────────────── */
+  /* Mirrors the site's data-animate slide-ins (40px, 0.6s ease) — blocks
+     glide in from alternating sides when a room opens. */
+  @keyframes scene-in-left  { from { opacity: 0; transform: translateX(-40px); } to { opacity: 1; transform: none; } }
+  @keyframes scene-in-right { from { opacity: 0; transform: translateX(40px); }  to { opacity: 1; transform: none; } }
+  .scene-enter > * { animation: scene-in-left 0.6s ease backwards; }
+  .scene-enter > *:nth-child(even) { animation-name: scene-in-right; }
+  .scene-enter > *:nth-child(2) { animation-delay: 90ms; }
+  .scene-enter > *:nth-child(3) { animation-delay: 180ms; }
+  .scene-enter > *:nth-child(n+4) { animation-delay: 270ms; }
+  @media (prefers-reduced-motion: reduce) {
+    .scene-enter > * { animation: none; }
+  }
+
+  /* ── NATTEMODUS ────────────────────────────────────────────────── */
+  /* Night falls over the page once the player is inside the Cabinet. */
+  :global(body.kabinett-natt) { background: radial-gradient(1100px 700px at 50% 0, #2a1420 0%, #170b16 55%, #0e070d 100%); }
+  :global(body.kabinett-natt) .scene-label { color: var(--gold); }
+  :global(body.kabinett-natt) .scene-heading { color: var(--cream); }
+  :global(body.kabinett-natt) .scene-intro { color: var(--cream); opacity: 0.85; }
+  :global(body.kabinett-natt) .gamebar-btn--quiet { color: var(--cream); opacity: 0.75; border-color: #ffffff40; }
+  :global(body.kabinett-natt) .gamebar-btn--quiet:hover { color: var(--gold); opacity: 1; background: transparent; }
+  :global(body.kabinett-natt) .panel { box-shadow: 0 8px 28px #00000090; }
+
+  /* ── KNAPPEFØLELSE ─────────────────────────────────────────────── */
+  /* Raised buttons with a visible press, so options read as buttons. */
+  .btn-gold { box-shadow: 0 3px 0 #00000045; }
+  .btn-gold:active { transform: translateY(2px); box-shadow: 0 1px 0 #00000045; }
+  .path-btn,
+  :global(.mp-cup), :global(.match-item), :global(.fv-item), :global(.ki-strip) {
+    box-shadow: 0 3px 0 #00000059, inset 0 1px 0 #ffffff1a;
+    transition: background 150ms, border-color 150ms, transform 120ms ease, box-shadow 120ms ease;
+  }
+  .path-btn:hover,
+  :global(.mp-cup:not(:disabled):hover), :global(.match-item:not(:disabled):hover),
+  :global(.fv-item:not(:disabled):hover), :global(.ki-strip:not(:disabled):hover) { transform: translateY(-1px); }
+  .path-btn:active,
+  :global(.mp-cup:not(:disabled):active), :global(.match-item:not(:disabled):active),
+  :global(.fv-item:not(:disabled):active), :global(.ki-strip:not(:disabled):active) {
+    transform: translateY(2px);
+    box-shadow: 0 1px 0 #00000059, inset 0 1px 0 #ffffff1a;
+  }
+  :global(.mp-cup:disabled), :global(.match-item:disabled), :global(.ki-strip--placed) { box-shadow: none; }
+  #game-root :global(button:focus-visible) { outline: 2px solid var(--gold); outline-offset: 2px; }
+
+  /* ── FAKTA-MODAL ───────────────────────────────────────────────── */
+  .fact-modal { max-width: 480px; }
+  .fact-modal-text { font-family: var(--font-body); font-size: 1.05rem; line-height: 1.7; margin: 0.5rem 0 0.75rem; }
+  .fact-modal-note { font-family: var(--font-ui); font-size: 0.8rem; opacity: 0.7; margin-bottom: 0.25rem; }
+
+  /* ── HJELP-MODAL ───────────────────────────────────────────────── */
+  .help-body h3 { font-family: var(--font-ui); font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.12em; color: var(--gold); margin: 1.2rem 0 0.35rem; }
+  .help-body h3:first-child { margin-top: 0; }
+  .help-body p { font-family: var(--font-ui); font-size: 0.92rem; line-height: 1.6; opacity: 0.92; }
+
+  /* ── ROM-OVERGANG ──────────────────────────────────────────────── */
+  .room-transition { position: fixed; inset: 0; z-index: 120; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.5rem; text-align: center; padding: 2rem; background: radial-gradient(120% 120% at 50% 40%, #2a0a10 0%, #0a0507 75%); color: var(--cream); opacity: 0; transition: opacity 480ms ease; }
+  .room-transition[hidden] { display: none; }
+  .room-transition--visible { opacity: 1; }
+  .room-transition--mirror { background: radial-gradient(120% 120% at 50% 40%, #16222e 0%, #05070a 75%); }
+  .room-transition-icon { font-size: 2.6rem; line-height: 1; margin-bottom: 0.4rem; }
+  .room-transition-kicker { font-family: var(--font-ui); font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.2em; color: var(--gold); }
+  .room-transition-title { font-family: var(--font-display); font-style: italic; font-size: clamp(1.6rem, 6vw, 2.4rem); }
+
   /* ── TOAST ─────────────────────────────────────────────────────── */
-  .toast { position: fixed; left: 50%; bottom: 1.25rem; transform: translateX(-50%); z-index: 110; background: var(--burgundy-dk); color: var(--cream); border: 1px solid var(--gold); border-radius: 999px; padding: 0.65rem 1.4rem; font-family: var(--font-ui); font-size: 0.9rem; box-shadow: 0 4px 16px #00000080; max-width: calc(100% - 2rem); text-align: center; }
+  .toast { position: fixed; left: 50%; bottom: 1.25rem; transform: translateX(-50%); z-index: 110; background: var(--burgundy-dk); color: var(--cream); border: 1px solid var(--gold); border-radius: 999px; padding: 0.65rem 1.4rem; font-family: var(--font-ui); font-size: 0.9rem; box-shadow: 0 4px 16px #00000080; max-width: calc(100% - 2rem); text-align: center; pointer-events: none; }
   .toast[hidden] { display: none; }
 
   /* ── KOMMER SNART ──────────────────────────────────────────────── */
