@@ -275,6 +275,7 @@ Messages are concise; use body for detail if needed.
 ## Sanity og innhold
 
 - Produksjonsdatasettet inneholder ekte innhold (bl.a. 171 magikerbiografier, bokregister, arrangementer). Test alltid skjemaendringer mot development-datasettet først.
+  - NB (juli 2026): development-datasettet finnes ikke i prosjektet ennå — API-et svarer «Dataset not found», og å opprette det krever admin-rettigheter (sanity.io/manage → prosjekt `n2ynpgty` → Datasets, eller `npx sanity dataset create development` som innlogget admin). Inntil det er opprettet: vær ekstra varsom med skjemaendringer, og flagg det i PR-en.
 - Skjemaendringer som kan bryte eksisterende dokumenter (felt som fjernes, endrer type eller blir påkrevd): flagg konsekvensene og spør før implementering.
 - Ikke slett eller masseoppdater dokumenter i produksjonsdatasettet uten eksplisitt bekreftelse.
 - GROQ-spørringer holdes samlet på ett sted i kodebasen (følg eksisterende struktur).
