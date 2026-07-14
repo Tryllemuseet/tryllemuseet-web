@@ -1,11 +1,18 @@
 ---
 // src/pages/utstillingen/index.astro
 import BaseLayout from '../../layouts/BaseLayout.astro'
-import { getAllMagicians, getUtstillingPage, urlFor } from '../../lib/sanity'
+import { getAllMagicians, getAllExhibitionShows, getUtstillingPage, urlFor } from '../../lib/sanity'
 
-const [magicians, page] = await Promise.all([getAllMagicians(), getUtstillingPage()])
+const [magicians, exhibitions, page] = await Promise.all([
+  getAllMagicians(),
+  getAllExhibitionShows(),
+  getUtstillingPage(),
+])
 
-const featured  = magicians.filter(m => page.fremhevedeSlugs.includes(m.slug))
+// Featured cards follow the editor-controlled order in fremhevedeSlugs
+const featured = page.fremhevedeSlugs
+  .map(slug => magicians.find(m => m.slug === slug))
+  .filter((m): m is NonNullable<typeof m> => Boolean(m))
 const remaining = magicians.filter(m => !page.fremhevedeSlugs.includes(m.slug))
 
 function posterUrl(image: any, width: number) {
@@ -26,6 +33,46 @@ function posterUrl(image: any, width: number) {
     <p class="hero-intro">{page.hero.ingress}</p>
     <hr class="gold-rule" />
   </section>
+
+  <!-- ── AKTUELL UTSTILLING ────────────────────────────────────────── -->
+  {exhibitions.length > 0 && (
+    <section class="container aktuell-section">
+      <p class="section-label">{exhibitions.length > 1 ? 'Aktuelle utstillinger' : 'Aktuell utstilling'}</p>
+      {exhibitions.map((ex) => {
+        const imgUrl = ex.heroImage?.asset
+          ? urlFor(ex.heroImage).width(900).height(600).format('webp').fit('crop').url()
+          : null
+        return (
+          <a href={`/utstillingen/${ex.slug}`} class="aktuell-card">
+            {imgUrl ? (
+              <div class="aktuell-img">
+                <img
+                  src={imgUrl}
+                  alt={ex.heroImage?.alt ?? ex.title}
+                  width="900"
+                  height="600"
+                  loading="eager"
+                />
+              </div>
+            ) : (
+              <div class="aktuell-img aktuell-img--placeholder">
+                <span>🎟️</span>
+              </div>
+            )}
+            <div class="aktuell-body">
+              {ex.stationCount > 0 && (
+                <p class="aktuell-meta">{ex.stationCount} {ex.stationCount === 1 ? 'stasjon' : 'stasjoner'}</p>
+              )}
+              <h2 class="display-title aktuell-title">{ex.title}</h2>
+              {ex.subtitle && <p class="aktuell-subtitle">{ex.subtitle}</p>}
+              {ex.introAdults && <p class="aktuell-intro">{ex.introAdults}</p>}
+              <span class="aktuell-cta">Se utstillingen →</span>
+            </div>
+          </a>
+        )
+      })}
+    </section>
+  )}
 
   <!-- ── TRYLLINGENS GULLALDER ─────────────────────────────────────── -->
   <section class="container gullalder-section">
@@ -176,6 +223,40 @@ function posterUrl(image: any, width: number) {
   .hero          { padding: 4rem 0 2rem; }
   .hero-title    { font-size: clamp(2.2rem, 5vw, 3.5rem); margin: 0.4rem 0 1.25rem; }
   .hero-intro    { font-family: var(--font-ui); font-size: 1.05rem; color: var(--ink-mid); max-width: 640px; line-height: 1.7; }
+
+  /* ── AKTUELL UTSTILLING ── */
+  .aktuell-section { padding-bottom: 2.5rem; }
+  .aktuell-section .section-label { margin-bottom: 1rem; }
+  .aktuell-card {
+    display: grid;
+    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+    background: var(--burgundy-dk);
+    border: 1px solid var(--gold-dark);
+    border-radius: 8px; overflow: hidden;
+    text-decoration: none; color: var(--cream);
+    transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease;
+  }
+  .aktuell-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-lg); border-color: var(--gold); }
+  .aktuell-card + .aktuell-card { margin-top: 1.5rem; }
+
+  .aktuell-img { position: relative; min-height: 260px; overflow: hidden; background: rgba(255,255,255,0.05); }
+  .aktuell-img img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transition: transform 320ms ease; }
+  .aktuell-card:hover .aktuell-img img { transform: scale(1.04); }
+  .aktuell-img--placeholder { display: flex; align-items: center; justify-content: center; font-size: 5rem; }
+
+  .aktuell-body     { padding: 2rem 2.25rem; display: flex; flex-direction: column; }
+  .aktuell-meta     { font-family: var(--font-ui); font-size: 0.75rem; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: var(--gold-light); margin-bottom: 0.6rem; }
+  .aktuell-title    { font-size: clamp(1.5rem, 3vw, 2.1rem); color: var(--cream); margin-bottom: 0.4rem; }
+  .aktuell-subtitle { font-family: var(--font-body); font-size: 1rem; font-style: italic; color: var(--gold-light); margin-bottom: 0.9rem; }
+  .aktuell-intro    { font-family: var(--font-ui); font-size: 0.925rem; line-height: 1.65; color: rgba(244,238,225,0.85); flex: 1; }
+  .aktuell-cta      { font-family: var(--font-ui); font-size: 0.9rem; font-weight: 600; color: var(--gold-light); margin-top: 1.25rem; transition: color 180ms ease; }
+  .aktuell-card:hover .aktuell-cta { color: var(--gold); }
+
+  @media (max-width: 720px) {
+    .aktuell-card { grid-template-columns: 1fr; }
+    .aktuell-img  { min-height: 200px; }
+    .aktuell-body { padding: 1.5rem; }
+  }
 
   /* ── GULLALDER ── */
   .gullalder-section { padding-bottom: 1rem; }
