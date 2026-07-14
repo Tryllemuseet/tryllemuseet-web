@@ -159,13 +159,13 @@ export async function getExhibitionShowBySlug(slug: string): Promise<ExhibitionS
       heroImage { asset->{ _ref, url }, alt },
       introKids, introAdults,
       "relatedMagician": relatedMagician->{ name, "slug": slug.current, isVisible },
-      "stations": stations[]->{
+      "stations": stations[@->isVisible != false][]->{
         _id, title, "slug": slug.current,
         order, year,
         image { asset->{ _ref, url }, alt },
         textKids, textAdults, activityPrompt,
         isVisible
-      }[isVisible != false],
+      },
       sources[] { label, url }
     }
   `, { slug })
