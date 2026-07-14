@@ -4,12 +4,13 @@
 // Concept: docs/det-trettende-kabinett-concept.md. Puzzle logic lives here;
 // editors override room copy via the gameChapter documents in Sanity.
 import BaseLayout from '../layouts/BaseLayout.astro'
-import { getGameConfig, getAllGameChapters } from '../lib/sanity'
+import { getGameConfig, getAllGameChapters, getSiteConfig } from '../lib/sanity'
 import type { GameFact } from '../lib/sanity'
 
-const [config, chapters] = await Promise.all([
+const [config, chapters, siteConfig] = await Promise.all([
   getGameConfig(),
   getAllGameChapters(),
+  getSiteConfig(),
 ])
 
 const isActive = config?.isActive === true
@@ -377,7 +378,8 @@ for (const [key, def] of Object.entries(DEFAULT_ROOMS)) {
   }
 }
 
-const payload = { rooms }
+const museumAddress = siteConfig?.address || 'Årvoll gård, Årvollveien 35\n0590 Oslo'
+const payload = { rooms, museumAddress }
 // <-escape so a literal "</script>" in content can never break the page
 const payloadJson = JSON.stringify(payload).replace(/</g, '\\u003c')
 ---
@@ -1509,7 +1511,7 @@ const payloadJson = JSON.stringify(payload).replace(/</g, '\\u003c')
 <script>
   interface GFact { text: string; linkUrl?: string; linkLabel?: string }
   interface GRoom { title: string; intro: string; facts: GFact[] }
-  interface GData { rooms: Record<string, GRoom> }
+  interface GData { rooms: Record<string, GRoom>; museumAddress?: string }
 
   const dataEl = document.getElementById('kabinett-data')
   if (dataEl) {
@@ -1854,25 +1856,66 @@ const payloadJson = JSON.stringify(payload).replace(/</g, '\\u003c')
     function escapeXml(s: string) {
       return s.replace(/[<>&'"]/g, c => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;', "'": '&apos;', '"': '&quot;' }[c] as string))
     }
-    function posterSvg(name: string, subtitle: string): string {
+    // The logo must be inlined as a data URI: SVG rendered via <img> (for the
+    // canvas PNG export) is not allowed to load external resources. The source
+    // PNG has an opaque white background, so fade near-white pixels to
+    // transparent to get clean line art on the dark poster.
+    let logoDataUri: string | null = null
+    async function loadPosterLogo(): Promise<string> {
+      if (logoDataUri !== null) return logoDataUri
+      try {
+        const img = new Image()
+        img.src = '/Tryllemuseet_logo_hatt.png'
+        await img.decode()
+        const c = document.createElement('canvas')
+        c.width = img.naturalWidth
+        c.height = img.naturalHeight
+        const ctx = c.getContext('2d')!
+        ctx.drawImage(img, 0, 0)
+        const px = ctx.getImageData(0, 0, c.width, c.height)
+        const d = px.data
+        for (let i = 0; i < d.length; i += 4) {
+          const lightness = Math.min(d[i], d[i + 1], d[i + 2])
+          if (lightness > 200) {
+            d[i + 3] = Math.min(d[i + 3], Math.round(255 * (255 - lightness) / 55))
+          }
+        }
+        ctx.putImageData(px, 0, 0)
+        logoDataUri = c.toDataURL('image/png')
+      } catch {
+        logoDataUri = '' // render the poster without a logo if loading fails
+      }
+      return logoDataUri
+    }
+    function posterSvg(name: string, subtitle: string, logo: string): string {
       const n = escapeXml(name.toUpperCase())
       const sub = escapeXml(subtitle)
+      const address = escapeXml(
+        (data.museumAddress || 'Årvoll gård, Årvollveien 35\n0590 Oslo').trim().replace(/\s*\n+\s*/g, ' · '),
+      )
+      // Logo PNG is 316x287; keep the aspect ratio
+      const logoImg = logo
+        ? `<image x="384" y="80" width="132" height="120" href="${logo}"/>`
+        : ''
       return `<svg xmlns="http://www.w3.org/2000/svg" width="900" height="1200" viewBox="0 0 900 1200">
         <rect width="900" height="1200" fill="#3D0E15"/>
         <rect x="30" y="30" width="840" height="1140" fill="none" stroke="#C9A227" stroke-width="6"/>
         <rect x="50" y="50" width="800" height="1100" fill="none" stroke="#C9A227" stroke-width="2"/>
-        <text x="450" y="170" text-anchor="middle" fill="#C9A227" font-family="Georgia, serif" font-size="34" letter-spacing="8">TRYLLEMUSEET PRESENTERER</text>
-        <text x="450" y="330" text-anchor="middle" fill="#F5EBD8" font-family="Georgia, serif" font-size="76" font-weight="bold">DET TRETTENDE</text>
-        <text x="450" y="420" text-anchor="middle" fill="#F5EBD8" font-family="Georgia, serif" font-size="76" font-weight="bold">KABINETT</text>
-        <text x="450" y="530" text-anchor="middle" fill="#C9A227" font-family="Georgia, serif" font-size="30" font-style="italic">${sub}</text>
-        <text x="450" y="660" text-anchor="middle" fill="#C9A227" font-family="Georgia, serif" font-size="30" letter-spacing="6">MED DEN LOVENDE LÆRLINGEN</text>
-        <text x="450" y="770" text-anchor="middle" fill="#F5EBD8" font-family="Georgia, serif" font-size="60" font-weight="bold">${n}</text>
-        <text x="450" y="870" text-anchor="middle" fill="#C9A227" font-family="Georgia, serif" font-size="26" font-style="italic">opptatt av Direktøren selv</text>
-        <text x="450" y="1000" text-anchor="middle" fill="#F5EBD8" font-family="Georgia, serif" font-size="42">♠ ♥ ♦ ♣</text>
-        <text x="450" y="1100" text-anchor="middle" fill="#C9A227" font-family="Georgia, serif" font-size="24" letter-spacing="4">KUN ÉN FORESTILLING · MELLOM MIDNATT OG DAGGRY</text>
+        ${logoImg}
+        <text x="450" y="255" text-anchor="middle" fill="#C9A227" font-family="Georgia, serif" font-size="34" letter-spacing="8">TRYLLEMUSEET PRESENTERER</text>
+        <text x="450" y="395" text-anchor="middle" fill="#F5EBD8" font-family="Georgia, serif" font-size="76" font-weight="bold">DET TRETTENDE</text>
+        <text x="450" y="485" text-anchor="middle" fill="#F5EBD8" font-family="Georgia, serif" font-size="76" font-weight="bold">KABINETT</text>
+        <text x="450" y="580" text-anchor="middle" fill="#C9A227" font-family="Georgia, serif" font-size="30" font-style="italic">${sub}</text>
+        <text x="450" y="685" text-anchor="middle" fill="#C9A227" font-family="Georgia, serif" font-size="30" letter-spacing="6">MED DEN LOVENDE LÆRLINGEN</text>
+        <text x="450" y="780" text-anchor="middle" fill="#F5EBD8" font-family="Georgia, serif" font-size="60" font-weight="bold">${n}</text>
+        <text x="450" y="858" text-anchor="middle" fill="#C9A227" font-family="Georgia, serif" font-size="26" font-style="italic">opptatt av Direktøren selv</text>
+        <text x="450" y="945" text-anchor="middle" fill="#F5EBD8" font-family="Georgia, serif" font-size="42">♠ ♥ ♦ ♣</text>
+        <text x="450" y="1028" text-anchor="middle" fill="#C9A227" font-family="Georgia, serif" font-size="24" letter-spacing="4">KUN ÉN FORESTILLING</text>
+        <text x="450" y="1070" text-anchor="middle" fill="#C9A227" font-family="Georgia, serif" font-size="24" letter-spacing="4">MELLOM MIDNATT OG DAGGRY</text>
+        <text x="450" y="1122" text-anchor="middle" fill="#F5EBD8" font-family="Georgia, serif" font-size="20" font-style="italic">${address}</text>
       </svg>`
     }
-    function downloadPoster() {
+    async function downloadPoster() {
       const inFinale = state.cards.some(c => parseInt(c) === 13)
         || ['porten', 'kabinettet', 'daggry'].includes(state.stage)
       const inActFour = state.cards.some(c => parseInt(c) >= 10)
@@ -1890,7 +1933,8 @@ const payloadJson = JSON.stringify(payload).replace(/</g, '\\u003c')
           : inActTwo
             ? '— akt I–II: nettene bak forhenget —'
             : '— akt I: natten da porten gikk opp —'
-      const svg = posterSvg(state.stageName || 'Den navnløse', subtitle)
+      const logo = await loadPosterLogo()
+      const svg = posterSvg(state.stageName || 'Den navnløse', subtitle, logo)
       const blob = new Blob([svg], { type: 'image/svg+xml;charset=utf-8' })
       const url = URL.createObjectURL(blob)
       const img = new Image()
