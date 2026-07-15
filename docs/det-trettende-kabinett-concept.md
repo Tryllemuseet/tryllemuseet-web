@@ -371,14 +371,29 @@ the museum has QA'd the English copy); switching reloads the page and keeps
 progress. There is still no `/en/` route — the toggle is per player, stored
 in `localStorage` (`kabinett-lang`).
 
+**Shipping status (15 July 2026):** the images/rich-text/English work was
+merged to `main` via PR #83. `deploy-sanity-studio.yml` auto-triggers on push
+to `main` when `schemaTypes/**` changes, so the studio deploy in step 1 below
+already happened automatically — no manual `npm run deploy` was needed this
+time. Two seeded **Kabinettet: Rom** documents (Sandrommet, Gatehjørnet)
+still contain the pre-rename "begre og kuler" wording and need editing (or
+unpublishing) in Studio — see the redaktør guide, §21. `main` is not yet on
+`prod`, so none of this is on tryllemuseet.no; both `isActive` and
+`englishEnabled` are off regardless, so nothing visible changes until the
+museum deliberately flips them.
+
 **Activation checklist** (mirrors the quiz):
 
-1. Deploy the studio so the new types appear: `npm run deploy` (repo root).
+1. Deploy the studio so the new types appear: `npm run deploy` (repo root) —
+   or confirm the automatic `deploy-sanity-studio.yml` run already did it.
 2. Review/override room copy via **Kabinettet: Rom** documents (optional).
-3. QA the "visste du at" facts (museum).
-4. Open **Kabinettet: Innstillinger** and toggle **Spillet er aktivt** on.
+3. QA the "visste du at" facts (museum), in both languages if `englishEnabled`
+   will be turned on.
+4. Open **Kabinettet: Innstillinger** and toggle **Spillet er aktivt** (and
+   **Vis engelsk språkvalg i spillet**, once ready) on.
 5. Wait for the nightly rebuild or trigger **Daily rebuild** manually.
-   The game and its menu entry appear together.
+   The game and its menu entry appear together. Remember this only reaches
+   tryllemuseet.no once `main` has been merged into `prod`.
 
 **Files:**
 
