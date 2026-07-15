@@ -43,7 +43,7 @@ The schema defines 31 registered content types in `/schemaTypes` (see `schemaTyp
 - `partner.ts` — Sponsors/partners with category grouping
 - `signageConfig.ts`, `signageVideo.ts`, `signageQuote.ts` — Content for the physical info screen (`/skjerm.html`)
 - `quizConfig.ts`, `quizTheme.ts`, `quizQuestion.ts` — Tryllequiz (`/tryllequiz`): settings singleton with `isActive` master switch, selectable themes, and questions with difficulty + validated answers (see `docs/tryllequiz-concept.md`)
-- `gameConfig.ts`, `gameChapter.ts` — "Det trettende kabinett" story game (`/det-trettende-kabinett`): settings singleton with `isActive` master switch, and per-room copy overrides. Puzzle logic lives in the page code (see `docs/det-trettende-kabinett-concept.md`)
+- `gameConfig.ts`, `gameChapter.ts` — "Det trettende kabinett" story game (`/det-trettende-kabinett`): settings singleton with `isActive` master switch (plus `englishEnabled` for the in-game language toggle), and per-room copy overrides with optional room/fact images, rich-text intros and parallel English fields. Puzzle logic lives in the page code (see `docs/det-trettende-kabinett-concept.md`)
 
 **Helper Types** (object types used inline by document types):
 - `contentSection.ts` — Reusable heading + rich text block
