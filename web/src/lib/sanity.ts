@@ -171,6 +171,28 @@ export async function getExhibitionShowBySlug(slug: string): Promise<ExhibitionS
   `, { slug })
 }
 
+export interface ExhibitionShowSummary {
+  _id:          string
+  title:        string
+  slug:         string
+  subtitle?:    string
+  heroImage?:   { asset: { _ref: string; url: string }; alt?: string }
+  introAdults?: string
+  stationCount: number
+}
+
+// Alle synlige utstillinger — «Aktuell utstilling» på utstillingen/index.astro
+export async function getAllExhibitionShows(): Promise<ExhibitionShowSummary[]> {
+  return sanityClient.fetch(`
+    *[_type == "exhibitionShow" && isVisible != false] | order(_createdAt desc) {
+      _id, title, "slug": slug.current, subtitle,
+      heroImage { asset->{ _ref, url }, alt },
+      introAdults,
+      "stationCount": count(stations[@->isVisible != false])
+    }
+  `)
+}
+
 // Statiske stier for utstillinger — brukes i utstillingen/[slug].astro
 export async function getExhibitionShowPaths() {
   const shows = await sanityClient.fetch(`
