@@ -1893,23 +1893,40 @@ export async function getAllQuizQuestions(): Promise<QuizQuestion[]> {
 
 // ── Typer: Det trettende kabinett ────────────────────────────────
 
+export interface GameImage {
+  asset:  { _ref: string; url: string }
+  alt?:   string
+  altEn?: string
+}
+
 export interface GameFact {
-  text:       string
-  linkUrl?:   string
-  linkLabel?: string
+  text:         string
+  textEn?:      string
+  linkUrl?:     string
+  linkLabel?:   string
+  linkLabelEn?: string
+  image?:       GameImage
 }
 
 export interface GameChapter {
-  key:    string
-  title?: string
-  intro?: string
-  facts?: GameFact[]
+  key:          string
+  title?:       string
+  titleEn?:     string
+  intro?:       string
+  introEn?:     string
+  introRich?:   PortableTextBlock[]
+  introRichEn?: PortableTextBlock[]
+  image?:       GameImage
+  facts?:       GameFact[]
 }
 
 export interface GameConfig {
   isActive?:        boolean
+  englishEnabled?:  boolean
   title?:           string
+  titleEn?:         string
   intro?:           string
+  introEn?:         string
   comingSoonTitle?: string
   comingSoonText?:  string
 }
@@ -1919,7 +1936,8 @@ export interface GameConfig {
 export async function getGameConfig(): Promise<GameConfig | null> {
   return sanityClient.fetch(`
     *[_type == "gameConfig"][0] {
-      isActive, title, intro,
+      isActive, englishEnabled,
+      title, titleEn, intro, introEn,
       comingSoonTitle, comingSoonText
     }
   `)
@@ -1928,8 +1946,20 @@ export async function getGameConfig(): Promise<GameConfig | null> {
 export async function getAllGameChapters(): Promise<GameChapter[]> {
   return sanityClient.fetch(`
     *[_type == "gameChapter" && isVisible != false && defined(key)] {
-      key, title, intro,
-      facts[] { text, linkUrl, linkLabel }
+      key, title, titleEn, intro, introEn,
+      introRich[] {
+        ...,
+        _type == "image" => { ..., asset->{ _ref, url } }
+      },
+      introRichEn[] {
+        ...,
+        _type == "image" => { ..., asset->{ _ref, url } }
+      },
+      image { asset->{ _ref, url }, alt, altEn },
+      facts[] {
+        text, textEn, linkUrl, linkLabel, linkLabelEn,
+        image { asset->{ _ref, url }, alt, altEn }
+      }
     }
   `)
 }

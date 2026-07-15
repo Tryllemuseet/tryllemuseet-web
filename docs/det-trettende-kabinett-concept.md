@@ -353,6 +353,24 @@ døren"):
 the "visste du at" facts. The default facts in code need the museum's QA
 before activation — or replace them from Sanity.
 
+**Images and rich text (July 2026):** each `gameChapter` document can now
+carry an optional room image (shown under the room intro), an optional image
+per "visste du at" fact (shown in the fact popup), and a rich-text intro
+(`introRich`) with links and inline images that takes precedence over the
+plain intro field. Rooms without images look exactly as before.
+
+**English version (July 2026):** the full game — room copy, puzzle texts,
+UI, hints, poster and diploma — exists in English. Defaults live in the page
+code next to the Norwegian; editors override via the `*En` fields on
+`gameConfig`/`gameChapter`. Language-coupled puzzles were re-authored, not
+translated: the Market Square verse is a new English acrostic spelling
+M-I-D-D-L-E, the false-memory list is an English DRM "sleep" list, and the
+Studio's ×9 force ends on "a kitten in Denmark". The language toggle appears
+in the game bar only when `gameConfig.englishEnabled` is on (flip it after
+the museum has QA'd the English copy); switching reloads the page and keeps
+progress. There is still no `/en/` route — the toggle is per player, stored
+in `localStorage` (`kabinett-lang`).
+
 **Activation checklist** (mirrors the quiz):
 
 1. Deploy the studio so the new types appear: `npm run deploy` (repo root).

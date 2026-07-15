@@ -109,8 +109,13 @@ async function run() {
       'Det trettende kabinett åpner snart for sin neste lærling. Kom tilbake litt senere — eller besøk oss på Årvoll gård i mellomtiden!',
   }
 
+  // Since July 2026 each DEFAULT_ROOMS entry also carries an `en` block
+  // (English defaults); seed those into the parallel *En fields so editors
+  // can QA the English copy in Studio.
   const chapterDocs = keys.map(key => {
     const room = rooms[key]
+    const en = room.en ?? {}
+    const enFacts = en.facts ?? []
     return {
       _id: `game-room-${key}`,
       _type: 'gameChapter',
@@ -118,12 +123,16 @@ async function run() {
       key,
       title: room.title,
       intro: room.intro,
+      ...(en.title ? { titleEn: en.title } : {}),
+      ...(en.intro ? { introEn: en.intro } : {}),
       facts: (room.facts ?? []).map((fact, i) => ({
         _type: 'gameFact',
         _key: `game-room-${key}-fact-${i + 1}`,
         text: fact.text,
+        ...(enFacts[i]?.text ? { textEn: enFacts[i].text } : {}),
         ...(fact.linkUrl ? { linkUrl: fact.linkUrl } : {}),
         ...(fact.linkLabel ? { linkLabel: fact.linkLabel } : {}),
+        ...(enFacts[i]?.linkLabel ? { linkLabelEn: enFacts[i].linkLabel } : {}),
       })),
     }
   })

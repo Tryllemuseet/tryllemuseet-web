@@ -35,6 +35,37 @@ const ROOM_KEYS = [
   { title: 'Daggry (finalens epilog)',            value: 'daggry' },
 ]
 
+// Rich text for room intros: paragraphs with links, plus inline images.
+// Editors can use this instead of the plain intro field.
+const richText = (name: string, title: string, description: string, fieldset?: string) =>
+  defineField({
+    name,
+    title,
+    type: 'array',
+    description,
+    ...(fieldset ? { fieldset } : {}),
+    of: [
+      { type: 'block' },
+      {
+        type: 'image',
+        options: { hotspot: true },
+        fields: [
+          defineField({
+            name: 'alt',
+            title: 'Alternativ tekst',
+            type: 'string',
+            description: 'Kort beskrivelse av bildet for skjermlesere.',
+          }),
+          defineField({
+            name: 'altEn',
+            title: 'Alternativ tekst (engelsk)',
+            type: 'string',
+          }),
+        ],
+      },
+    ],
+  })
+
 export const gameChapter = defineType({
   name: 'gameChapter',
   title: 'Kabinettet: Rom',
@@ -78,6 +109,35 @@ export const gameChapter = defineType({
         'Direktørens introduksjon til rommet. Tomt felt = standardtekst fra koden.',
     }),
 
+    richText(
+      'introRich',
+      'Introtekst med formatering (valgfritt)',
+      'Rik introtekst med lenker og bilder i teksten. Brukes i stedet for «Introtekst» hvis utfylt.',
+    ),
+
+    // ── BILDE ─────────────────────────────────────────────────────
+    defineField({
+      name: 'image',
+      title: 'Rombilde (valgfritt)',
+      type: 'image',
+      options: { hotspot: true },
+      description:
+        'Stemningsbilde som vises under rommets introtekst — f.eks. en gjenstand eller plakat fra samlingen.',
+      fields: [
+        defineField({
+          name: 'alt',
+          title: 'Alternativ tekst',
+          type: 'string',
+          description: 'Kort beskrivelse av bildet for skjermlesere.',
+        }),
+        defineField({
+          name: 'altEn',
+          title: 'Alternativ tekst (engelsk)',
+          type: 'string',
+        }),
+      ],
+    }),
+
     // ── VISSTE DU AT ──────────────────────────────────────────────
     defineField({
       name: 'facts',
@@ -99,6 +159,18 @@ export const gameChapter = defineType({
           defineField({ name: 'textEn',    title: 'Faktatekst (engelsk, valgfritt)', type: 'text', rows: 2 }),
           defineField({ name: 'linkUrl',   title: '«Les mer»-lenke (valgfritt)',     type: 'string' }),
           defineField({ name: 'linkLabel', title: 'Lenketekst',                      type: 'string' }),
+          defineField({ name: 'linkLabelEn', title: 'Lenketekst (engelsk, valgfritt)', type: 'string' }),
+          defineField({
+            name: 'image',
+            title: 'Bilde (valgfritt)',
+            type: 'image',
+            options: { hotspot: true },
+            description: 'Vises i faktaboksen når spilleren åpner den.',
+            fields: [
+              defineField({ name: 'alt',   title: 'Alternativ tekst',           type: 'string' }),
+              defineField({ name: 'altEn', title: 'Alternativ tekst (engelsk)', type: 'string' }),
+            ],
+          }),
         ],
         preview: {
           select: { title: 'text' },
@@ -120,6 +192,12 @@ export const gameChapter = defineType({
       rows: 4,
       fieldset: 'english',
     }),
+    richText(
+      'introRichEn',
+      'Introtekst med formatering (engelsk, valgfritt)',
+      'Rik engelsk introtekst med lenker og bilder. Brukes i stedet for «Introtekst (engelsk)» hvis utfylt.',
+      'english',
+    ),
 
   ],
 
