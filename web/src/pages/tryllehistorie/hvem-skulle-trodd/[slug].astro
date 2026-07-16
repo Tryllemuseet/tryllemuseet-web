@@ -1,0 +1,154 @@
+---
+// src/pages/tryllehistorie/hvem-skulle-trodd/[slug].astro
+import BaseLayout from '../../../layouts/BaseLayout.astro'
+import { getWhoKnewBySlug, getWhoKnewPaths, whoKnewRelatedHref, portableTextToHtml } from '../../../lib/sanity'
+import type { WhoKnew } from '../../../lib/sanity'
+
+export async function getStaticPaths() {
+  const paths = await getWhoKnewPaths()
+  return paths
+}
+
+const { slug } = Astro.params
+const w = await getWhoKnewBySlug(slug!) as WhoKnew | null
+
+if (!w) return Astro.redirect('/tryllehistorie/hvem-skulle-trodd')
+
+const contentHtml = portableTextToHtml(w.body)
+
+const categoryLabels: Record<string, string> = {
+  vitenskap: 'Vitenskap', politikk: 'Politikk & samfunn', sport: 'Sport', kultur: 'Kultur & underholdning',
+}
+---
+
+<BaseLayout
+  title={`${w.name} — Hvem skulle trodd? — Tryllemuseet`}
+  description={w.hook}
+>
+
+  <!-- HERO ──────────────────────────────────────────────────────── -->
+  <section class="whoknew-hero">
+    <div class="whoknew-hero-bg">
+      {w.image?.asset?.url && (
+        <img src={w.image.asset.url} alt="" aria-hidden="true" class="hero-bg-img" />
+      )}
+      <div class="hero-bg-overlay"></div>
+    </div>
+    <div class="container whoknew-hero-inner">
+      <nav class="breadcrumb">
+        <a href="/tryllehistorie">Tryllehistorie</a>
+        <span>›</span>
+        <a href="/tryllehistorie/hvem-skulle-trodd">Hvem skulle trodd?</a>
+      </nav>
+      <span class="whoknew-hero-category">{categoryLabels[w.category] ?? w.category}</span>
+      <h1 class="whoknew-hero-title">{w.name}</h1>
+      <p class="whoknew-hero-hook">{w.hook}</p>
+    </div>
+  </section>
+
+  <div class="container article-layout">
+
+    <!-- ARTIKKELTEKST ──────────────────────────────────────────── -->
+    <main class="article-main">
+
+      {contentHtml ? (
+        <div class="prose" set:html={contentHtml} />
+      ) : (
+        <p class="no-content">{w.hook}</p>
+      )}
+
+      {w.relatedRef && (
+        <a href={whoKnewRelatedHref(w.relatedRef)} class="related-lenke">
+          Les hele historien om {w.relatedRef.title} →
+        </a>
+      )}
+
+    </main>
+
+    <!-- SIDEBAR ────────────────────────────────────────────────── -->
+    <aside class="article-sidebar">
+
+      {w.image?.asset?.url && (
+        <div class="sidebar-portrett">
+          <img src={w.image.asset.url} alt={w.image.alt ?? w.name} />
+        </div>
+      )}
+
+      {w.sources && w.sources.length > 0 && (
+        <div class="kilder-boks">
+          <h3 class="faktaboks-heading">Kilder</h3>
+          <ul class="kilder-liste">
+            {w.sources.map((s) => (
+              <li>
+                {s.url
+                  ? <a href={s.url} target="_blank" rel="noopener noreferrer">{s.label}</a>
+                  : <span>{s.label}</span>
+                }
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+    </aside>
+  </div>
+
+  <!-- NAVIGASJON ─────────────────────────────────────────────────── -->
+  <div class="container page-nav">
+    <a href="/tryllehistorie/hvem-skulle-trodd">← Hvem skulle trodd?</a>
+    <a href="/tryllehistorie">← Tryllehistorie</a>
+  </div>
+
+</BaseLayout>
+
+<style>
+  /* ── Hero ── */
+  .whoknew-hero { position: relative; min-height: 300px; display: flex; align-items: flex-end; padding-bottom: 3rem; color: var(--cream); overflow: hidden; background: var(--burgundy-dk); }
+  .whoknew-hero-bg { position: absolute; inset: 0; }
+  .hero-bg-img { width: 100%; height: 100%; object-fit: cover; object-position: top center; }
+  .hero-bg-overlay { position: absolute; inset: 0; background: linear-gradient(to bottom, rgba(10,5,2,0.4) 0%, rgba(10,5,2,0.85) 100%); }
+  .whoknew-hero-inner { position: relative; z-index: 1; }
+  .breadcrumb { display: flex; gap: 0.5rem; align-items: center; font-family: var(--font-ui); font-size: 0.7rem; font-weight: 600; letter-spacing: 0.15em; text-transform: uppercase; margin-bottom: 1rem; }
+  .breadcrumb a { color: var(--gold); text-decoration: none; }
+  .breadcrumb a:hover { text-decoration: underline; }
+  .breadcrumb span { color: rgba(251,247,239,0.4); }
+  .whoknew-hero-category { display: inline-block; font-family: var(--font-ui); font-size: 0.68rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; padding: 0.2rem 0.6rem; border-radius: 3px; background: rgba(212,168,67,0.18); color: var(--gold-light); margin-bottom: 0.6rem; }
+  .whoknew-hero-title { font-family: var(--font-display); font-size: clamp(1.8rem, 5vw, 3rem); color: var(--cream); line-height: 1.2; margin-bottom: 0.75rem; }
+  .whoknew-hero-hook { font-family: var(--font-body); font-size: 1.05rem; opacity: 0.85; max-width: 620px; line-height: 1.6; }
+
+  /* ── Layout ── */
+  .article-layout { display: grid; grid-template-columns: 1fr 280px; gap: 3.5rem; align-items: start; padding-block: 3rem; }
+  @media (max-width: 768px) { .article-layout { grid-template-columns: 1fr; } }
+
+  /* ── Prose ── */
+  .prose :global(p)          { font-family: var(--font-body); font-size: 1rem; color: #333; line-height: 1.8; margin-bottom: 1.1em; }
+  .prose :global(h2)         { font-family: var(--font-display); font-size: 1.3rem; color: var(--burgundy); margin: 2rem 0 0.75rem; }
+  .prose :global(h3)         { font-family: var(--font-display); font-size: 1.1rem; color: var(--burgundy); margin: 1.5rem 0 0.5rem; }
+  .prose :global(strong)     { font-weight: 700; color: var(--ink); }
+  .prose :global(em)         { font-style: italic; }
+  .prose :global(a)          { color: var(--burgundy); text-decoration: underline; }
+  .prose :global(a:hover)    { color: var(--gold-dark); }
+  .prose :global(ul), .prose :global(ol) { padding-left: 1.5em; margin-bottom: 1em; }
+  .prose :global(li)         { font-family: var(--font-body); font-size: 1rem; color: #333; line-height: 1.7; margin-bottom: 0.3em; }
+  .prose :global(blockquote) { border-left: 3px solid var(--gold); padding-left: 1.25em; margin: 1.5em 0; font-style: italic; color: #555; }
+
+  .no-content { font-family: var(--font-body); font-size: 1.05rem; color: #333; line-height: 1.8; }
+
+  .related-lenke { display: inline-block; margin-top: 1.5rem; font-family: var(--font-ui); font-size: 0.9rem; font-weight: 700; color: var(--burgundy); text-decoration: none; border-bottom: 1.5px solid var(--gold); padding-bottom: 0.15rem; }
+  .related-lenke:hover { color: var(--gold-dark); }
+
+  /* ── Sidebar ── */
+  .sidebar-portrett { margin-bottom: 1.5rem; border-radius: 6px; overflow: hidden; box-shadow: 0 4px 16px rgba(26,18,8,0.12); }
+  .sidebar-portrett img { width: 100%; display: block; }
+
+  .kilder-boks { background: var(--cream); border: 1px solid var(--cream-dark); padding: 1.25rem 1.5rem; border-radius: 2px; }
+  .faktaboks-heading { font-family: var(--font-display); font-size: 0.8rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--burgundy); margin-bottom: 1rem; }
+  .kilder-liste { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 0.5rem; }
+  .kilder-liste a { font-family: var(--font-ui); font-size: 0.8rem; color: var(--burgundy); text-decoration: underline; word-break: break-all; }
+  .kilder-liste span { font-family: var(--font-ui); font-size: 0.8rem; color: var(--grey); }
+
+  /* ── Navigasjon ── */
+  .page-nav { display: flex; flex-wrap: wrap; gap: 0.75rem; padding: 1.5rem 0 3rem; font-family: var(--font-ui); font-size: 0.875rem; }
+  .page-nav a { color: var(--grey); text-decoration: none; border: 1px solid var(--cream-dark); padding: 0.4rem 1rem; border-radius: var(--radius); transition: color 150ms, border-color 150ms; }
+  .page-nav a:hover { color: var(--burgundy); border-color: var(--gold); }
+</style>

@@ -6,6 +6,7 @@ import { event }          from './event'
 import { siteConfig }     from './siteConfig'
 import { biography }      from './biography'
 import { legend }         from './legend'
+import { whoKnew }        from './whoKnew'
 import { book }           from './book'
 import { homepage }       from './homepage'
 import { barnPage }       from './barnPage'
@@ -57,6 +58,7 @@ export const schemaTypes = [
   historiskeKlippNb,
   biography,
   legend,
+  whoKnew,
   tvAppearance,
   historicalClip,
   mediaAppearance,
