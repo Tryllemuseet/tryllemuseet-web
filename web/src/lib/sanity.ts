@@ -1463,7 +1463,7 @@ export async function getLegendPaths() {
 export type WhoKnewCategory = 'vitenskap' | 'politikk' | 'sport' | 'kultur'
 
 export interface WhoKnewRelated {
-  _type: 'legend' | 'magician'
+  _type: 'legend' | 'magician' | 'biography'
   title: string
   slug:  string
 }
@@ -1486,7 +1486,7 @@ export interface WhoKnew {
 const whoKnewCardProjection = `
   _id, name, "slug": slug.current, category, hook,
   image { asset->{ _ref, url }, alt },
-  relatedRef-> { _type, title, "slug": slug.current }
+  relatedRef-> { _type, "title": coalesce(title, name), "slug": slug.current }
 `
 
 // Fremhevede kort til forsiden
@@ -1519,11 +1519,11 @@ export async function getWhoKnewBySlug(slug: string): Promise<WhoKnew | null> {
   `, { slug })
 }
 
-// Lenke til den fulle historien for en relatedRef (legend eller magician)
+// Lenke til den fulle historien for en relatedRef (legend, magician eller biography)
 export function whoKnewRelatedHref(related: WhoKnewRelated): string {
-  return related._type === 'magician'
-    ? `/utstillingen/${related.slug}`
-    : `/tryllehistorie/norske-legender/${related.slug}`
+  if (related._type === 'magician') return `/utstillingen/${related.slug}`
+  if (related._type === 'biography') return `/tryllehistorie/magiens-hvem-er-hvem/${related.slug}`
+  return `/tryllehistorie/norske-legender/${related.slug}`
 }
 
 // Statiske stier for whoKnew [slug].astro
