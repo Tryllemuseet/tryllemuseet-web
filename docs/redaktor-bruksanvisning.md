@@ -27,6 +27,7 @@ Denne bruksanvisningen dekker de oppgavene en redaktør utfører til daglig.
 18. [Historiske TV-opptak](#18-historiske-tv-opptak)
 19. [Tryllemuseet i media](#19-tryllemuseet-i-media)
 20. [Trylleforeninger](#20-trylleforeninger)
+21. [Det trettende kabinett (spillet)](#21-det-trettende-kabinett-spillet)
 
 > **Veiledning til kapittel 12 (Infoskjerm):** Seksjonene 12a–12c dekker de tre dokumenttypene som styrer skjermen. Start med 12a hvis du er ny, og legg til videoer via 12c.
 
@@ -785,6 +786,68 @@ Norge). Vises på `/utstillingen/trylleforeningene` med egen side per forening.
 | Brødtekst | Rik tekst. Kan lenke direkte til personer i Hvem er hvem via «Intern lenke» |
 | Sentrale skikkelser | Koble personer fra Hvem er hvem med rolle og periode, f.eks. «Formann 1952–1960» |
 | Underartikler | Lengre fordypningstekster knyttet til foreningen |
+
+---
+
+## 21. Det trettende kabinett (spillet)
+
+**Meny:** Kabinettet: Innstillinger / Kabinettet: Rom
+
+Historiespillet på `/det-trettende-kabinett`. Selve gåtelogikken (puslespill,
+verset på Markedsplassen, ordlisten på Minnet som dikter osv.) ligger i koden
+og kan ikke endres i Sanity. Det redaktørene styrer er **teksten spilleren
+leser** i hvert rom, samt valgfrie bilder. Det er trygt å redigere fritt her
+uten å ødelegge noen gåte.
+
+### Kabinettet: Innstillinger (finnes kun ett dokument)
+
+| Felt | Merknad |
+|---|---|
+| Spillet er aktivt | Hovedbryter. Av som standard — spillet vises som «kommer snart» og er skjult fra menyen |
+| Tittel / Introtekst | Vises øverst på spillsiden |
+| «Kommer snart»-tittel / -tekst | Vises så lenge spillet ikke er aktivt |
+| **Engelsk**-seksjonen | Samme felt på engelsk, pluss **Vis engelsk språkvalg i spillet**. Denne bryteren viser en «In English»-knapp i spillet — slå den på først når det engelske innholdet er kvalitetssikret |
+
+### Kabinettet: Rom (ett dokument per rom — 27 stykker)
+
+Hvert dokument overstyrer standardteksten som ellers ligger i koden for ett
+navngitt rom. Et rom uten dokument (eller med tomme felt) viser bare
+standardteksten — helt trygt.
+
+| Felt | Merknad |
+|---|---|
+| Vis på nettsted | Av: spillet bruker kodens standardtekst i stedet |
+| Rom | Hvilket rom dokumentet gjelder. Opprett maks ett dokument per rom |
+| Romtittel / Introtekst | Overstyrer tittel og Direktørens introduksjon til rommet |
+| Introtekst med formatering | **Nytt.** Rik tekst med lenker og innskutte bilder i selve teksten. Brukes i stedet for vanlig Introtekst når den er fylt ut |
+| Rombilde | **Nytt.** Valgfritt stemningsbilde vist under rommets intro — f.eks. en gjenstand eller plakat fra samlingen. Husk alt-tekst |
+| «Visste du at …»-fakta | Historiske fakta som vises når rommet er løst. Hvert faktum kan ha egen **tekst**, valgfritt **bilde** (nytt) og valgfri **lenke** + lenketekst |
+| **Engelsk**-seksjonen | Samme felt på engelsk (tittel, intro, rik intro) — og hvert faktum har egne engelske tekst-/lenkefelt |
+
+### Viktig: navnet er «begerspillet», ikke «begre og kuler»
+
+Kodens standardtekst kaller oldtidstrikset i Sandrommet «begerspillet»
+(samme betegnelse som resten av nettsiden bruker). To rom-dokumenter i Sanity
+ble opprettet før dette navnebyttet og overstyrer fortsatt med den gamle
+formuleringen «begre og kuler»:
+
+- **Sandrommet** — introtekst, første faktum og lenketeksten
+- **Gatehjørnet** — det første faktumet
+
+Rett teksten i disse to dokumentene (bytt til «begerspillet»), eller slå av
+**Vis på nettsted** på dem så kodens oppdaterte tekst vises i stedet.
+
+### Aktivere spillet
+
+1. Rediger rom-tekster og last opp bilder etter behov (valgfritt — spillet
+   fungerer fint uten).
+2. Kvalitetssikre historiske fakta.
+3. Åpne **Kabinettet: Innstillinger** og slå på **Spillet er aktivt**.
+4. Vent på nattlig bygging, eller be teknisk ansvarlig kjøre **Daily
+   rebuild** i GitHub Actions. Spillet og menypunktet dukker opp sammen.
+
+Slå på **Vis engelsk språkvalg i spillet** samme sted når det engelske
+innholdet er klart for besøkende.
 
 ---
 
