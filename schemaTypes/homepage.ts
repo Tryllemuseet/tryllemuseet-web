@@ -127,21 +127,6 @@ export const homepage = defineType({
       ],
     }),
 
-    // ─── IBSEN-SEKSJON ──────────────────────────────────────────
-    defineField({
-      name: 'ibsenSeksjon',
-      title: 'Ibsen-seksjon',
-      type: 'object',
-      fields: [
-        defineField({ name: 'heading', title: 'Overskrift', type: 'string' }),
-        defineField({ name: 'ingress', title: 'Ingress', type: 'text', rows: 3 }),
-        defineField({ name: 'sitat', title: 'Sitat', type: 'text', rows: 3 }),
-        defineField({ name: 'sitatKilde', title: 'Sitatets kilde', type: 'string' }),
-        defineField({ name: 'lenkLabel', title: 'Lenke — tekst', type: 'string' }),
-        defineField({ name: 'lenkHref', title: 'Lenke — URL', type: 'string' }),
-      ],
-    }),
-
     // ─── KURS-SEKSJON ───────────────────────────────────────────
     defineField({
       name: 'kursSeksjon',

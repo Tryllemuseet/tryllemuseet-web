@@ -1,0 +1,178 @@
+---
+// src/pages/tryllehistorie/hvem-skulle-trodd/index.astro
+import BaseLayout from '../../../layouts/BaseLayout.astro'
+import { getAllWhoKnew } from '../../../lib/sanity'
+import type { WhoKnew } from '../../../lib/sanity'
+
+const entries = await getAllWhoKnew()
+const total = entries.length
+
+const categoryLabels: Record<string, string> = {
+  vitenskap: 'Vitenskap', politikk: 'Politikk & samfunn', sport: 'Sport', kultur: 'Kultur & underholdning',
+}
+
+const categories = [...new Set(entries.map((e: WhoKnew) => e.category))].filter(Boolean).sort() as string[]
+---
+
+<BaseLayout
+  title="Hvem skulle trodd? — Tryllemuseet"
+  description={`${total} kjente ansikter fra vitenskap, politikk, sport og kultur som har hatt et hemmelig forhold til magien.`}
+>
+
+  <!-- HERO ──────────────────────────────────────────────────────── -->
+  <section class="hero">
+    <div class="container">
+      <p class="section-label"><a href="/tryllehistorie" class="breadcrumb-link">Tryllehistorie</a></p>
+      <h1 class="display-title hero-title">Hvem skulle trodd?</h1>
+      <p class="hero-sub">
+        {total} kjente ansikter fra vitenskap, politikk, sport og kultur som har hatt
+        et hemmelig — eller ikke fullt så hemmelig — forhold til magien.
+      </p>
+    </div>
+  </section>
+
+  <!-- Filter bar ──────────────────────────────────────────────────── -->
+  <div class="filter-bar-wrap">
+    <div class="container filter-bar-inner">
+      <div class="filter-group">
+        <label class="filter-label" for="filter-category">Kategori</label>
+        <select id="filter-category" class="filter-select">
+          <option value="">Alle kategorier</option>
+          {categories.map((c) => (
+            <option value={c}>{categoryLabels[c] ?? c}</option>
+          ))}
+        </select>
+      </div>
+      <button class="filter-reset" id="filter-reset">Nullstill</button>
+    </div>
+  </div>
+
+  <div class="container result-bar">
+    <p class="result-count" id="result-count">Viser {total} oppføringer</p>
+  </div>
+
+  <!-- KORTLISTE ──────────────────────────────────────────────────── -->
+  <main class="container whoknew-grid" id="whoknew-grid">
+    {entries.map((w: WhoKnew) => (
+      <article class="whoknew-card" data-category={w.category}>
+        <a href={`/tryllehistorie/hvem-skulle-trodd/${w.slug}`} class="whoknew-link">
+          <div class="whoknew-img">
+            {w.image?.asset?.url ? (
+              <img src={w.image.asset.url} alt={w.image.alt ?? w.name} loading="lazy" />
+            ) : (
+              <div class="whoknew-img-placeholder" aria-hidden="true">🎩</div>
+            )}
+            <span class="whoknew-category-badge">{categoryLabels[w.category] ?? w.category}</span>
+          </div>
+          <div class="whoknew-body">
+            <h2 class="whoknew-name">{w.name}</h2>
+            <p class="whoknew-hook">{w.hook}</p>
+          </div>
+          <span class="whoknew-arrow" aria-hidden="true">→</span>
+        </a>
+      </article>
+    ))}
+  </main>
+
+  {total === 0 && (
+    <div class="container empty-state">
+      <p>Ingen oppføringer er publisert ennå. Kom tilbake snart.</p>
+    </div>
+  )}
+
+  <div class="container no-results" id="no-results" hidden>
+    <p>Ingen oppføringer matcher filteret.</p>
+    <button class="filter-reset-inline" id="filter-reset-2">Nullstill filter</button>
+  </div>
+
+  <div class="container page-nav">
+    <a href="/tryllehistorie/norske-legender">← Norske legender</a>
+    <a href="/tryllehistorie">← Tryllehistorie</a>
+  </div>
+
+</BaseLayout>
+
+<script>
+  const rows      = Array.from(document.querySelectorAll<HTMLElement>('.whoknew-card'))
+  const noRes     = document.getElementById('no-results')!
+  const countEl   = document.getElementById('result-count')!
+  const selCat    = document.getElementById('filter-category') as HTMLSelectElement
+  const btnReset  = document.getElementById('filter-reset')!
+  const btnReset2 = document.getElementById('filter-reset-2')!
+
+  function applyFilters() {
+    const category = selCat.value
+    let visible = 0
+    rows.forEach(row => {
+      const match = !category || row.dataset.category === category
+      row.hidden = !match
+      if (match) visible++
+    })
+    noRes.hidden = visible > 0
+    countEl.textContent = `Viser ${visible} oppføringer`
+  }
+
+  function resetFilters() { selCat.value = ''; applyFilters() }
+
+  selCat.addEventListener('change', applyFilters)
+  btnReset.addEventListener('click', resetFilters)
+  btnReset2.addEventListener('click', resetFilters)
+</script>
+
+<style>
+  /* ── Hero ── */
+  .hero { background: var(--burgundy-dk); padding: 3.5rem 0 2.5rem; border-bottom: 2px solid var(--gold-dark); color: var(--cream); }
+  .breadcrumb-link { color: var(--gold); text-decoration: none; font-size: 0.7rem; font-weight: 600; letter-spacing: 0.2em; text-transform: uppercase; }
+  .breadcrumb-link:hover { color: var(--gold-light); }
+  .hero-title { font-size: clamp(1.8rem, 5vw, 3rem); color: var(--cream); margin: 0.5rem 0 0.75rem; }
+  .hero-sub { font-family: var(--font-ui); font-size: 1rem; opacity: 0.8; max-width: 620px; }
+
+  /* ── Filter bar ── */
+  .filter-bar-wrap { position: sticky; top: var(--header-h); z-index: 50; background: white; border-bottom: 1px solid var(--cream-dark); box-shadow: 0 2px 12px rgba(26,18,8,0.06); }
+  .filter-bar-inner { display: flex; flex-wrap: wrap; gap: 0.75rem; align-items: flex-end; padding: 0.75rem 1.5rem; }
+  .filter-group { display: flex; flex-direction: column; gap: 0.2rem; }
+  .filter-label { font-family: var(--font-ui); font-size: 0.65rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; color: var(--grey); }
+  .filter-select { font-family: var(--font-ui); font-size: 0.875rem; color: var(--ink); background: var(--cream); border: 1.5px solid var(--cream-dark); border-radius: 6px; padding: 0.45rem 0.75rem; cursor: pointer; min-width: 180px; }
+  .filter-select:focus { outline: none; border-color: var(--gold); }
+  .filter-reset { font-family: var(--font-ui); font-size: 0.8rem; font-weight: 600; color: var(--grey); border: 1.5px solid var(--cream-dark); border-radius: 6px; padding: 0.45rem 0.9rem; background: white; align-self: flex-end; }
+  .filter-reset:hover { color: var(--burgundy); border-color: var(--gold); }
+
+  /* ── Result count ── */
+  .result-bar { padding: 0.65rem 0 0; }
+  .result-count { font-family: var(--font-ui); font-size: 0.8rem; color: var(--grey); }
+
+  /* ── Grid ── */
+  .whoknew-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.5rem; padding-block: 2rem 3rem; }
+
+  /* ── Kort ── */
+  .whoknew-card { background: white; border: 1px solid var(--cream-dark); border-radius: 6px; overflow: hidden; transition: box-shadow 150ms, border-color 150ms; position: relative; }
+  .whoknew-card:hover { box-shadow: 0 6px 24px rgba(107,15,26,0.12); border-color: var(--gold-light); }
+  .whoknew-link { display: flex; flex-direction: column; text-decoration: none; color: var(--ink); height: 100%; }
+
+  .whoknew-img { position: relative; width: 100%; aspect-ratio: 4/3; overflow: hidden; background: var(--burgundy-dk); flex-shrink: 0; }
+  .whoknew-img img { width: 100%; height: 100%; object-fit: cover; transition: transform 300ms; }
+  .whoknew-card:hover .whoknew-img img { transform: scale(1.03); }
+  .whoknew-img-placeholder { display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; font-size: 3rem; background: linear-gradient(160deg, var(--burgundy-dk), #2a1208); }
+  .whoknew-category-badge { position: absolute; top: 0.6rem; left: 0.6rem; font-family: var(--font-ui); font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; padding: 0.2rem 0.55rem; border-radius: 3px; background: rgba(26,18,8,0.75); color: var(--gold-light); backdrop-filter: blur(4px); }
+
+  .whoknew-body { padding: 1.1rem 1.25rem 1.3rem; flex: 1; display: flex; flex-direction: column; gap: 0.4rem; }
+  .whoknew-name { font-family: var(--font-display); font-size: 1.1rem; color: var(--burgundy); line-height: 1.3; }
+  .whoknew-hook { font-family: var(--font-ui); font-size: 0.875rem; color: var(--ink-mid); line-height: 1.55; }
+
+  .whoknew-arrow { display: none; }
+
+  /* ── Tomt ── */
+  .empty-state { padding: 4rem 0; text-align: center; font-family: var(--font-ui); color: var(--grey); }
+  .no-results { padding: 3rem 0; text-align: center; font-family: var(--font-ui); color: var(--ink-mid); }
+  .filter-reset-inline { margin-top: 0.75rem; font-family: var(--font-ui); font-size: 0.875rem; font-weight: 600; color: var(--burgundy); background: none; border: 1px solid var(--gold-dark); border-radius: 6px; padding: 0.45rem 1rem; cursor: pointer; }
+
+  /* ── Navigasjon ── */
+  .page-nav { display: flex; flex-wrap: wrap; gap: 0.75rem; padding: 1.5rem 0 3rem; font-family: var(--font-ui); font-size: 0.875rem; }
+  .page-nav a { color: var(--grey); text-decoration: none; border: 1px solid var(--cream-dark); padding: 0.4rem 1rem; border-radius: var(--radius); transition: color 150ms, border-color 150ms; }
+  .page-nav a:hover { color: var(--burgundy); border-color: var(--gold); }
+
+  @media (max-width: 560px) {
+    .whoknew-grid { grid-template-columns: 1fr; gap: 1rem; }
+    .filter-bar-inner { padding: 0.65rem 1rem; }
+  }
+</style>

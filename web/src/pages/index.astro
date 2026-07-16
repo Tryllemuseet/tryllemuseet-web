@@ -3,14 +3,14 @@
 import BaseLayout from '../layouts/BaseLayout.astro'
 import AnimateIn from '../components/AnimateIn.astro'
 import MentionedMagicians from '../components/MentionedMagicians.astro'
-import { getAllMagicians, getUpcomingEvents, getHomepage, getSiteConfig, getAllPartners, getLatestHistoriskKlipp, getFeaturedMediaAppearance, urlFor } from '../lib/sanity'
+import { getAllMagicians, getUpcomingEvents, getHomepage, getSiteConfig, getAllPartners, getLatestHistoriskKlipp, getFeaturedMediaAppearance, getFrontpageWhoKnew, whoKnewRelatedHref, urlFor } from '../lib/sanity'
 
 const today = new Date().toISOString().split('T')[0]
 
 const mediaTypeLabels: Record<string, string> = {
   avis: 'Avis', nettavis: 'Nettavis', tv: 'TV', radio: 'Radio', podkast: 'Podkast',
 }
-const [magicians, events, hp, config, partners, latestClipping, featuredMedia] = await Promise.all([
+const [magicians, events, hp, config, partners, latestClipping, featuredMedia, whoKnewEntries] = await Promise.all([
   getAllMagicians(),
   getUpcomingEvents(3),
   getHomepage(),
@@ -18,7 +18,12 @@ const [magicians, events, hp, config, partners, latestClipping, featuredMedia] =
   getAllPartners(),
   getLatestHistoriskKlipp(),
   getFeaturedMediaAppearance(today),
+  getFrontpageWhoKnew(3),
 ])
+
+const categoryLabels: Record<string, string> = {
+  vitenskap: 'Vitenskap', politikk: 'Politikk & samfunn', sport: 'Sport', kultur: 'Kultur & underholdning',
+}
 
 // ── Fallback-verdier ─────────────────────────────────────────────
 const hero = hp?.hero ?? {
@@ -36,14 +41,6 @@ const infoBadges = hp?.infoBadges ?? [
 const utstilling = hp?.utstillingsFokus ?? {
   eraLabel: 'Gullalderen 1845–1930',
   heading:  'Møt mesterne',
-}
-const ibsen = hp?.ibsenSeksjon ?? {
-  heading:    'Henrik Ibsen var tryllekunstner',
-  ingress:    'Det som få vet, er at lille Henrik som barn hadde trylling som hobby. Han ga forestillinger der han kunne få et ur til å forsvinne fra lommen på én mann og dukke opp hos en annen.',
-  sitat:      'Enkelte søndagsaftener fik han lov til at optræde som tryllekunstner i et af husets værelser, og alle omkringboende naboer blev indbudte til at overvære forestillingen.',
-  sitatKilde: '— Hedvig Stousland, Ibsens søster, i brev til Henrik Jæger',
-  lenkLabel:  'Les mer tryllehistorie',
-  lenkHref:   '/tryllehistorie',
 }
 const kurs = hp?.kursSeksjon ?? {
   heading:    'Tryllekurs for barn',
@@ -287,47 +284,46 @@ function formatTime(d: string) {
 
   <hr class="gold-rule container" />
 
-  <!-- ══ IBSEN ═══════════════════════════════════════════════════ -->
-  <section class="section ibsen-section" aria-labelledby="ibsen-heading">
-    <div class="container ibsen-inner">
-      <AnimateIn direction="left">
-      <div class="ibsen-text">
-        <p class="section-label">Visste du at…</p>
-        <h2 class="display-title section-title" id="ibsen-heading">{ibsen.heading}</h2>
-        <p class="ibsen-ingress">{ibsen.ingress}</p>
-        <blockquote class="ibsen-quote">
-          <p>«{ibsen.sitat}»</p>
-          <cite>{ibsen.sitatKilde}</cite>
-        </blockquote>
-        <a href={ibsen.lenkHref} class="btn-outline" style="margin-top:1.5rem;display:inline-block">
-          {ibsen.lenkLabel}
-        </a>
-      </div>
-      </AnimateIn>
-      <AnimateIn direction="right">
-      <div class="ibsen-portrait" aria-hidden="true">
-        <svg viewBox="0 0 240 360" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M90 360 L80 265 L68 195 L74 152 L120 134 L166 152 L172 195 L160 265 L150 360Z" fill="rgba(107,15,26,0.15)" stroke="rgba(212,168,67,0.3)" stroke-width="1"/>
-          <path d="M100 155 L120 185 L140 155" stroke="rgba(212,168,67,0.25)" stroke-width="1" fill="none"/>
-          <ellipse cx="120" cy="112" rx="28" ry="34" fill="rgba(107,15,26,0.2)" stroke="rgba(212,168,67,0.35)" stroke-width="1"/>
-          <rect x="90" y="80" width="60" height="7" rx="2" fill="rgba(212,168,67,0.45)" stroke="rgba(212,168,67,0.5)" stroke-width="1"/>
-          <rect x="96" y="44" width="48" height="38" rx="2" fill="rgba(107,15,26,0.25)" stroke="rgba(212,168,67,0.4)" stroke-width="1"/>
-          <path d="M94 118 Q104 124 112 122" stroke="rgba(212,168,67,0.4)" stroke-width="1.5" stroke-linecap="round"/>
-          <path d="M128 122 Q136 124 146 118" stroke="rgba(212,168,67,0.4)" stroke-width="1.5" stroke-linecap="round"/>
-          <path d="M115 147 L120 165 L125 147" fill="rgba(212,168,67,0.2)" stroke="rgba(212,168,67,0.3)" stroke-width="1"/>
-          <path d="M150 210 L174 345 Q176 352 173 355" stroke="rgba(212,168,67,0.3)" stroke-width="2" stroke-linecap="round"/>
-          <circle cx="74" cy="52" r="1.5" fill="rgba(212,168,67,0.5)"/>
-          <circle cx="166" cy="38" r="2"   fill="rgba(212,168,67,0.45)"/>
-          <circle cx="80" cy="32" r="1"   fill="rgba(212,168,67,0.3)"/>
-          <circle cx="158" cy="60" r="1"  fill="rgba(212,168,67,0.3)"/>
-        </svg>
-        <p class="ibsen-portrait-caption">Henrik Ibsen · 1828–1906</p>
-      </div>
-      </AnimateIn>
-    </div>
-  </section>
+  <!-- ══ HVEM SKULLE TRODD? ══════════════════════════════════════ -->
+  {whoKnewEntries.length > 0 && (
+    <>
+      <section class="section whoknew-section" aria-labelledby="whoknew-heading">
+        <div class="container">
+          <AnimateIn direction="up">
+            <div class="section-header">
+              <div>
+                <p class="section-label">Visste du at…</p>
+                <h2 class="display-title section-title" id="whoknew-heading">Hvem skulle trodd?</h2>
+              </div>
+              <a href="/tryllehistorie/hvem-skulle-trodd" class="btn-outline">Se alle</a>
+            </div>
+          </AnimateIn>
+          <AnimateIn direction="up">
+            <div class="whoknew-grid">
+              {whoKnewEntries.map((w) => (
+                <a href={`/tryllehistorie/hvem-skulle-trodd/${w.slug}`} class="whoknew-card" aria-label={`Les mer om ${w.name}`}>
+                  <div class="whoknew-img">
+                    {w.image?.asset?.url
+                      ? <img src={w.image.asset.url} alt={w.image.alt ?? w.name} loading="lazy" />
+                      : <div class="whoknew-img-placeholder" aria-hidden="true">🎩</div>
+                    }
+                    <span class="whoknew-category">{categoryLabels[w.category] ?? w.category}</span>
+                  </div>
+                  <div class="whoknew-body">
+                    <h3 class="whoknew-name">{w.name}</h3>
+                    <p class="whoknew-hook">{w.hook}</p>
+                    <span class="whoknew-link-hint">Les mer →</span>
+                  </div>
+                </a>
+              ))}
+            </div>
+          </AnimateIn>
+        </div>
+      </section>
 
-  <hr class="gold-rule container" />
+      <hr class="gold-rule container" />
+    </>
+  )}
 
   <!-- ══ UKENS HISTORISKE ARTIKKEL ══════════════════════════════ -->
   {latestClipping && (
@@ -845,16 +841,22 @@ function formatTime(d: string) {
   .media-image img { width: 100%; height: auto; display: block; transition: transform 400ms ease; }
   .media-inner:hover .media-image img { transform: scale(1.02); }
 
-  /* ── IBSEN ─────────────────────────────────────────────────────── */
-  .ibsen-section { background:var(--cream); }
-  .ibsen-inner { display:grid; grid-template-columns:1fr 280px; gap:4rem; align-items:center; }
-  .ibsen-ingress { font-family:var(--font-ui); font-size:1rem; color:var(--ink-mid); line-height:1.7; margin:1rem 0; }
-  .ibsen-quote { margin:1.5rem 0 0; padding:1.25rem 1.5rem; border-left:3px solid var(--gold); background:white; border-radius:0 4px 4px 0; box-shadow:var(--shadow); }
-  .ibsen-quote p { font-family:var(--font-body); font-size:0.98rem; font-style:italic; color:var(--ink); line-height:1.7; margin-bottom:0.5rem; }
-  .ibsen-quote cite { font-family:var(--font-ui); font-size:0.72rem; letter-spacing:0.1em; text-transform:uppercase; color:var(--gold-dark); font-style:normal; }
-  .ibsen-portrait { display:flex; flex-direction:column; align-items:center; }
-  .ibsen-portrait svg { width:100%; max-width:220px; filter:drop-shadow(0 4px 24px rgba(107,15,26,0.18)); }
-  .ibsen-portrait-caption { font-family:var(--font-ui); font-size:0.7rem; letter-spacing:0.1em; text-transform:uppercase; color:var(--grey); margin-top:0.75rem; text-align:center; }
+  /* ── HVEM SKULLE TRODD? ────────────────────────────────────────── */
+  .whoknew-section { background:var(--cream); }
+  .whoknew-grid { display:grid; grid-template-columns:repeat(3, 1fr); gap:1.5rem; margin-top:0.5rem; }
+  .whoknew-card { display:flex; flex-direction:column; text-decoration:none; color:var(--ink); border-radius:4px; overflow:hidden; background:white; border:1px solid var(--cream-dark); transition:transform 220ms ease,box-shadow 220ms ease,border-color 220ms ease; }
+  .whoknew-card:hover { transform:translateY(-4px); box-shadow:0 8px 28px rgba(107,15,26,0.14); border-color:var(--gold-light); }
+  .whoknew-img { position:relative; aspect-ratio:4/3; overflow:hidden; background:var(--burgundy-dk); flex-shrink:0; }
+  .whoknew-img img { width:100%; height:100%; object-fit:cover; transition:transform 400ms ease; }
+  .whoknew-card:hover .whoknew-img img { transform:scale(1.04); }
+  .whoknew-img-placeholder { display:flex; align-items:center; justify-content:center; width:100%; height:100%; font-size:3rem; background:linear-gradient(160deg,var(--burgundy-dk),#2a1208); }
+  .whoknew-category { position:absolute; top:0.6rem; left:0.6rem; font-family:var(--font-ui); font-size:0.65rem; font-weight:700; text-transform:uppercase; letter-spacing:0.08em; padding:0.2rem 0.55rem; border-radius:3px; background:rgba(26,18,8,0.75); color:var(--gold-light); backdrop-filter:blur(4px); }
+  .whoknew-body { padding:1.1rem 1.25rem 1.3rem; display:flex; flex-direction:column; gap:0.35rem; flex:1; }
+  .whoknew-name { font-family:var(--font-display); font-size:1.05rem; color:var(--burgundy); letter-spacing:0.02em; line-height:1.3; }
+  .whoknew-hook { font-family:var(--font-ui); font-size:0.85rem; color:var(--ink-mid); line-height:1.55; }
+  .whoknew-link-hint { font-family:var(--font-ui); font-size:0.72rem; font-weight:700; color:var(--gold-dark); margin-top:0.35rem; letter-spacing:0.04em; }
+  @media (max-width:700px) { .whoknew-grid { grid-template-columns:1fr 1fr; } }
+  @media (max-width:480px) { .whoknew-grid { grid-template-columns:1fr; } }
 
   /* ── KURS ──────────────────────────────────────────────────────── */
   .kurs-section { background:white; }

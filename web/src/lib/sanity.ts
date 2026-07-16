@@ -417,14 +417,6 @@ export interface Homepage {
     sitat:       string
     sitatKilde:  string
   }
-  ibsenSeksjon?: {
-    heading:    string
-    ingress:    string
-    sitat:      string
-    sitatKilde: string
-    lenkLabel:  string
-    lenkHref:   string
-  }
   kursSeksjon?: {
     heading:    string
     ingress:    string
@@ -460,7 +452,6 @@ export async function getHomepage(): Promise<Homepage | null> {
       },
       medlemSeksjon { heading, tekst, knappLabel },
       omMuseet { heading, tekst, sitat, sitatKilde },
-      ibsenSeksjon { heading, ingress, sitat, sitatKilde, lenkLabel, lenkHref },
       kursSeksjon { heading, ingress, detaljer, pris, prisLabel, fondsBadge, knappLabel, knappHref },
       kursSitat { tekst, kilde }
     }
@@ -763,7 +754,8 @@ export async function getTryllehistoriePage(): Promise<TryllehistoriePage> {
       "foolUs":     count(*[_type == "tvAppearance" && show == "fool-us" && isVisible != false]),
       "opptak":     count(*[_type == "historicalClip" && isVisible != false]),
       "artikler":   count(*[_type == "historiskeKlippNb" && isVisible != false && publishedAt <= now()]),
-      "magikere":   count(*[_type == "magician" && isVisible != false])
+      "magikere":   count(*[_type == "magician" && isVisible != false]),
+      "hvemSkulleTrodd": count(*[_type == "whoKnew" && isVisible != false])
     }`, { shows: GOT_TALENT_SHOWS }),
   ])
 
@@ -777,6 +769,7 @@ export async function getTryllehistoriePage(): Promise<TryllehistoriePage> {
     '/tryllehistorie/historiske-opptak':    `${counts.opptak} opptak`,
     '/tryllehistorie/historiske-artikler':  `${counts.artikler} artikler`,
     '/utstillingen':                        `${counts.magikere} utstillingsfelt`,
+    '/tryllehistorie/hvem-skulle-trodd':    `${counts.hvemSkulleTrodd} oppføringer`,
   }
   const withAutoBadges = (seksjoner: TryllehistorieSeksjon[]) =>
     seksjoner.map(s => {
@@ -794,7 +787,7 @@ export async function getTryllehistoriePage(): Promise<TryllehistoriePage> {
     seksjoner: withAutoBadges(d?.seksjoner ?? [
       { href: '/tryllehistorie/magiens-hvem-er-hvem',        emoji: '📖', title: 'Magiens Hvem er Hvem',               sub: 'Norske tryllekunstnere',      desc: 'Biografier over norske tryllekunstnere fra Terje Nordheims standardverk. Søk på navn, kunstnernavn og spesialitet.',                                                                    badge: 'Biografier',  soon: false },
       { href: '/utstillingen',                                emoji: '🎩', title: 'Gullalderen 1845–1930',              sub: 'Internasjonal tryllehistorie', desc: 'Robert-Houdin, Herrmann, Kellar, Thurston og Houdini — magikerne som forandret verden og skapte scenetryllingens gylne epoke.',                                                          badge: '7 utstillingsfelt', soon: false },
-      { href: '/tryllehistorie/norske-legender/henrik-ibsen', emoji: '🎭', title: 'Henrik Ibsen som tryllekunstner',    sub: 'Norsk kulturhistorie',        desc: 'Visste du at Henrik Ibsen tryllet? Den store dramatikeren hadde en ukjent side som tryllekunstner i sin ungdom.',                                                                          badge: 'Artikkel',         soon: false },
+      { href: '/tryllehistorie/hvem-skulle-trodd',            emoji: '🎭', title: 'Hvem skulle trodd?',                 sub: 'Kjente ansikter, hemmelig magi',        desc: 'Visste du at Henrik Ibsen tryllet? Fra vitenskap til sport og kultur — kjente personligheter med et hemmelig forhold til magien.',                                                          badge: 'Artikler',         soon: false },
       { href: '/tryllehistorie/begerspillet',                 emoji: '🏺', title: 'Begerspillet',                       sub: 'Magiens opprinnelse',         desc: 'Verdens eldste kjente trylletriks — avbildet i Egypt for over 4000 år siden. Historien om magiens aller første triks.',                                                                     badge: 'Kommer snart',    soon: true  },
       { href: '/tryllehistorie/norske-legender',              emoji: '⭐', title: 'Norske legender',                    sub: 'Portretter',                  desc: 'Egelo, Jan Crosby, Davido, Arnardo og andre norske tryllekunstnere som har satt spor. Dyptgående portretter.',                                                                                badge: '7 artikler',      soon: false },
       { href: '/tryllehistorie/got-talent',                   emoji: '🏆', title: 'Got Talent',                         sub: 'Nordisk TV-magi',             desc: 'Norske, svenske, danske og finske tryllekunstnere i Norske Talenter, Talang, Danmark har Talent og Talent Suomi.',                                                                          badge: '35 opptredener',  soon: false },
@@ -1463,6 +1456,84 @@ export async function getLegendPaths() {
   return legends
     .filter((l: { slug?: string }) => l.slug)
     .map((l: { slug: string }) => ({ params: { slug: l.slug } }))
+}
+
+// ── Typer: WhoKnew ────────────────────────────────────────────────
+
+export type WhoKnewCategory = 'vitenskap' | 'politikk' | 'sport' | 'kultur'
+
+export interface WhoKnewRelated {
+  _type: 'legend' | 'magician' | 'biography'
+  title: string
+  slug:  string
+}
+
+export interface WhoKnew {
+  _id:                string
+  name:                string
+  slug:                string
+  category:            WhoKnewCategory
+  hook:                string
+  body?:               any[]
+  image?:              { asset: { _ref: string; url: string }; alt?: string }
+  relatedRef?:         WhoKnewRelated
+  sources?:            { label: string; url?: string }[]
+  featureOnFrontpage?: boolean
+}
+
+// ── Spørringer: WhoKnew ("Hvem skulle trodd?") ────────────────────
+
+const whoKnewCardProjection = `
+  _id, name, "slug": slug.current, category, hook,
+  image { asset->{ _ref, url }, alt },
+  relatedRef-> { _type, "title": coalesce(title, name), "slug": slug.current }
+`
+
+// Fremhevede kort til forsiden
+export async function getFrontpageWhoKnew(limit = 3): Promise<WhoKnew[]> {
+  return sanityClient.fetch(`
+    *[_type == "whoKnew" && isVisible != false && featureOnFrontpage == true]
+      | order(frontpageOrder asc, name asc) [0...$limit] {
+      ${whoKnewCardProjection}
+    }
+  `, { limit })
+}
+
+// Alle oppføringer — til arkivsiden
+export async function getAllWhoKnew(): Promise<WhoKnew[]> {
+  return sanityClient.fetch(`
+    *[_type == "whoKnew" && isVisible != false] | order(name asc) {
+      ${whoKnewCardProjection}
+    }
+  `)
+}
+
+// Én oppføring via slug — til artikkelsiden
+export async function getWhoKnewBySlug(slug: string): Promise<WhoKnew | null> {
+  return sanityClient.fetch(`
+    *[_type == "whoKnew" && slug.current == $slug && isVisible != false][0] {
+      ${whoKnewCardProjection},
+      body,
+      sources[] { label, url }
+    }
+  `, { slug })
+}
+
+// Lenke til den fulle historien for en relatedRef (legend, magician eller biography)
+export function whoKnewRelatedHref(related: WhoKnewRelated): string {
+  if (related._type === 'magician') return `/utstillingen/${related.slug}`
+  if (related._type === 'biography') return `/tryllehistorie/magiens-hvem-er-hvem/${related.slug}`
+  return `/tryllehistorie/norske-legender/${related.slug}`
+}
+
+// Statiske stier for whoKnew [slug].astro
+export async function getWhoKnewPaths() {
+  const entries = await sanityClient.fetch(`
+    *[_type == "whoKnew" && isVisible != false] { "slug": slug.current }
+  `)
+  return entries
+    .filter((e: { slug?: string }) => e.slug)
+    .map((e: { slug: string }) => ({ params: { slug: e.slug } }))
 }
 
 // ── Typer: HistoricalClip ────────────────────────────────────────
