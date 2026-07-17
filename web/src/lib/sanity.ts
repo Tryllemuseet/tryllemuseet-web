@@ -774,7 +774,7 @@ export async function getTryllehistoriePage(): Promise<TryllehistoriePage> {
   `),
     sanityClient.fetch(`{
       "biografier": count(*[_type == "biography" && isVisible != false]),
-      "legender":   count(*[_type == "legend" && isVisible != false]),
+      "legender":   count(*[_type == "legend" && isVisible != false && ${NOT_UTSTILLING}]),
       "gotTalent":  count(*[_type == "tvAppearance" && show in $shows && isVisible != false]),
       "foolUs":     count(*[_type == "tvAppearance" && show == "fool-us" && isVisible != false]),
       "opptak":     count(*[_type == "historicalClip" && isVisible != false]),
@@ -788,7 +788,7 @@ export async function getTryllehistoriePage(): Promise<TryllehistoriePage> {
   // Cards whose href isn't listed here keep their editor-entered badge.
   const autoBadge: Record<string, string> = {
     '/tryllehistorie/magiens-hvem-er-hvem': `${counts.biografier} biografier`,
-    '/tryllehistorie/norske-legender':      `${counts.legender} portretter`,
+    '/tryllehistorie/fordypninger':         `${counts.legender} artikler`,
     '/tryllehistorie/got-talent':           `${counts.gotTalent} opptredener`,
     '/tryllehistorie/fool-us':              `${counts.foolUs} opptredener`,
     '/tryllehistorie/historiske-opptak':    `${counts.opptak} opptak`,
@@ -814,7 +814,7 @@ export async function getTryllehistoriePage(): Promise<TryllehistoriePage> {
       { href: '/utstillingen',                                emoji: '🎩', title: 'Gullalderen 1845–1930',              sub: 'Internasjonal tryllehistorie', desc: 'Robert-Houdin, Herrmann, Kellar, Thurston og Houdini — magikerne som forandret verden og skapte scenetryllingens gylne epoke.',                                                          badge: '7 utstillingsfelt', soon: false },
       { href: '/tryllehistorie/hvem-skulle-trodd',            emoji: '🎭', title: 'Hvem skulle trodd?',                 sub: 'Kjente ansikter, hemmelig magi',        desc: 'Visste du at Henrik Ibsen tryllet? Fra vitenskap til sport og kultur — kjente personligheter med et hemmelig forhold til magien.',                                                          badge: 'Artikler',         soon: false },
       { href: '/tryllehistorie/begerspillet',                 emoji: '🏺', title: 'Begerspillet',                       sub: 'Magiens opprinnelse',         desc: 'Verdens eldste kjente trylletriks — avbildet i Egypt for over 4000 år siden. Historien om magiens aller første triks.',                                                                     badge: 'Kommer snart',    soon: true  },
-      { href: '/tryllehistorie/norske-legender',              emoji: '⭐', title: 'Norske legender',                    sub: 'Portretter',                  desc: 'Egelo, Jan Crosby, Davido, Arnardo og andre norske tryllekunstnere som har satt spor. Dyptgående portretter.',                                                                                badge: '7 artikler',      soon: false },
+      { href: '/tryllehistorie/fordypninger',                 emoji: '⭐', title: 'Fordypninger',                       sub: 'Portretter og dypdykk',       desc: 'Egelo, Jan Crosby, Arnardo og andre — norske og internasjonale tryllekunstnere som har satt spor. Dyptgående portretter.',                                                                    badge: '8 artikler',      soon: false },
       { href: '/tryllehistorie/got-talent',                   emoji: '🏆', title: 'Got Talent',                         sub: 'Nordisk TV-magi',             desc: 'Norske, svenske, danske og finske tryllekunstnere i Norske Talenter, Talang, Danmark har Talent og Talent Suomi.',                                                                          badge: '35 opptredener',  soon: false },
       { href: '/tryllehistorie/fool-us',                      emoji: '🎯', title: 'Penn & Teller: Fool Us',             sub: 'Nordisk TV-magi',             desc: 'Nordiske magikere som har møtt Penn & Teller i den prestisjetunge fagduellen fra Las Vegas. 7 klarte å lure dem.',                                                                            badge: 'Opptredener',  soon: false },
     ]),
@@ -952,7 +952,7 @@ export async function getUtstillingPage(): Promise<UtstillingPage> {
       heading: d?.kommerSnartSeksjon?.heading ?? 'I utstillingen',
     },
     seksjoner: d?.seksjoner ?? [
-      { icon: '🇳🇴', label: 'Norsk tryllekunst',  title: 'Norske legender',    description: 'Fra Arnardo til Finn Jon — tryllekunstnerne som skapte norsk magi.',                        slug: 'norske-legender',    ready: false },
+      { icon: '⭐',   label: 'Portretter',          title: 'Fordypninger',       description: 'Fra Arnardo til Finn Jon — tryllekunstnerne som satte spor.',                                slug: 'fordypninger',       ready: false },
       { icon: '🎩',   label: 'Samlingen',           title: 'Artefakter',         description: 'Sjeldne rekvisitter, historiske gjenstander og mysterier fra museets samling.',              slug: 'artefakter',         ready: true  },
       { icon: '♣',    label: 'Organisasjonene',     title: 'Trylleforeningene',  description: 'Magiske Cirkel Norge og Den magiske ring — fellesskapet bak kunsten.',                      slug: 'trylleforeningene',  ready: true  },
       { icon: '🛍',   label: 'Butikken',             title: 'Tryllebutikken',     description: 'Bøker, rekvisitter og kuriositeter for den nysgjerrige.',                                   slug: 'tryllebutikken',     ready: true  },
@@ -1463,7 +1463,7 @@ export async function getBiographyDirectory(): Promise<Biography[]> {
 // Filter delt av alle spørringer under: ekskluderer utstillingen-artikler
 // (fysisk plassert i museet og/eller med stasjoner) — de hører hjemme under
 // /utstillingen, se getGullalderenPanels / getUtstillingDeepDives / getUtstillingEntryBySlug.
-const NOT_UTSTILLING = `!defined(physicalOrder) && count(stations) == 0`
+const NOT_UTSTILLING = `!defined(physicalOrder) && (!defined(stations) || count(stations) == 0)`
 
 // Alle legender — til oversiktssiden
 export async function getAllLegends(): Promise<Legend[]> {
@@ -1576,7 +1576,7 @@ export async function getWhoKnewBySlug(slug: string): Promise<WhoKnew | null> {
 export function whoKnewRelatedHref(related: WhoKnewRelated): string {
   if (related._type === 'magician') return `/utstillingen/${related.slug}`
   if (related._type === 'biography') return `/tryllehistorie/magiens-hvem-er-hvem/${related.slug}`
-  return `/tryllehistorie/norske-legender/${related.slug}`
+  return `/tryllehistorie/fordypninger/${related.slug}`
 }
 
 // Statiske stier for whoKnew [slug].astro

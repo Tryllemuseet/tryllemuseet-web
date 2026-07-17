@@ -1,5 +1,5 @@
 ---
-// src/pages/tryllehistorie/norske-legender/[slug].astro
+// src/pages/tryllehistorie/fordypninger/[slug].astro
 import BaseLayout from '../../../layouts/BaseLayout.astro'
 import { getLegendBySlug, getLegendPaths, portableTextToHtml, urlFor } from '../../../lib/sanity'
 import type { Legend } from '../../../lib/sanity'
@@ -12,7 +12,7 @@ export async function getStaticPaths() {
 const { slug } = Astro.params
 const leg = await getLegendBySlug(slug!) as Legend | null
 
-if (!leg) return Astro.redirect('/tryllehistorie/norske-legender')
+if (!leg) return Astro.redirect('/tryllehistorie/fordypninger')
 
 const bio = leg.biographyRef
 const img = leg.mainImage ?? bio?.mainImage
@@ -54,7 +54,7 @@ const videoTypeLabel: Record<string, string> = {
       <nav class="breadcrumb">
         <a href="/tryllehistorie">Tryllehistorie</a>
         <span>›</span>
-        <a href="/tryllehistorie/norske-legender">Norske legender</a>
+        <a href="/tryllehistorie/fordypninger">Fordypninger</a>
       </nav>
       <h1 class="legend-hero-title">{leg.title}</h1>
       {leg.excerpt && <p class="legend-hero-ingress">{leg.excerpt}</p>}
@@ -169,7 +169,7 @@ const videoTypeLabel: Record<string, string> = {
 
   <!-- NAVIGASJON ─────────────────────────────────────────────────── -->
   <div class="container page-nav">
-    <a href="/tryllehistorie/norske-legender">← Norske legender</a>
+    <a href="/tryllehistorie/fordypninger">← Fordypninger</a>
     <a href="/tryllehistorie">← Tryllehistorie</a>
   </div>
 
