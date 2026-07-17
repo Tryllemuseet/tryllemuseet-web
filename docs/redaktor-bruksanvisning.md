@@ -508,7 +508,7 @@ Disse dokumentene styrer innholdet på de faste sidene. De finnes som singletons
 
 | Meny-element | Side på nettsiden |
 |---|---|
-| Forside | tryllemuseet.no (forsiden) |
+| Forside | tryllemuseet.no (forsiden) — se detaljert oversikt rett under |
 | Barnesiden | tryllemuseet.no/barn |
 | Om oss | tryllemuseet.no/om-oss |
 | Besøk oss | tryllemuseet.no/besok |
@@ -526,6 +526,42 @@ Disse dokumentene styrer innholdet på de faste sidene. De finnes som singletons
 > **Automatiske antall:** På Tryllehistorie-siden telles tallene i arkivkortene («… biografier», «… opptredener» osv.) automatisk hver gang nettsiden bygges. Badge-feltet i Sanity trenger bare fylles ut for kort som ikke er arkivsider — f.eks. «Kommer snart».
 
 > **Ett felles hjem for kontaktinfo:** E-post, Vipps-nummer og «Bli medlem»-lenken hentes alltid fra **Globale innstillinger** — også i faktaboksen og Bli medlem-seksjonen på Om oss-siden. Endrer du dem der, endres de overalt.
+
+### 13a. Forsiden — seksjon for seksjon
+
+**Meny:** Forside (finnes kun ett dokument — åpne det, ikke opprett nytt)
+
+Forsiden er bygget opp av flere uavhengige seksjoner i samme dokument. Du
+trenger bare åpne dette ene dokumentet, rulle ned til riktig seksjon, endre
+og publisere.
+
+| Seksjon | Felt | Merknad |
+|---|---|---|
+| **Hero** | Overskrift, Kursiv del av overskrift | De to delene av hovedoverskriften — «kursiv del» vises fremhevet/skrå |
+| | Ingress | Teksten under overskriften |
+| | Knapp 1 / Knapp 2 — tekst og URL | De to knappene i heroen, f.eks. «Planlegg besøket» → `/besok` |
+| | Bakgrunnsbilde | Bildet bak heroen |
+| **Info-badges** | Tekst (maks 3) | De tre korte faktaboksene rett under heroen, f.eks. «7 utstillingsfelt» |
+| **Utstillings-seksjon** | Tidsperiode-label, Overskrift | F.eks. «Gullalderen 1845–1930» |
+| | Håndplukkede utstillingsfelt (maks 3) | Se viktig merknad under |
+| **Barn & unge-seksjon** | Overskrift, Ingress, Aktiviteter/features, Sitater | Fritekst-liste og sitater med emoji og kilde |
+| **Medlemskap-seksjon** | Overskrift, Tekst, Knapp — tekst | Knappens URL hentes alltid fra **Globale innstillinger** → Bli medlem-lenke, ikke herfra |
+| **Om museet-seksjon** | Overskrift, Tekst, Sitat, Sitatets kilde | |
+| **Kurs-seksjon** | Overskrift, Ingress, Detaljer (kulepunkter), Pris, Prislabel, Fondsbadge, Knapp — tekst og URL | |
+| **Kurssitat** | Sitatekst, Kilde | Eget sitat knyttet til kurs-seksjonen |
+
+> **Viktig — «Håndplukkede utstillingsfelt» peker fortsatt til den gamle
+> magiker-listen:** Feltet lar deg foreløpig bare velge blant de opprinnelige
+> sju Gullalderen-dokumentene (samme type som lå bak de gamle utstillingssidene
+> før fordypning-omleggingen 2026-07). Nye Fordypning-dokumenter du lager i dag
+> dukker **ikke** opp i denne velgeren ennå — det krever en kodeendring vi
+> ikke har gjort. Er du usikker på om et felt du vil fremheve på forsiden
+> finnes i listen, spør før du antar det virker.
+
+> **Krever ny deploy:** Forsiden er en statisk generert side. Endringer du
+> publiserer i Sanity vises ikke på tryllemuseet.no før neste bygging (enten
+> den daglige kl. 05:30, eller en manuell «Daily rebuild» trigget av Trond via
+> GitHub Actions). Det er normalt — ikke et tegn på at noe gikk galt.
 
 ---
 
