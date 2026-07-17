@@ -542,21 +542,24 @@ og publisere.
 | | Knapp 1 / Knapp 2 — tekst og URL | De to knappene i heroen, f.eks. «Planlegg besøket» → `/besok` |
 | | Bakgrunnsbilde | Bildet bak heroen |
 | **Info-badges** | Tekst (maks 3) | De tre korte faktaboksene rett under heroen, f.eks. «7 utstillingsfelt» |
-| **Utstillings-seksjon** | Tidsperiode-label, Overskrift | F.eks. «Gullalderen 1845–1930» |
-| | Håndplukkede utstillingsfelt (maks 3) | Se viktig merknad under |
+| **Fremhevet innhold** | Tidsperiode-label, Overskrift | F.eks. «Gullalderen 1845–1930». Tidsperiode-label er valgfri — la stå tom hvis det du fremhever ikke er tidsbundet |
+| | Håndplukket innhold (maks 5) | Se under |
 | **Barn & unge-seksjon** | Overskrift, Ingress, Aktiviteter/features, Sitater | Fritekst-liste og sitater med emoji og kilde |
 | **Medlemskap-seksjon** | Overskrift, Tekst, Knapp — tekst | Knappens URL hentes alltid fra **Globale innstillinger** → Bli medlem-lenke, ikke herfra |
 | **Om museet-seksjon** | Overskrift, Tekst, Sitat, Sitatets kilde | |
 | **Kurs-seksjon** | Overskrift, Ingress, Detaljer (kulepunkter), Pris, Prislabel, Fondsbadge, Knapp — tekst og URL | |
 | **Kurssitat** | Sitatekst, Kilde | Eget sitat knyttet til kurs-seksjonen |
 
-> **Viktig — «Håndplukkede utstillingsfelt» peker fortsatt til den gamle
-> magiker-listen:** Feltet lar deg foreløpig bare velge blant de opprinnelige
-> sju Gullalderen-dokumentene (samme type som lå bak de gamle utstillingssidene
-> før fordypning-omleggingen 2026-07). Nye Fordypning-dokumenter du lager i dag
-> dukker **ikke** opp i denne velgeren ennå — det krever en kodeendring vi
-> ikke har gjort. Er du usikker på om et felt du vil fremheve på forsiden
-> finnes i listen, spør før du antar det virker.
+> **Oppdatert 2026-07 — «Håndplukket innhold» er ikke lenger låst til
+> Gullalderen:** Feltet lar deg nå velge fritt blant **Fordypninger**
+> (Gullalderen-panelene, Houdini-stil dybdeartikler og vanlige
+> portrettartikler), **historiske avisartikler** og **historiske
+> TV-opptak** — i hvilken som helst blanding, opptil 5 stykker. Er feltet
+> tomt, vises Gullalderen-panelene automatisk som før (samme
+> reserveløsning som tidligere, bare hentet fra riktig kilde nå).
+>
+> For en avisartikkel lenker kortet direkte inn i lese-modalen på
+> `/tryllehistorie/historiske-artikler` — ingen egen side trengs for det.
 
 > **Krever ny deploy:** Forsiden er en statisk generert side. Endringer du
 > publiserer i Sanity vises ikke på tryllemuseet.no før neste bygging (enten

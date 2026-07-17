@@ -46,25 +46,33 @@ export const homepage = defineType({
       validation: (R) => R.max(3),
     }),
 
-    // ─── UTSTILLINGS-SEKSJON ────────────────────────────────────
+    // ─── FREMHEVET INNHOLD ──────────────────────────────────────
     defineField({
-      name: 'utstillingsFokus',
-      title: 'Utstillings-seksjon',
+      name: 'fremhevetInnhold',
+      title: 'Fremhevet innhold',
       type: 'object',
       fields: [
         defineField({
           name: 'eraLabel',
           title: 'Tidsperiode-label',
           type: 'string',
-          description: 'F.eks. "Gullalderen 1845–1930"',
+          description: 'F.eks. "Gullalderen 1845–1930". Valgfritt — la stå tom hvis det ikke passer det du fremhever.',
         }),
         defineField({ name: 'heading', title: 'Overskrift', type: 'string' }),
         defineField({
-          name: 'felt',
-          title: 'Håndplukkede utstillingsfelt (maks 3)',
+          name: 'elementer',
+          title: 'Håndplukket innhold (maks 5)',
+          description: 'Fordypninger (Gullalderen/Houdini-stil eller vanlige artikler), historiske avisartikler og historiske TV-opptak kan blandes fritt.',
           type: 'array',
-          of: [{ type: 'reference', to: [{ type: 'magician' }] }],
-          validation: (R) => R.max(3),
+          of: [{
+            type: 'reference',
+            to: [
+              { type: 'legend' },
+              { type: 'historiskeKlippNb' },
+              { type: 'historicalClip' },
+            ],
+          }],
+          validation: (R) => R.max(5),
         }),
       ],
     }),

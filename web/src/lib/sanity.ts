@@ -424,7 +424,7 @@ export interface Homepage {
     bgImage?:   { asset: { _ref: string; url: string }; hotspot: any }
   }
   infoBadges:       { label: string }[]
-  utstillingsFokus: { eraLabel: string; heading: string; felt?: Magician[] }
+  fremhevetInnhold: { eraLabel?: string; heading: string; elementer?: FeaturedItem[] }
   barnSeksjon: {
     heading:   string
     ingress:   string
@@ -458,6 +458,48 @@ export interface Homepage {
   }
 }
 
+// "Fremhevet innhold" is a polymorphic reference (legend / historiskeKlippNb /
+// historicalClip) — same pattern as WhoKnewRelated / whoKnewRelatedHref() below.
+export interface FeaturedLegendItem {
+  _type:          'legend'
+  _id:            string
+  title:          string
+  slug:           string
+  tagline?:       string
+  years?:         string
+  physicalOrder?: number
+  stationCount:   number
+  mainImage?:     { asset: { _ref: string; url: string }; alt?: string }
+}
+
+export interface FeaturedClipItem {
+  _type:          'historicalClip'
+  _id:            string
+  title:          string
+  slug:           string
+  year?:          number
+  featuredImage?: { asset: { url: string }; alt?: string }
+  thumbnailUrl?:  string
+}
+
+export type FeaturedItem =
+  | FeaturedLegendItem
+  | (HistoriskKlippNb & { _type: 'historiskeKlippNb' })
+  | FeaturedClipItem
+
+// Mirrors the NOT_UTSTILLING condition (a legend routes to /utstillingen
+// when it has a physical placement and/or stations, otherwise to
+// /tryllehistorie/fordypninger) — keep the two in sync if that rule changes.
+export function featuredItemHref(item: FeaturedItem): string {
+  if (item._type === 'legend') {
+    return (item.physicalOrder || item.stationCount)
+      ? `/utstillingen/${item.slug}`
+      : `/tryllehistorie/fordypninger/${item.slug}`
+  }
+  if (item._type === 'historiskeKlippNb') return `/tryllehistorie/historiske-artikler#artikkel-${item.slug}`
+  return `/tryllehistorie/historiske-opptak/${item.slug}`
+}
+
 export async function getHomepage(): Promise<Homepage | null> {
   return sanityClient.fetch(`
     *[_type == "homepage"][0] {
@@ -467,9 +509,21 @@ export async function getHomepage(): Promise<Homepage | null> {
         bgImage { asset->{ _ref, url }, hotspot }
       },
       infoBadges[] { label },
-      utstillingsFokus {
+      fremhevetInnhold {
         eraLabel, heading,
-        felt[]->{ _id, title, "slug": slug.current, order, years, tagline, posterImage { asset->{ _ref, url }, alt } }
+        elementer[]-> {
+          _type,
+          _type == "legend" => {
+            _id, title, "slug": slug.current, tagline, years,
+            physicalOrder, "stationCount": count(stations),
+            mainImage { asset->{ _ref, url }, alt }
+          },
+          _type == "historiskeKlippNb" => { ${historiskKlippProjection} },
+          _type == "historicalClip" => {
+            _id, title, "slug": slug.current, year,
+            featuredImage { asset->{ url }, alt }, thumbnailUrl
+          }
+        }
       },
       barnSeksjon {
         heading, ingress, features,
@@ -480,7 +534,7 @@ export async function getHomepage(): Promise<Homepage | null> {
       kursSeksjon { heading, ingress, detaljer, pris, prisLabel, fondsBadge, knappLabel, knappHref },
       kursSitat { tekst, kilde }
     }
-  `)
+  `, { publicDomainCutoff: publicDomainCutoffIso() })
 }
 
 // ── Typer: Triks (Lær et triks) ───────────────────────────────────
