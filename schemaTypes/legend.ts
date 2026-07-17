@@ -1,5 +1,6 @@
 // schemaTypes/legend.ts
 import { defineType, defineField } from 'sanity'
+import { richBlockContent } from './richBlockContent'
 
 export const legend = defineType({
   name: 'legend',
@@ -93,7 +94,7 @@ export const legend = defineType({
       title: 'Voksentekst — veggpanel (kort)',
       type: 'array',
       description: 'Kort, trykkeklar tekst for de voksne. 2–3 avsnitt. Brukes øverst på siden — ikke forveksle med den lengre brødteksten under.',
-      of: [{ type: 'block' }],
+      of: richBlockContent(),
     }),
 
     // ── 4. DYBDE 1 — UTDYPENDE INNHOLD ──────────────────────────────
@@ -125,8 +126,8 @@ export const legend = defineType({
       name: 'content',
       title: 'Brødtekst',
       type: 'array',
-      description: 'Generell løpende brødtekst. Brukes typisk når artikkelen ikke er delt i seksjoner over.',
-      of: [{ type: 'block' }],
+      description: 'Generell løpende brødtekst. Brukes typisk når artikkelen ikke er delt i seksjoner over. Støtter bilder og lenker inni teksten.',
+      of: richBlockContent(),
     }),
 
     defineField({

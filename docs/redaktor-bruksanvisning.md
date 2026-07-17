@@ -257,7 +257,7 @@ Ikke bland begge mønstrene i samme artikkel uten grunn — velg ett.
 | Ingress | Kort tekst til listevisningen (kortene på oversiktssiden) |
 | Utdypende tekst — ingress | Første avsnitt i en seksjonsdelt utdyping |
 | Utdypende tekst — seksjoner | Del utdypingen i flere seksjoner med egen overskrift — «Add item» for hver seksjon |
-| Brødtekst | Fri, løpende artikkeltekst — det vanlige valget for en portrettartikkel |
+| Brødtekst | Fri, løpende artikkeltekst — det vanlige valget for en portrettartikkel. Støtter bilder og lenker (eksterne og interne, til Hvem er hvem) satt inn midt i teksten, ikke bare i Bildegalleriet nederst |
 | Tagger | Fritekst — brukes til gruppering/filtrering på oversiktssiden. Fritt valgte ord, f.eks. «kvinner-i-norsk-trylling», «jubileum», «foreningshistorie» |
 
 ### Stasjoner / dybder (valgfritt, sjeldent brukt)
@@ -567,13 +567,21 @@ Se [Hvem er hvem](#6-hvem-er-hvem--biografiregisteret) → «Legge til en ny per
 3. Skriv artikkelen — normalt holder det med **Brødtekst**. Se
    [7. Fordypninger](#7-fordypninger) for når du heller bør bruke
    barnetekst/voksentekst/seksjoner-mønsteret.
-4. Legg gjerne på noen **Tagger** hvis artikkelen hører til et tema
+   - Vil du ha bilder *inni* teksten (ikke bare i galleriet nederst): plasser
+     markøren der bildet skal stå og bruk «+»-knappen i verktøylinjen til
+     Brødtekst-feltet, samme sted som Fet/Kursiv.
+   - Vil du lenke ut fra teksten: merk ordene, klikk lenke-ikonet i
+     verktøylinjen og lim inn URL-en (eller velg «Intern lenke» for å lenke
+     til en person i Hvem er hvem).
+4. Har du mange bilder som ikke hører hjemme inni teksten — bruk
+   **Bildegalleri** i stedet, det vises samlet under artikkelen.
+5. Legg gjerne på noen **Tagger** hvis artikkelen hører til et tema
    (f.eks. «kvinner-i-norsk-trylling») — brukes til filtrering på
    `/tryllehistorie/fordypninger`.
-5. La **QR-kodenummer**, **Rekkefølge på vegg** og **Stasjoner** stå tomme
+6. La **QR-kodenummer**, **Rekkefølge på vegg** og **Stasjoner** stå tomme
    med mindre artikkelen faktisk skal vises under `/utstillingen` — se
    [5. Utstillingen](#5-utstillingen--gullalderen-og-dybdeutstillinger).
-6. Klikk **Publiser**.
+7. Klikk **Publiser**.
 
 ### Registrere en TV-opptreden
 
