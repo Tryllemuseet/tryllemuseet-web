@@ -124,83 +124,91 @@ export async function getMagicianByQR(qrNumber: number): Promise<Magician | null
   `, { qrNumber })
 }
 
-// ── Utstillinger (exhibitionShow / exhibitionStation) ────────────
+// ── Utstillingen (legend: fysisk plassering + dybdeartikler) ─────
+//
+// Ett legend-dokument kan dekke veggpanel-dybden (physicalOrder/qrNumber,
+// childText/wallText), stasjons-dybden (stations), eller begge — se
+// schemaTypes/legend.ts og scripts/migrate-exhibits-to-legend.mjs.
+// Erstatter de tidligere separate magician- og exhibitionShow/
+// exhibitionStation-baserte spørringene for /utstillingen.
 
-export interface ExhibitionStation {
-  _id:             string
-  title:           string
-  slug?:           string
-  order?:          number
-  year?:           string
-  image?:          { asset: { _ref: string; url: string }; alt?: string }
-  textKids?:       string
-  textAdults?:     string
-  activityPrompt?: string
+export interface UtstillingEntry {
+  _id:            string
+  title:          string
+  slug:           string
+  tagline?:       string
+  years?:         string
+  qrNumber?:      number
+  physicalOrder?: number
+  childText?:     string
+  childActivity?: string
+  wallText?:      any[]
+  detailIntro?:   string
+  sections?:      { heading: string; body: any[] }[]
+  mainImage?:     { asset: { _ref: string; url: string }; alt?: string }
+  gallery?:       { asset: { _ref: string; url: string }; alt?: string; caption?: string }[]
+  stations?:      LegendStation[]
+  sources?:       { label: string; url?: string }[]
+  biographyRef?:  { name: string; slug: string; isVisible?: boolean }
 }
 
-export interface ExhibitionShow {
-  _id:              string
-  title:            string
-  slug:             string
-  subtitle?:        string
-  heroImage?:       { asset: { _ref: string; url: string }; alt?: string }
-  introKids?:       string
-  introAdults?:     string
-  relatedMagician?: { name: string; slug: string; isVisible?: boolean }
-  stations?:        ExhibitionStation[]
-  sources?:         { label: string; url?: string }[]
-}
-
-// Én utstilling via slug — stasjonene følger rekkefølgen i stations-arrayet
-export async function getExhibitionShowBySlug(slug: string): Promise<ExhibitionShow | null> {
+// De fysiske veggfeltene i Gullalderen — til oversiktssiden
+export async function getGullalderenPanels(): Promise<UtstillingEntry[]> {
   return sanityClient.fetch(`
-    *[_type == "exhibitionShow" && slug.current == $slug && isVisible != false][0] {
-      _id, title, "slug": slug.current, subtitle,
-      heroImage { asset->{ _ref, url }, alt },
-      introKids, introAdults,
-      "relatedMagician": relatedMagician->{ name, "slug": slug.current, isVisible },
-      "stations": stations[@->isVisible != false][]->{
-        _id, title, "slug": slug.current,
-        order, year,
-        image { asset->{ _ref, url }, alt },
-        textKids, textAdults, activityPrompt,
-        isVisible
-      },
-      sources[] { label, url }
+    *[_type == "legend" && isVisible != false && defined(physicalOrder)] | order(physicalOrder asc) {
+      _id, title, "slug": slug.current,
+      physicalOrder, qrNumber, years, tagline, detailIntro,
+      mainImage { asset->{ _ref, url }, alt }
+    }
+  `)
+}
+
+export interface UtstillingSummary {
+  _id:          string
+  title:        string
+  slug:         string
+  tagline?:     string
+  detailIntro?: string
+  mainImage?:   { asset: { _ref: string; url: string }; alt?: string }
+  stationCount: number
+}
+
+// Dybdeartikler med stasjoner — «Aktuell utstilling» på utstillingen/index.astro
+export async function getUtstillingDeepDives(): Promise<UtstillingSummary[]> {
+  return sanityClient.fetch(`
+    *[_type == "legend" && isVisible != false && count(stations) > 0] | order(_createdAt desc) {
+      _id, title, "slug": slug.current, tagline, detailIntro,
+      mainImage { asset->{ _ref, url }, alt },
+      "stationCount": count(stations)
+    }
+  `)
+}
+
+// Én artikkel via slug — dekker både veggfelt og dybdeartikler under /utstillingen
+export async function getUtstillingEntryBySlug(slug: string): Promise<UtstillingEntry | null> {
+  return sanityClient.fetch(`
+    *[_type == "legend" && slug.current == $slug && isVisible != false][0] {
+      _id, title, "slug": slug.current,
+      tagline, years, qrNumber, physicalOrder,
+      childText, childActivity, wallText,
+      detailIntro, sections[] { heading, body },
+      mainImage { asset->{ _ref, url }, alt },
+      gallery[] { asset->{ _ref, url }, alt, caption },
+      stations[] { title, order, year, image { asset->{ _ref, url }, alt }, textKids, textAdults, activityPrompt },
+      sources[] { label, url },
+      "biographyRef": biographyRef->{ name, "slug": slug.current, isVisible }
     }
   `, { slug })
 }
 
-export interface ExhibitionShowSummary {
-  _id:          string
-  title:        string
-  slug:         string
-  subtitle?:    string
-  heroImage?:   { asset: { _ref: string; url: string }; alt?: string }
-  introAdults?: string
-  stationCount: number
-}
-
-// Alle synlige utstillinger — «Aktuell utstilling» på utstillingen/index.astro
-export async function getAllExhibitionShows(): Promise<ExhibitionShowSummary[]> {
-  return sanityClient.fetch(`
-    *[_type == "exhibitionShow" && isVisible != false] | order(_createdAt desc) {
-      _id, title, "slug": slug.current, subtitle,
-      heroImage { asset->{ _ref, url }, alt },
-      introAdults,
-      "stationCount": count(stations[@->isVisible != false])
-    }
+// Statiske stier for /utstillingen/[slug] — veggfelt og/eller dybdeartikler
+export async function getUtstillingPaths() {
+  const entries = await sanityClient.fetch(`
+    *[_type == "legend" && isVisible != false && (defined(physicalOrder) || count(stations) > 0)] { "slug": slug.current }
   `)
-}
-
-// Statiske stier for utstillinger — brukes i utstillingen/[slug].astro
-export async function getExhibitionShowPaths() {
-  const shows = await sanityClient.fetch(`
-    *[_type == "exhibitionShow" && isVisible != false] { "slug": slug.current }
-  `)
-  return shows
-    .filter((s: { slug?: string }) => s.slug)
-    .map((s: { slug: string }) => ({ params: { slug: s.slug } }))
+  return entries
+    .filter((e: { slug?: string }) => e.slug)
+    .map((e: { slug: string }) => ({ params: { slug: e.slug } }))
 }
 
 // Kommende arrangementer
@@ -369,6 +377,23 @@ export async function getBooksByMagician(magicianId: string): Promise<Book[]> {
       tags
     }
   `, { magicianId })
+}
+
+// Bøker knyttet til en /utstillingen-artikkel (legend). Boken refererer
+// fortsatt det opprinnelige magician-dokumentet (book.ts sitt referansefelt
+// er ikke migrert) — slår derfor opp magician-dokumentets id via samme slug
+// i stedet for å anta en id-konvensjon.
+export async function getBooksByUtstillingSlug(slug: string): Promise<Book[]> {
+  return sanityClient.fetch(`
+    *[_type == "book" && isVisible != false
+      && references(*[_type == "magician" && slug.current == $slug][0]._id)
+    ] | order(year asc) {
+      _id, title, year, yearNote, bookType,
+      availability, externalUrl, thumbnailUrl,
+      "coverImage": coverImage.asset->url,
+      tags
+    }
+  `, { slug })
 }
 
 export async function getFeaturedBooks(): Promise<Book[]> {
@@ -1339,6 +1364,29 @@ export interface Legend {
   videos?:      BiographyVideo[]
   tags?:        string[]
   sources?:     { label: string; url?: string }[]
+  // Utstillingen-felt — se schemaTypes/legend.ts. Kun satt på dokumenter som
+  // også har physicalOrder og/eller stasjoner (filtrert bort fra getAllLegends
+  // / getLegendBySlug / getLegendPaths under, som er for /tryllehistorie).
+  tagline?:       string
+  years?:         string
+  qrNumber?:      number
+  physicalOrder?: number
+  childText?:     string
+  childActivity?: string
+  wallText?:      any[]
+  detailIntro?:   string
+  sections?:      { heading: string; body: any[] }[]
+  stations?:      LegendStation[]
+}
+
+export interface LegendStation {
+  title:           string
+  order?:          number
+  year?:           string
+  image?:          { asset: { _ref: string; url: string }; alt?: string }
+  textKids?:       string
+  textAdults?:     string
+  activityPrompt?: string
 }
 
 // ── Spørringer: Biography ────────────────────────────────────────
@@ -1412,10 +1460,15 @@ export async function getBiographyDirectory(): Promise<Biography[]> {
 
 // ── Spørringer: Legend ───────────────────────────────────────────
 
+// Filter delt av alle spørringer under: ekskluderer utstillingen-artikler
+// (fysisk plassert i museet og/eller med stasjoner) — de hører hjemme under
+// /utstillingen, se getGullalderenPanels / getUtstillingDeepDives / getUtstillingEntryBySlug.
+const NOT_UTSTILLING = `!defined(physicalOrder) && count(stations) == 0`
+
 // Alle legender — til oversiktssiden
 export async function getAllLegends(): Promise<Legend[]> {
   return sanityClient.fetch(`
-    *[_type == "legend" && isVisible != false] | order(title asc) {
+    *[_type == "legend" && isVisible != false && ${NOT_UTSTILLING}] | order(title asc) {
       _id, title, "slug": slug.current,
       excerpt, tags,
       mainImage { asset->{ _ref, url }, alt },
@@ -1431,7 +1484,7 @@ export async function getAllLegends(): Promise<Legend[]> {
 // Én legende via slug — til artikkelsiden
 export async function getLegendBySlug(slug: string): Promise<Legend | null> {
   return sanityClient.fetch(`
-    *[_type == "legend" && slug.current == $slug && isVisible != false][0] {
+    *[_type == "legend" && slug.current == $slug && isVisible != false && ${NOT_UTSTILLING}][0] {
       _id, title, "slug": slug.current,
       excerpt, tags,
       mainImage { asset->{ _ref, url }, alt, caption },
@@ -1451,7 +1504,7 @@ export async function getLegendBySlug(slug: string): Promise<Legend | null> {
 // Statiske stier for legend [slug].astro
 export async function getLegendPaths() {
   const legends = await sanityClient.fetch(`
-    *[_type == "legend" && isVisible != false] { "slug": slug.current }
+    *[_type == "legend" && isVisible != false && ${NOT_UTSTILLING}] { "slug": slug.current }
   `)
   return legends
     .filter((l: { slug?: string }) => l.slug)

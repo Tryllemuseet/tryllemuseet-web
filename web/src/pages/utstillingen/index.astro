@@ -1,11 +1,11 @@
 ---
 // src/pages/utstillingen/index.astro
 import BaseLayout from '../../layouts/BaseLayout.astro'
-import { getAllMagicians, getAllExhibitionShows, getUtstillingPage, urlFor } from '../../lib/sanity'
+import { getGullalderenPanels, getUtstillingDeepDives, getUtstillingPage, urlFor } from '../../lib/sanity'
 
 const [magicians, exhibitions, page] = await Promise.all([
-  getAllMagicians(),
-  getAllExhibitionShows(),
+  getGullalderenPanels(),
+  getUtstillingDeepDives(),
   getUtstillingPage(),
 ])
 
@@ -39,8 +39,8 @@ function posterUrl(image: any, width: number) {
     <section class="container aktuell-section">
       <p class="section-label">{exhibitions.length > 1 ? 'Aktuelle utstillinger' : 'Aktuell utstilling'}</p>
       {exhibitions.map((ex) => {
-        const imgUrl = ex.heroImage?.asset
-          ? urlFor(ex.heroImage).width(900).height(600).format('webp').fit('crop').url()
+        const imgUrl = ex.mainImage?.asset
+          ? urlFor(ex.mainImage).width(900).height(600).format('webp').fit('crop').url()
           : null
         return (
           <a href={`/utstillingen/${ex.slug}`} class="aktuell-card">
@@ -48,7 +48,7 @@ function posterUrl(image: any, width: number) {
               <div class="aktuell-img">
                 <img
                   src={imgUrl}
-                  alt={ex.heroImage?.alt ?? ex.title}
+                  alt={ex.mainImage?.alt ?? ex.title}
                   width="900"
                   height="600"
                   loading="eager"
@@ -64,8 +64,8 @@ function posterUrl(image: any, width: number) {
                 <p class="aktuell-meta">{ex.stationCount} {ex.stationCount === 1 ? 'stasjon' : 'stasjoner'}</p>
               )}
               <h2 class="display-title aktuell-title">{ex.title}</h2>
-              {ex.subtitle && <p class="aktuell-subtitle">{ex.subtitle}</p>}
-              {ex.introAdults && <p class="aktuell-intro">{ex.introAdults}</p>}
+              {ex.tagline && <p class="aktuell-subtitle">{ex.tagline}</p>}
+              {ex.detailIntro && <p class="aktuell-intro">{ex.detailIntro}</p>}
               <span class="aktuell-cta">Se utstillingen →</span>
             </div>
           </a>
@@ -87,14 +87,14 @@ function posterUrl(image: any, width: number) {
     <!-- Featured three -->
     <div class="featured-grid">
       {featured.map((m) => {
-        const imgUrl = posterUrl(m.posterImage, 600)
+        const imgUrl = posterUrl(m.mainImage, 600)
         return (
           <a href={`/utstillingen/${m.slug}`} class="featured-card">
             {imgUrl ? (
               <div class="featured-img">
                 <img
                   src={imgUrl}
-                  alt={m.posterImage?.alt ?? m.title}
+                  alt={m.mainImage?.alt ?? m.title}
                   width="600"
                   height="800"
                   loading="eager"
@@ -110,7 +110,7 @@ function posterUrl(image: any, width: number) {
               {m.years && <p class="card-years">{m.years}</p>}
               <h3 class="featured-name">{m.title}</h3>
               <p class="featured-tagline">{m.tagline}</p>
-              <p class="featured-intro">{m.mobileIntro}</p>
+              <p class="featured-intro">{m.detailIntro}</p>
               <span class="featured-cta">Les mer →</span>
             </div>
           </a>
@@ -123,14 +123,14 @@ function posterUrl(image: any, width: number) {
       <>
         <div class="remaining-grid" id="remaining-grid" aria-hidden="true">
           {remaining.map((m) => {
-            const imgUrl = posterUrl(m.posterImage, 400)
+            const imgUrl = posterUrl(m.mainImage, 400)
             return (
               <a href={`/utstillingen/${m.slug}`} class="magician-card">
                 {imgUrl ? (
                   <div class="card-image">
                     <img
                       src={imgUrl}
-                      alt={m.posterImage?.alt ?? m.title}
+                      alt={m.mainImage?.alt ?? m.title}
                       width="400"
                       height="533"
                       loading="lazy"
@@ -145,7 +145,7 @@ function posterUrl(image: any, width: number) {
                   <h3 class="card-title">{m.title}</h3>
                   {m.years && <p class="card-years">{m.years}</p>}
                   <p class="card-tagline">{m.tagline}</p>
-                  <p class="card-intro">{m.mobileIntro}</p>
+                  <p class="card-intro">{m.detailIntro}</p>
                   <span class="card-cta">Les mer →</span>
                 </div>
               </a>

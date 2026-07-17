@@ -1,45 +1,35 @@
 ---
 // src/pages/utstillingen/[slug].astro
 import BaseLayout from '../../layouts/BaseLayout.astro'
-import ExhibitionView from '../../components/ExhibitionView.astro'
 import {
-  getAllMagicians,
-  getMagicianBySlug,
-  getBooksByMagician,
-  getExhibitionShowBySlug,
-  getExhibitionShowPaths,
+  getUtstillingEntryBySlug,
+  getUtstillingPaths,
+  getBooksByUtstillingSlug,
+  portableTextToHtml,
+  urlFor,
 } from '../../lib/sanity'
-import { toHTML } from '@portabletext/to-html'
 
 export async function getStaticPaths() {
-  // Exhibitions (exhibitionShow) and wall panels (magician) share this
-  // route; an exhibition takes over the URL when the slugs collide.
-  const [exhibitionPaths, magicians] = await Promise.all([
-    getExhibitionShowPaths(),
-    getAllMagicians(),
-  ])
-  const exhibitionSlugs = new Set(
-    exhibitionPaths.map((p: { params: { slug: string } }) => p.params.slug)
-  )
-  const magicianPaths = magicians
-    .filter(m => m.slug && typeof m.slug === 'string' && !exhibitionSlugs.has(String(m.slug)))
-    .map(m => ({ params: { slug: String(m.slug) } }))
-  return [...exhibitionPaths, ...magicianPaths]
+  return getUtstillingPaths()
 }
 
 const { slug } = Astro.params
-const exhibition = await getExhibitionShowBySlug(slug!)
-const m = exhibition ? null : await getMagicianBySlug(slug!)
+const entry = await getUtstillingEntryBySlug(slug!)
 
-if (!exhibition && !m) return Astro.redirect('/utstillingen', 301)
+if (!entry) return Astro.redirect('/utstillingen', 301)
 
-const books = m ? await getBooksByMagician(m._id) : []
+const books = await getBooksByUtstillingSlug(slug!)
 
-const adultHtml = m?.adultText ? toHTML(m.adultText) : ''
-const sectionsHtml = m?.mobileSections?.map(s => ({
+const wallHtml = portableTextToHtml(entry.wallText)
+const sectionsHtml = entry.sections?.map(s => ({
   heading: s.heading,
-  html: s.body ? toHTML(s.body) : ''
+  html: portableTextToHtml(s.body),
 })) ?? []
+const stations = entry.stations ?? []
+
+const posterUrl = entry.mainImage?.asset
+  ? urlFor(entry.mainImage).width(800).format('webp').url()
+  : null
 
 const availabilityLabel: Record<string, string> = {
   inPrint:           'Tilgjengelig',
@@ -49,30 +39,28 @@ const availabilityLabel: Record<string, string> = {
 }
 ---
 
-{exhibition ? (
-  <ExhibitionView exhibition={exhibition} />
-) : m && (
 <BaseLayout
-  title={`${m.title} — Tryllemuseet`}
-  description={m.mobileIntro ?? `Les om ${m.title} på Tryllemuseet`}
+  title={`${entry.title} — Tryllemuseet`}
+  description={entry.detailIntro ?? entry.tagline ?? `Les om ${entry.title} på Tryllemuseet`}
 >
 
   <!-- HERO ────────────────────────────────────────────────────── -->
-  <section class="magician-hero">
+  <section class="entry-hero">
     <div class="container hero-inner">
-      {m.posterImage?.asset?.url && (
+      {posterUrl && (
         <div class="poster-wrap">
           <img
-            src={m.posterImage.asset.url}
-            alt={m.posterImage.alt ?? m.title}
+            src={posterUrl}
+            alt={entry.mainImage?.alt ?? entry.title}
             class="poster-img"
           />
         </div>
       )}
       <div class="hero-text">
-        <h1 class="display-title hero-title">{m.title}</h1>
-        {m.years   && <p class="hero-years">{m.years}</p>}
-        {m.tagline && <p class="hero-tagline">«{m.tagline}»</p>}
+        {stations.length > 0 && <p class="hero-kicker">Utstilling</p>}
+        <h1 class="display-title hero-title">{entry.title}</h1>
+        {entry.years   && <p class="hero-years">{entry.years}</p>}
+        {entry.tagline && <p class="hero-tagline">«{entry.tagline}»</p>}
       </div>
     </div>
   </section>
@@ -80,33 +68,33 @@ const availabilityLabel: Record<string, string> = {
   <div class="container page-body">
 
     <!-- 1. BARNETEKST ──────────────────────────────────────────── -->
-    {m.childText && (
+    {entry.childText && (
       <section class="child-panel" aria-label="For barn">
         <p class="child-label">⭐ For barn</p>
-        <p class="child-text">{m.childText}</p>
-        {m.childActivity && (
+        <p class="child-text">{entry.childText}</p>
+        {entry.childActivity && (
           <div class="child-activity">
             <span aria-hidden="true">★</span>
-            {m.childActivity}
+            {entry.childActivity}
           </div>
         )}
       </section>
     )}
 
     <!-- 2. VOKSENTEKST ─────────────────────────────────────────── -->
-    {adultHtml && (
-      <section class="adult-section" aria-label={`Om ${m.title}`}>
-        <h2 class="section-heading">Om {m.title}</h2>
-        <div class="prose" set:html={adultHtml} />
+    {wallHtml && (
+      <section class="adult-section" aria-label={`Om ${entry.title}`}>
+        <h2 class="section-heading">Om {entry.title}</h2>
+        <div class="prose" set:html={wallHtml} />
       </section>
     )}
 
     <!-- 3. DETALJERT TEKST ──────────────────────────────────────── -->
-    {(m.mobileIntro || sectionsHtml.length > 0) && (
+    {(entry.detailIntro || sectionsHtml.length > 0) && (
       <section class="detail-section" id="detaljer" aria-label="Utdypende innhold">
         <h2 class="section-heading">Les mer</h2>
-        {m.mobileIntro && (
-          <p class="detail-intro">{m.mobileIntro}</p>
+        {entry.detailIntro && (
+          <p class="detail-intro">{entry.detailIntro}</p>
         )}
         {sectionsHtml.map(s => (
           <div class="content-section">
@@ -117,9 +105,55 @@ const availabilityLabel: Record<string, string> = {
       </section>
     )}
 
-    <!-- 4. BØKER ───────────────────────────────────────────────── -->
+    <!-- 4. STASJONER ───────────────────────────────────────────── -->
+    {stations.length > 0 && (
+      <section class="stations-section" aria-label="Stasjonene i utstillingen">
+        <h2 class="section-heading">Stasjonene i utstillingen</h2>
+        <ol class="stations-list">
+          {stations.map((s, i) => (
+            <li class="station">
+              <div class="station-marker" aria-hidden="true">
+                <span class="station-number">{i + 1}</span>
+                <span class="station-line" />
+              </div>
+              <div class="station-body">
+                <header class="station-header">
+                  {s.year && <p class="station-year">{s.year}</p>}
+                  <h3 class="station-title">{s.title}</h3>
+                </header>
+                {s.image?.asset && (
+                  <div class="station-image-wrap">
+                    <img
+                      src={urlFor(s.image).width(800).format('webp').url()}
+                      alt={s.image.alt ?? s.title}
+                      class="station-image"
+                      loading="lazy"
+                    />
+                  </div>
+                )}
+                {s.textKids && (
+                  <div class="station-kids">
+                    <p class="child-label">⭐ For barn</p>
+                    <p class="child-text">{s.textKids}</p>
+                  </div>
+                )}
+                {s.textAdults && <p class="station-adults">{s.textAdults}</p>}
+                {s.activityPrompt && (
+                  <div class="station-activity">
+                    <span aria-hidden="true">★</span>
+                    {s.activityPrompt}
+                  </div>
+                )}
+              </div>
+            </li>
+          ))}
+        </ol>
+      </section>
+    )}
+
+    <!-- 5. BØKER ───────────────────────────────────────────────── -->
     {books.length > 0 && (
-      <section class="books-section" aria-label={`Bøker av ${m.title}`}>
+      <section class="books-section" aria-label={`Bøker av ${entry.title}`}>
         <h2 class="section-heading">Bøker</h2>
         <ul class="books-list">
           {books.map((book: any) => {
@@ -165,12 +199,24 @@ const availabilityLabel: Record<string, string> = {
       </section>
     )}
 
-    <!-- 5. KILDER ──────────────────────────────────────────────── -->
-    {m.sources && m.sources.length > 0 && (
+    <!-- 6. HVEM ER HVEM ────────────────────────────────────────── -->
+    {entry.biographyRef && entry.biographyRef.isVisible !== false && entry.biographyRef.slug && (
+      <aside class="related-magician">
+        <p>
+          Vil du vite mer?
+          <a href={`/tryllehistorie/magiens-hvem-er-hvem/${entry.biographyRef.slug}`}>
+            Les om {entry.biographyRef.name} i Magiens hvem er hvem →
+          </a>
+        </p>
+      </aside>
+    )}
+
+    <!-- 7. KILDER ──────────────────────────────────────────────── -->
+    {entry.sources && entry.sources.length > 0 && (
       <section class="sources-section" aria-label="Kilder">
         <h2 class="section-heading">Kilder</h2>
         <ul class="sources-list">
-          {m.sources.map(src => (
+          {entry.sources.map(src => (
             <li>
               {src.url
                 ? (
@@ -190,17 +236,16 @@ const availabilityLabel: Record<string, string> = {
     )}
 
     <!-- NAVIGASJON ─────────────────────────────────────────────── -->
-    <nav class="magician-nav" aria-label="Naviger mellom utstillingsfelt">
-      <a href="/utstillingen" class="btn-nav">← Alle felt</a>
+    <nav class="entry-nav" aria-label="Naviger i utstillingen">
+      <a href="/utstillingen" class="btn-nav">← Utstillingen</a>
     </nav>
 
   </div>
 </BaseLayout>
-)}
 
 <style>
   /* ── HERO ──────────────────────────────────────────────────────── */
-  .magician-hero {
+  .entry-hero {
     background: var(--burgundy-dk);
     padding: 3.5rem 0 3rem;
     border-bottom: 2px solid var(--gold-dark);
@@ -224,6 +269,15 @@ const availabilityLabel: Record<string, string> = {
   .poster-img { width: 100%; display: block; }
 
   .hero-text    { color: var(--cream); }
+  .hero-kicker {
+    font-family: var(--font-ui);
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    color: var(--gold);
+    margin-bottom: 0.75rem;
+  }
   .hero-title   { font-size: clamp(1.8rem, 4vw, 3rem); color: var(--cream); margin-bottom: 0.4rem; }
   .hero-years   { font-family: var(--font-ui); font-size: 0.9rem; color: var(--gold-light); opacity: 0.75; margin-bottom: 0.4rem; }
   .hero-tagline { font-family: var(--font-body); font-size: 1.1rem; font-style: italic; color: var(--gold); }
@@ -406,6 +460,127 @@ const availabilityLabel: Record<string, string> = {
     letter-spacing: 0.03em;
   }
 
+  /* ── STASJONER ─────────────────────────────────────────────────── */
+  .stations-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .station {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 1.25rem;
+  }
+
+  .station-marker {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .station-number {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.2rem;
+    height: 2.2rem;
+    flex-shrink: 0;
+    border-radius: 50%;
+    background: var(--burgundy);
+    border: 2px solid var(--gold-dark);
+    color: var(--cream);
+    font-family: var(--font-display);
+    font-size: 1rem;
+  }
+  .station-line {
+    flex: 1;
+    width: 2px;
+    margin-top: 0.5rem;
+    background: var(--cream-dark);
+  }
+  .station:last-child .station-line { display: none; }
+
+  .station-body {
+    padding-bottom: 2.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    min-width: 0;
+  }
+  .station:last-child .station-body { padding-bottom: 0; }
+
+  .station-year {
+    font-family: var(--font-ui);
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--gold-dark);
+    margin-bottom: 0.25rem;
+  }
+  .station-title {
+    font-family: var(--font-display);
+    font-size: 1.25rem;
+    color: var(--burgundy);
+    letter-spacing: 0.03em;
+    padding-top: 0.3rem;
+  }
+
+  .station-image-wrap {
+    border-radius: 4px;
+    overflow: hidden;
+    border: 1px solid var(--cream-dark);
+  }
+  .station-image { width: 100%; display: block; }
+
+  .station-kids {
+    background: #FFF9E0;
+    border: 2px solid #E8C840;
+    border-radius: 6px;
+    padding: 1rem 1.25rem;
+  }
+
+  .station-adults {
+    font-family: var(--font-body);
+    font-size: 1rem;
+    line-height: 1.75;
+    color: var(--ink);
+  }
+
+  .station-activity {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+    background: #E8C840;
+    border-radius: 4px;
+    padding: 0.6rem 0.9rem;
+    font-family: var(--font-ui);
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--ink);
+    align-self: flex-start;
+  }
+
+  /* ── HVEM ER HVEM ──────────────────────────────────────────────── */
+  .related-magician {
+    background: var(--cream);
+    border: 1px solid var(--cream-dark);
+    border-radius: 6px;
+    padding: 1.25rem 1.5rem;
+    font-family: var(--font-ui);
+    font-size: 0.95rem;
+    color: var(--ink);
+  }
+  .related-magician a {
+    color: var(--burgundy);
+    font-weight: 600;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+    margin-left: 0.35rem;
+    transition: color 150ms;
+  }
+  .related-magician a:hover { color: var(--gold-dark); }
+
   /* ── KILDER ─────────────────────────────────────────────────────── */
   .sources-list {
     list-style: none;
@@ -451,7 +626,7 @@ const availabilityLabel: Record<string, string> = {
   .prose p:last-child { margin-bottom: 0; }
 
   /* ── NAVIGASJON ─────────────────────────────────────────────────── */
-  .magician-nav { padding-top: 1.5rem; border-top: 1px solid var(--cream-dark); }
+  .entry-nav { padding-top: 1.5rem; border-top: 1px solid var(--cream-dark); }
   .btn-nav {
     font-family: var(--font-ui);
     font-size: 0.875rem;
@@ -470,5 +645,6 @@ const availabilityLabel: Record<string, string> = {
     .hero-inner  { grid-template-columns: 1fr; gap: 1.5rem; }
     .poster-wrap { width: 140px; }
     .page-body   { padding-top: 2rem; padding-bottom: 3rem; }
+    .station     { gap: 0.9rem; }
   }
 </style>
