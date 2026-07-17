@@ -93,10 +93,25 @@ function mapStations(stationRefs) {
     }))
 }
 
+// Manual overrides for cases where an exhibitionShow's slug has drifted from
+// its corresponding magician doc's slug, so the two can no longer be matched
+// automatically. Known case: the Houdini exhibitionShow was seeded with slug
+// "houdini" (see scripts/seed-houdini-exhibition.mjs) but currently carries
+// the slug "houdidi-utstilling" in production — looks like a typo introduced
+// after seeding. Flagged to the editor; not corrected in place here, since
+// the merge below makes the old slug moot (the merged doc uses the
+// magician's slug, "houdini").
+const SHOW_SLUG_TO_MAGICIAN_SLUG = {
+  'houdidi-utstilling': 'houdini',
+}
+
 async function run() {
   console.log(`Dataset: ${dataset}`)
 
-  const magicians = await client.fetch(`*[_type == "magician"]{
+  // Exclude drafts — only published content should be migrated.
+  const NOT_DRAFT = `!(_id in path("drafts.**"))`
+
+  const magicians = await client.fetch(`*[_type == "magician" && ${NOT_DRAFT}]{
     _id, isVisible, title, "slug": slug.current, tagline, years,
     qrNumber, order,
     childText, childActivity, adultText,
@@ -105,7 +120,7 @@ async function run() {
   }`)
   console.log(`Fant ${magicians.length} magician-dokument(er).`)
 
-  const shows = await client.fetch(`*[_type == "exhibitionShow"]{
+  const shows = await client.fetch(`*[_type == "exhibitionShow" && ${NOT_DRAFT}]{
     _id, isVisible, title, "slug": slug.current, subtitle,
     heroImage, introKids, introAdults, relatedMagician, sources,
     "stationRefs": stations[]->{
@@ -115,7 +130,15 @@ async function run() {
   }`)
   console.log(`Fant ${shows.length} exhibitionShow-dokument(er).`)
 
-  const showBySlug = new Map(shows.filter(s => s.slug).map(s => [s.slug, s]))
+  const showBySlug = new Map()
+  for (const s of shows) {
+    if (!s.slug) continue
+    const key = SHOW_SLUG_TO_MAGICIAN_SLUG[s.slug] ?? s.slug
+    if (key !== s.slug) {
+      console.log(`ℹ️  exhibitionShow "${s.title}" har slug "${s.slug}" — matcher manuelt mot magician-slug "${key}" (se SHOW_SLUG_TO_MAGICIAN_SLUG).`)
+    }
+    showBySlug.set(key, s)
+  }
   const usedShowSlugs = new Set()
 
   const tx = client.transaction()
@@ -158,9 +181,11 @@ async function run() {
     console.log(`✔ ${doc._id}${show ? `  (slått sammen med exhibitionShow "${show.title}", ${doc.stations?.length ?? 0} stasjoner)` : ''}`)
   }
 
-  // 2. exhibitionShow docs that did NOT collide with a magician slug
+  // 2. exhibitionShow docs that did NOT match any magician doc
   for (const show of shows) {
-    if (!show.slug || usedShowSlugs.has(show.slug)) continue
+    if (!show.slug) continue
+    const matchKey = SHOW_SLUG_TO_MAGICIAN_SLUG[show.slug] ?? show.slug
+    if (usedShowSlugs.has(matchKey)) continue
 
     const doc = stripUndefined({
       _id: `legend-migrated-${show.slug}`,
