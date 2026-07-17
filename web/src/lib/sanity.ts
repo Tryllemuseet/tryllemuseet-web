@@ -1280,9 +1280,22 @@ export function portableTextToHtml(blocks: PortableTextBlock[] | undefined | nul
   if (!blocks?.length) return ''
   return toHTML(blocks, {
     components: {
+      types: {
+        image: ({ value }: { value?: { asset?: { _ref: string; url?: string }; alt?: string } }) => {
+          if (!value?.asset) return ''
+          const src = urlFor(value).width(720).format('webp').url()
+          const alt = (value.alt ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
+          return `<figure class="pt-image"><img src="${src}" alt="${alt}" loading="lazy" decoding="async" /></figure>`
+        },
+      },
       marks: {
-        link: ({ children, value }) =>
-          `<a href="${value?.href ?? '#'}" target="_blank" rel="noopener noreferrer">${children}</a>`,
+        // External links open in a new tab; anything else (relative/internal) navigates normally.
+        link: ({ children, value }) => {
+          const href = value?.href ?? '#'
+          return /^https?:\/\//i.test(href)
+            ? `<a href="${href}" target="_blank" rel="noopener noreferrer">${children}</a>`
+            : `<a href="${href}">${children}</a>`
+        },
         internalLink: ({ children, value }) => {
           const slug = value?.reference?.slug ?? ''
           return slug
@@ -1486,11 +1499,14 @@ export async function getLegendBySlug(slug: string): Promise<Legend | null> {
   return sanityClient.fetch(`
     *[_type == "legend" && slug.current == $slug && isVisible != false && ${NOT_UTSTILLING}][0] {
       _id, title, "slug": slug.current,
-      excerpt, tags,
+      excerpt, tags, tagline, years,
+      childText, childActivity, wallText,
+      detailIntro, sections[] { heading, body },
       mainImage { asset->{ _ref, url }, alt, caption },
       gallery[] { asset->{ _ref, url }, alt, caption },
       content,
       videos[] { title, url, type, year },
+      stations[] { title, order, year, image { asset->{ _ref, url }, alt }, textKids, textAdults, activityPrompt },
       sources[] { label, url },
       biographyRef-> {
         _id, name, "slug": slug.current,

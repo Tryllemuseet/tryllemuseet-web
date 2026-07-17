@@ -172,12 +172,14 @@ Every magician gets its own HTML file at build time.
 
 ### Rich Text (Portable Text)
 
-Content from Sanity (e.g., adultText, mobileSections.body) is in Portable Text format:
+Content from Sanity (e.g., legend.wallText, legend.sections[].body) is in Portable Text format. Always render it via the shared helper in `sanity.ts` — never import `toHTML` directly in a page:
 
 ```typescript
-import { toHTML } from '@portabletext/to-html'
-const html = toHTML(m.adultText)  // Renders as <p>, <strong>, etc.
+import { portableTextToHtml } from '../lib/sanity'
+const html = portableTextToHtml(entry.wallText)  // <p>, <strong>, links, inline images, etc.
 ```
+
+`portableTextToHtml()` centralizes link/internalLink mark handling and inline image rendering, so every page benefits when it's improved once.
 
 ### Image Optimization
 
@@ -236,7 +238,7 @@ All content document types (`magician`, `biography`, `legend`, `event`, `tvAppea
 1. **Schema Changes**: After editing schema files, redeploy the studio for changes to appear in editor UI and API
 2. **Slug Generation**: Slug fields auto-populate from name/title; manually edit if needed
 3. **Image Assets**: Upload via Sanity UI; reference via asset->{ _ref, url } in queries
-4. **Portable Text**: Always use toHTML() or astro-portabletext to render rich text
+4. **Portable Text**: Always use `portableTextToHtml()` from `web/src/lib/sanity.ts` to render rich text — never import `toHTML` directly in a page
 5. **Env Variables**: Public vars prefixed PUBLIC_*; secret vars in .env.local (git-ignored)
 6. **Static Generation**: Sanity content changes require web frontend rebuild
 

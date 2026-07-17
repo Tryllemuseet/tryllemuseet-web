@@ -1,11 +1,11 @@
 ---
 // src/pages/utstillingen/[slug].astro
 import BaseLayout from '../../layouts/BaseLayout.astro'
+import LegendBody from '../../components/LegendBody.astro'
 import {
   getUtstillingEntryBySlug,
   getUtstillingPaths,
   getBooksByUtstillingSlug,
-  portableTextToHtml,
   urlFor,
 } from '../../lib/sanity'
 
@@ -19,12 +19,6 @@ const entry = await getUtstillingEntryBySlug(slug!)
 if (!entry) return Astro.redirect('/utstillingen', 301)
 
 const books = await getBooksByUtstillingSlug(slug!)
-
-const wallHtml = portableTextToHtml(entry.wallText)
-const sectionsHtml = entry.sections?.map(s => ({
-  heading: s.heading,
-  html: portableTextToHtml(s.body),
-})) ?? []
 const stations = entry.stations ?? []
 
 const posterUrl = entry.mainImage?.asset
@@ -65,182 +59,61 @@ const availabilityLabel: Record<string, string> = {
     </div>
   </section>
 
-  <div class="container page-body">
-
-    <!-- 1. BARNETEKST ──────────────────────────────────────────── -->
-    {entry.childText && (
-      <section class="child-panel" aria-label="For barn">
-        <p class="child-label">⭐ For barn</p>
-        <p class="child-text">{entry.childText}</p>
-        {entry.childActivity && (
-          <div class="child-activity">
-            <span aria-hidden="true">★</span>
-            {entry.childActivity}
-          </div>
-        )}
-      </section>
-    )}
-
-    <!-- 2. VOKSENTEKST ─────────────────────────────────────────── -->
-    {wallHtml && (
-      <section class="adult-section" aria-label={`Om ${entry.title}`}>
-        <h2 class="section-heading">Om {entry.title}</h2>
-        <div class="prose" set:html={wallHtml} />
-      </section>
-    )}
-
-    <!-- 3. DETALJERT TEKST ──────────────────────────────────────── -->
-    {(entry.detailIntro || sectionsHtml.length > 0) && (
-      <section class="detail-section" id="detaljer" aria-label="Utdypende innhold">
-        <h2 class="section-heading">Les mer</h2>
-        {entry.detailIntro && (
-          <p class="detail-intro">{entry.detailIntro}</p>
-        )}
-        {sectionsHtml.map(s => (
-          <div class="content-section">
-            <h3 class="content-heading">{s.heading}</h3>
-            <div class="prose" set:html={s.html} />
-          </div>
-        ))}
-      </section>
-    )}
-
-    <!-- 4. STASJONER ───────────────────────────────────────────── -->
-    {stations.length > 0 && (
-      <section class="stations-section" aria-label="Stasjonene i utstillingen">
-        <h2 class="section-heading">Stasjonene i utstillingen</h2>
-        <ol class="stations-list">
-          {stations.map((s, i) => (
-            <li class="station">
-              <div class="station-marker" aria-hidden="true">
-                <span class="station-number">{i + 1}</span>
-                <span class="station-line" />
-              </div>
-              <div class="station-body">
-                <header class="station-header">
-                  {s.year && <p class="station-year">{s.year}</p>}
-                  <h3 class="station-title">{s.title}</h3>
-                </header>
-                {s.image?.asset && (
-                  <div class="station-image-wrap">
-                    <img
-                      src={urlFor(s.image).width(800).format('webp').url()}
-                      alt={s.image.alt ?? s.title}
-                      class="station-image"
-                      loading="lazy"
-                    />
-                  </div>
-                )}
-                {s.textKids && (
-                  <div class="station-kids">
-                    <p class="child-label">⭐ For barn</p>
-                    <p class="child-text">{s.textKids}</p>
-                  </div>
-                )}
-                {s.textAdults && <p class="station-adults">{s.textAdults}</p>}
-                {s.activityPrompt && (
-                  <div class="station-activity">
-                    <span aria-hidden="true">★</span>
-                    {s.activityPrompt}
-                  </div>
-                )}
-              </div>
-            </li>
-          ))}
-        </ol>
-      </section>
-    )}
-
-    <!-- 5. BØKER ───────────────────────────────────────────────── -->
-    {books.length > 0 && (
-      <section class="books-section" aria-label={`Bøker av ${entry.title}`}>
-        <h2 class="section-heading">Bøker</h2>
-        <ul class="books-list">
-          {books.map((book: any) => {
-            const thumb = book.thumbnailUrl ?? book.coverImage ?? null
-            const yearDisplay = book.yearNote ?? book.year?.toString() ?? ''
-            const avail = book.availability ?? ''
-            return (
-              <li class="book-item">
-                {thumb && (
-                  <div class="book-thumb">
-                    <img src={thumb} alt={`Forsidebilde: ${book.title}`} loading="lazy" />
-                  </div>
-                )}
-                <div class="book-meta">
-                  <span class="book-title">{book.title}</span>
-                  {yearDisplay && <span class="book-year">{yearDisplay}</span>}
-                  {avail && (
-                    <span class={`avail-badge avail-badge--${avail}`}>
-                      {availabilityLabel[avail] ?? avail}
-                    </span>
+  <LegendBody entry={entry}>
+    <Fragment slot="extra">
+      {books.length > 0 && (
+        <section class="books-section" aria-label={`Bøker av ${entry.title}`}>
+          <h2 class="section-heading">Bøker</h2>
+          <ul class="books-list">
+            {books.map((book: any) => {
+              const thumb = book.thumbnailUrl ?? book.coverImage ?? null
+              const yearDisplay = book.yearNote ?? book.year?.toString() ?? ''
+              const avail = book.availability ?? ''
+              return (
+                <li class="book-item">
+                  {thumb && (
+                    <div class="book-thumb">
+                      <img src={thumb} alt={`Forsidebilde: ${book.title}`} loading="lazy" />
+                    </div>
                   )}
-                  {book.externalUrl && (
-                    <a
-                      href={book.externalUrl}
-                      target="_blank"
-                      rel="noopener"
-                      class="book-link"
-                    >
-                      Last ned PDF
-                      <svg viewBox="0 0 12 12" fill="none" aria-hidden="true">
-                        <path d="M2 10L10 2M10 2H5M10 2V7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-                      </svg>
-                    </a>
-                  )}
-                </div>
-              </li>
-            )
-          })}
-        </ul>
-        <p class="books-more">
-          <a href="/ressurser/bibliotek">Se alle bøker i biblioteket →</a>
-        </p>
-      </section>
-    )}
+                  <div class="book-meta">
+                    <span class="book-title">{book.title}</span>
+                    {yearDisplay && <span class="book-year">{yearDisplay}</span>}
+                    {avail && (
+                      <span class={`avail-badge avail-badge--${avail}`}>
+                        {availabilityLabel[avail] ?? avail}
+                      </span>
+                    )}
+                    {book.externalUrl && (
+                      <a
+                        href={book.externalUrl}
+                        target="_blank"
+                        rel="noopener"
+                        class="book-link"
+                      >
+                        Last ned PDF
+                        <svg viewBox="0 0 12 12" fill="none" aria-hidden="true">
+                          <path d="M2 10L10 2M10 2H5M10 2V7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                        </svg>
+                      </a>
+                    )}
+                  </div>
+                </li>
+              )
+            })}
+          </ul>
+          <p class="books-more">
+            <a href="/ressurser/bibliotek">Se alle bøker i biblioteket →</a>
+          </p>
+        </section>
+      )}
+    </Fragment>
 
-    <!-- 6. HVEM ER HVEM ────────────────────────────────────────── -->
-    {entry.biographyRef && entry.biographyRef.isVisible !== false && entry.biographyRef.slug && (
-      <aside class="related-magician">
-        <p>
-          Vil du vite mer?
-          <a href={`/tryllehistorie/magiens-hvem-er-hvem/${entry.biographyRef.slug}`}>
-            Les om {entry.biographyRef.name} i Magiens hvem er hvem →
-          </a>
-        </p>
-      </aside>
-    )}
-
-    <!-- 7. KILDER ──────────────────────────────────────────────── -->
-    {entry.sources && entry.sources.length > 0 && (
-      <section class="sources-section" aria-label="Kilder">
-        <h2 class="section-heading">Kilder</h2>
-        <ul class="sources-list">
-          {entry.sources.map(src => (
-            <li>
-              {src.url
-                ? (
-                  <a href={src.url} target="_blank" rel="noopener noreferrer">
-                    {src.label}
-                    <svg class="ext-icon" viewBox="0 0 12 12" fill="none" aria-label="Åpnes i ny fane">
-                      <path d="M2 10L10 2M10 2H5M10 2V7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-                    </svg>
-                  </a>
-                )
-                : <span>{src.label}</span>
-              }
-            </li>
-          ))}
-        </ul>
-      </section>
-    )}
-
-    <!-- NAVIGASJON ─────────────────────────────────────────────── -->
     <nav class="entry-nav" aria-label="Naviger i utstillingen">
       <a href="/utstillingen" class="btn-nav">← Utstillingen</a>
     </nav>
+  </LegendBody>
 
-  </div>
 </BaseLayout>
 
 <style>
@@ -281,52 +154,6 @@ const availabilityLabel: Record<string, string> = {
   .hero-title   { font-size: clamp(1.8rem, 4vw, 3rem); color: var(--cream); margin-bottom: 0.4rem; }
   .hero-years   { font-family: var(--font-ui); font-size: 0.9rem; color: var(--gold-light); opacity: 0.75; margin-bottom: 0.4rem; }
   .hero-tagline { font-family: var(--font-body); font-size: 1.1rem; font-style: italic; color: var(--gold); }
-
-  /* ── PAGE BODY ─────────────────────────────────────────────────── */
-  .page-body {
-    padding-top: 3rem;
-    padding-bottom: 5rem;
-    max-width: 720px;
-    display: flex;
-    flex-direction: column;
-    gap: 2.5rem;
-  }
-
-  /* ── BARNETEKST ────────────────────────────────────────────────── */
-  .child-panel {
-    background: #FFF9E0;
-    border: 2px solid #E8C840;
-    border-radius: 6px;
-    padding: 1.5rem;
-  }
-  .child-label {
-    font-family: var(--font-ui);
-    font-size: 0.75rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.12em;
-    color: #C47A00;
-    margin-bottom: 0.6rem;
-  }
-  .child-text {
-    font-family: var(--font-body);
-    font-size: 1rem;
-    line-height: 1.65;
-    color: var(--ink);
-    margin-bottom: 0.75rem;
-  }
-  .child-activity {
-    display: flex;
-    align-items: flex-start;
-    gap: 0.5rem;
-    background: #E8C840;
-    border-radius: 4px;
-    padding: 0.6rem 0.9rem;
-    font-family: var(--font-ui);
-    font-size: 0.9rem;
-    font-weight: 600;
-    color: var(--ink);
-  }
 
   /* ── BØKER ─────────────────────────────────────────────────────── */
   .books-list {
@@ -441,175 +268,6 @@ const availabilityLabel: Record<string, string> = {
   }
   .books-more a:hover { color: var(--gold-dark); }
 
-  /* ── DETALJERT TEKST ────────────────────────────────────────────── */
-  .detail-section { scroll-margin-top: calc(var(--header-h) + 1rem); }
-  .detail-intro {
-    font-family: var(--font-body);
-    font-size: 1.05rem;
-    line-height: 1.7;
-    color: var(--ink);
-    margin-bottom: 1.5rem;
-    font-style: italic;
-  }
-  .content-section { margin-bottom: 1.75rem; }
-  .content-heading {
-    font-family: var(--font-display);
-    font-size: 1.05rem;
-    color: var(--ink);
-    margin-bottom: 0.75rem;
-    letter-spacing: 0.03em;
-  }
-
-  /* ── STASJONER ─────────────────────────────────────────────────── */
-  .stations-list {
-    list-style: none;
-    display: flex;
-    flex-direction: column;
-  }
-
-  .station {
-    display: grid;
-    grid-template-columns: auto 1fr;
-    gap: 1.25rem;
-  }
-
-  .station-marker {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-  }
-  .station-number {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 2.2rem;
-    height: 2.2rem;
-    flex-shrink: 0;
-    border-radius: 50%;
-    background: var(--burgundy);
-    border: 2px solid var(--gold-dark);
-    color: var(--cream);
-    font-family: var(--font-display);
-    font-size: 1rem;
-  }
-  .station-line {
-    flex: 1;
-    width: 2px;
-    margin-top: 0.5rem;
-    background: var(--cream-dark);
-  }
-  .station:last-child .station-line { display: none; }
-
-  .station-body {
-    padding-bottom: 2.5rem;
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-    min-width: 0;
-  }
-  .station:last-child .station-body { padding-bottom: 0; }
-
-  .station-year {
-    font-family: var(--font-ui);
-    font-size: 0.75rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    color: var(--gold-dark);
-    margin-bottom: 0.25rem;
-  }
-  .station-title {
-    font-family: var(--font-display);
-    font-size: 1.25rem;
-    color: var(--burgundy);
-    letter-spacing: 0.03em;
-    padding-top: 0.3rem;
-  }
-
-  .station-image-wrap {
-    border-radius: 4px;
-    overflow: hidden;
-    border: 1px solid var(--cream-dark);
-  }
-  .station-image { width: 100%; display: block; }
-
-  .station-kids {
-    background: #FFF9E0;
-    border: 2px solid #E8C840;
-    border-radius: 6px;
-    padding: 1rem 1.25rem;
-  }
-
-  .station-adults {
-    font-family: var(--font-body);
-    font-size: 1rem;
-    line-height: 1.75;
-    color: var(--ink);
-  }
-
-  .station-activity {
-    display: flex;
-    align-items: flex-start;
-    gap: 0.5rem;
-    background: #E8C840;
-    border-radius: 4px;
-    padding: 0.6rem 0.9rem;
-    font-family: var(--font-ui);
-    font-size: 0.9rem;
-    font-weight: 600;
-    color: var(--ink);
-    align-self: flex-start;
-  }
-
-  /* ── HVEM ER HVEM ──────────────────────────────────────────────── */
-  .related-magician {
-    background: var(--cream);
-    border: 1px solid var(--cream-dark);
-    border-radius: 6px;
-    padding: 1.25rem 1.5rem;
-    font-family: var(--font-ui);
-    font-size: 0.95rem;
-    color: var(--ink);
-  }
-  .related-magician a {
-    color: var(--burgundy);
-    font-weight: 600;
-    text-decoration: underline;
-    text-underline-offset: 2px;
-    margin-left: 0.35rem;
-    transition: color 150ms;
-  }
-  .related-magician a:hover { color: var(--gold-dark); }
-
-  /* ── KILDER ─────────────────────────────────────────────────────── */
-  .sources-list {
-    list-style: none;
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-  }
-  .sources-list li {
-    display: flex;
-    align-items: baseline;
-    gap: 0.4rem;
-    font-family: var(--font-ui);
-    font-size: 0.875rem;
-  }
-  .sources-list li::before { content: '→'; color: var(--gold-dark); flex-shrink: 0; }
-  .sources-list a {
-    color: #185FA5;
-    text-decoration: underline;
-    text-underline-offset: 2px;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.3rem;
-    transition: color 180ms;
-  }
-  .sources-list a:hover { color: var(--burgundy); }
-  .ext-icon { width: 10px; height: 10px; flex-shrink: 0; opacity: 0.6; }
-  .sources-list span { color: var(--grey); font-style: italic; }
-
-  /* ── SECTION HEADING ────────────────────────────────────────────── */
   .section-heading {
     font-family: var(--font-display);
     font-size: 1.2rem;
@@ -619,11 +277,6 @@ const availabilityLabel: Record<string, string> = {
     border-bottom: 1px solid var(--cream-dark);
     letter-spacing: 0.04em;
   }
-
-  /* ── PROSE ──────────────────────────────────────────────────────── */
-  .prose { font-family: var(--font-body); font-size: 1rem; line-height: 1.75; color: var(--ink); }
-  .prose p { margin-bottom: 1rem; }
-  .prose p:last-child { margin-bottom: 0; }
 
   /* ── NAVIGASJON ─────────────────────────────────────────────────── */
   .entry-nav { padding-top: 1.5rem; border-top: 1px solid var(--cream-dark); }
@@ -644,7 +297,5 @@ const availabilityLabel: Record<string, string> = {
   @media (max-width: 700px) {
     .hero-inner  { grid-template-columns: 1fr; gap: 1.5rem; }
     .poster-wrap { width: 140px; }
-    .page-body   { padding-top: 2rem; padding-bottom: 3rem; }
-    .station     { gap: 0.9rem; }
   }
 </style>
