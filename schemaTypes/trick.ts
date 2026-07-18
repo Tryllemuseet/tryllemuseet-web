@@ -1,5 +1,6 @@
 // schemaTypes/trick.ts
 import { defineType, defineField } from 'sanity'
+import { richBlockContent } from './richBlockContent'
 
 const DIFFICULTY_LABELS: Record<string, string> = {
   enkel: '🟢 Enkel',
@@ -76,8 +77,8 @@ export const trick = defineType({
       name: 'instructions',
       title: 'Fremgangsmåte (valgfritt)',
       type: 'array',
-      of: [{ type: 'block' }],
-      description: 'Fritekst hvis dere vil supplere videoen med skriftlig steg-for-steg. Kan stå tom hvis videoen er nok.',
+      of: richBlockContent(),
+      description: 'Fritekst hvis dere vil supplere videoen med skriftlig steg-for-steg. Støtter bilder inni teksten. Kan stå tom hvis videoen er nok.',
     }),
 
     defineField({
@@ -96,7 +97,43 @@ export const trick = defineType({
       validation: R => R.uri({ scheme: ['http', 'https'] }),
     }),
 
-    // ── 3. SORTERING ─────────────────────────────────────────────
+    // ── 3. MEDIA ─────────────────────────────────────────────────
+    defineField({
+      name: 'mainImage',
+      title: 'Hovedbilde / illustrasjon',
+      type: 'image',
+      options: { hotspot: true },
+      description: 'Vises øverst på trikset sin egen side, og som miniatyrbilde i oversikten.',
+      fields: [
+        defineField({ name: 'alt', title: 'Alt-tekst', type: 'string' }),
+        defineField({ name: 'caption', title: 'Bildetekst', type: 'string' }),
+      ],
+    }),
+
+    defineField({
+      name: 'gallery',
+      title: 'Bildegalleri / illustrasjoner',
+      type: 'array',
+      description: 'Flere bilder eller illustrasjoner av triksets steg, vises på trikset sin egen side.',
+      of: [{
+        type: 'image',
+        options: { hotspot: true },
+        fields: [
+          defineField({ name: 'alt', title: 'Alt-tekst', type: 'string' }),
+          defineField({ name: 'caption', title: 'Bildetekst', type: 'string' }),
+        ],
+      }],
+    }),
+
+    defineField({
+      name: 'links',
+      title: 'Flere lenker (valgfritt)',
+      type: 'array',
+      description: 'Ekstra ressurser, f.eks. lenke til rekvisitter eller en annen forklaring.',
+      of: [{ type: 'sourceItem' }],
+    }),
+
+    // ── 4. SORTERING ─────────────────────────────────────────────
     defineField({
       name: 'order',
       title: 'Rekkefølge',
@@ -111,8 +148,9 @@ export const trick = defineType({
       title: 'title',
       difficulty: 'difficulty',
       isVisible: 'isVisible',
+      media: 'mainImage',
     },
-    prepare({ title, difficulty, isVisible }: { title?: string; difficulty?: string; isVisible?: boolean }) {
+    prepare({ title, difficulty, isVisible, media }: { title?: string; difficulty?: string; isVisible?: boolean; media?: unknown }) {
       const parts = [
         difficulty ? DIFFICULTY_LABELS[difficulty] ?? difficulty : null,
         isVisible === false ? '⚪ Skjult' : null,
@@ -120,6 +158,7 @@ export const trick = defineType({
       return {
         title: title ?? '(uten tittel)',
         subtitle: parts.join(' · '),
+        media,
       }
     },
   },
