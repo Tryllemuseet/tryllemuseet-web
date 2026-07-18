@@ -94,8 +94,8 @@ All `getStaticPaths()` calls filter on `isVisible != false`, ensuring hidden doc
 > `/tryllehistorie/fordypninger` (see `NOT_UTSTILLING` in `sanity.ts`). Both
 > routes share rendering via `web/src/components/LegendBody.astro`. The old
 > `magician`/`exhibitionShow`/`exhibitionStation` schema types and their
-> documents still exist (migrated, not deleted) but are no longer read by
-> the frontend — pending a follow-up cleanup. See
+> documents have since been removed entirely (content was migrated first,
+> confirmed to have zero remaining references, then deleted). See
 > `scripts/migrate-exhibits-to-legend.mjs` for the migration and
 > `docs/redaktor-bruksanvisning.md` §5/§7 for the editor-facing explanation.
 

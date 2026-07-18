@@ -30,7 +30,7 @@ The schema defines 31 registered content types in `/schemaTypes` (see `schemaTyp
 - `siteConfig.ts` — Global settings (email, address, contact info)
 
 **Document Types** (queryable collections):
-- `magician.ts`, `exhibitionShow.ts`, `exhibitionStation.ts` — **Deprecated (2026-07)**, superseded by `legend.ts`. Migrated to `legend` docs via `scripts/migrate-exhibits-to-legend.mjs`; the old documents and schema types still exist but are no longer read by the frontend. Do not add new content here — pending removal.
+- `magician.ts`, `exhibitionShow.ts`, `exhibitionStation.ts` — **Removed (2026-07)**, superseded by `legend.ts`. Content was migrated to `legend` docs via `scripts/migrate-exhibits-to-legend.mjs`, then the old documents and schema types were deleted once nothing referenced them.
 - `biography.ts` — "Hvem er hvem" (Who's Who) reference: full name, aliases, birth/death dates, nationality, magician references
 - `legend.ts` (Studio label: "Fordypning") — Unified deep-dive article type: dual-audience wall-panel text (`childText`/`wallText`), free-form article body (`content`, or `detailIntro`/`sections`), an optional multi-part `stations` array, and optional physical-placement metadata (`qrNumber`/`physicalOrder`). Covers everything from short biographical portraits to the Gullalderen wall panels and the Houdini exhibition. A doc with `physicalOrder` and/or `stations` set routes to `/utstillingen`; otherwise to `/tryllehistorie/fordypninger` (see `NOT_UTSTILLING` in `sanity.ts`). Both routes render through `web/src/components/LegendBody.astro`.
 - `tvAppearance.ts` — TV show appearances (Got Talent formats, Penn & Teller: Fool Us)

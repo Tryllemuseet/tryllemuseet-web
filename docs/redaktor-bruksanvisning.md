@@ -137,9 +137,8 @@ Passerte arrangementer vises ikke automatisk, men de blir liggende i lista. Du k
 > lå tidligere i to egne dokumenttyper (**Magiker / Utstillingsfelt** og
 > **Utstilling / Utstillingsstasjon**). Disse er nå slått sammen til ett
 > dokument for Houdini og migrert 1:1 for de sju andre — alt sammen ligger nå
-> under **Fordypning**. De gamle dokumenttypene kan fortsatt stå igjen i
-> Studio-menyen en periode, men skal **ikke** brukes til nytt innhold — de
-> fjernes i en senere opprydding. Bruk alltid **Fordypning**.
+> under **Fordypning**. De gamle dokumenttypene og menypunktene er fjernet
+> fra Studio. Bruk alltid **Fordypning**.
 
 Det som gjør at en Fordypning-artikkel vises under `/utstillingen` i stedet
 for [`/tryllehistorie/fordypninger`](#7-fordypninger), er om ett av disse
