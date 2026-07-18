@@ -476,6 +476,9 @@ export interface Trick {
   instructions?: any[]
   videoUrl?: string
   externalUrl?: string
+  mainImage?: BiographyImage
+  gallery?: BiographyImage[]
+  links?: { label: string; url?: string }[]
   order?: number
 }
 
@@ -559,20 +562,34 @@ export async function getAllTricks(): Promise<Trick[]> {
     *[_type == "trick" && isVisible != false] | order(coalesce(order, 9999) asc, title asc) {
       _id, title, "slug": slug.current,
       difficulty, shortDescription, materials, instructions,
-      videoUrl, externalUrl, order
+      videoUrl, externalUrl, order,
+      mainImage { asset->{ _ref, url }, alt, caption }
     }
   `)
 }
 
-// Ett triks via slug — hvis vi senere vil ha egne detaljsider
+// Ett triks via slug — til /barn/laer-et-triks/[slug]
 export async function getTrickBySlug(slug: string): Promise<Trick | null> {
   return sanityClient.fetch(`
     *[_type == "trick" && slug.current == $slug && isVisible != false][0] {
       _id, title, "slug": slug.current,
       difficulty, shortDescription, materials, instructions,
-      videoUrl, externalUrl, order
+      videoUrl, externalUrl, order,
+      mainImage { asset->{ _ref, url }, alt, caption },
+      gallery[] { asset->{ _ref, url }, alt, caption },
+      links[] { label, url }
     }
   `, { slug })
+}
+
+// Slugs for getStaticPaths() på /barn/laer-et-triks/[slug]
+export async function getTrickPaths() {
+  const tricks = await sanityClient.fetch(`
+    *[_type == "trick" && isVisible != false] { "slug": slug.current }
+  `)
+  return tricks
+    .filter((t: { slug?: string }) => t.slug)
+    .map((t: { slug: string }) => ({ params: { slug: t.slug } }))
 }
 
 // ── Spørringer: Verdens mest… ──────────────────────────────────────
