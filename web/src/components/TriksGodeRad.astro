@@ -2,6 +2,9 @@
 // src/components/TriksGodeRad.astro
 // Delt popup med gode råd, brukt på hver triks sin egen side
 // (web/src/pages/barn/laer-et-triks/[slug].astro). Samme tekst for alle triks.
+import { getGodeRadConfig } from '../lib/sanity'
+
+const rad = await getGodeRadConfig()
 ---
 
 <button type="button" class="godrad-lenke" id="godrad-apne">
@@ -21,24 +24,16 @@
 
     <div class="godrad-scroll">
       <section class="godrad-seksjon">
-        <h3>Til deg som øver</h3>
+        <h3>{rad.barnHeading}</h3>
         <ul>
-          <li>Øv mange ganger foran et speil, eller for en voksen du stoler på, før du viser trikset til andre.</li>
-          <li>Ta deg god tid — ingen ser at et triks tar litt forberedelse.</li>
-          <li>Snakk gjerne mens du gjør trikset. Det gjør det morsommere, og får publikum til å se dit du vil.</li>
-          <li>Ikke vis samme triks to ganger på rad til de samme personene — da er det lettere å gjennomskue.</li>
-          <li>Avslør aldri hemmeligheten selv. La heller de som ser på få lure litt!</li>
-          <li>Det er helt normalt å feile mange ganger under øving — selv de beste tryllekunstnerne øvde utrolig mye før de fikk det til.</li>
+          {rad.barnRad.map(punkt => <li>{punkt}</li>)}
         </ul>
       </section>
 
       <section class="godrad-seksjon">
-        <h3>Til voksne</h3>
+        <h3>{rad.voksneHeading}</h3>
         <ul>
-          <li>La barnet øve i sitt eget tempo. Press for å «få det til» tar bort gleden.</li>
-          <li>Noen triks bruker saks eller andre skarpe eller små gjenstander — hjelp til, og følg med underveis.</li>
-          <li>Vær et godt publikum: la deg overraske, still spørsmål, og ikke avslør hvordan trikset funker selv om du skjønner det.</li>
-          <li>Å lære et triks er en fin måte å øve seg på å snakke foran andre og bygge selvtillit. Ros gjerne innsatsen, ikke bare resultatet.</li>
+          {rad.voksneRad.map(punkt => <li>{punkt}</li>)}
         </ul>
       </section>
     </div>

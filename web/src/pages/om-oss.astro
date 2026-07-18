@@ -19,7 +19,14 @@ const medlem   = p?.medlemskap ?? { heading: 'Bli medlem', ingress: '', motivasj
 
 // Faktaboksens adresse kan overstyres per side; ellers gjelder Globale innstillinger
 const faktaAdresse = fakta.adresse || site.address?.replace(/\n/g, ', ')
-const presse   = p?.presse     ?? { label: '', heading: 'Pressekontakt', tekst: '', knappLabel: 'Send pressehenvendelse', knappHref: '/kontakt' }
+const presse   = p?.presse     ?? {
+  label: '', heading: 'Pressekontakt', tekst: '', knappLabel: 'Send pressehenvendelse', knappHref: '/kontakt',
+  nedlastinger: [
+    { emoji: '🎩', tittel: 'Logoer', beskrivelse: 'PNG og SVG — mørk og lys variant' },
+    { emoji: '📷', tittel: 'Pressebilder', beskrivelse: 'Høyoppløselige bilder fra museet' },
+  ],
+  nedlastingsNotat: 'Filer leveres på forespørsel via e-post',
+}
 const partnere = p?.partnere   ?? { heading: 'Samarbeidspartnere', liste: [] }
 
 const historieHtml = portableTextToHtml(om.historieTekst)
@@ -168,18 +175,15 @@ const historieHtml = portableTextToHtml(om.historieTekst)
       <div class="logo-nedlasting">
         <h3>Last ned</h3>
         <div class="nedlastings-liste">
-          <div class="nedlastings-kort">
-            <span>🎩</span>
-            <div><strong>Logoer</strong><p>PNG og SVG — mørk og lys variant</p></div>
-            <span class="nedlast-pil">↓</span>
-          </div>
-          <div class="nedlastings-kort">
-            <span>📷</span>
-            <div><strong>Pressebilder</strong><p>Høyoppløselige bilder fra museet</p></div>
-            <span class="nedlast-pil">↓</span>
-          </div>
+          {presse.nedlastinger.map(kort => (
+            <div class="nedlastings-kort">
+              <span>{kort.emoji}</span>
+              <div><strong>{kort.tittel}</strong><p>{kort.beskrivelse}</p></div>
+              <span class="nedlast-pil">↓</span>
+            </div>
+          ))}
         </div>
-        <p class="nedlastings-notat">Filer leveres på forespørsel via e-post</p>
+        <p class="nedlastings-notat">{presse.nedlastingsNotat}</p>
       </div>
       </AnimateIn>
     </div>

@@ -214,17 +214,6 @@ export async function getArtifactBySlug(slug: string): Promise<Artifact | null> 
   `, { slug })
 }
 
-// Fremhevede artefakter — til forsiden / portalen
-export async function getFeaturedArtifacts(limit = 6): Promise<Artifact[]> {
-  return sanityClient.fetch(`
-    *[_type == "artifact" && featured == true && isVisible != false] | order(coalesce(order, 9999) asc) [0...$limit] {
-      _id, title, "slug": slug.current,
-      description, year, category,
-      mainImage { asset->{ _ref, url }, alt }
-    }
-  `, { limit })
-}
-
 // ── Typer: Bok ───────────────────────────────────────────────────
 export interface BookAuthor {
   name:       string
@@ -283,32 +272,6 @@ export async function getAllBooks(): Promise<Book[]> {
   `)
 }
 
-export async function getPublicDomainBooks(): Promise<Book[]> {
-  return sanityClient.fetch(`
-    *[_type == "book" && bookType == "publicDomain" && isVisible != false] | order(year asc) {
-      _id, title, year, yearNote, section,
-      externalUrl, sourceLabel, thumbnailUrl, tags,
-      "authors": authors[] {
-        "name": coalesce(personRef->name, nameText)
-      },
-      description
-    }
-  `)
-}
-
-export async function getNorwegianBooks(): Promise<Book[]> {
-  return sanityClient.fetch(`
-    *[_type == "book" && bookType == "norwegian" && isVisible != false] | order(year asc) {
-      _id, title, subtitle, year, publisher, tags,
-      "authors": authors[] {
-        "name": coalesce(personRef->name, nameText),
-        "slug": personRef->slug.current,
-        "hasProfile": defined(personRef)
-      }
-    }
-  `)
-}
-
 // Bøker knyttet til en /utstillingen-artikkel (legend), via forfatterens
 // biografi-oppføring: legend.biographyRef -> biography <- book.authors[].personRef.
 export async function getBooksByUtstillingSlug(slug: string): Promise<Book[]> {
@@ -322,19 +285,6 @@ export async function getBooksByUtstillingSlug(slug: string): Promise<Book[]> {
       tags
     }
   `, { slug })
-}
-
-export async function getFeaturedBooks(): Promise<Book[]> {
-  return sanityClient.fetch(`
-    *[_type == "book" && featured == true && isVisible != false] | order(year asc) {
-      _id, title, year, bookType,
-      thumbnailUrl,
-      "coverImage": coverImage.asset->url,
-      "authors": authors[] {
-        "name": coalesce(personRef->name, nameText)
-      }
-    }
-  `)
 }
 
 
@@ -539,7 +489,11 @@ export interface OmOssPage {
     nivaaer: { type: string; pris: string; anbefalt: boolean; fordeler: string[]; knappLabel: string; knappUrl: string }[]
     vippsInfo: string
   }
-  presse: { label: string; heading: string; tekst: string; knappLabel: string; knappHref: string }
+  presse: {
+    label: string; heading: string; tekst: string; knappLabel: string; knappHref: string
+    nedlastinger: { emoji: string; tittel: string; beskrivelse: string }[]
+    nedlastingsNotat: string
+  }
   partnere: { heading: string; liste: { navn: string; beskrivelse: string; url?: string }[] }
 }
 
@@ -594,6 +548,40 @@ export async function getTrickPaths() {
     .map((t: { slug: string }) => ({ params: { slug: t.slug } }))
 }
 
+// ── Typer og spørring: Gode råd (delt boks på triks-sidene) ────────
+export interface GodeRadConfig {
+  barnHeading:   string
+  barnRad:       string[]
+  voksneHeading: string
+  voksneRad:     string[]
+}
+
+export async function getGodeRadConfig(): Promise<GodeRadConfig> {
+  const d = await sanityClient.fetch(`
+    *[_type == "godeRadConfig"][0] {
+      barnHeading, barnRad, voksneHeading, voksneRad
+    }
+  `)
+  return {
+    barnHeading: d?.barnHeading ?? 'Til deg som øver',
+    barnRad: d?.barnRad ?? [
+      'Øv mange ganger foran et speil, eller for en voksen du stoler på, før du viser trikset til andre.',
+      'Ta deg god tid — ingen ser at et triks tar litt forberedelse.',
+      'Snakk gjerne mens du gjør trikset. Det gjør det morsommere, og får publikum til å se dit du vil.',
+      'Ikke vis samme triks to ganger på rad til de samme personene — da er det lettere å gjennomskue.',
+      'Avslør aldri hemmeligheten selv. La heller de som ser på få lure litt!',
+      'Det er helt normalt å feile mange ganger under øving — selv de beste tryllekunstnerne øvde utrolig mye før de fikk det til.',
+    ],
+    voksneHeading: d?.voksneHeading ?? 'Til voksne',
+    voksneRad: d?.voksneRad ?? [
+      'La barnet øve i sitt eget tempo. Press for å «få det til» tar bort gleden.',
+      'Noen triks bruker saks eller andre skarpe eller små gjenstander — hjelp til, og følg med underveis.',
+      'Vær et godt publikum: la deg overraske, still spørsmål, og ikke avslør hvordan trikset funker selv om du skjønner det.',
+      'Å lære et triks er en fin måte å øve seg på å snakke foran andre og bygge selvtillit. Ros gjerne innsatsen, ikke bare resultatet.',
+    ],
+  }
+}
+
 // ── Spørringer: Verdens mest… ──────────────────────────────────────
 
 // Alle synlige oppføringer, gruppert etter kategori på siden selv
@@ -632,10 +620,62 @@ export async function getOmOssPage(): Promise<OmOssPage | null> {
         nivaaer[] { type, pris, anbefalt, fordeler, knappLabel, knappUrl },
         vippsInfo
       },
-      presse { label, heading, tekst, knappLabel, knappHref },
+      presse { label, heading, tekst, knappLabel, knappHref, nedlastinger[] { emoji, tittel, beskrivelse }, nedlastingsNotat },
       partnere { heading, liste[] { navn, beskrivelse, url } }
     }
   `)
+}
+
+// ── Typer og spørring: Tryllebutikken ───────────────────────────────
+export interface TryllebutikkenKategori {
+  emoji?:     string
+  tittel:     string
+  ingress?:   string
+  layout:     'liste' | 'grid'
+  produkter:  string[]
+}
+
+export interface TryllebutikkenPage {
+  hero:       { label: string; heading: string; ingress: string }
+  kategorier: TryllebutikkenKategori[]
+}
+
+export async function getTryllebutikkenPage(): Promise<TryllebutikkenPage> {
+  const d = await sanityClient.fetch(`
+    *[_type == "tryllebutikkenPage"][0] {
+      hero { label, heading, ingress },
+      kategorier[] { emoji, tittel, ingress, layout, produkter }
+    }
+  `)
+  return {
+    hero: {
+      label:   d?.hero?.label   ?? 'Utstillingen',
+      heading: d?.hero?.heading ?? 'Tryllebutikken',
+      ingress: d?.hero?.ingress ?? 'Etter besøket kan du ta med deg litt magi hjem. I vår lille butikk finner du trylletriks, rekvisita og bøker — noe for alle nivåer.',
+    },
+    kategorier: d?.kategorier ?? [
+      {
+        emoji: '🪄', tittel: 'Trylleposer', layout: 'liste',
+        ingress: 'Perfekt for nybegynnere — hver pose inneholder et triks med forklaring og manual på norsk.',
+        produkter: ['Pengemaskinen', 'Pengeslukeren', 'Fantommynten', 'Myntforsvinning', 'Spiralen'],
+      },
+      {
+        emoji: '🎩', tittel: 'Triks og rekvisita', layout: 'grid',
+        produkter: [
+          'Mentalboksen', 'Tauringene', 'Repillusjonen', 'Fargetauene', 'Flygende fyrstikk',
+          'Ringspillet', 'Begerspillet', 'Flygende mynter', 'Kulebegeret', 'Kortesken de Luxe',
+          'Terningtrikset', 'Fargeskiftende tørkler', 'The secret box', 'Tryllekortstokk',
+        ],
+      },
+      {
+        emoji: '📚', tittel: 'Bøker', layout: 'liste',
+        produkter: [
+          'Mystikk som underholdning', 'I livets manesje — boken om Arnardo',
+          'Egelo: Lærebok i humor', 'Kortkunster', 'Tryllekunster',
+        ],
+      },
+    ],
+  }
 }
 
 // ── Typer: Besøk oss ─────────────────────────────────────────────
@@ -882,40 +922,6 @@ export async function getRessurserPage(): Promise<RessurserPage> {
   }
 }
 
-// ── Typer: Arrangementer (side) ──────────────────────────────────
-export interface ArrangementInfoItem {
-  emoji:     string
-  heading:   string
-  tekst:     string
-  linkHref?: string
-  linkTekst?: string
-}
-
-export interface ArrangementPage {
-  hero:      { label: string; heading: string; ingress: string }
-  infoStrip: ArrangementInfoItem[]
-}
-
-export async function getArrangementPage(): Promise<ArrangementPage> {
-  const d = await sanityClient.fetch(`
-    *[_type == "arrangementPage"][0] {
-      hero { label, heading, ingress },
-      infoStrip[] { emoji, heading, tekst, linkHref, linkTekst }
-    }
-  `)
-  return {
-    hero: {
-      label:   d?.hero?.label   ?? 'Tryllemuseet',
-      heading: d?.hero?.heading ?? 'Arrangementer',
-      ingress: d?.hero?.ingress ?? 'Tryllekurs, familieforestillinger og magiske opplevelser for alle aldre. Tre forestillinger og kurs hvert halvår.',
-    },
-    infoStrip: d?.infoStrip ?? [
-      { emoji: '🎭', heading: '3 forestillinger pr. halvår',  tekst: 'Vi arrangerer familieforestillinger og tryllekurs jevnlig gjennom året.' },
-      { emoji: '👥', heading: 'Grupper og skoler',            tekst: 'Vi tar imot grupper etter avtale.',          linkHref: '/kontakt', linkTekst: 'Ta kontakt' },
-      { emoji: '📍', heading: 'Årvoll gård, Oslo',            tekst: 'Årvollveien 35, 0590 Oslo.',                linkHref: '/besok',   linkTekst: 'Se veibeskrivelse' },
-    ],
-  }
-}
 
 // ── Typer: Utstillingen (side) ────────────────────────────────────
 export interface UtstillingPage {
@@ -1201,70 +1207,6 @@ export async function getTvAppearanceSlugsWithShow(): Promise<{ slug: string; sh
   `)
 }
 
-// Alle opptredener — til oversiktssiden
-export async function getAllTvAppearances(): Promise<TvAppearance[]> {
-  return sanityClient.fetch(`
-    *[_type == "tvAppearance" && isVisible != false] | order(year desc, show asc) {
-      _id,
-      "slug": slug.current,
-      show, year, season, episode, episodeTitle,
-      result,
-      featuredImage { asset->{ _ref, url }, alt },
-      magician-> {
-        _id, name, "slug": slug.current,
-        artistName, nationality, years, shortBio,
-        mainImage { asset->{ _ref, url }, alt }
-      }
-    }
-  `)
-}
-
-// Én opptreden via slug — til detaljsiden
-export async function getTvAppearanceBySlug(slug: string): Promise<TvAppearance | null> {
-  return sanityClient.fetch(`
-    *[_type == "tvAppearance" && slug.current == $slug && isVisible != false][0] {
-      _id,
-      "slug": slug.current,
-      show, year, season, episode, episodeTitle,
-      result, description, videoUrl,
-      featuredImage { asset->{ _ref, url }, alt, caption },
-      magician-> {
-        _id, name, "slug": slug.current,
-        artistName, nationality, years, shortBio,
-        mainImage { asset->{ _ref, url }, alt },
-        tags,
-        links[] {
-          label, type, url,
-          "internalSlug": internalRef->slug.current
-        }
-      }
-    }
-  `, { slug })
-}
-
-// Alle opptredener for én magiker — brukes på biography-detaljsiden
-export async function getTvAppearancesByMagician(magicianId: string): Promise<TvAppearance[]> {
-  return sanityClient.fetch(`
-    *[_type == "tvAppearance" && magician._ref == $magicianId && isVisible != false] | order(year asc) {
-      _id,
-      "slug": slug.current,
-      show, year, season, episode, episodeTitle,
-      result,
-      featuredImage { asset->{ _ref, url }, alt }
-    }
-  `, { magicianId })
-}
-
-// Statiske stier for [slug].astro
-export async function getTvAppearancePaths() {
-  const appearances = await sanityClient.fetch(`
-    *[_type == "tvAppearance" && isVisible != false] { "slug": slug.current }
-  `)
-  return appearances
-    .filter((a: { slug?: string }) => a.slug)
-    .map((a: { slug: string }) => ({ params: { slug: a.slug } }))
-}
-
 // ── PortableText → HTML ──────────────────────────────────────────
 import { toHTML } from '@portabletext/to-html'
 import type { PortableTextBlock } from '@portabletext/types'
@@ -1404,20 +1346,6 @@ export interface LegendStation {
 }
 
 // ── Spørringer: Biography ────────────────────────────────────────
-
-// Alle biografier i HEH-oversikten
-export async function getAllBiographies(): Promise<Biography[]> {
-  return sanityClient.fetch(`
-    *[_type == "biography" && isVisible != false] | order(name asc) {
-      _id, name, "slug": slug.current,
-      artistName, nationality, years,
-      birthDate, deathDate,
-      collection, featured, tags,
-      shortBio,
-      mainImage { asset->{ _ref, url }, alt }
-    }
-  `)
-}
 
 // Én biografi via slug — til profilsiden
 export async function getBiographyBySlug(slug: string): Promise<Biography | null> {
