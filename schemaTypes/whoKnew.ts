@@ -98,7 +98,7 @@ export const whoKnew = defineType({
       name:        'relatedRef',
       title:       'Koblet til',
       type:        'reference',
-      to:          [{ type: 'legend' }, { type: 'magician' }, { type: 'biography' }],
+      to:          [{ type: 'legend' }, { type: 'biography' }],
       description: 'Valgfri kobling til en eksisterende legende, utstillingsfelt eller biografi (Hvem er hvem), f.eks. Henrik Ibsen eller Davido. Lenkes til fra egen side som «Les hele historien».',
     }),
 

@@ -29,23 +29,6 @@ export function urlFor(source: SanityImageSource) {
 
 // ── Typer ────────────────────────────────────────────────────────
 
-export interface Magician {
-  _id:            string
-  title:          string
-  slug:           string
-  order:          number
-  qrNumber:       number
-  years:          string
-  tagline:        string
-  mobileIntro:    string
-  posterImage?:   { asset: { _ref: string; url: string }; alt: string }
-  adultText?:     any[]
-  childText?:     string
-  childActivity?: string
-  mobileSections?: { heading: string; body: any[] }[]
-  sources?:       { label: string; url?: string }[]
-}
-
 export interface Event {
   _id:        string
   title:      string
@@ -88,41 +71,6 @@ export interface Artifact {
 }
 
 // ── Spørringer ───────────────────────────────────────────────────
-
-// Alle magikere sortert — til oversiktssiden
-export async function getAllMagicians(): Promise<Magician[]> {
-  return sanityClient.fetch(`
-    *[_type == "magician" && isVisible != false] | order(order asc) {
-      _id, title, "slug": slug.current,
-      order, qrNumber, years, tagline, mobileIntro,
-      posterImage { asset->{ _ref, url }, alt }
-    }
-  `)
-}
-
-// Én magiker via slug — til detaljsiden
-export async function getMagicianBySlug(slug: string): Promise<Magician | null> {
-  return sanityClient.fetch(`
-    *[_type == "magician" && slug.current == $slug && isVisible != false][0] {
-      _id, title, "slug": slug.current,
-      order, qrNumber, years, tagline,
-      posterImage { asset->{ _ref, url }, alt },
-      adultText, childText, childActivity,
-      mobileIntro,
-      mobileSections[] { heading, body },
-      sources[] { label, url }
-    }
-  `, { slug })
-}
-
-// Én magiker via QR-nummer — til QR-landingssiden
-export async function getMagicianByQR(qrNumber: number): Promise<Magician | null> {
-  return sanityClient.fetch(`
-    *[_type == "magician" && qrNumber == $qrNumber][0] {
-      "slug": slug.current
-    }
-  `, { qrNumber })
-}
 
 // ── Utstillingen (legend: fysisk plassering + dybdeartikler) ─────
 //
@@ -235,13 +183,6 @@ export async function getAllEvents(): Promise<Event[]> {
   `)
 }
 
-export async function getStaticPaths() {
-  const magicians = await getAllMagicians() // getAllMagicians already filters isVisible != false
-  return magicians
-    .filter(m => m.slug && typeof m.slug === 'string')
-    .map(m => ({ params: { slug: String(m.slug) } }))
-}
-
 // ── Spørringer: Artefakter ───────────────────────────────────────
 
 // Alle artefakter sortert — til oversiktssiden
@@ -333,7 +274,7 @@ export async function getAllBooks(): Promise<Book[]> {
       publisher, edition, featured, tags,
       "authors": authors[] {
         role,
-        "name": coalesce(personRef->title, nameText),
+        "name": coalesce(personRef->name, nameText),
         "slug": personRef->slug.current,
         "hasProfile": defined(personRef)
       },
@@ -348,7 +289,7 @@ export async function getPublicDomainBooks(): Promise<Book[]> {
       _id, title, year, yearNote, section,
       externalUrl, sourceLabel, thumbnailUrl, tags,
       "authors": authors[] {
-        "name": coalesce(personRef->title, nameText)
+        "name": coalesce(personRef->name, nameText)
       },
       description
     }
@@ -360,7 +301,7 @@ export async function getNorwegianBooks(): Promise<Book[]> {
     *[_type == "book" && bookType == "norwegian" && isVisible != false] | order(year asc) {
       _id, title, subtitle, year, publisher, tags,
       "authors": authors[] {
-        "name": coalesce(personRef->title, nameText),
+        "name": coalesce(personRef->name, nameText),
         "slug": personRef->slug.current,
         "hasProfile": defined(personRef)
       }
@@ -368,25 +309,12 @@ export async function getNorwegianBooks(): Promise<Book[]> {
   `)
 }
 
-export async function getBooksByMagician(magicianId: string): Promise<Book[]> {
-  return sanityClient.fetch(`
-    *[_type == "book" && references($magicianId) && isVisible != false] | order(year asc) {
-      _id, title, year, yearNote, bookType,
-      availability, externalUrl, thumbnailUrl,
-      "coverImage": coverImage.asset->url,
-      tags
-    }
-  `, { magicianId })
-}
-
-// Bøker knyttet til en /utstillingen-artikkel (legend). Boken refererer
-// fortsatt det opprinnelige magician-dokumentet (book.ts sitt referansefelt
-// er ikke migrert) — slår derfor opp magician-dokumentets id via samme slug
-// i stedet for å anta en id-konvensjon.
+// Bøker knyttet til en /utstillingen-artikkel (legend), via forfatterens
+// biografi-oppføring: legend.biographyRef -> biography <- book.authors[].personRef.
 export async function getBooksByUtstillingSlug(slug: string): Promise<Book[]> {
   return sanityClient.fetch(`
     *[_type == "book" && isVisible != false
-      && references(*[_type == "magician" && slug.current == $slug][0]._id)
+      && references(*[_type == "legend" && slug.current == $slug][0].biographyRef._ref)
     ] | order(year asc) {
       _id, title, year, yearNote, bookType,
       availability, externalUrl, thumbnailUrl,
@@ -403,7 +331,7 @@ export async function getFeaturedBooks(): Promise<Book[]> {
       thumbnailUrl,
       "coverImage": coverImage.asset->url,
       "authors": authors[] {
-        "name": coalesce(personRef->title, nameText)
+        "name": coalesce(personRef->name, nameText)
       }
     }
   `)
@@ -833,7 +761,7 @@ export async function getTryllehistoriePage(): Promise<TryllehistoriePage> {
       "foolUs":     count(*[_type == "tvAppearance" && show == "fool-us" && isVisible != false]),
       "opptak":     count(*[_type == "historicalClip" && isVisible != false]),
       "artikler":   count(*[_type == "historiskeKlippNb" && isVisible != false && publishedAt <= now()]),
-      "magikere":   count(*[_type == "magician" && isVisible != false]),
+      "magikere":   count(*[_type == "legend" && isVisible != false && defined(physicalOrder)]),
       "hvemSkulleTrodd": count(*[_type == "whoKnew" && isVisible != false])
     }`, { shows: GOT_TALENT_SHOWS }),
   ])
@@ -1586,7 +1514,7 @@ export async function getLegendPaths() {
 export type WhoKnewCategory = 'vitenskap' | 'politikk' | 'sport' | 'kultur'
 
 export interface WhoKnewRelated {
-  _type: 'legend' | 'magician' | 'biography'
+  _type: 'legend' | 'biography'
   title: string
   slug:  string
 }
@@ -1644,7 +1572,6 @@ export async function getWhoKnewBySlug(slug: string): Promise<WhoKnew | null> {
 
 // Lenke til den fulle historien for en relatedRef (legend, magician eller biography)
 export function whoKnewRelatedHref(related: WhoKnewRelated): string {
-  if (related._type === 'magician') return `/utstillingen/${related.slug}`
   if (related._type === 'biography') return `/tryllehistorie/magiens-hvem-er-hvem/${related.slug}`
   return `/tryllehistorie/fordypninger/${related.slug}`
 }
