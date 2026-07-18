@@ -57,6 +57,19 @@ export const barnPage = defineType({
       }],
     }),
 
+    // ─── LÆR ET TRIKS — sideintro ───────────────────────────────
+    defineField({
+      name: 'laerEtTriksHero',
+      title: 'Lær et triks — sideintro',
+      description: 'Toppteksten på /barn/laer-et-triks (oversikten over triks).',
+      type: 'object',
+      fields: [
+        defineField({ name: 'label', title: 'Label over overskrift', type: 'string' }),
+        defineField({ name: 'heading', title: 'Overskrift', type: 'string' }),
+        defineField({ name: 'ingress', title: 'Ingress', type: 'text', rows: 3 }),
+      ],
+    }),
+
     // ─── SKOLEBESØK ─────────────────────────────────────────────
     defineField({
       name: 'skolebesok',
