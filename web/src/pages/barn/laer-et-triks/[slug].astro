@@ -1,6 +1,7 @@
 ---
 // src/pages/barn/laer-et-triks/[slug].astro
 import BaseLayout from '../../../layouts/BaseLayout.astro'
+import TriksGodeRad from '../../../components/TriksGodeRad.astro'
 import { getTrickBySlug, getTrickPaths, portableTextToHtml } from '../../../lib/sanity'
 
 export async function getStaticPaths() {
@@ -53,6 +54,7 @@ const embedUrl = youtubeEmbedUrl(t.videoUrl)
         </span>
         <h1>{t.title}</h1>
         <p class="hero-ingress">{t.shortDescription}</p>
+        <TriksGodeRad />
       </div>
     </div>
   </section>
@@ -169,6 +171,7 @@ const embedUrl = youtubeEmbedUrl(t.videoUrl)
     font-size: 1.05rem;
     color: #555;
     line-height: 1.7;
+    margin-bottom: 1.25rem;
   }
 
   .section-pad { padding-block: 3rem 3rem; }
