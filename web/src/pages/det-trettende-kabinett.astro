@@ -6,10 +6,8 @@
 // All room copy exists in Norwegian and English; the English version is
 // exposed in-game once gameConfig.englishEnabled is on.
 import BaseLayout from '../layouts/BaseLayout.astro'
-import { getGameConfig, getAllGameChapters, getSiteConfig, urlFor } from '../lib/sanity'
+import { getGameConfig, getAllGameChapters, getSiteConfig, urlFor, portableTextToHtml } from '../lib/sanity'
 import type { GameImage } from '../lib/sanity'
-import { toHTML } from '@portabletext/to-html'
-import type { PortableTextBlock } from '@portabletext/types'
 
 const [config, chapters, siteConfig] = await Promise.all([
   getGameConfig(),
@@ -40,28 +38,9 @@ const plainToHtml = (s: string) =>
     .join('')
 
 // Portable Text (the rich intro fields) → HTML with links and inline images.
-function richToHtml(blocks: PortableTextBlock[] | undefined): string {
-  if (!blocks?.length) return ''
-  return toHTML(blocks, {
-    components: {
-      types: {
-        image: ({ value }: { value: { asset?: { _ref: string; url: string }; alt?: string } }) => {
-          if (!value?.asset) return ''
-          const src = urlFor(value).width(720).format('webp').url()
-          return `<figure class="intro-figure"><img src="${src}" alt="${escapeHtml(value.alt || '')}" loading="lazy" decoding="async" /></figure>`
-        },
-      },
-      marks: {
-        link: ({ children, value }: { children: string; value?: { href?: string } }) => {
-          const href = value?.href ?? '#'
-          return /^https?:\/\//i.test(href)
-            ? `<a href="${href}" target="_blank" rel="noopener noreferrer">${children}</a>`
-            : `<a href="${href}">${children}</a>`
-        },
-      },
-    },
-  })
-}
+// portableTextToHtml() (lib/sanity.ts) now handles both — kept as a thin
+// alias here so call sites below don't need to change.
+const richToHtml = portableTextToHtml
 
 // Default room copy, Norwegian + English. A gameChapter document with the
 // same key overrides title/intro and replaces the facts list; missing
@@ -634,7 +613,7 @@ const DEFAULT_ROOMS: Record<string, RoomCopy> = {
     facts: [
       {
         text: 'i museets arkiv finner du portrettene av norske tryllelegender — fra varietéscenenes gullalder til TV-tiden.',
-        linkUrl: '/tryllehistorie/norske-legender',
+        linkUrl: '/tryllehistorie/fordypninger',
         linkLabel: 'Møt de norske legendene',
       },
       {
@@ -648,7 +627,7 @@ const DEFAULT_ROOMS: Record<string, RoomCopy> = {
       facts: [
         {
           text: 'in the museum’s archive you will find the portraits of Norway’s legends of magic — from the golden age of the variety stage to the TV era.',
-          linkUrl: '/tryllehistorie/norske-legender',
+          linkUrl: '/tryllehistorie/fordypninger',
           linkLabel: 'Meet the Norwegian legends',
         },
         {
@@ -5271,8 +5250,8 @@ const payloadJson = JSON.stringify(payload).replace(/</g, '\\u003c')
   .scene-intro :global(p:last-child) { margin-bottom: 0; }
   .scene-intro :global(a) { color: var(--burgundy); text-decoration: underline; }
   :global(body.kabinett-natt) .scene-intro :global(a) { color: var(--gold); }
-  .scene-intro :global(.intro-figure) { margin: 1rem 0; }
-  .scene-intro :global(.intro-figure img) { max-width: 100%; height: auto; border-radius: 8px; border: 3px solid var(--gold-dark); box-shadow: var(--shadow); }
+  .scene-intro :global(.pt-image) { margin: 1rem 0; }
+  .scene-intro :global(.pt-image img) { max-width: 100%; height: auto; border-radius: 8px; border: 3px solid var(--gold-dark); box-shadow: var(--shadow); }
   :global(.scene-image) { margin: 0 0 1.5rem; max-width: 62ch; }
   :global(.scene-image img) { max-width: 100%; height: auto; border-radius: 8px; border: 3px solid var(--gold-dark); box-shadow: var(--shadow); display: block; }
 

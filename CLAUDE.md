@@ -30,9 +30,9 @@ The schema defines 31 registered content types in `/schemaTypes` (see `schemaTyp
 - `siteConfig.ts` — Global settings (email, address, contact info)
 
 **Document Types** (queryable collections):
-- `magician.ts` — Exhibition displays (4000+ years of magic history). Fields: child text, adult text, detailed mobile sections, QR-linked content, source links
+- `magician.ts`, `exhibitionShow.ts`, `exhibitionStation.ts` — **Removed (2026-07)**, superseded by `legend.ts`. Content was migrated to `legend` docs via `scripts/migrate-exhibits-to-legend.mjs`, then the old documents and schema types were deleted once nothing referenced them.
 - `biography.ts` — "Hvem er hvem" (Who's Who) reference: full name, aliases, birth/death dates, nationality, magician references
-- `legend.ts` — Notable historical magicians with video, images, birth/death dates
+- `legend.ts` (Studio label: "Fordypning") — Unified deep-dive article type: dual-audience wall-panel text (`childText`/`wallText`), free-form article body (`content`, or `detailIntro`/`sections`), an optional multi-part `stations` array, and optional physical-placement metadata (`qrNumber`/`physicalOrder`). Covers everything from short biographical portraits to the Gullalderen wall panels and the Houdini exhibition. A doc with `physicalOrder` and/or `stations` set routes to `/utstillingen`; otherwise to `/tryllehistorie/fordypninger` (see `NOT_UTSTILLING` in `sanity.ts`). Both routes render through `web/src/components/LegendBody.astro`.
 - `tvAppearance.ts` — TV show appearances (Got Talent formats, Penn & Teller: Fool Us)
 - `historicalClip.ts` — Archival video clips with metadata (synced daily from YouTube via GitHub Actions)
 - `historiskeKlippNb.ts` — Historical newspaper articles (nb.no references, rewritten text, 70-year copyright gating for facsimiles)
@@ -66,10 +66,10 @@ The schema defines 31 registered content types in `/schemaTypes` (see `schemaTyp
 - `det-trettende-kabinett.astro` — Story game "Det trettende kabinett" (Act I); same `isActive`/coming-soon/nav pattern via `gameConfig` (see `docs/det-trettende-kabinett-concept.md`)
 - `om-oss/i-media/` — Museum press coverage
 - `aktiviteter/`, `ressurser/` — Section landing pages; the library lives at `ressurser/bibliotek.astro` (`/bibliotek` redirects there)
-- `utstillingen/` — Exhibition: `index`, `[slug]` (magician detail), `artefakter` (+ `[slug]`), `trylleforeningene/` (+ `[slug]`), `tryllebutikken`
+- `utstillingen/` — Exhibition: `index`, `[slug]` (`legend` docs with `physicalOrder`/`stations` — Gullalderen panels, Houdini), `artefakter` (+ `[slug]`), `trylleforeningene/` (+ `[slug]`), `tryllebutikken`
 - `tryllehistorie/` — Magic history archive:
   - `magiens-hvem-er-hvem` (+ `[slug]`) — biography directory
-  - `norske-legender/` (+ `[slug]`) — legend portraits (incl. `henrik-ibsen` as a slug)
+  - `fordypninger/` (+ `[slug]`) — deep-dive articles, norske og internasjonale (incl. `henrik-ibsen` as a slug); renamed 2026-07 from `norske-legender`, old URL redirects
   - `got-talent/` and `fool-us/` (+ `[slug]`) — TV show archives with filtering/sorting
   - `historiske-opptak/` (+ `[slug]`) — archival TV clips
   - `historiske-artikler/` — press clipping archive
@@ -161,23 +161,24 @@ Queries use GROQ (Sanity Query Language):
 Dynamic routes use getStaticPaths():
 
 ```typescript
-// Magician detail page generation
+// utstillingen/[slug].astro — Gullalderen panel / exhibition detail page generation
 export async function getStaticPaths() {
-  const magicians = await getAllMagicians()
-  return magicians.map(m => ({ params: { slug: m.slug } }))
+  return getUtstillingPaths()
 }
 ```
 
-Every magician gets its own HTML file at build time.
+Every `legend` document gets its own HTML file at build time.
 
 ### Rich Text (Portable Text)
 
-Content from Sanity (e.g., adultText, mobileSections.body) is in Portable Text format:
+Content from Sanity (e.g., legend.wallText, legend.sections[].body) is in Portable Text format. Always render it via the shared helper in `sanity.ts` — never import `toHTML` directly in a page:
 
 ```typescript
-import { toHTML } from '@portabletext/to-html'
-const html = toHTML(m.adultText)  // Renders as <p>, <strong>, etc.
+import { portableTextToHtml } from '../lib/sanity'
+const html = portableTextToHtml(entry.wallText)  // <p>, <strong>, links, inline images, etc.
 ```
+
+`portableTextToHtml()` centralizes link/internalLink mark handling and inline image rendering, so every page benefits when it's improved once.
 
 ### Image Optimization
 
@@ -191,11 +192,12 @@ urlFor(image).width(800).format('webp').url()
 ALL GROQ queries live in `web/src/lib/sanity.ts` — pages must import query functions from there, never call `sanityClient.fetch()` inline. (Exception: `web/public/skjerm.html`, which queries Sanity client-side by design.)
 
 Key GROQ functions in `sanity.ts`:
-- `getAllMagicians()` — Returns slug, order, years, tagline, image
-- `getMagicianBySlug(slug)` — Full magician doc with mobile sections, sources
+- `getGullalderenPanels()` / `getUtstillingDeepDives()` / `getUtstillingEntryBySlug(slug)` / `getUtstillingPaths()` — `legend` docs for `/utstillingen` (physical wall panels and/or `stations`)
+- `getAllLegends()` / `getLegendBySlug(slug)` / `getLegendPaths()` — `legend` docs for `/tryllehistorie/fordypninger` (everything else)
+- `getBooksByUtstillingSlug(slug)` — Books linked to a Gullalderen/utstilling entry (looks up the legacy `magician` doc by slug, since `book.ts` still references `magician`, not `legend`)
+- `getAllMagicians()` / `getMagicianBySlug(slug)` — **Legacy**, still used by the homepage carousel (`index.astro`) and `hp.utstillingsFokus.felt`; do not use for new `/utstillingen` or `/tryllehistorie` work
 - `getHomepage()` — Hero, exhibition focus, sections
 - `getUpcomingEvents(limit)` — Upcoming courses/events
-- `getBooksByMagician(id)` — Books by/referencing a magician
 - `getAllPartners()` — Sponsors grouped by category
 - `getFoolUsAppearances()` / `getGotTalentAppearances()` — TV show archives
 - `getAllHistoricalClips()` / `getHistoricalClipBySlug(slug)` — archival clips
@@ -236,7 +238,7 @@ All content document types (`magician`, `biography`, `legend`, `event`, `tvAppea
 1. **Schema Changes**: After editing schema files, redeploy the studio for changes to appear in editor UI and API
 2. **Slug Generation**: Slug fields auto-populate from name/title; manually edit if needed
 3. **Image Assets**: Upload via Sanity UI; reference via asset->{ _ref, url } in queries
-4. **Portable Text**: Always use toHTML() or astro-portabletext to render rich text
+4. **Portable Text**: Always use `portableTextToHtml()` from `web/src/lib/sanity.ts` to render rich text — never import `toHTML` directly in a page
 5. **Env Variables**: Public vars prefixed PUBLIC_*; secret vars in .env.local (git-ignored)
 6. **Static Generation**: Sanity content changes require web frontend rebuild
 

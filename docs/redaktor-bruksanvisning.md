@@ -11,9 +11,9 @@ Denne bruksanvisningen dekker de oppgavene en redaktør utfører til daglig.
 2. [Grunnleggende arbeidsflyt](#2-grunnleggende-arbeidsflyt)
 3. [Globale innstillinger](#3-globale-innstillinger)
 4. [Arrangementer](#4-arrangementer)
-5. [Utstillingen — magikere og gjenstander](#5-utstillingen--magikere-og-gjenstander)
+5. [Utstillingen — Gullalderen og dybdeutstillinger](#5-utstillingen--gullalderen-og-dybdeutstillinger)
 6. [Hvem er hvem — biografiregisteret](#6-hvem-er-hvem--biografiregisteret)
-7. [Norske legender](#7-norske-legender)
+7. [Fordypninger](#7-fordypninger)
 8. [TV-opptredener](#8-tv-opptredener)
 9. [Bokregisteret](#9-bokregisteret)
 10. [Artefakter](#10-artefakter)
@@ -129,40 +129,37 @@ Passerte arrangementer vises ikke automatisk, men de blir liggende i lista. Du k
 
 ---
 
-## 5. Utstillingen — magikere og gjenstander
+## 5. Utstillingen — Gullalderen og dybdeutstillinger
 
-**Meny:** Magiker / Utstillingsfelt
+**Meny:** Fordypning (samme dokumenttype som [Fordypninger](#7-fordypninger) — se der for full feltoversikt)
 
-Disse sju dokumentene tilsvarer de sju utstillingspanelene i museet. De er fast i antall og rekkefølge (felt: «Sorteringsrekkefølge» 1–7). Ikke opprett nye — rediger de eksisterende.
+> **Endret 2026-07:** Gullalderens sju veggpanel-tekster og Houdini-utstillingen
+> lå tidligere i to egne dokumenttyper (**Magiker / Utstillingsfelt** og
+> **Utstilling / Utstillingsstasjon**). Disse er nå slått sammen til ett
+> dokument for Houdini og migrert 1:1 for de sju andre — alt sammen ligger nå
+> under **Fordypning**. De gamle dokumenttypene og menypunktene er fjernet
+> fra Studio. Bruk alltid **Fordypning**.
 
-Hvert dokument har tre lag med tekst som vises ulike steder:
+Det som gjør at en Fordypning-artikkel vises under `/utstillingen` i stedet
+for [`/tryllehistorie/fordypninger`](#7-fordypninger), er om ett av disse
+to feltene er fylt ut:
 
-### Barnetekst (stjernefelt — viktigst)
+- **Rekkefølge på vegg (internt)** — fylles ut når artikkelen faktisk har en
+  fast plass på veggen i museet (Gullalderen). I motsetning til før er dette
+  **ikke lenger fast til sju** — er det montert et nytt panel i museet, kan
+  du legge til et nytt Fordypning-dokument og sette neste ledige tall her.
+- **Stasjoner / dybder** — brukes til en fortelling i flere trinn, som
+  Houdini-utstillingen (11 stasjoner). Et dokument med stasjoner havner under
+  `/utstillingen` selv om det ikke har noen fysisk plassering — så bruk kun
+  dette feltet for innhold som faktisk skal fremstå som en egen utstilling,
+  ikke for en vanlig fordypningsartikkel med flere avsnitt (bruk **Utdypende
+  tekst — seksjoner** til det, se punkt 7).
 
-- **Barnetekst — veggpanel**: Enkel tekst for barn under 120 cm. Maks 300 tegn. Vises øverst på nettsiden og i museet.
-- **Aktivitet — gul boks**: Oppfordring til barnet, f.eks. «Pek tryllestaven på noe magisk!». Maks 120 tegn.
+Fyll ut **QR-kodenummer (internt)** kun hvis feltet har fått en fysisk
+QR-kode i museet. La det stå tomt ellers.
 
-### Voksentekst
-
-- **Voksentekst — veggpanel**: 2–3 avsnitt for voksne (130–160 cm). Rik tekst.
-
-### Detaljert tekst (mobilside / QR-destinasjon)
-
-QR-kodene i museet peker til denne seksjonen på nettsiden.
-
-- **Detaljert tekst — ingress**: Første avsnitt. Enkel tekst.
-- **Detaljert tekst — seksjoner**: Utdypende tekst i seksjoner med overskrift og brødtekst. Legg til seksjoner ved å klikke «Add item».
-
-### Metadata (brukes internt i Studio)
-
-- **Navn (internt)**: Brukes i Studio-listen og URL-en.
-- **Slagord (internt)**: Kort undertittel på oversiktssiden.
-- **Årstall (internt)**: Vises på utstillingskortet, f.eks. «1874–1926».
-- **Plakatbilde (internt)**: Bilde som vises på oversiktssiden og utstillingskortet. Husk alt-tekst.
-
-### Kilder
-
-Legg til lenker til Wikipedia, fagbøker o.l. under **Kilder — eksterne lenker**. Klikk «Add item», fyll inn lenketekst og URL.
+For alle andre felt (barnetekst, voksentekst, kilder osv.) — se den fulle
+feltoversikten under [7. Fordypninger](#7-fordypninger).
 
 ---
 
@@ -204,23 +201,79 @@ Husk å slå av «Trenger oppdatering» og fylle inn **Sist verifisert** etter a
 
 ---
 
-## 7. Norske legender
+## 7. Fordypninger
 
-**Meny:** Norsk legende
+**Meny:** Fordypning
 
-Dypere profiler av de mest fremstående norske tryllekunstnerne. Vises på `/tryllehistorie/norske-legender`.
+> **Omdøpt 2026-07** fra «Norske legender» — arkivet dekker nå både norske og
+> internasjonale tryllekunstnere, foreninger og temaer, ikke bare norske.
+> Vises på `/tryllehistorie/fordypninger` (med mindre feltene under gjør at
+> artikkelen i stedet havner under `/utstillingen` — se
+> [5. Utstillingen](#5-utstillingen--gullalderen-og-dybdeutstillinger)).
+
+Dette er museets generelle dokumenttype for dybdeartikler — alt fra korte
+portretter (Arnardo, Egelo, Jan Crosby …) til Gullalderens veggpanel-tekster
+og flerstasjons-utstillinger som Houdini. Du velger selv hvor «dyp» artikkelen
+skal være ved å fylle ut flere eller færre av feltene under.
+
+### Identitet
+
+| Felt | Påkrevd | Merknad |
+|---|---|---|
+| Navn / tittel | Ja | Vises som overskrift |
+| URL-slug | Ja | Genereres automatisk fra tittel |
+| Kobling til biografi | Nei | Lenk til personens oppføring i HEH-registeret hvis den finnes |
+| Slagord / undertittel | Nei | Kort undertittel til kortvisning, maks 60 tegn. Uavhengig av biografi-koblingen — bruk dette for artikler som ikke handler om én person, f.eks. «Plasma-kulen» |
+| Årstall | Nei | F.eks. «1874–1926» eller «2006» |
+
+### Plassering (kun ved fysisk tilknytning til museet)
+
+Se [5. Utstillingen](#5-utstillingen--gullalderen-og-dybdeutstillinger) for
+når disse skal fylles ut. La dem stå tomme for en vanlig fordypningsartikkel.
 
 | Felt | Merknad |
 |---|---|
-| Navn / tittel | Personens navn |
-| URL-slug | Genereres automatisk |
-| Kobling til biografi | Lenk til personens oppføring i HEH-registeret hvis den finnes |
-| Ingress | Kort tekst til listevisningen |
-| Brødtekst | Full tekst med avsnitt |
-| Tagger | Fritekst-tagger for kategorisering |
+| QR-kodenummer (internt) | Kun ved fysisk QR-kode i museet |
+| Rekkefølge på vegg (internt) | Kun ved fast fysisk plassering, f.eks. i Gullalderen |
+
+### Innhold — velg det som passer artikkelen
+
+Du trenger ikke fylle ut alle feltene under. To vanlige mønstre:
+
+- **Enkel portrettartikkel** (de fleste fordypninger): bruk kun **Brødtekst**
+  — én løpende artikkel, slik de fleste eksisterende portrettene er skrevet.
+- **Museums-/utstillingsstil** (dual-audience, som Gullalderen og Houdini):
+  bruk **Barnetekst**, **Voksentekst — veggpanel** og evt. **Utdypende
+  tekst — seksjoner** i stedet for Brødtekst.
+
+Ikke bland begge mønstrene i samme artikkel uten grunn — velg ett.
+
+| Felt | Merknad |
+|---|---|
+| ⭐ Barnetekst — veggpanel | Enkel tekst for barn, maks 300 tegn |
+| ⭐ Aktivitet — gul boks | Oppfordring til barnet, maks 120 tegn |
+| Voksentekst — veggpanel (kort) | Rik tekst, 2–3 korte avsnitt |
+| Ingress | Kort tekst til listevisningen (kortene på oversiktssiden) |
+| Utdypende tekst — ingress | Første avsnitt i en seksjonsdelt utdyping |
+| Utdypende tekst — seksjoner | Del utdypingen i flere seksjoner med egen overskrift — «Add item» for hver seksjon |
+| Brødtekst | Fri, løpende artikkeltekst — det vanlige valget for en portrettartikkel. Støtter bilder og lenker (eksterne og interne, til Hvem er hvem) satt inn midt i teksten, ikke bare i Bildegalleriet nederst |
+| Tagger | Fritekst — brukes til gruppering/filtrering på oversiktssiden. Fritt valgte ord, f.eks. «kvinner-i-norsk-trylling», «jubileum», «foreningshistorie» |
+
+### Stasjoner / dybder (valgfritt, sjeldent brukt)
+
+Se [5. Utstillingen](#5-utstillingen--gullalderen-og-dybdeutstillinger) —
+en artikkel med stasjoner fylt ut havner alltid under `/utstillingen`, ikke
+her. Bruk kun dette feltet for en reell flerdels utstillingsopplevelse (som
+Houdini); bruk **Utdypende tekst — seksjoner** over for en vanlig
+inndelt artikkel.
+
+### Media og kilder
+
+| Felt | Merknad |
+|---|---|
 | Hovedbilde | Portrettbilde med alt-tekst og bildetekst |
 | Bildegalleri | Legg til flere bilder |
-| Videoer | Legg til YouTube-lenker med tittel, type og år |
+| Videoer | YouTube-lenker med tittel, type og år |
 | Kilder | Eksterne lenker til Wikipedia, arkiver osv. |
 
 ---
@@ -454,7 +507,7 @@ Disse dokumentene styrer innholdet på de faste sidene. De finnes som singletons
 
 | Meny-element | Side på nettsiden |
 |---|---|
-| Forside | tryllemuseet.no (forsiden) |
+| Forside | tryllemuseet.no (forsiden) — se detaljert oversikt rett under |
 | Barnesiden | tryllemuseet.no/barn |
 | Om oss | tryllemuseet.no/om-oss |
 | Besøk oss | tryllemuseet.no/besok |
@@ -472,6 +525,45 @@ Disse dokumentene styrer innholdet på de faste sidene. De finnes som singletons
 > **Automatiske antall:** På Tryllehistorie-siden telles tallene i arkivkortene («… biografier», «… opptredener» osv.) automatisk hver gang nettsiden bygges. Badge-feltet i Sanity trenger bare fylles ut for kort som ikke er arkivsider — f.eks. «Kommer snart».
 
 > **Ett felles hjem for kontaktinfo:** E-post, Vipps-nummer og «Bli medlem»-lenken hentes alltid fra **Globale innstillinger** — også i faktaboksen og Bli medlem-seksjonen på Om oss-siden. Endrer du dem der, endres de overalt.
+
+### 13a. Forsiden — seksjon for seksjon
+
+**Meny:** Forside (finnes kun ett dokument — åpne det, ikke opprett nytt)
+
+Forsiden er bygget opp av flere uavhengige seksjoner i samme dokument. Du
+trenger bare åpne dette ene dokumentet, rulle ned til riktig seksjon, endre
+og publisere.
+
+| Seksjon | Felt | Merknad |
+|---|---|---|
+| **Hero** | Overskrift, Kursiv del av overskrift | De to delene av hovedoverskriften — «kursiv del» vises fremhevet/skrå |
+| | Ingress | Teksten under overskriften |
+| | Knapp 1 / Knapp 2 — tekst og URL | De to knappene i heroen, f.eks. «Planlegg besøket» → `/besok` |
+| | Bakgrunnsbilde | Bildet bak heroen |
+| **Info-badges** | Tekst (maks 3) | De tre korte faktaboksene rett under heroen, f.eks. «7 utstillingsfelt» |
+| **Fremhevet innhold** | Tidsperiode-label, Overskrift | F.eks. «Gullalderen 1845–1930». Tidsperiode-label er valgfri — la stå tom hvis det du fremhever ikke er tidsbundet |
+| | Håndplukket innhold (maks 5) | Se under |
+| **Barn & unge-seksjon** | Overskrift, Ingress, Aktiviteter/features, Sitater | Fritekst-liste og sitater med emoji og kilde |
+| **Medlemskap-seksjon** | Overskrift, Tekst, Knapp — tekst | Knappens URL hentes alltid fra **Globale innstillinger** → Bli medlem-lenke, ikke herfra |
+| **Om museet-seksjon** | Overskrift, Tekst, Sitat, Sitatets kilde | |
+| **Kurs-seksjon** | Overskrift, Ingress, Detaljer (kulepunkter), Pris, Prislabel, Fondsbadge, Knapp — tekst og URL | |
+| **Kurssitat** | Sitatekst, Kilde | Eget sitat knyttet til kurs-seksjonen |
+
+> **Oppdatert 2026-07 — «Håndplukket innhold» er ikke lenger låst til
+> Gullalderen:** Feltet lar deg nå velge fritt blant **Fordypninger**
+> (Gullalderen-panelene, Houdini-stil dybdeartikler og vanlige
+> portrettartikler), **historiske avisartikler** og **historiske
+> TV-opptak** — i hvilken som helst blanding, opptil 5 stykker. Er feltet
+> tomt, vises Gullalderen-panelene automatisk som før (samme
+> reserveløsning som tidligere, bare hentet fra riktig kilde nå).
+>
+> For en avisartikkel lenker kortet direkte inn i lese-modalen på
+> `/tryllehistorie/historiske-artikler` — ingen egen side trengs for det.
+
+> **Krever ny deploy:** Forsiden er en statisk generert side. Endringer du
+> publiserer i Sanity vises ikke på tryllemuseet.no før neste bygging (enten
+> den daglige kl. 05:30, eller en manuell «Daily rebuild» trigget av Trond via
+> GitHub Actions). Det er normalt — ikke et tegn på at noe gikk galt.
 
 ---
 
@@ -505,6 +597,29 @@ Se [Arrangementer](#4-arrangementer) → «Opprette et nytt arrangement».
 ### Legge til en ny magiker i registeret
 
 Se [Hvem er hvem](#6-hvem-er-hvem--biografiregisteret) → «Legge til en ny person».
+
+### Legge til en fordypningsartikkel
+
+1. Klikk **+ → Fordypning**.
+2. Skriv **Navn / tittel**, generer slug.
+3. Skriv artikkelen — normalt holder det med **Brødtekst**. Se
+   [7. Fordypninger](#7-fordypninger) for når du heller bør bruke
+   barnetekst/voksentekst/seksjoner-mønsteret.
+   - Vil du ha bilder *inni* teksten (ikke bare i galleriet nederst): plasser
+     markøren der bildet skal stå og bruk «+»-knappen i verktøylinjen til
+     Brødtekst-feltet, samme sted som Fet/Kursiv.
+   - Vil du lenke ut fra teksten: merk ordene, klikk lenke-ikonet i
+     verktøylinjen og lim inn URL-en (eller velg «Intern lenke» for å lenke
+     til en person i Hvem er hvem).
+4. Har du mange bilder som ikke hører hjemme inni teksten — bruk
+   **Bildegalleri** i stedet, det vises samlet under artikkelen.
+5. Legg gjerne på noen **Tagger** hvis artikkelen hører til et tema
+   (f.eks. «kvinner-i-norsk-trylling») — brukes til filtrering på
+   `/tryllehistorie/fordypninger`.
+6. La **QR-kodenummer**, **Rekkefølge på vegg** og **Stasjoner** stå tomme
+   med mindre artikkelen faktisk skal vises under `/utstillingen` — se
+   [5. Utstillingen](#5-utstillingen--gullalderen-og-dybdeutstillinger).
+7. Klikk **Publiser**.
 
 ### Registrere en TV-opptreden
 
@@ -607,7 +722,7 @@ lærling» til «Stormester i magi».
 4. Skriv en **Forklaring** («Visste du at …») — den vises uansett om svaret var
    riktig eller galt, og er quizens viktigste læringsverktøy.
 5. Legg gjerne inn en **Les mer-lenke** til en side på tryllemuseet.no,
-   f.eks. `/tryllehistorie/norske-legender/henrik-ibsen`.
+   f.eks. `/tryllehistorie/fordypninger/henrik-ibsen`.
 6. Velg **Vanskelighetsgrad**:
    - **Lett** — barn og nybegynnere: kjente navn, korte spørsmål
    - **Middels** — hele familien: ting en nysgjerrig besøkende plukker opp

@@ -38,6 +38,7 @@ function formatDate(dateStr?: string): string {
 
 const modalDataRaw = clippings.map((c: HistoriskKlippNb) => ({
   id:          c._id,
+  slug:        c.slug,
   title:       c.title,
   originalKicker:    c.originalKicker ?? null,
   originalMainTitle: c.originalMainTitle ?? null,
@@ -156,6 +157,7 @@ const escapedJson = JSON.stringify(modalDataRaw)
       <article
         class="article-card"
         data-id={c._id}
+        data-slug={c.slug}
         data-category={c.category ?? ''}
         data-source={c.sourceName ?? ''}
         data-decade={getDecade(c.originalDate)}
@@ -279,7 +281,7 @@ const escapedJson = JSON.stringify(modalDataRaw)
   </dialog>
 
   <div class="container page-nav">
-    <a href="/tryllehistorie/norske-legender">Norske legender →</a>
+    <a href="/tryllehistorie/fordypninger">Fordypninger →</a>
     <a href="/tryllehistorie">← Tryllehistorie</a>
   </div>
 
@@ -297,6 +299,7 @@ const escapedJson = JSON.stringify(modalDataRaw)
 
   interface ModalClipping {
     id: string
+    slug: string
     title: string
     originalKicker: string | null
     originalMainTitle: string | null
@@ -562,6 +565,18 @@ const escapedJson = JSON.stringify(modalDataRaw)
     if (e.target === modal) closeModal()   // click outside modal-inner
   })
   modal.addEventListener('cancel', closeModal)  // ESC key
+
+  // ── Deep-link into a specific article via #artikkel-<slug> ─────────
+  // Used by the homepage's "Fremhevet innhold" picker (see featuredItemHref()
+  // in lib/sanity.ts) to link straight to one article's modal.
+  const bySlug = new Map(allClippings.map(c => [c.slug, c]))
+  function openFromHash() {
+    const match = location.hash.match(/^#artikkel-(.+)$/)
+    const c = match && bySlug.get(decodeURIComponent(match[1]))
+    if (c) openModal(c.id)
+  }
+  openFromHash()
+  window.addEventListener('hashchange', openFromHash)
 </script>
 
 <style>

@@ -2,8 +2,7 @@
 // src/pages/om-oss.astro
 import BaseLayout from '../layouts/BaseLayout.astro'
 import AnimateIn from '../components/AnimateIn.astro'
-import { getOmOssPage, getAllPartners, getSiteConfig } from '../lib/sanity'
-import { toHTML } from '@portabletext/to-html'
+import { getOmOssPage, getAllPartners, getSiteConfig, portableTextToHtml } from '../lib/sanity'
 
 const [p, partnerDocs, site] = await Promise.all([getOmOssPage(), getAllPartners(), getSiteConfig()])
 
@@ -23,7 +22,7 @@ const faktaAdresse = fakta.adresse || site.address?.replace(/\n/g, ', ')
 const presse   = p?.presse     ?? { label: '', heading: 'Pressekontakt', tekst: '', knappLabel: 'Send pressehenvendelse', knappHref: '/kontakt' }
 const partnere = p?.partnere   ?? { heading: 'Samarbeidspartnere', liste: [] }
 
-const historieHtml = om.historieTekst?.length ? toHTML(om.historieTekst) : ''
+const historieHtml = portableTextToHtml(om.historieTekst)
 ---
 
 <BaseLayout

@@ -3,15 +3,15 @@
 import BaseLayout from '../layouts/BaseLayout.astro'
 import AnimateIn from '../components/AnimateIn.astro'
 import MentionedMagicians from '../components/MentionedMagicians.astro'
-import { getAllMagicians, getUpcomingEvents, getHomepage, getSiteConfig, getAllPartners, getLatestHistoriskKlipp, getFeaturedMediaAppearance, getFrontpageWhoKnew, whoKnewRelatedHref, urlFor } from '../lib/sanity'
+import { getGullalderenPanels, getUpcomingEvents, getHomepage, getSiteConfig, getAllPartners, getLatestHistoriskKlipp, getFeaturedMediaAppearance, getFrontpageWhoKnew, whoKnewRelatedHref, featuredItemHref, urlFor } from '../lib/sanity'
 
 const today = new Date().toISOString().split('T')[0]
 
 const mediaTypeLabels: Record<string, string> = {
   avis: 'Avis', nettavis: 'Nettavis', tv: 'TV', radio: 'Radio', podkast: 'Podkast',
 }
-const [magicians, events, hp, config, partners, latestClipping, featuredMedia, whoKnewEntries] = await Promise.all([
-  getAllMagicians(),
+const [gullalderenPanels, events, hp, config, partners, latestClipping, featuredMedia, whoKnewEntries] = await Promise.all([
+  getGullalderenPanels(),
   getUpcomingEvents(3),
   getHomepage(),
   getSiteConfig(),
@@ -38,7 +38,7 @@ const infoBadges = hp?.infoBadges ?? [
   { label: '4000 år med magi' },
   { label: config.openingHoursShort },
 ]
-const utstilling = hp?.utstillingsFokus ?? {
+const fremhevet = hp?.fremhevetInnhold ?? {
   eraLabel: 'Gullalderen 1845–1930',
   heading:  'Møt mesterne',
 }
@@ -203,36 +203,61 @@ function formatTime(d: string) {
       <AnimateIn direction="up">
         <div class="section-header">
           <div>
-            <p class="section-label">{utstilling.eraLabel}</p>
-            <h2 class="display-title section-title" id="magikerne-heading">{utstilling.heading}</h2>
+            <p class="section-label">{fremhevet.eraLabel}</p>
+            <h2 class="display-title section-title" id="magikerne-heading">{fremhevet.heading}</h2>
           </div>
           <a href="/utstillingen" class="btn-outline">Hele utstillingen</a>
         </div>
       </AnimateIn>
     </div>
 
-    {hp?.utstillingsFokus?.felt?.length ? (
-      <!-- Håndplukkede: grid-visning -->
+    {hp?.fremhevetInnhold?.elementer?.length ? (
+      <!-- Håndplukket, blandet innhold: grid-visning -->
       <div class="container">
         <AnimateIn direction="up">
-          <div class="featured-magicians">
-            {hp.utstillingsFokus.felt.map((m) => {
-              const imgUrl = m.posterImage?.asset?._ref
-                ? urlFor(m.posterImage.asset).width(800).height(1066).fit('crop').format('webp').url()
-                : (m.posterImage?.asset?.url ?? null)
+          <div class="featured-grid">
+            {hp.fremhevetInnhold.elementer.map((item) => {
+              const href = featuredItemHref(item)
+              let imgAsset: { _ref?: string; url?: string } | undefined
+              let alt = item.title
+              let kicker = ''
+              let caption = ''
+
+              if (item._type === 'legend') {
+                imgAsset = item.mainImage?.asset
+                alt = item.mainImage?.alt ?? item.title
+                kicker = item.years ?? ''
+                caption = item.tagline ?? ''
+              } else if (item._type === 'historiskeKlippNb') {
+                const img = item.images?.[0]
+                imgAsset = img?.asset
+                alt = img?.alt ?? item.title
+                kicker = item.originalDate ? new Date(item.originalDate).getFullYear().toString() : ''
+                caption = item.sourceName ?? ''
+              } else {
+                imgAsset = item.featuredImage?.asset
+                alt = item.featuredImage?.alt ?? item.title
+                kicker = item.year ? String(item.year) : ''
+                caption = 'Historisk opptak'
+              }
+
+              const imgUrl = imgAsset?._ref
+                ? urlFor(imgAsset).width(800).height(1066).fit('crop').format('webp').url()
+                : (imgAsset?.url ?? (item._type === 'historicalClip' ? item.thumbnailUrl : null) ?? null)
+
               return (
-                <a href={`/utstillingen/${m.slug}`} class="magiker-card featured-magiker-card" aria-label={`Les mer om ${m.title}`}>
+                <a href={href} class="magiker-card featured-card" aria-label={`Les mer om ${item.title}`}>
                   <div class="magiker-img">
                     {imgUrl
-                      ? <img src={imgUrl} alt={m.posterImage?.alt ?? m.title} loading="lazy" />
+                      ? <img src={imgUrl} alt={alt} loading="lazy" />
                       : <div class="magiker-img-placeholder" aria-hidden="true">🎩</div>
                     }
                     <div class="magiker-overlay" aria-hidden="true"></div>
                   </div>
                   <div class="magiker-caption">
-                    {m.years && <span class="magiker-years">{m.years}</span>}
-                    <h3 class="magiker-name">{m.title}</h3>
-                    {m.tagline && <p class="magiker-tagline">«{m.tagline}»</p>}
+                    {kicker && <span class="magiker-years">{kicker}</span>}
+                    <h3 class="magiker-name">{item.title}</h3>
+                    {caption && <p class="magiker-tagline">«{caption}»</p>}
                     <span class="magiker-link-hint">Les mer →</span>
                   </div>
                 </a>
@@ -242,19 +267,19 @@ function formatTime(d: string) {
         </AnimateIn>
       </div>
     ) : (
-      <!-- Full liste: horisontal scroll-karusell -->
+      <!-- Full liste: horisontal scroll-karusell (Gullalderen-panelene) -->
       <>
         <div class="carousel-viewport" aria-label="Magikere i utstillingen">
           <div class="carousel-track" id="carousel-track">
-            {magicians.map((m) => {
-              const imgUrl = m.posterImage?.asset?._ref
-                ? urlFor(m.posterImage.asset).width(600).height(800).fit('crop').format('webp').url()
-                : (m.posterImage?.asset?.url ?? null)
+            {gullalderenPanels.map((m) => {
+              const imgUrl = m.mainImage?.asset?._ref
+                ? urlFor(m.mainImage.asset).width(600).height(800).fit('crop').format('webp').url()
+                : (m.mainImage?.asset?.url ?? null)
               return (
                 <a href={`/utstillingen/${m.slug}`} class="magiker-card" aria-label={`Les mer om ${m.title}`}>
                   <div class="magiker-img">
                     {imgUrl
-                      ? <img src={imgUrl} alt={m.posterImage?.alt ?? m.title} loading="lazy" />
+                      ? <img src={imgUrl} alt={m.mainImage?.alt ?? m.title} loading="lazy" />
                       : <div class="magiker-img-placeholder" aria-hidden="true">🎩</div>
                     }
                     <div class="magiker-overlay" aria-hidden="true"></div>
@@ -809,11 +834,10 @@ function formatTime(d: string) {
   .carousel-fade--left { left:0; background:linear-gradient(to right,white,transparent); }
   .carousel-fade--right { right:0; background:linear-gradient(to left,white,transparent); }
 
-  /* ── FEATURED MAGICIANS GRID ──────────────────────────────────── */
-  .featured-magicians { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; padding: 1.5rem 0 2rem; }
-  .featured-magiker-card { flex: unset !important; }
-  @media (max-width: 700px) { .featured-magicians { grid-template-columns: 1fr 1fr; } }
-  @media (max-width: 420px) { .featured-magicians { grid-template-columns: 1fr; } }
+  /* ── FEATURED CONTENT GRID ─────────────────────────────────────── */
+  .featured-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.5rem; padding: 1.5rem 0 2rem; }
+  .featured-card { flex: unset !important; }
+  @media (max-width: 420px) { .featured-grid { grid-template-columns: 1fr; } }
 
   /* ── PRESS CLIPPING ────────────────────────────────────────────── */
   .press-section { background:white; }

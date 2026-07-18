@@ -1,4 +1,3 @@
-import { magician }       from './magician'
 import { historiskeKlippNb } from './historiskeKlippNb'
 import { contentSection } from './contentSection'
 import { sourceItem }     from './sourceItem'
@@ -27,8 +26,6 @@ import signageQuote        from './signageQuote'
 import signageConfig       from './signageConfig'
 import signageVideo        from './signageVideo'
 import magicOrganization   from './magicOrganization'
-import { exhibitionShow }    from './exhibitionShow'
-import { exhibitionStation } from './exhibitionStation'
 import { quizConfig }      from './quizConfig'
 import { quizTheme }       from './quizTheme'
 import { quizQuestion }    from './quizQuestion'
@@ -54,7 +51,6 @@ export const schemaTypes = [
   signageQuote,
   signageConfig,
   signageVideo,
-  magician,
   historiskeKlippNb,
   biography,
   legend,
@@ -67,8 +63,6 @@ export const schemaTypes = [
   artifact,
   partner,
   magicOrganization,
-  exhibitionShow,
-  exhibitionStation,
   quizConfig,
   quizTheme,
   quizQuestion,

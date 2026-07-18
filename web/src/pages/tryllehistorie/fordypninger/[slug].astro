@@ -1,0 +1,88 @@
+---
+// src/pages/tryllehistorie/fordypninger/[slug].astro
+import BaseLayout from '../../../layouts/BaseLayout.astro'
+import LegendBody from '../../../components/LegendBody.astro'
+import { getLegendBySlug, getLegendPaths } from '../../../lib/sanity'
+import type { Legend } from '../../../lib/sanity'
+
+export async function getStaticPaths() {
+  return getLegendPaths()
+}
+
+const { slug } = Astro.params
+const leg = await getLegendBySlug(slug!) as Legend | null
+
+if (!leg) return Astro.redirect('/tryllehistorie/fordypninger')
+
+const bio = leg.biographyRef
+const heroImg = leg.mainImage ?? bio?.mainImage
+
+// Aldersberegning — kun mulig når artikkelen er koblet til en biografi
+function calcAge(birth: string, death?: string): string {
+  const b = new Date(birth)
+  const d = death ? new Date(death) : new Date()
+  const age = d.getFullYear() - b.getFullYear() -
+    (d < new Date(d.getFullYear(), b.getMonth(), b.getDate()) ? 1 : 0)
+  if (death) {
+    return `${b.getFullYear()}–${new Date(death).getFullYear()} (${age} år)`
+  }
+  return `f. ${b.getFullYear()} (${age} år)`
+}
+
+const ageStr = bio?.birthDate ? calcAge(bio.birthDate, bio.deathDate ?? undefined) : (bio?.years ?? leg.years ?? '')
+---
+
+<BaseLayout
+  title={`${leg.title} — Tryllemuseet`}
+  description={leg.excerpt ?? `Les om ${bio?.name ?? leg.title} på Tryllemuseet.`}
+>
+
+  <!-- HERO ──────────────────────────────────────────────────────── -->
+  <section class="legend-hero">
+    <div class="legend-hero-bg">
+      {heroImg?.asset?.url && (
+        <img src={heroImg.asset.url} alt="" aria-hidden="true" class="hero-bg-img" />
+      )}
+      <div class="hero-bg-overlay"></div>
+    </div>
+    <div class="container legend-hero-inner">
+      <nav class="breadcrumb">
+        <a href="/tryllehistorie">Tryllehistorie</a>
+        <span>›</span>
+        <a href="/tryllehistorie/fordypninger">Fordypninger</a>
+      </nav>
+      <h1 class="legend-hero-title">{leg.title}</h1>
+      {(leg.tagline || leg.excerpt) && <p class="legend-hero-ingress">{leg.tagline ?? leg.excerpt}</p>}
+      {ageStr && <p class="legend-hero-years">{ageStr}</p>}
+    </div>
+  </section>
+
+  <LegendBody entry={leg}>
+    <nav class="page-nav" aria-label="Naviger i fordypninger">
+      <a href="/tryllehistorie/fordypninger">← Fordypninger</a>
+      <a href="/tryllehistorie">← Tryllehistorie</a>
+    </nav>
+  </LegendBody>
+
+</BaseLayout>
+
+<style>
+  /* ── Hero ── */
+  .legend-hero { position: relative; min-height: 340px; display: flex; align-items: flex-end; padding-bottom: 3rem; color: var(--cream); overflow: hidden; }
+  .legend-hero-bg { position: absolute; inset: 0; }
+  .hero-bg-img { width: 100%; height: 100%; object-fit: cover; object-position: top center; }
+  .hero-bg-overlay { position: absolute; inset: 0; background: linear-gradient(to bottom, rgba(10,5,2,0.4) 0%, rgba(10,5,2,0.85) 100%); }
+  .legend-hero-inner { position: relative; z-index: 1; }
+  .breadcrumb { display: flex; gap: 0.5rem; align-items: center; font-family: var(--font-ui); font-size: 0.7rem; font-weight: 600; letter-spacing: 0.15em; text-transform: uppercase; margin-bottom: 1rem; }
+  .breadcrumb a { color: var(--gold); text-decoration: none; }
+  .breadcrumb a:hover { text-decoration: underline; }
+  .breadcrumb span { color: rgba(251,247,239,0.4); }
+  .legend-hero-title { font-family: var(--font-display); font-size: clamp(1.8rem, 5vw, 3rem); color: var(--cream); line-height: 1.2; margin-bottom: 0.75rem; }
+  .legend-hero-ingress { font-family: var(--font-body); font-size: 1.05rem; opacity: 0.85; max-width: 620px; line-height: 1.6; margin-bottom: 0.4rem; }
+  .legend-hero-years { font-family: var(--font-ui); font-size: 0.8rem; color: var(--gold); letter-spacing: 0.1em; }
+
+  /* ── Navigasjon ── */
+  .page-nav { display: flex; flex-wrap: wrap; gap: 0.75rem; padding-top: 1.5rem; border-top: 1px solid var(--cream-dark); font-family: var(--font-ui); font-size: 0.875rem; }
+  .page-nav a { color: var(--grey); text-decoration: none; border: 1px solid var(--cream-dark); padding: 0.4rem 1rem; border-radius: var(--radius); transition: color 150ms, border-color 150ms; }
+  .page-nav a:hover { color: var(--burgundy); border-color: var(--gold); }
+</style>

@@ -1,8 +1,7 @@
 ---
 // src/pages/utstillingen/artefakter/[slug].astro
 import BaseLayout from '../../../layouts/BaseLayout.astro'
-import { getAllArtifacts, getArtifactBySlug, urlFor } from '../../../lib/sanity'
-import { toHTML } from '@portabletext/to-html'
+import { getAllArtifacts, getArtifactBySlug, urlFor, portableTextToHtml } from '../../../lib/sanity'
 
 export async function getStaticPaths() {
   const artifacts = await getAllArtifacts()
@@ -16,7 +15,7 @@ const a = await getArtifactBySlug(slug!)
 
 if (!a) return Astro.redirect('/utstillingen/artefakter', 301)
 
-const notesHtml = a.notes ? toHTML(a.notes) : ''
+const notesHtml = portableTextToHtml(a.notes)
 
 const categoryLabels: Record<string, string> = {
   rekvisitt:  'Rekvisitt',

@@ -1,0 +1,285 @@
+---
+// src/pages/tryllehistorie/fordypninger/index.astro
+import BaseLayout from '../../../layouts/BaseLayout.astro'
+import { getAllLegends } from '../../../lib/sanity'
+import type { Legend } from '../../../lib/sanity'
+
+const legends = await getAllLegends()
+const total = legends.length
+
+// Intern grupperingstag — brukes ikke som filter/synlig merkelapp
+const INTERNAL_TAG = 'norske-legender'
+
+const allTags = [...new Set(
+  legends.flatMap((leg: Legend) => leg.tags ?? []).filter(t => t !== INTERNAL_TAG)
+)].sort() as string[]
+---
+
+<BaseLayout
+  title="Fordypninger — Tryllemuseet"
+  description={`${total} fordypende artikler om tryllekunstens store navn — norske og internasjonale.`}
+>
+
+  <!-- HERO ──────────────────────────────────────────────────────── -->
+  <section class="hero">
+    <div class="container">
+      <p class="section-label"><a href="/tryllehistorie" class="breadcrumb-link">Tryllehistorie</a></p>
+      <h1 class="display-title hero-title">Fordypninger</h1>
+      <p class="hero-sub">
+        {total} fordypende artikler om de store navnene i tryllekunsten —
+        norske og internasjonale.
+      </p>
+    </div>
+  </section>
+
+  <!-- STICKY SØK + FILTER ────────────────────────────────────────── -->
+  <div class="search-bar-wrap" id="search-bar">
+    <div class="container search-bar-inner">
+      <div class="search-field">
+        <svg viewBox="0 0 20 20" fill="none" aria-hidden="true">
+          <circle cx="9" cy="9" r="6" stroke="currentColor" stroke-width="1.8"/>
+          <path d="M13.5 13.5L17 17" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+        </svg>
+        <input
+          type="search"
+          id="fordypning-search"
+          placeholder="Søk på navn eller stikkord…"
+          aria-label="Søk i fordypninger"
+          autocomplete="off"
+          autocorrect="off"
+          spellcheck="false"
+        />
+        <button class="search-clear" id="search-clear" aria-label="Tøm søk" hidden>✕</button>
+      </div>
+
+      {allTags.length > 0 && (
+        <div class="filter-group">
+          <label class="filter-label" for="filter-tag">Tema</label>
+          <select id="filter-tag" class="filter-select">
+            <option value="">Alle temaer</option>
+            {allTags.map((tag: string) => (
+              <option value={tag}>{tag}</option>
+            ))}
+          </select>
+        </div>
+      )}
+    </div>
+  </div>
+
+  <div class="container">
+    <p class="result-count" id="result-count">Viser {total} artikler</p>
+  </div>
+
+  <!-- INGEN TREFF ─────────────────────────────────────────────────── -->
+  <div class="container no-results" id="no-results" hidden>
+    <p>Ingen treff.</p>
+    <p>Prøv et annet søk, eller <a href="/kontakt">kontakt oss</a> om du savner noen.</p>
+  </div>
+
+  <!-- KORTLISTE ──────────────────────────────────────────────────── -->
+  <main class="container legend-grid" id="legend-grid">
+    {legends.map((leg: Legend) => {
+      const bio = leg.biographyRef
+      const img = leg.mainImage ?? bio?.mainImage
+      const navn = bio?.name ?? leg.title
+      const years = bio?.years ?? (bio?.birthDate ? bio.birthDate.slice(0, 4) : '')
+      const tags = (leg.tags ?? []).filter(t => t !== INTERNAL_TAG)
+      return (
+        <article
+          class="legend-card"
+          data-title={leg.title.toLowerCase()}
+          data-tags={tags.join(' ').toLowerCase()}
+        >
+          <a href={`/tryllehistorie/fordypninger/${leg.slug}`} class="legend-link">
+
+            <div class="legend-img">
+              {img?.asset?.url ? (
+                <img
+                  src={img.asset.url}
+                  alt={img.alt ?? navn}
+                  loading="lazy"
+                />
+              ) : (
+                <div class="legend-img-placeholder" aria-hidden="true">⭐</div>
+              )}
+            </div>
+
+            <div class="legend-body">
+              <h2 class="legend-title">{leg.title}</h2>
+              {years && <p class="legend-years">{years}</p>}
+              {leg.excerpt && <p class="legend-excerpt">{leg.excerpt}</p>}
+              {tags.length > 0 && (
+                <div class="legend-tags">
+                  {tags.slice(0, 3).map((tag: string) => (
+                    <span class="legend-tag">{tag}</span>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <span class="legend-arrow" aria-hidden="true">→</span>
+          </a>
+        </article>
+      )
+    })}
+  </main>
+
+  <div class="container page-nav">
+    <a href="/tryllehistorie/magiens-hvem-er-hvem">← Hvem er hvem</a>
+    <a href="/tryllehistorie">← Tryllehistorie</a>
+  </div>
+
+</BaseLayout>
+
+<script>
+  const searchInput = document.getElementById('fordypning-search') as HTMLInputElement
+  const searchClear = document.getElementById('search-clear') as HTMLButtonElement
+  const tagSelect    = document.getElementById('filter-tag') as HTMLSelectElement | null
+  const noResults    = document.getElementById('no-results') as HTMLElement
+  const resultCount  = document.getElementById('result-count') as HTMLElement
+  const cards        = document.querySelectorAll<HTMLElement>('.legend-card')
+
+  function applyFilters() {
+    const q   = searchInput.value.trim().toLowerCase()
+    const tag = tagSelect?.value ?? ''
+    searchClear.hidden = q.length === 0
+
+    let visible = 0
+    cards.forEach(card => {
+      const title = card.dataset.title ?? ''
+      const tags  = card.dataset.tags  ?? ''
+      const matchesQuery = !q || title.includes(q) || tags.includes(q)
+      const matchesTag   = !tag || tags.split(' ').includes(tag.toLowerCase())
+      const match = matchesQuery && matchesTag
+      card.hidden = !match
+      if (match) visible++
+    })
+
+    resultCount.textContent = `Viser ${visible} ${visible === 1 ? 'artikkel' : 'artikler'}`
+    noResults.hidden = visible !== 0
+  }
+
+  searchInput?.addEventListener('input', applyFilters)
+  tagSelect?.addEventListener('change', applyFilters)
+
+  searchClear?.addEventListener('click', () => {
+    searchInput.value = ''
+    applyFilters()
+    searchInput.focus()
+  })
+
+  // Sticky search bar behaviour
+  const searchBar = document.getElementById('search-bar')
+  const heroEl    = document.querySelector('.hero')
+
+  if (searchBar && heroEl) {
+    const observer = new IntersectionObserver(
+      ([entry]) => searchBar.classList.toggle('search-bar-wrap--stuck', !entry.isIntersecting),
+      { threshold: 0 }
+    )
+    observer.observe(heroEl)
+  }
+</script>
+
+<style>
+  /* ── Hero ── */
+  .hero { padding: 3.5rem 0 2.5rem; }
+  .breadcrumb-link { color: var(--burgundy); text-decoration: none; font-size: 0.7rem; font-weight: 600; letter-spacing: 0.2em; text-transform: uppercase; }
+  .hero-title { font-size: clamp(1.8rem, 5vw, 3rem); margin: 0.5rem 0 0.75rem; }
+  .hero-sub { font-family: var(--font-ui); font-size: 1rem; color: var(--ink-mid); max-width: 600px; }
+
+  /* ── Sticky søk + filter ── */
+  .search-bar-wrap {
+    position: sticky;
+    top: var(--header-h);
+    z-index: 50;
+    background: white;
+    border-bottom: 1px solid var(--cream-dark);
+    transition: box-shadow 200ms ease;
+  }
+  .search-bar-wrap--stuck { box-shadow: 0 4px 20px rgba(26,18,8,0.12); }
+
+  .search-bar-inner {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 1rem;
+    padding-top: 0.75rem;
+    padding-bottom: 0.75rem;
+  }
+
+  .search-field {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    background: var(--cream);
+    border: 1.5px solid var(--cream-dark);
+    border-radius: 6px;
+    padding: 0.55rem 0.9rem;
+    flex: 1;
+    min-width: 220px;
+    transition: border-color 180ms ease;
+  }
+  .search-field:focus-within { border-color: var(--gold); box-shadow: 0 0 0 3px rgba(212,168,67,0.15); }
+  .search-field svg { width: 18px; height: 18px; color: var(--grey); flex-shrink: 0; }
+  #fordypning-search { flex: 1; border: none; background: transparent; font-family: var(--font-ui); font-size: 1rem; color: var(--ink); outline: none; }
+  #fordypning-search::placeholder { color: var(--grey); }
+  .search-clear { font-size: 0.8rem; color: var(--grey); padding: 0.1rem 0.3rem; border-radius: 3px; transition: color 180ms; cursor: pointer; }
+  .search-clear:hover { color: var(--ink); }
+
+  .filter-group { display: flex; align-items: center; gap: 0.5rem; }
+  .filter-label { font-family: var(--font-ui); font-size: 0.75rem; font-weight: 600; color: var(--ink-mid); white-space: nowrap; }
+  .filter-select {
+    font-family: var(--font-ui);
+    font-size: 0.875rem;
+    color: var(--ink);
+    background: var(--cream);
+    border: 1.5px solid var(--cream-dark);
+    border-radius: 6px;
+    padding: 0.5rem 0.75rem;
+  }
+
+  .result-count { font-family: var(--font-ui); font-size: 0.8rem; color: var(--grey); padding-top: 1rem; }
+
+  /* ── Ingen treff ── */
+  .no-results { padding: 2rem 0; font-family: var(--font-ui); color: var(--ink-mid); text-align: center; }
+  .no-results a { color: var(--burgundy); text-decoration: underline; }
+
+  /* ── Grid ── */
+  .legend-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 1.5rem;
+    padding-block: 2rem 3rem;
+  }
+
+  /* ── Kort ── */
+  .legend-card { background: white; border: 1px solid var(--cream-dark); border-radius: 8px; overflow: hidden; transition: box-shadow 150ms, border-color 150ms; }
+  .legend-card:hover { box-shadow: 0 4px 20px rgba(26,18,8,0.1); border-color: var(--gold); }
+
+  .legend-link { display: flex; flex-direction: column; text-decoration: none; color: var(--ink); height: 100%; }
+
+  .legend-img { width: 100%; aspect-ratio: 16/9; overflow: hidden; background: var(--burgundy-dk); flex-shrink: 0; }
+  .legend-img img { width: 100%; height: 100%; object-fit: cover; transition: transform 300ms; }
+  .legend-card:hover .legend-img img { transform: scale(1.03); }
+  .legend-img-placeholder { display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; font-size: 3rem; background: linear-gradient(160deg, var(--burgundy-dk), #2a1208); }
+
+  .legend-body { padding: 1.25rem 1.25rem 1rem; flex: 1; display: flex; flex-direction: column; gap: 0.4rem; }
+  .legend-title { font-family: var(--font-display); font-size: 1.1rem; color: var(--burgundy); line-height: 1.3; }
+  .legend-years { font-family: var(--font-ui); font-size: 0.75rem; color: var(--gold-dark); font-weight: 600; letter-spacing: 0.05em; }
+  .legend-excerpt { font-family: var(--font-body); font-size: 0.875rem; color: #555; line-height: 1.6; margin-top: 0.25rem; }
+  .legend-tags { display: flex; flex-wrap: wrap; gap: 0.35rem; margin-top: auto; padding-top: 0.75rem; }
+  .legend-tag { font-family: var(--font-ui); font-size: 0.65rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--burgundy); background: var(--cream); border: 1px solid rgba(107,15,26,0.15); padding: 0.2em 0.6em; border-radius: 3px; }
+
+  .legend-arrow { display: none; }
+
+  /* ── Navigasjon ── */
+  .page-nav { display: flex; flex-wrap: wrap; gap: 0.75rem; padding: 1.5rem 0 3rem; font-family: var(--font-ui); font-size: 0.875rem; }
+  .page-nav a { color: var(--grey); text-decoration: none; border: 1px solid var(--cream-dark); padding: 0.4rem 1rem; border-radius: var(--radius); transition: color 150ms, border-color 150ms; }
+  .page-nav a:hover { color: var(--burgundy); border-color: var(--gold); }
+
+  @media (max-width: 560px) {
+    .legend-grid { grid-template-columns: 1fr; gap: 1rem; }
+    .search-bar-inner { flex-direction: column; align-items: stretch; }
+  }
+</style>

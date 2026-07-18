@@ -62,8 +62,8 @@ export const book = defineType({
               name: 'personRef',
               title: 'Person i registeret',
               type: 'reference',
-              to: [{ type: 'magician' }],
-              description: 'Velg hvis forfatteren finnes i personregisteret',
+              to: [{ type: 'biography' }],
+              description: 'Velg hvis forfatteren finnes i personregisteret (Hvem er hvem)',
             }),
             defineField({
               name: 'nameText',

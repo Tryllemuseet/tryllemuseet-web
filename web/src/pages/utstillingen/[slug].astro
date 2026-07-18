@@ -1,45 +1,29 @@
 ---
 // src/pages/utstillingen/[slug].astro
 import BaseLayout from '../../layouts/BaseLayout.astro'
-import ExhibitionView from '../../components/ExhibitionView.astro'
+import LegendBody from '../../components/LegendBody.astro'
 import {
-  getAllMagicians,
-  getMagicianBySlug,
-  getBooksByMagician,
-  getExhibitionShowBySlug,
-  getExhibitionShowPaths,
+  getUtstillingEntryBySlug,
+  getUtstillingPaths,
+  getBooksByUtstillingSlug,
+  urlFor,
 } from '../../lib/sanity'
-import { toHTML } from '@portabletext/to-html'
 
 export async function getStaticPaths() {
-  // Exhibitions (exhibitionShow) and wall panels (magician) share this
-  // route; an exhibition takes over the URL when the slugs collide.
-  const [exhibitionPaths, magicians] = await Promise.all([
-    getExhibitionShowPaths(),
-    getAllMagicians(),
-  ])
-  const exhibitionSlugs = new Set(
-    exhibitionPaths.map((p: { params: { slug: string } }) => p.params.slug)
-  )
-  const magicianPaths = magicians
-    .filter(m => m.slug && typeof m.slug === 'string' && !exhibitionSlugs.has(String(m.slug)))
-    .map(m => ({ params: { slug: String(m.slug) } }))
-  return [...exhibitionPaths, ...magicianPaths]
+  return getUtstillingPaths()
 }
 
 const { slug } = Astro.params
-const exhibition = await getExhibitionShowBySlug(slug!)
-const m = exhibition ? null : await getMagicianBySlug(slug!)
+const entry = await getUtstillingEntryBySlug(slug!)
 
-if (!exhibition && !m) return Astro.redirect('/utstillingen', 301)
+if (!entry) return Astro.redirect('/utstillingen', 301)
 
-const books = m ? await getBooksByMagician(m._id) : []
+const books = await getBooksByUtstillingSlug(slug!)
+const stations = entry.stations ?? []
 
-const adultHtml = m?.adultText ? toHTML(m.adultText) : ''
-const sectionsHtml = m?.mobileSections?.map(s => ({
-  heading: s.heading,
-  html: s.body ? toHTML(s.body) : ''
-})) ?? []
+const posterUrl = entry.mainImage?.asset
+  ? urlFor(entry.mainImage).width(800).format('webp').url()
+  : null
 
 const availabilityLabel: Record<string, string> = {
   inPrint:           'Tilgjengelig',
@@ -49,158 +33,92 @@ const availabilityLabel: Record<string, string> = {
 }
 ---
 
-{exhibition ? (
-  <ExhibitionView exhibition={exhibition} />
-) : m && (
 <BaseLayout
-  title={`${m.title} — Tryllemuseet`}
-  description={m.mobileIntro ?? `Les om ${m.title} på Tryllemuseet`}
+  title={`${entry.title} — Tryllemuseet`}
+  description={entry.detailIntro ?? entry.tagline ?? `Les om ${entry.title} på Tryllemuseet`}
 >
 
   <!-- HERO ────────────────────────────────────────────────────── -->
-  <section class="magician-hero">
+  <section class="entry-hero">
     <div class="container hero-inner">
-      {m.posterImage?.asset?.url && (
+      {posterUrl && (
         <div class="poster-wrap">
           <img
-            src={m.posterImage.asset.url}
-            alt={m.posterImage.alt ?? m.title}
+            src={posterUrl}
+            alt={entry.mainImage?.alt ?? entry.title}
             class="poster-img"
           />
         </div>
       )}
       <div class="hero-text">
-        <h1 class="display-title hero-title">{m.title}</h1>
-        {m.years   && <p class="hero-years">{m.years}</p>}
-        {m.tagline && <p class="hero-tagline">«{m.tagline}»</p>}
+        {stations.length > 0 && <p class="hero-kicker">Utstilling</p>}
+        <h1 class="display-title hero-title">{entry.title}</h1>
+        {entry.years   && <p class="hero-years">{entry.years}</p>}
+        {entry.tagline && <p class="hero-tagline">«{entry.tagline}»</p>}
       </div>
     </div>
   </section>
 
-  <div class="container page-body">
-
-    <!-- 1. BARNETEKST ──────────────────────────────────────────── -->
-    {m.childText && (
-      <section class="child-panel" aria-label="For barn">
-        <p class="child-label">⭐ For barn</p>
-        <p class="child-text">{m.childText}</p>
-        {m.childActivity && (
-          <div class="child-activity">
-            <span aria-hidden="true">★</span>
-            {m.childActivity}
-          </div>
-        )}
-      </section>
-    )}
-
-    <!-- 2. VOKSENTEKST ─────────────────────────────────────────── -->
-    {adultHtml && (
-      <section class="adult-section" aria-label={`Om ${m.title}`}>
-        <h2 class="section-heading">Om {m.title}</h2>
-        <div class="prose" set:html={adultHtml} />
-      </section>
-    )}
-
-    <!-- 3. DETALJERT TEKST ──────────────────────────────────────── -->
-    {(m.mobileIntro || sectionsHtml.length > 0) && (
-      <section class="detail-section" id="detaljer" aria-label="Utdypende innhold">
-        <h2 class="section-heading">Les mer</h2>
-        {m.mobileIntro && (
-          <p class="detail-intro">{m.mobileIntro}</p>
-        )}
-        {sectionsHtml.map(s => (
-          <div class="content-section">
-            <h3 class="content-heading">{s.heading}</h3>
-            <div class="prose" set:html={s.html} />
-          </div>
-        ))}
-      </section>
-    )}
-
-    <!-- 4. BØKER ───────────────────────────────────────────────── -->
-    {books.length > 0 && (
-      <section class="books-section" aria-label={`Bøker av ${m.title}`}>
-        <h2 class="section-heading">Bøker</h2>
-        <ul class="books-list">
-          {books.map((book: any) => {
-            const thumb = book.thumbnailUrl ?? book.coverImage ?? null
-            const yearDisplay = book.yearNote ?? book.year?.toString() ?? ''
-            const avail = book.availability ?? ''
-            return (
-              <li class="book-item">
-                {thumb && (
-                  <div class="book-thumb">
-                    <img src={thumb} alt={`Forsidebilde: ${book.title}`} loading="lazy" />
+  <LegendBody entry={entry}>
+    <Fragment slot="extra">
+      {books.length > 0 && (
+        <section class="books-section" aria-label={`Bøker av ${entry.title}`}>
+          <h2 class="section-heading">Bøker</h2>
+          <ul class="books-list">
+            {books.map((book: any) => {
+              const thumb = book.thumbnailUrl ?? book.coverImage ?? null
+              const yearDisplay = book.yearNote ?? book.year?.toString() ?? ''
+              const avail = book.availability ?? ''
+              return (
+                <li class="book-item">
+                  {thumb && (
+                    <div class="book-thumb">
+                      <img src={thumb} alt={`Forsidebilde: ${book.title}`} loading="lazy" />
+                    </div>
+                  )}
+                  <div class="book-meta">
+                    <span class="book-title">{book.title}</span>
+                    {yearDisplay && <span class="book-year">{yearDisplay}</span>}
+                    {avail && (
+                      <span class={`avail-badge avail-badge--${avail}`}>
+                        {availabilityLabel[avail] ?? avail}
+                      </span>
+                    )}
+                    {book.externalUrl && (
+                      <a
+                        href={book.externalUrl}
+                        target="_blank"
+                        rel="noopener"
+                        class="book-link"
+                      >
+                        Last ned PDF
+                        <svg viewBox="0 0 12 12" fill="none" aria-hidden="true">
+                          <path d="M2 10L10 2M10 2H5M10 2V7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                        </svg>
+                      </a>
+                    )}
                   </div>
-                )}
-                <div class="book-meta">
-                  <span class="book-title">{book.title}</span>
-                  {yearDisplay && <span class="book-year">{yearDisplay}</span>}
-                  {avail && (
-                    <span class={`avail-badge avail-badge--${avail}`}>
-                      {availabilityLabel[avail] ?? avail}
-                    </span>
-                  )}
-                  {book.externalUrl && (
-                    <a
-                      href={book.externalUrl}
-                      target="_blank"
-                      rel="noopener"
-                      class="book-link"
-                    >
-                      Last ned PDF
-                      <svg viewBox="0 0 12 12" fill="none" aria-hidden="true">
-                        <path d="M2 10L10 2M10 2H5M10 2V7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-                      </svg>
-                    </a>
-                  )}
-                </div>
-              </li>
-            )
-          })}
-        </ul>
-        <p class="books-more">
-          <a href="/ressurser/bibliotek">Se alle bøker i biblioteket →</a>
-        </p>
-      </section>
-    )}
+                </li>
+              )
+            })}
+          </ul>
+          <p class="books-more">
+            <a href="/ressurser/bibliotek">Se alle bøker i biblioteket →</a>
+          </p>
+        </section>
+      )}
+    </Fragment>
 
-    <!-- 5. KILDER ──────────────────────────────────────────────── -->
-    {m.sources && m.sources.length > 0 && (
-      <section class="sources-section" aria-label="Kilder">
-        <h2 class="section-heading">Kilder</h2>
-        <ul class="sources-list">
-          {m.sources.map(src => (
-            <li>
-              {src.url
-                ? (
-                  <a href={src.url} target="_blank" rel="noopener noreferrer">
-                    {src.label}
-                    <svg class="ext-icon" viewBox="0 0 12 12" fill="none" aria-label="Åpnes i ny fane">
-                      <path d="M2 10L10 2M10 2H5M10 2V7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-                    </svg>
-                  </a>
-                )
-                : <span>{src.label}</span>
-              }
-            </li>
-          ))}
-        </ul>
-      </section>
-    )}
-
-    <!-- NAVIGASJON ─────────────────────────────────────────────── -->
-    <nav class="magician-nav" aria-label="Naviger mellom utstillingsfelt">
-      <a href="/utstillingen" class="btn-nav">← Alle felt</a>
+    <nav class="entry-nav" aria-label="Naviger i utstillingen">
+      <a href="/utstillingen" class="btn-nav">← Utstillingen</a>
     </nav>
+  </LegendBody>
 
-  </div>
 </BaseLayout>
-)}
 
 <style>
   /* ── HERO ──────────────────────────────────────────────────────── */
-  .magician-hero {
+  .entry-hero {
     background: var(--burgundy-dk);
     padding: 3.5rem 0 3rem;
     border-bottom: 2px solid var(--gold-dark);
@@ -224,55 +142,18 @@ const availabilityLabel: Record<string, string> = {
   .poster-img { width: 100%; display: block; }
 
   .hero-text    { color: var(--cream); }
-  .hero-title   { font-size: clamp(1.8rem, 4vw, 3rem); color: var(--cream); margin-bottom: 0.4rem; }
-  .hero-years   { font-family: var(--font-ui); font-size: 0.9rem; color: var(--gold-light); opacity: 0.75; margin-bottom: 0.4rem; }
-  .hero-tagline { font-family: var(--font-body); font-size: 1.1rem; font-style: italic; color: var(--gold); }
-
-  /* ── PAGE BODY ─────────────────────────────────────────────────── */
-  .page-body {
-    padding-top: 3rem;
-    padding-bottom: 5rem;
-    max-width: 720px;
-    display: flex;
-    flex-direction: column;
-    gap: 2.5rem;
-  }
-
-  /* ── BARNETEKST ────────────────────────────────────────────────── */
-  .child-panel {
-    background: #FFF9E0;
-    border: 2px solid #E8C840;
-    border-radius: 6px;
-    padding: 1.5rem;
-  }
-  .child-label {
+  .hero-kicker {
     font-family: var(--font-ui);
     font-size: 0.75rem;
     font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: 0.12em;
-    color: #C47A00;
-    margin-bottom: 0.6rem;
-  }
-  .child-text {
-    font-family: var(--font-body);
-    font-size: 1rem;
-    line-height: 1.65;
-    color: var(--ink);
+    letter-spacing: 0.18em;
+    color: var(--gold);
     margin-bottom: 0.75rem;
   }
-  .child-activity {
-    display: flex;
-    align-items: flex-start;
-    gap: 0.5rem;
-    background: #E8C840;
-    border-radius: 4px;
-    padding: 0.6rem 0.9rem;
-    font-family: var(--font-ui);
-    font-size: 0.9rem;
-    font-weight: 600;
-    color: var(--ink);
-  }
+  .hero-title   { font-size: clamp(1.8rem, 4vw, 3rem); color: var(--cream); margin-bottom: 0.4rem; }
+  .hero-years   { font-family: var(--font-ui); font-size: 0.9rem; color: var(--gold-light); opacity: 0.75; margin-bottom: 0.4rem; }
+  .hero-tagline { font-family: var(--font-body); font-size: 1.1rem; font-style: italic; color: var(--gold); }
 
   /* ── BØKER ─────────────────────────────────────────────────────── */
   .books-list {
@@ -387,54 +268,6 @@ const availabilityLabel: Record<string, string> = {
   }
   .books-more a:hover { color: var(--gold-dark); }
 
-  /* ── DETALJERT TEKST ────────────────────────────────────────────── */
-  .detail-section { scroll-margin-top: calc(var(--header-h) + 1rem); }
-  .detail-intro {
-    font-family: var(--font-body);
-    font-size: 1.05rem;
-    line-height: 1.7;
-    color: var(--ink);
-    margin-bottom: 1.5rem;
-    font-style: italic;
-  }
-  .content-section { margin-bottom: 1.75rem; }
-  .content-heading {
-    font-family: var(--font-display);
-    font-size: 1.05rem;
-    color: var(--ink);
-    margin-bottom: 0.75rem;
-    letter-spacing: 0.03em;
-  }
-
-  /* ── KILDER ─────────────────────────────────────────────────────── */
-  .sources-list {
-    list-style: none;
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-  }
-  .sources-list li {
-    display: flex;
-    align-items: baseline;
-    gap: 0.4rem;
-    font-family: var(--font-ui);
-    font-size: 0.875rem;
-  }
-  .sources-list li::before { content: '→'; color: var(--gold-dark); flex-shrink: 0; }
-  .sources-list a {
-    color: #185FA5;
-    text-decoration: underline;
-    text-underline-offset: 2px;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.3rem;
-    transition: color 180ms;
-  }
-  .sources-list a:hover { color: var(--burgundy); }
-  .ext-icon { width: 10px; height: 10px; flex-shrink: 0; opacity: 0.6; }
-  .sources-list span { color: var(--grey); font-style: italic; }
-
-  /* ── SECTION HEADING ────────────────────────────────────────────── */
   .section-heading {
     font-family: var(--font-display);
     font-size: 1.2rem;
@@ -445,13 +278,8 @@ const availabilityLabel: Record<string, string> = {
     letter-spacing: 0.04em;
   }
 
-  /* ── PROSE ──────────────────────────────────────────────────────── */
-  .prose { font-family: var(--font-body); font-size: 1rem; line-height: 1.75; color: var(--ink); }
-  .prose p { margin-bottom: 1rem; }
-  .prose p:last-child { margin-bottom: 0; }
-
   /* ── NAVIGASJON ─────────────────────────────────────────────────── */
-  .magician-nav { padding-top: 1.5rem; border-top: 1px solid var(--cream-dark); }
+  .entry-nav { padding-top: 1.5rem; border-top: 1px solid var(--cream-dark); }
   .btn-nav {
     font-family: var(--font-ui);
     font-size: 0.875rem;
@@ -469,6 +297,5 @@ const availabilityLabel: Record<string, string> = {
   @media (max-width: 700px) {
     .hero-inner  { grid-template-columns: 1fr; gap: 1.5rem; }
     .poster-wrap { width: 140px; }
-    .page-body   { padding-top: 2rem; padding-bottom: 3rem; }
   }
 </style>

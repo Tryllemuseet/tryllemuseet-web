@@ -29,23 +29,6 @@ export function urlFor(source: SanityImageSource) {
 
 // ── Typer ────────────────────────────────────────────────────────
 
-export interface Magician {
-  _id:            string
-  title:          string
-  slug:           string
-  order:          number
-  qrNumber:       number
-  years:          string
-  tagline:        string
-  mobileIntro:    string
-  posterImage?:   { asset: { _ref: string; url: string }; alt: string }
-  adultText?:     any[]
-  childText?:     string
-  childActivity?: string
-  mobileSections?: { heading: string; body: any[] }[]
-  sources?:       { label: string; url?: string }[]
-}
-
 export interface Event {
   _id:        string
   title:      string
@@ -89,118 +72,91 @@ export interface Artifact {
 
 // ── Spørringer ───────────────────────────────────────────────────
 
-// Alle magikere sortert — til oversiktssiden
-export async function getAllMagicians(): Promise<Magician[]> {
+// ── Utstillingen (legend: fysisk plassering + dybdeartikler) ─────
+//
+// Ett legend-dokument kan dekke veggpanel-dybden (physicalOrder/qrNumber,
+// childText/wallText), stasjons-dybden (stations), eller begge — se
+// schemaTypes/legend.ts og scripts/migrate-exhibits-to-legend.mjs.
+// Erstatter de tidligere separate magician- og exhibitionShow/
+// exhibitionStation-baserte spørringene for /utstillingen.
+
+export interface UtstillingEntry {
+  _id:            string
+  title:          string
+  slug:           string
+  tagline?:       string
+  years?:         string
+  qrNumber?:      number
+  physicalOrder?: number
+  childText?:     string
+  childActivity?: string
+  wallText?:      any[]
+  detailIntro?:   string
+  sections?:      { heading: string; body: any[] }[]
+  mainImage?:     { asset: { _ref: string; url: string }; alt?: string }
+  gallery?:       { asset: { _ref: string; url: string }; alt?: string; caption?: string }[]
+  stations?:      LegendStation[]
+  sources?:       { label: string; url?: string }[]
+  biographyRef?:  { name: string; slug: string; isVisible?: boolean }
+}
+
+// De fysiske veggfeltene i Gullalderen — til oversiktssiden
+export async function getGullalderenPanels(): Promise<UtstillingEntry[]> {
   return sanityClient.fetch(`
-    *[_type == "magician" && isVisible != false] | order(order asc) {
+    *[_type == "legend" && isVisible != false && defined(physicalOrder)] | order(physicalOrder asc) {
       _id, title, "slug": slug.current,
-      order, qrNumber, years, tagline, mobileIntro,
-      posterImage { asset->{ _ref, url }, alt }
+      physicalOrder, qrNumber, years, tagline, detailIntro,
+      mainImage { asset->{ _ref, url }, alt }
     }
   `)
 }
 
-// Én magiker via slug — til detaljsiden
-export async function getMagicianBySlug(slug: string): Promise<Magician | null> {
-  return sanityClient.fetch(`
-    *[_type == "magician" && slug.current == $slug && isVisible != false][0] {
-      _id, title, "slug": slug.current,
-      order, qrNumber, years, tagline,
-      posterImage { asset->{ _ref, url }, alt },
-      adultText, childText, childActivity,
-      mobileIntro,
-      mobileSections[] { heading, body },
-      sources[] { label, url }
-    }
-  `, { slug })
-}
-
-// Én magiker via QR-nummer — til QR-landingssiden
-export async function getMagicianByQR(qrNumber: number): Promise<Magician | null> {
-  return sanityClient.fetch(`
-    *[_type == "magician" && qrNumber == $qrNumber][0] {
-      "slug": slug.current
-    }
-  `, { qrNumber })
-}
-
-// ── Utstillinger (exhibitionShow / exhibitionStation) ────────────
-
-export interface ExhibitionStation {
-  _id:             string
-  title:           string
-  slug?:           string
-  order?:          number
-  year?:           string
-  image?:          { asset: { _ref: string; url: string }; alt?: string }
-  textKids?:       string
-  textAdults?:     string
-  activityPrompt?: string
-}
-
-export interface ExhibitionShow {
-  _id:              string
-  title:            string
-  slug:             string
-  subtitle?:        string
-  heroImage?:       { asset: { _ref: string; url: string }; alt?: string }
-  introKids?:       string
-  introAdults?:     string
-  relatedMagician?: { name: string; slug: string; isVisible?: boolean }
-  stations?:        ExhibitionStation[]
-  sources?:         { label: string; url?: string }[]
-}
-
-// Én utstilling via slug — stasjonene følger rekkefølgen i stations-arrayet
-export async function getExhibitionShowBySlug(slug: string): Promise<ExhibitionShow | null> {
-  return sanityClient.fetch(`
-    *[_type == "exhibitionShow" && slug.current == $slug && isVisible != false][0] {
-      _id, title, "slug": slug.current, subtitle,
-      heroImage { asset->{ _ref, url }, alt },
-      introKids, introAdults,
-      "relatedMagician": relatedMagician->{ name, "slug": slug.current, isVisible },
-      "stations": stations[@->isVisible != false][]->{
-        _id, title, "slug": slug.current,
-        order, year,
-        image { asset->{ _ref, url }, alt },
-        textKids, textAdults, activityPrompt,
-        isVisible
-      },
-      sources[] { label, url }
-    }
-  `, { slug })
-}
-
-export interface ExhibitionShowSummary {
+export interface UtstillingSummary {
   _id:          string
   title:        string
   slug:         string
-  subtitle?:    string
-  heroImage?:   { asset: { _ref: string; url: string }; alt?: string }
-  introAdults?: string
+  tagline?:     string
+  detailIntro?: string
+  mainImage?:   { asset: { _ref: string; url: string }; alt?: string }
   stationCount: number
 }
 
-// Alle synlige utstillinger — «Aktuell utstilling» på utstillingen/index.astro
-export async function getAllExhibitionShows(): Promise<ExhibitionShowSummary[]> {
+// Dybdeartikler med stasjoner — «Aktuell utstilling» på utstillingen/index.astro
+export async function getUtstillingDeepDives(): Promise<UtstillingSummary[]> {
   return sanityClient.fetch(`
-    *[_type == "exhibitionShow" && isVisible != false] | order(_createdAt desc) {
-      _id, title, "slug": slug.current, subtitle,
-      heroImage { asset->{ _ref, url }, alt },
-      introAdults,
-      "stationCount": count(stations[@->isVisible != false])
+    *[_type == "legend" && isVisible != false && count(stations) > 0] | order(_createdAt desc) {
+      _id, title, "slug": slug.current, tagline, detailIntro,
+      mainImage { asset->{ _ref, url }, alt },
+      "stationCount": count(stations)
     }
   `)
 }
 
-// Statiske stier for utstillinger — brukes i utstillingen/[slug].astro
-export async function getExhibitionShowPaths() {
-  const shows = await sanityClient.fetch(`
-    *[_type == "exhibitionShow" && isVisible != false] { "slug": slug.current }
+// Én artikkel via slug — dekker både veggfelt og dybdeartikler under /utstillingen
+export async function getUtstillingEntryBySlug(slug: string): Promise<UtstillingEntry | null> {
+  return sanityClient.fetch(`
+    *[_type == "legend" && slug.current == $slug && isVisible != false][0] {
+      _id, title, "slug": slug.current,
+      tagline, years, qrNumber, physicalOrder,
+      childText, childActivity, wallText,
+      detailIntro, sections[] { heading, body },
+      mainImage { asset->{ _ref, url }, alt },
+      gallery[] { asset->{ _ref, url }, alt, caption },
+      stations[] { title, order, year, image { asset->{ _ref, url }, alt }, textKids, textAdults, activityPrompt },
+      sources[] { label, url },
+      "biographyRef": biographyRef->{ name, "slug": slug.current, isVisible }
+    }
+  `, { slug })
+}
+
+// Statiske stier for /utstillingen/[slug] — veggfelt og/eller dybdeartikler
+export async function getUtstillingPaths() {
+  const entries = await sanityClient.fetch(`
+    *[_type == "legend" && isVisible != false && (defined(physicalOrder) || count(stations) > 0)] { "slug": slug.current }
   `)
-  return shows
-    .filter((s: { slug?: string }) => s.slug)
-    .map((s: { slug: string }) => ({ params: { slug: s.slug } }))
+  return entries
+    .filter((e: { slug?: string }) => e.slug)
+    .map((e: { slug: string }) => ({ params: { slug: e.slug } }))
 }
 
 // Kommende arrangementer
@@ -225,13 +181,6 @@ export async function getAllEvents(): Promise<Event[]> {
       bookingUrl
     }
   `)
-}
-
-export async function getStaticPaths() {
-  const magicians = await getAllMagicians() // getAllMagicians already filters isVisible != false
-  return magicians
-    .filter(m => m.slug && typeof m.slug === 'string')
-    .map(m => ({ params: { slug: String(m.slug) } }))
 }
 
 // ── Spørringer: Artefakter ───────────────────────────────────────
@@ -325,7 +274,7 @@ export async function getAllBooks(): Promise<Book[]> {
       publisher, edition, featured, tags,
       "authors": authors[] {
         role,
-        "name": coalesce(personRef->title, nameText),
+        "name": coalesce(personRef->name, nameText),
         "slug": personRef->slug.current,
         "hasProfile": defined(personRef)
       },
@@ -340,7 +289,7 @@ export async function getPublicDomainBooks(): Promise<Book[]> {
       _id, title, year, yearNote, section,
       externalUrl, sourceLabel, thumbnailUrl, tags,
       "authors": authors[] {
-        "name": coalesce(personRef->title, nameText)
+        "name": coalesce(personRef->name, nameText)
       },
       description
     }
@@ -352,7 +301,7 @@ export async function getNorwegianBooks(): Promise<Book[]> {
     *[_type == "book" && bookType == "norwegian" && isVisible != false] | order(year asc) {
       _id, title, subtitle, year, publisher, tags,
       "authors": authors[] {
-        "name": coalesce(personRef->title, nameText),
+        "name": coalesce(personRef->name, nameText),
         "slug": personRef->slug.current,
         "hasProfile": defined(personRef)
       }
@@ -360,15 +309,19 @@ export async function getNorwegianBooks(): Promise<Book[]> {
   `)
 }
 
-export async function getBooksByMagician(magicianId: string): Promise<Book[]> {
+// Bøker knyttet til en /utstillingen-artikkel (legend), via forfatterens
+// biografi-oppføring: legend.biographyRef -> biography <- book.authors[].personRef.
+export async function getBooksByUtstillingSlug(slug: string): Promise<Book[]> {
   return sanityClient.fetch(`
-    *[_type == "book" && references($magicianId) && isVisible != false] | order(year asc) {
+    *[_type == "book" && isVisible != false
+      && references(*[_type == "legend" && slug.current == $slug][0].biographyRef._ref)
+    ] | order(year asc) {
       _id, title, year, yearNote, bookType,
       availability, externalUrl, thumbnailUrl,
       "coverImage": coverImage.asset->url,
       tags
     }
-  `, { magicianId })
+  `, { slug })
 }
 
 export async function getFeaturedBooks(): Promise<Book[]> {
@@ -378,7 +331,7 @@ export async function getFeaturedBooks(): Promise<Book[]> {
       thumbnailUrl,
       "coverImage": coverImage.asset->url,
       "authors": authors[] {
-        "name": coalesce(personRef->title, nameText)
+        "name": coalesce(personRef->name, nameText)
       }
     }
   `)
@@ -399,7 +352,7 @@ export interface Homepage {
     bgImage?:   { asset: { _ref: string; url: string }; hotspot: any }
   }
   infoBadges:       { label: string }[]
-  utstillingsFokus: { eraLabel: string; heading: string; felt?: Magician[] }
+  fremhevetInnhold: { eraLabel?: string; heading: string; elementer?: FeaturedItem[] }
   barnSeksjon: {
     heading:   string
     ingress:   string
@@ -433,6 +386,48 @@ export interface Homepage {
   }
 }
 
+// "Fremhevet innhold" is a polymorphic reference (legend / historiskeKlippNb /
+// historicalClip) — same pattern as WhoKnewRelated / whoKnewRelatedHref() below.
+export interface FeaturedLegendItem {
+  _type:          'legend'
+  _id:            string
+  title:          string
+  slug:           string
+  tagline?:       string
+  years?:         string
+  physicalOrder?: number
+  stationCount:   number
+  mainImage?:     { asset: { _ref: string; url: string }; alt?: string }
+}
+
+export interface FeaturedClipItem {
+  _type:          'historicalClip'
+  _id:            string
+  title:          string
+  slug:           string
+  year?:          number
+  featuredImage?: { asset: { url: string }; alt?: string }
+  thumbnailUrl?:  string
+}
+
+export type FeaturedItem =
+  | FeaturedLegendItem
+  | (HistoriskKlippNb & { _type: 'historiskeKlippNb' })
+  | FeaturedClipItem
+
+// Mirrors the NOT_UTSTILLING condition (a legend routes to /utstillingen
+// when it has a physical placement and/or stations, otherwise to
+// /tryllehistorie/fordypninger) — keep the two in sync if that rule changes.
+export function featuredItemHref(item: FeaturedItem): string {
+  if (item._type === 'legend') {
+    return (item.physicalOrder || item.stationCount)
+      ? `/utstillingen/${item.slug}`
+      : `/tryllehistorie/fordypninger/${item.slug}`
+  }
+  if (item._type === 'historiskeKlippNb') return `/tryllehistorie/historiske-artikler#artikkel-${item.slug}`
+  return `/tryllehistorie/historiske-opptak/${item.slug}`
+}
+
 export async function getHomepage(): Promise<Homepage | null> {
   return sanityClient.fetch(`
     *[_type == "homepage"][0] {
@@ -442,9 +437,21 @@ export async function getHomepage(): Promise<Homepage | null> {
         bgImage { asset->{ _ref, url }, hotspot }
       },
       infoBadges[] { label },
-      utstillingsFokus {
+      fremhevetInnhold {
         eraLabel, heading,
-        felt[]->{ _id, title, "slug": slug.current, order, years, tagline, posterImage { asset->{ _ref, url }, alt } }
+        elementer[]-> {
+          _type,
+          _type == "legend" => {
+            _id, title, "slug": slug.current, tagline, years,
+            physicalOrder, "stationCount": count(stations),
+            mainImage { asset->{ _ref, url }, alt }
+          },
+          _type == "historiskeKlippNb" => { ${historiskKlippProjection} },
+          _type == "historicalClip" => {
+            _id, title, "slug": slug.current, year,
+            featuredImage { asset->{ url }, alt }, thumbnailUrl
+          }
+        }
       },
       barnSeksjon {
         heading, ingress, features,
@@ -455,7 +462,7 @@ export async function getHomepage(): Promise<Homepage | null> {
       kursSeksjon { heading, ingress, detaljer, pris, prisLabel, fondsBadge, knappLabel, knappHref },
       kursSitat { tekst, kilde }
     }
-  `)
+  `, { publicDomainCutoff: publicDomainCutoffIso() })
 }
 
 // ── Typer: Triks (Lær et triks) ───────────────────────────────────
@@ -749,12 +756,12 @@ export async function getTryllehistoriePage(): Promise<TryllehistoriePage> {
   `),
     sanityClient.fetch(`{
       "biografier": count(*[_type == "biography" && isVisible != false]),
-      "legender":   count(*[_type == "legend" && isVisible != false]),
+      "legender":   count(*[_type == "legend" && isVisible != false && ${NOT_UTSTILLING}]),
       "gotTalent":  count(*[_type == "tvAppearance" && show in $shows && isVisible != false]),
       "foolUs":     count(*[_type == "tvAppearance" && show == "fool-us" && isVisible != false]),
       "opptak":     count(*[_type == "historicalClip" && isVisible != false]),
       "artikler":   count(*[_type == "historiskeKlippNb" && isVisible != false && publishedAt <= now()]),
-      "magikere":   count(*[_type == "magician" && isVisible != false]),
+      "magikere":   count(*[_type == "legend" && isVisible != false && defined(physicalOrder)]),
       "hvemSkulleTrodd": count(*[_type == "whoKnew" && isVisible != false])
     }`, { shows: GOT_TALENT_SHOWS }),
   ])
@@ -763,7 +770,7 @@ export async function getTryllehistoriePage(): Promise<TryllehistoriePage> {
   // Cards whose href isn't listed here keep their editor-entered badge.
   const autoBadge: Record<string, string> = {
     '/tryllehistorie/magiens-hvem-er-hvem': `${counts.biografier} biografier`,
-    '/tryllehistorie/norske-legender':      `${counts.legender} portretter`,
+    '/tryllehistorie/fordypninger':         `${counts.legender} artikler`,
     '/tryllehistorie/got-talent':           `${counts.gotTalent} opptredener`,
     '/tryllehistorie/fool-us':              `${counts.foolUs} opptredener`,
     '/tryllehistorie/historiske-opptak':    `${counts.opptak} opptak`,
@@ -789,7 +796,7 @@ export async function getTryllehistoriePage(): Promise<TryllehistoriePage> {
       { href: '/utstillingen',                                emoji: '🎩', title: 'Gullalderen 1845–1930',              sub: 'Internasjonal tryllehistorie', desc: 'Robert-Houdin, Herrmann, Kellar, Thurston og Houdini — magikerne som forandret verden og skapte scenetryllingens gylne epoke.',                                                          badge: '7 utstillingsfelt', soon: false },
       { href: '/tryllehistorie/hvem-skulle-trodd',            emoji: '🎭', title: 'Hvem skulle trodd?',                 sub: 'Kjente ansikter, hemmelig magi',        desc: 'Visste du at Henrik Ibsen tryllet? Fra vitenskap til sport og kultur — kjente personligheter med et hemmelig forhold til magien.',                                                          badge: 'Artikler',         soon: false },
       { href: '/tryllehistorie/begerspillet',                 emoji: '🏺', title: 'Begerspillet',                       sub: 'Magiens opprinnelse',         desc: 'Verdens eldste kjente trylletriks — avbildet i Egypt for over 4000 år siden. Historien om magiens aller første triks.',                                                                     badge: 'Kommer snart',    soon: true  },
-      { href: '/tryllehistorie/norske-legender',              emoji: '⭐', title: 'Norske legender',                    sub: 'Portretter',                  desc: 'Egelo, Jan Crosby, Davido, Arnardo og andre norske tryllekunstnere som har satt spor. Dyptgående portretter.',                                                                                badge: '7 artikler',      soon: false },
+      { href: '/tryllehistorie/fordypninger',                 emoji: '⭐', title: 'Fordypninger',                       sub: 'Portretter og dypdykk',       desc: 'Egelo, Jan Crosby, Arnardo og andre — norske og internasjonale tryllekunstnere som har satt spor. Dyptgående portretter.',                                                                    badge: '8 artikler',      soon: false },
       { href: '/tryllehistorie/got-talent',                   emoji: '🏆', title: 'Got Talent',                         sub: 'Nordisk TV-magi',             desc: 'Norske, svenske, danske og finske tryllekunstnere i Norske Talenter, Talang, Danmark har Talent og Talent Suomi.',                                                                          badge: '35 opptredener',  soon: false },
       { href: '/tryllehistorie/fool-us',                      emoji: '🎯', title: 'Penn & Teller: Fool Us',             sub: 'Nordisk TV-magi',             desc: 'Nordiske magikere som har møtt Penn & Teller i den prestisjetunge fagduellen fra Las Vegas. 7 klarte å lure dem.',                                                                            badge: 'Opptredener',  soon: false },
     ]),
@@ -927,7 +934,7 @@ export async function getUtstillingPage(): Promise<UtstillingPage> {
       heading: d?.kommerSnartSeksjon?.heading ?? 'I utstillingen',
     },
     seksjoner: d?.seksjoner ?? [
-      { icon: '🇳🇴', label: 'Norsk tryllekunst',  title: 'Norske legender',    description: 'Fra Arnardo til Finn Jon — tryllekunstnerne som skapte norsk magi.',                        slug: 'norske-legender',    ready: false },
+      { icon: '⭐',   label: 'Portretter',          title: 'Fordypninger',       description: 'Fra Arnardo til Finn Jon — tryllekunstnerne som satte spor.',                                slug: 'fordypninger',       ready: false },
       { icon: '🎩',   label: 'Samlingen',           title: 'Artefakter',         description: 'Sjeldne rekvisitter, historiske gjenstander og mysterier fra museets samling.',              slug: 'artefakter',         ready: true  },
       { icon: '♣',    label: 'Organisasjonene',     title: 'Trylleforeningene',  description: 'Magiske Cirkel Norge og Den magiske ring — fellesskapet bak kunsten.',                      slug: 'trylleforeningene',  ready: true  },
       { icon: '🛍',   label: 'Butikken',             title: 'Tryllebutikken',     description: 'Bøker, rekvisitter og kuriositeter for den nysgjerrige.',                                   slug: 'tryllebutikken',     ready: true  },
@@ -1255,9 +1262,22 @@ export function portableTextToHtml(blocks: PortableTextBlock[] | undefined | nul
   if (!blocks?.length) return ''
   return toHTML(blocks, {
     components: {
+      types: {
+        image: ({ value }: { value?: { asset?: { _ref: string; url?: string }; alt?: string } }) => {
+          if (!value?.asset) return ''
+          const src = urlFor(value).width(720).format('webp').url()
+          const alt = (value.alt ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
+          return `<figure class="pt-image"><img src="${src}" alt="${alt}" loading="lazy" decoding="async" /></figure>`
+        },
+      },
       marks: {
-        link: ({ children, value }) =>
-          `<a href="${value?.href ?? '#'}" target="_blank" rel="noopener noreferrer">${children}</a>`,
+        // External links open in a new tab; anything else (relative/internal) navigates normally.
+        link: ({ children, value }) => {
+          const href = value?.href ?? '#'
+          return /^https?:\/\//i.test(href)
+            ? `<a href="${href}" target="_blank" rel="noopener noreferrer">${children}</a>`
+            : `<a href="${href}">${children}</a>`
+        },
         internalLink: ({ children, value }) => {
           const slug = value?.reference?.slug ?? ''
           return slug
@@ -1339,6 +1359,29 @@ export interface Legend {
   videos?:      BiographyVideo[]
   tags?:        string[]
   sources?:     { label: string; url?: string }[]
+  // Utstillingen-felt — se schemaTypes/legend.ts. Kun satt på dokumenter som
+  // også har physicalOrder og/eller stasjoner (filtrert bort fra getAllLegends
+  // / getLegendBySlug / getLegendPaths under, som er for /tryllehistorie).
+  tagline?:       string
+  years?:         string
+  qrNumber?:      number
+  physicalOrder?: number
+  childText?:     string
+  childActivity?: string
+  wallText?:      any[]
+  detailIntro?:   string
+  sections?:      { heading: string; body: any[] }[]
+  stations?:      LegendStation[]
+}
+
+export interface LegendStation {
+  title:           string
+  order?:          number
+  year?:           string
+  image?:          { asset: { _ref: string; url: string }; alt?: string }
+  textKids?:       string
+  textAdults?:     string
+  activityPrompt?: string
 }
 
 // ── Spørringer: Biography ────────────────────────────────────────
@@ -1412,10 +1455,15 @@ export async function getBiographyDirectory(): Promise<Biography[]> {
 
 // ── Spørringer: Legend ───────────────────────────────────────────
 
+// Filter delt av alle spørringer under: ekskluderer utstillingen-artikler
+// (fysisk plassert i museet og/eller med stasjoner) — de hører hjemme under
+// /utstillingen, se getGullalderenPanels / getUtstillingDeepDives / getUtstillingEntryBySlug.
+const NOT_UTSTILLING = `!defined(physicalOrder) && (!defined(stations) || count(stations) == 0)`
+
 // Alle legender — til oversiktssiden
 export async function getAllLegends(): Promise<Legend[]> {
   return sanityClient.fetch(`
-    *[_type == "legend" && isVisible != false] | order(title asc) {
+    *[_type == "legend" && isVisible != false && ${NOT_UTSTILLING}] | order(title asc) {
       _id, title, "slug": slug.current,
       excerpt, tags,
       mainImage { asset->{ _ref, url }, alt },
@@ -1431,13 +1479,16 @@ export async function getAllLegends(): Promise<Legend[]> {
 // Én legende via slug — til artikkelsiden
 export async function getLegendBySlug(slug: string): Promise<Legend | null> {
   return sanityClient.fetch(`
-    *[_type == "legend" && slug.current == $slug && isVisible != false][0] {
+    *[_type == "legend" && slug.current == $slug && isVisible != false && ${NOT_UTSTILLING}][0] {
       _id, title, "slug": slug.current,
-      excerpt, tags,
+      excerpt, tags, tagline, years,
+      childText, childActivity, wallText,
+      detailIntro, sections[] { heading, body },
       mainImage { asset->{ _ref, url }, alt, caption },
       gallery[] { asset->{ _ref, url }, alt, caption },
       content,
       videos[] { title, url, type, year },
+      stations[] { title, order, year, image { asset->{ _ref, url }, alt }, textKids, textAdults, activityPrompt },
       sources[] { label, url },
       biographyRef-> {
         _id, name, "slug": slug.current,
@@ -1451,7 +1502,7 @@ export async function getLegendBySlug(slug: string): Promise<Legend | null> {
 // Statiske stier for legend [slug].astro
 export async function getLegendPaths() {
   const legends = await sanityClient.fetch(`
-    *[_type == "legend" && isVisible != false] { "slug": slug.current }
+    *[_type == "legend" && isVisible != false && ${NOT_UTSTILLING}] { "slug": slug.current }
   `)
   return legends
     .filter((l: { slug?: string }) => l.slug)
@@ -1463,7 +1514,7 @@ export async function getLegendPaths() {
 export type WhoKnewCategory = 'vitenskap' | 'politikk' | 'sport' | 'kultur'
 
 export interface WhoKnewRelated {
-  _type: 'legend' | 'magician' | 'biography'
+  _type: 'legend' | 'biography'
   title: string
   slug:  string
 }
@@ -1521,9 +1572,8 @@ export async function getWhoKnewBySlug(slug: string): Promise<WhoKnew | null> {
 
 // Lenke til den fulle historien for en relatedRef (legend, magician eller biography)
 export function whoKnewRelatedHref(related: WhoKnewRelated): string {
-  if (related._type === 'magician') return `/utstillingen/${related.slug}`
   if (related._type === 'biography') return `/tryllehistorie/magiens-hvem-er-hvem/${related.slug}`
-  return `/tryllehistorie/norske-legender/${related.slug}`
+  return `/tryllehistorie/fordypninger/${related.slug}`
 }
 
 // Statiske stier for whoKnew [slug].astro

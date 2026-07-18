@@ -7,7 +7,10 @@ export default defineConfig({
     // Short URLs used on print material / QR codes → canonical paths
     '/got-talent':                  '/tryllehistorie/got-talent',
     '/fool-us':                     '/tryllehistorie/fool-us',
-    '/norske-legender':             '/tryllehistorie/norske-legender',
+    // "Norske legender" renamed to "Fordypninger" (2026-07) — dekker nå
+    // norske og internasjonale artikler, ikke bare norske.
+    '/norske-legender':                 '/tryllehistorie/fordypninger',
+    '/tryllehistorie/norske-legender':  '/tryllehistorie/fordypninger',
     '/hvem-er-hvem':                '/tryllehistorie/magiens-hvem-er-hvem',
     '/tryllehistorie/hvem-er-hvem': '/tryllehistorie/magiens-hvem-er-hvem',
     // Library moved under /ressurser (2026-07); short URL kept working

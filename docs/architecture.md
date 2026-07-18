@@ -66,10 +66,7 @@ Pages with variable URL segments (e.g., `/utstillingen/houdini`) are generated a
 ```ts
 // web/src/pages/utstillingen/[slug].astro
 export async function getStaticPaths() {
-  const magicians = await getAllMagicians()   // GROQ query at build time
-  return magicians
-    .filter(m => m.slug && typeof m.slug === 'string')
-    .map(m => ({ params: { slug: String(m.slug) } }))
+  return getUtstillingPaths()   // GROQ query at build time
 }
 ```
 
@@ -77,9 +74,9 @@ All dynamic routes in the project follow this pattern:
 
 | Route file | Content type | Query function |
 |---|---|---|
-| `utstillingen/[slug].astro` | `magician` | `getAllMagicians()` |
+| `utstillingen/[slug].astro` | `legend` (docs with `physicalOrder` and/or `stations`) | `getUtstillingPaths()` |
 | `utstillingen/artefakter/[slug].astro` | `artifact` | `getAllArtifacts()` |
-| `tryllehistorie/norske-legender/[slug].astro` | `legend` | `getLegendPaths()` |
+| `tryllehistorie/fordypninger/[slug].astro` | `legend` (remaining docs) | `getLegendPaths()` |
 | `tryllehistorie/magiens-hvem-er-hvem/[slug].astro` | `biography` | `getBiographyPaths()` |
 | `tryllehistorie/got-talent/[slug].astro` | `tvAppearance` | `getTvAppearancePaths()` |
 | `tryllehistorie/fool-us/[slug].astro` | `tvAppearance` | `getTvAppearancePaths()` |
@@ -88,6 +85,19 @@ All dynamic routes in the project follow this pattern:
 | `utstillingen/trylleforeningene/[slug].astro` | `magicOrganization` | `getMagicOrganizationPaths()` |
 
 All `getStaticPaths()` calls filter on `isVisible != false`, ensuring hidden documents never get static pages generated.
+
+> **2026-07 unification:** `schemaTypes/legend.ts` now covers both the
+> Gullalderen wall panels and free-form deep-dive articles — previously split
+> across `magician.ts` (7 fixed panels) and `exhibitionShow.ts`/
+> `exhibitionStation.ts` (Houdini). A `legend` doc routes to `/utstillingen`
+> if it has `physicalOrder` and/or `stations` set, otherwise to
+> `/tryllehistorie/fordypninger` (see `NOT_UTSTILLING` in `sanity.ts`). Both
+> routes share rendering via `web/src/components/LegendBody.astro`. The old
+> `magician`/`exhibitionShow`/`exhibitionStation` schema types and their
+> documents have since been removed entirely (content was migrated first,
+> confirmed to have zero remaining references, then deleted). See
+> `scripts/migrate-exhibits-to-legend.mjs` for the migration and
+> `docs/redaktor-bruksanvisning.md` §5/§7 for the editor-facing explanation.
 
 ### Redirects and the One Client-Side Exception
 
@@ -200,8 +210,8 @@ The system enforces a strict boundary between **structure** (in Git) and **data*
 ```
 Git repository                    Sanity Cloud (production dataset)
 ─────────────────────────         ──────────────────────────────────
-schemaTypes/magician.ts           171 magician documents
-  → defines fields, types         → actual magician data
+schemaTypes/biography.ts          171 biography documents
+  → defines fields, types         → actual biography data
   → validation rules              → images, texts, slugs
   → display config                → published/draft state
 

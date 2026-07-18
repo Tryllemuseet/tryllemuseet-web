@@ -2,6 +2,7 @@
 // Schema for magic organizations (e.g. Magiske Cirkel Norge, Den Magiske Ring)
 
 import { defineField, defineType } from 'sanity'
+import { richBlockContent } from './richBlockContent'
 
 export default defineType({
   name: 'magicOrganization',
@@ -132,55 +133,7 @@ export default defineType({
       title: 'Brødtekst',
       type: 'array',
       description: 'Historikk, bakgrunn og relasjon til museet. Rik tekst med avsnitt og lenker.',
-      of: [
-        {
-          type: 'block',
-          styles: [
-            { title: 'Normaltekst', value: 'normal' },
-            { title: 'Overskrift 2', value: 'h2' },
-            { title: 'Overskrift 3', value: 'h3' },
-            { title: 'Sitat', value: 'blockquote' },
-          ],
-          marks: {
-            decorators: [
-              { title: 'Fet', value: 'strong' },
-              { title: 'Kursiv', value: 'em' },
-            ],
-            annotations: [
-              {
-                name: 'link',
-                type: 'object',
-                title: 'Ekstern lenke',
-                fields: [
-                  defineField({ name: 'href', title: 'URL', type: 'url' }),
-                ],
-              },
-              {
-                name: 'internalLink',
-                type: 'object',
-                title: 'Intern lenke (person i HEH)',
-                fields: [
-                  defineField({
-                    name: 'reference',
-                    title: 'Person',
-                    type: 'reference',
-                    to: [{ type: 'biography' }],
-                  }),
-                ],
-              },
-            ],
-          },
-        },
-        // Inline image in body text
-        {
-          type: 'image',
-          options: { hotspot: true },
-          fields: [
-            defineField({ name: 'alt', title: 'Alt-tekst', type: 'string' }),
-            defineField({ name: 'caption', title: 'Bildetekst', type: 'string' }),
-          ],
-        },
-      ],
+      of: richBlockContent(),
     }),
 
     // ─── Key people ───────────────────────────────────────────────────────────
@@ -269,53 +222,11 @@ export default defineType({
               name: 'body',
               title: 'Brødtekst',
               type: 'array',
-              of: [
-                {
-                  type: 'block',
-                  styles: [
-                    { title: 'Normaltekst', value: 'normal' },
-                    { title: 'Overskrift 3', value: 'h3' },
-                    { title: 'Sitat', value: 'blockquote' },
-                  ],
-                  marks: {
-                    decorators: [
-                      { title: 'Fet', value: 'strong' },
-                      { title: 'Kursiv', value: 'em' },
-                    ],
-                    annotations: [
-                      {
-                        name: 'link',
-                        type: 'object',
-                        title: 'Ekstern lenke',
-                        fields: [
-                          defineField({ name: 'href', title: 'URL', type: 'url' }),
-                        ],
-                      },
-                      {
-                        name: 'internalLink',
-                        type: 'object',
-                        title: 'Intern lenke (person i HEH)',
-                        fields: [
-                          defineField({
-                            name: 'reference',
-                            title: 'Person',
-                            type: 'reference',
-                            to: [{ type: 'biography' }],
-                          }),
-                        ],
-                      },
-                    ],
-                  },
-                },
-                {
-                  type: 'image',
-                  options: { hotspot: true },
-                  fields: [
-                    defineField({ name: 'alt', title: 'Alt-tekst', type: 'string' }),
-                    defineField({ name: 'caption', title: 'Bildetekst', type: 'string' }),
-                  ],
-                },
-              ],
+              of: richBlockContent([
+                { title: 'Normaltekst', value: 'normal' },
+                { title: 'Overskrift 3', value: 'h3' },
+                { title: 'Sitat', value: 'blockquote' },
+              ]),
             }),
             // People linked specifically to this sub-article
             defineField({
