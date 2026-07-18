@@ -522,6 +522,7 @@ export interface BarnPage {
     detaljer: string[]; knappLabel: string; knappHref: string
   }
   kursBanner: { heading: string; tekst: string; knappLabel: string; knappHref: string }
+  laerEtTriksHero?: { label: string; heading: string; ingress: string }
 }
 
 // ── Typer: Om oss ────────────────────────────────────────────────
@@ -549,7 +550,8 @@ export async function getBarnPage(): Promise<BarnPage | null> {
       aldersgrupper[] { alder, ikon, tekst },
       aktiviteter[] { tittel, beskrivelse, ikon },
       skolebesok { label, heading, tekst, detaljer, knappLabel, knappHref },
-      kursBanner { heading, tekst, knappLabel, knappHref }
+      kursBanner { heading, tekst, knappLabel, knappHref },
+      laerEtTriksHero { label, heading, ingress }
     }
   `)
 }

@@ -2,9 +2,17 @@
 // src/pages/barn/laer-et-triks/index.astro
 import BaseLayout from '../../../layouts/BaseLayout.astro'
 import AnimateIn from '../../../components/AnimateIn.astro'
-import { getAllTricks } from '../../../lib/sanity'
+import { getAllTricks, getBarnPage } from '../../../lib/sanity'
 
-const tricks = await getAllTricks()
+const [tricks, bp] = await Promise.all([getAllTricks(), getBarnPage()])
+
+const hero = bp?.laerEtTriksHero ?? {
+  label: 'For barn og unge',
+  heading: 'Lær et triks',
+  ingress:
+    'Her finner du noen enkle trylletriks du kan øve på hjemme. Ta deg god tid — ' +
+    'de fleste tryllekunstnere har øvd hundrevis av ganger før de viste trikset til noen andre.',
+}
 
 const DIFFICULTY_LABELS: Record<string, string> = {
   enkel: 'Enkel',
@@ -25,12 +33,9 @@ const DIFFICULTY_LABELS: Record<string, string> = {
 
   <section class="triks-hero">
     <div class="container">
-      <span class="hero-label">For barn og unge</span>
-      <h1>Lær et triks</h1>
-      <p class="hero-ingress">
-        Her finner du noen enkle trylletriks du kan øve på hjemme. Ta deg god tid —
-        de fleste tryllekunstnere har øvd hundrevis av ganger før de viste trikset til noen andre.
-      </p>
+      <span class="hero-label">{hero.label}</span>
+      <h1>{hero.heading}</h1>
+      <p class="hero-ingress">{hero.ingress}</p>
     </div>
   </section>
 
