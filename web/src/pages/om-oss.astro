@@ -19,13 +19,18 @@ const medlem   = p?.medlemskap ?? { heading: 'Bli medlem', ingress: '', motivasj
 
 // Faktaboksens adresse kan overstyres per side; ellers gjelder Globale innstillinger
 const faktaAdresse = fakta.adresse || site.address?.replace(/\n/g, ', ')
-const presse   = p?.presse     ?? {
-  label: '', heading: 'Pressekontakt', tekst: '', knappLabel: 'Send pressehenvendelse', knappHref: '/kontakt',
-  nedlastinger: [
+const pressePartial = p?.presse ?? {}
+const presse   = {
+  label: pressePartial.label ?? '',
+  heading: pressePartial.heading ?? 'Pressekontakt',
+  tekst: pressePartial.tekst ?? '',
+  knappLabel: pressePartial.knappLabel ?? 'Send pressehenvendelse',
+  knappHref: pressePartial.knappHref ?? '/kontakt',
+  nedlastinger: pressePartial.nedlastinger ?? [
     { emoji: '🎩', tittel: 'Logoer', beskrivelse: 'PNG og SVG — mørk og lys variant' },
     { emoji: '📷', tittel: 'Pressebilder', beskrivelse: 'Høyoppløselige bilder fra museet' },
   ],
-  nedlastingsNotat: 'Filer leveres på forespørsel via e-post',
+  nedlastingsNotat: pressePartial.nedlastingsNotat ?? 'Filer leveres på forespørsel via e-post',
 }
 const partnere = p?.partnere   ?? { heading: 'Samarbeidspartnere', liste: [] }
 
