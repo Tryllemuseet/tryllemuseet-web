@@ -2,9 +2,9 @@
 // src/pages/utstillingen/tryllebutikken.astro
 import BaseLayout from '../../layouts/BaseLayout.astro'
 import AnimateIn from '../../components/AnimateIn.astro'
-import { getSiteConfig } from '../../lib/sanity'
+import { getSiteConfig, getTryllebutikkenPage } from '../../lib/sanity'
 
-const site = await getSiteConfig()
+const [site, butikk] = await Promise.all([getSiteConfig(), getTryllebutikkenPage()])
 ---
 
 <BaseLayout
@@ -15,11 +15,10 @@ const site = await getSiteConfig()
   <!-- HERO -->
   <section class="butikk-hero">
     <div class="container">
-      <p class="section-label">Utstillingen</p>
-      <h1 class="display-title butikk-title">Tryllebutikken</h1>
+      <p class="section-label">{butikk.hero.label}</p>
+      <h1 class="display-title butikk-title">{butikk.hero.heading}</h1>
       <p class="butikk-sub">
-        Etter besøket kan du ta med deg litt magi hjem. I vår lille butikk
-        finner du trylletriks, rekvisita og bøker — noe for alle nivåer.
+        {butikk.hero.ingress}
       </p>
     </div>
   </section>
@@ -30,66 +29,21 @@ const site = await getSiteConfig()
     <AnimateIn direction="left">
     <div class="butikk-main">
 
-      <!-- Trylleposer -->
-      <section class="produkt-seksjon">
-        <h2 class="seksjon-tittel">
-          <span class="seksjon-ikon" aria-hidden="true">🪄</span>
-          Trylleposer
-        </h2>
-        <p class="seksjon-ingress">
-          Perfekt for nybegynnere — hver pose inneholder et triks med forklaring og manual på norsk.
-        </p>
-        <ul class="produkt-liste">
-          <li>Pengemaskinen</li>
-          <li>Pengeslukeren</li>
-          <li>Fantommynten</li>
-          <li>Myntforsvinning</li>
-          <li>Spiralen</li>
-        </ul>
-      </section>
-
-      <hr class="gold-rule" />
-
-      <!-- Triks -->
-      <section class="produkt-seksjon">
-        <h2 class="seksjon-tittel">
-          <span class="seksjon-ikon" aria-hidden="true">🎩</span>
-          Triks og rekvisita
-        </h2>
-        <ul class="produkt-liste produkt-liste--grid">
-          <li>Mentalboksen</li>
-          <li>Tauringene</li>
-          <li>Repillusjonen</li>
-          <li>Fargetauene</li>
-          <li>Flygende fyrstikk</li>
-          <li>Ringspillet</li>
-          <li>Begerspillet</li>
-          <li>Flygende mynter</li>
-          <li>Kulebegeret</li>
-          <li>Kortesken de Luxe</li>
-          <li>Terningtrikset</li>
-          <li>Fargeskiftende tørkler</li>
-          <li>The secret box</li>
-          <li>Tryllekortstokk</li>
-        </ul>
-      </section>
-
-      <hr class="gold-rule" />
-
-      <!-- Bøker -->
-      <section class="produkt-seksjon">
-        <h2 class="seksjon-tittel">
-          <span class="seksjon-ikon" aria-hidden="true">📚</span>
-          Bøker
-        </h2>
-        <ul class="produkt-liste">
-          <li>Mystikk som underholdning</li>
-          <li>I livets manesje — boken om Arnardo</li>
-          <li>Egelo: Lærebok i humor</li>
-          <li>Kortkunster</li>
-          <li>Tryllekunster</li>
-        </ul>
-      </section>
+      {butikk.kategorier.map((kategori, i) => (
+        <>
+          {i > 0 && <hr class="gold-rule" />}
+          <section class="produkt-seksjon">
+            <h2 class="seksjon-tittel">
+              {kategori.emoji && <span class="seksjon-ikon" aria-hidden="true">{kategori.emoji}</span>}
+              {kategori.tittel}
+            </h2>
+            {kategori.ingress && <p class="seksjon-ingress">{kategori.ingress}</p>}
+            <ul class:list={['produkt-liste', { 'produkt-liste--grid': kategori.layout === 'grid' }]}>
+              {kategori.produkter.map(produkt => <li>{produkt}</li>)}
+            </ul>
+          </section>
+        </>
+      ))}
 
     </div>
     </AnimateIn>

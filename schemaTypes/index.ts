@@ -14,9 +14,10 @@ import { besokPage }           from './besokPage'
 import { kontaktPage }        from './kontaktPage'
 import { tryllehistoriePage } from './tryllehistoriePage'
 import { ressurserPage }      from './ressurserPage'
-import { arrangementPage }   from './arrangementPage'
 import { utstillingPage }    from './utstillingPage'
 import { personvernPage } from './personvernPage'
+import { tryllebutikkenPage } from './tryllebutikkenPage'
+import { godeRadConfig }      from './godeRadConfig'
 import { partner }        from './partner'
 import artifact           from './artifact'
 import { tvAppearance }    from './tvAppearance'
@@ -44,9 +45,9 @@ export const schemaTypes = [
   kontaktPage,
   tryllehistoriePage,
   ressurserPage,
-  arrangementPage,
   utstillingPage,
   personvernPage,
+  tryllebutikkenPage,
   // Dokumenttyper
   signageQuote,
   signageConfig,
@@ -71,6 +72,7 @@ export const schemaTypes = [
   trick,
   worldRecordTrick,
   competitionResult,
+  godeRadConfig,
   siteConfig,
   // Objekttyper
   contentSection,

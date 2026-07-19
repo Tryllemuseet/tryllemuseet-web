@@ -154,6 +154,21 @@ export const omOssPage = defineType({
         defineField({ name: 'tekst', title: 'Tekst', type: 'text', rows: 4 }),
         defineField({ name: 'knappLabel', title: 'Knapp — tekst', type: 'string' }),
         defineField({ name: 'knappHref', title: 'Knapp — URL', type: 'string' }),
+        defineField({
+          name: 'nedlastinger',
+          title: '«Last ned»-kort',
+          type: 'array',
+          of: [{
+            type: 'object',
+            fields: [
+              defineField({ name: 'emoji',       title: 'Emoji-ikon', type: 'string' }),
+              defineField({ name: 'tittel',      title: 'Tittel',     type: 'string', validation: R => R.required() }),
+              defineField({ name: 'beskrivelse', title: 'Beskrivelse', type: 'string' }),
+            ],
+            preview: { select: { title: 'tittel', subtitle: 'beskrivelse' } },
+          }],
+        }),
+        defineField({ name: 'nedlastingsNotat', title: 'Notat under nedlastingslisten', type: 'string' }),
       ],
     }),
 
