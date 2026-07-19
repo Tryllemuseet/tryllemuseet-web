@@ -3,6 +3,7 @@ import { contentSection } from './contentSection'
 import { sourceItem }     from './sourceItem'
 import { event }          from './event'
 import { siteConfig }     from './siteConfig'
+import { siteNavigation } from './siteNavigation'
 import { biography }      from './biography'
 import { legend }         from './legend'
 import { whoKnew }        from './whoKnew'
@@ -74,6 +75,7 @@ export const schemaTypes = [
   competitionResult,
   godeRadConfig,
   siteConfig,
+  siteNavigation,
   // Objekttyper
   contentSection,
   sourceItem,
