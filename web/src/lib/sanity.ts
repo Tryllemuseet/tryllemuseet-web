@@ -1020,6 +1020,102 @@ export async function getSiteConfig(): Promise<SiteConfig> {
   }
 }
 
+// ── Typer: SiteNavigation (header/mobilmeny/footer) ──────────────
+export interface NavSubArea {
+  label:        string
+  link:         string
+  isVisible:    boolean
+  featureFlag?: 'none' | 'quiz' | 'game'
+}
+
+export interface NavMainArea {
+  label:      string
+  link:       string
+  matchPaths: string[]
+  column:     'left' | 'right'
+  isVisible:  boolean
+  subAreas:   NavSubArea[]
+}
+
+export interface SiteNavigation {
+  mainAreas: NavMainArea[]
+}
+
+// Speiler den tidligere hardkodede menyen i BaseLayout.astro (før 2026-07-19).
+// Brukes helt til «siteNavigation»-dokumentet er sådd i Sanity — se
+// scripts/seed-site-navigation.mjs — og som sikkerhetsnett dataset != null men tomt.
+const DEFAULT_MAIN_AREAS: NavMainArea[] = [
+  { label: 'Besøk oss', link: '/besok', matchPaths: ['/besok'], column: 'left', isVisible: true, subAreas: [] },
+  {
+    label: 'Utstillingen', link: '/utstillingen', matchPaths: ['/utstillingen'], column: 'left', isVisible: true,
+    subAreas: [
+      { label: 'Oversikt',           link: '/utstillingen',                    isVisible: true },
+      { label: 'Artefakter',         link: '/utstillingen/artefakter',         isVisible: true },
+      { label: 'Trylleforeningene',  link: '/utstillingen/trylleforeningene',  isVisible: true },
+      { label: 'Tryllebutikken',     link: '/utstillingen/tryllebutikken',     isVisible: true },
+    ],
+  },
+  {
+    label: 'Aktiviteter', link: '/aktiviteter',
+    matchPaths: ['/aktiviteter', '/arrangementer', '/barn', '/tryllequiz', '/det-trettende-kabinett'],
+    column: 'left', isVisible: true,
+    subAreas: [
+      { label: 'Oversikt',                 link: '/aktiviteter',                    isVisible: true },
+      { label: 'Barn & unge',              link: '/barn',                           isVisible: true },
+      { label: 'Tryllequiz',               link: '/tryllequiz',                     isVisible: true, featureFlag: 'quiz' },
+      { label: 'Det trettende kabinett',   link: '/det-trettende-kabinett',          isVisible: true, featureFlag: 'game' },
+      { label: 'Bestill tryllekunstner',   link: '/aktiviteter/tryllekunstnere',     isVisible: true },
+    ],
+  },
+  {
+    label: 'Opptredener', link: '/tryllehistorie/got-talent',
+    matchPaths: ['/tryllehistorie/got-talent', '/tryllehistorie/fool-us', '/tryllehistorie/historiske-opptak'],
+    column: 'left', isVisible: true,
+    subAreas: [
+      { label: 'Got Talent',                    link: '/tryllehistorie/got-talent',        isVisible: true },
+      { label: 'Penn & Teller: Fool Us',        link: '/tryllehistorie/fool-us',           isVisible: true },
+      { label: 'Historiske opptak',             link: '/tryllehistorie/historiske-opptak', isVisible: true },
+    ],
+  },
+  {
+    label: 'Arkivet', link: '/tryllehistorie',
+    matchPaths: ['/tryllehistorie', '/ressurser'],
+    column: 'right', isVisible: true,
+    subAreas: [
+      { label: 'Hvem er hvem',          link: '/tryllehistorie/magiens-hvem-er-hvem', isVisible: true },
+      { label: 'Fordypninger',          link: '/tryllehistorie/fordypninger',         isVisible: true },
+      { label: 'Hvem skulle trodd?',    link: '/tryllehistorie/hvem-skulle-trodd',    isVisible: true },
+      { label: 'Historiske artikler',   link: '/tryllehistorie/historiske-artikler',  isVisible: true },
+      { label: 'Verdens mest…',         link: '/tryllehistorie/verdens-mest',         isVisible: true },
+      { label: 'Norden i FISM',         link: '/tryllehistorie/norden-i-fism',        isVisible: true },
+      { label: 'Bibliotek',             link: '/ressurser/bibliotek',                 isVisible: true },
+      { label: 'Ressurser',             link: '/ressurser',                           isVisible: true },
+    ],
+  },
+  {
+    label: 'Om oss', link: '/om-oss', matchPaths: ['/om-oss'], column: 'right', isVisible: true,
+    subAreas: [
+      { label: 'Om museet', link: '/om-oss',           isVisible: true },
+      { label: 'I media',   link: '/om-oss/i-media',   isVisible: true },
+    ],
+  },
+]
+
+export async function getSiteNavigation(): Promise<SiteNavigation> {
+  const d = await sanityClient.fetch(`
+    *[_type == "siteNavigation"][0] {
+      mainAreas[] {
+        label, link, matchPaths, column,
+        "isVisible": isVisible != false,
+        subAreas[] { label, link, "isVisible": isVisible != false, featureFlag }
+      }
+    }
+  `)
+  return {
+    mainAreas: d?.mainAreas ?? DEFAULT_MAIN_AREAS,
+  }
+}
+
 // ── Legg til på slutten av src/lib/sanity.ts ────────────────────
 
 // ── Typer: TV-opptreden ──────────────────────────────────────────
