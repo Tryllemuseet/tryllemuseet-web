@@ -38,44 +38,56 @@ import { worldRecordTrick } from './worldRecordTrick'
 import { competitionResult } from './competitionResult'
 
 export const schemaTypes = [
-  // Sidetyper
+  // Sidetyper — rekkefølge følger hovedmenyen (se siteNavigation)
   homepage,
-  barnPage,
-  omOssPage,
   besokPage,
-  kontaktPage,
+  utstillingPage,
+  tryllebutikkenPage,
+  barnPage,
   tryllehistoriePage,
   ressurserPage,
-  utstillingPage,
+  omOssPage,
+  kontaktPage,
   personvernPage,
-  tryllebutikkenPage,
-  // Dokumenttyper
-  signageQuote,
-  signageConfig,
-  signageVideo,
-  historiskeKlippNb,
-  biography,
+
+  // Dokumenttyper — Utstillingen
   legend,
-  whoKnew,
-  tvAppearance,
-  historicalClip,
-  mediaAppearance,
-  book,
-  event,
   artifact,
-  partner,
   magicOrganization,
+
+  // Dokumenttyper — Aktiviteter
+  trick,
+  godeRadConfig,
   quizConfig,
   quizTheme,
   quizQuestion,
   gameConfig,
   gameChapter,
-  trick,
+  event,
+
+  // Dokumenttyper — Opptredener
+  tvAppearance,
+  historicalClip,
+
+  // Dokumenttyper — Arkivet
+  biography,
+  whoKnew,
+  historiskeKlippNb,
   worldRecordTrick,
   competitionResult,
-  godeRadConfig,
+  book,
+
+  // Dokumenttyper — Om oss
+  mediaAppearance,
+  partner,
+
+  // Infoskjerm og globale innstillinger
+  signageQuote,
+  signageConfig,
+  signageVideo,
   siteConfig,
   siteNavigation,
+
   // Objekttyper
   contentSection,
   sourceItem,
