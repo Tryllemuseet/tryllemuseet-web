@@ -1,0 +1,203 @@
+---
+// src/pages/barn/historier/index.astro
+import BaseLayout from '../../../layouts/BaseLayout.astro'
+import AnimateIn from '../../../components/AnimateIn.astro'
+import { getAllComicStories, urlFor } from '../../../lib/sanity'
+
+const stories = await getAllComicStories()
+---
+
+<BaseLayout
+  title="Interaktive historier — Tryllemuseet"
+  description="Utforsk magihistorien scene for scene, med opplesning, tidslinje og klikkbare gjenstander."
+>
+
+  <nav class="breadcrumb container">
+    <a href="/barn">Barn & unge</a>
+    <span>›</span>
+    <span aria-current="page">Interaktive historier</span>
+  </nav>
+
+  <section class="historier-hero">
+    <div class="container">
+      <span class="hero-label">For barn og unge</span>
+      <h1>Interaktive historier</h1>
+      <p class="hero-ingress">
+        Bla gjennom historien scene for scene. Trykk på gullmerkene i bildene for å oppdage
+        skjulte hemmeligheter, og la museet lese historien høyt for deg.
+      </p>
+    </div>
+  </section>
+
+  <section class="historier-liste section-pad">
+    <div class="container">
+
+      {stories.length === 0 && (
+        <AnimateIn direction="up">
+          <p class="tom-liste">Vi jobber med å legge inn historier her — kom tilbake litt senere!</p>
+        </AnimateIn>
+      )}
+
+      <div class="historier-grid">
+        {stories.map(s => {
+          const thumb = s.scenes[0]?.image
+          return (
+            <AnimateIn direction="up">
+              <a href={`/barn/historier/${s.slug}`} class="historie-link">
+                <article class="historie-kort">
+                  <div class="historie-img">
+                    {thumb?.asset?.url ? (
+                      <img
+                        src={urlFor(thumb).width(700).height(440).fit('crop').format('webp').url()}
+                        alt={thumb.alt ?? s.title}
+                        loading="lazy"
+                      />
+                    ) : (
+                      <div class="historie-img-placeholder" aria-hidden="true">📖</div>
+                    )}
+                  </div>
+                  <div class="historie-kort-body">
+                    <h2>{s.title}</h2>
+                    {s.subtitle && <p class="historie-subtitle">{s.subtitle}</p>}
+                    <span class="historie-cta">Les historien →</span>
+                  </div>
+                </article>
+              </a>
+            </AnimateIn>
+          )
+        })}
+      </div>
+
+    </div>
+  </section>
+
+  <section class="diplom-banner">
+    <div class="container diplom-banner-inner">
+      <div>
+        <h2>Nysgjerrig på mer magihistorie?</h2>
+        <p>Utforsk hele Tryllemuseets historiearkiv, med biografier og dypdykk om kjente magikere.</p>
+      </div>
+      <a href="/barn" class="btn btn-gold">Tilbake til Barn & unge</a>
+    </div>
+  </section>
+
+</BaseLayout>
+
+<style>
+  .breadcrumb {
+    padding-block: 1.5rem 0;
+    font-family: var(--font-ui);
+    font-size: 0.85rem;
+    color: #777;
+  }
+  .breadcrumb a { color: var(--burgundy); text-decoration: none; }
+  .breadcrumb a:hover { text-decoration: underline; }
+  .breadcrumb span[aria-current] { color: #999; }
+
+  .historier-hero { padding-block: 3rem 2rem; background: var(--cream); }
+  .hero-label {
+    display: inline-block;
+    font-family: var(--font-ui);
+    font-size: 0.75rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--gold);
+    border-bottom: 1px solid var(--gold);
+    padding-bottom: 0.2em;
+    margin-bottom: 1rem;
+  }
+  .historier-hero h1 {
+    font-family: var(--font-display);
+    font-size: clamp(1.8rem, 4vw, 2.6rem);
+    color: var(--burgundy);
+    margin-bottom: 1rem;
+  }
+  .hero-ingress {
+    font-family: var(--font-body);
+    font-size: 1.05rem;
+    color: #555;
+    line-height: 1.7;
+    max-width: 620px;
+  }
+
+  .section-pad { padding-block: 3rem 5rem; }
+
+  .tom-liste {
+    font-family: var(--font-body);
+    font-size: 1.05rem;
+    color: #777;
+    text-align: center;
+    padding: 3rem 0;
+  }
+
+  .historier-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 2rem;
+  }
+
+  .historie-link { display: block; text-decoration: none; color: inherit; height: 100%; }
+
+  .historie-kort {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    background: white;
+    border: 1px solid rgba(107,15,26,0.12);
+    border-radius: 4px;
+    overflow: hidden;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+    transition: box-shadow 150ms ease, border-color 150ms ease;
+  }
+  .historie-link:hover .historie-kort {
+    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    border-color: var(--gold);
+  }
+
+  .historie-img { width: 100%; aspect-ratio: 16/10; overflow: hidden; background: var(--burgundy); flex-shrink: 0; }
+  .historie-img img { width: 100%; height: 100%; object-fit: cover; transition: transform 300ms; }
+  .historie-link:hover .historie-img img { transform: scale(1.03); }
+  .historie-img-placeholder { display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; font-size: 2.5rem; }
+
+  .historie-kort-body { padding: 1.5rem; display: flex; flex-direction: column; flex: 1; }
+  .historie-kort-body h2 { font-family: var(--font-display); font-size: 1.3rem; color: var(--burgundy); line-height: 1.3; margin-bottom: 0.5rem; }
+  .historie-subtitle { font-family: var(--font-body); font-size: 0.95rem; font-style: italic; color: #555; line-height: 1.6; margin-bottom: 1.25rem; }
+
+  .historie-cta {
+    margin-top: auto;
+    font-family: var(--font-ui);
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--burgundy);
+    border-bottom: 1px solid var(--gold);
+    padding-bottom: 0.1em;
+    align-self: flex-start;
+  }
+
+  .diplom-banner { background: var(--burgundy); padding-block: 3.5rem; }
+  .diplom-banner-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 2rem;
+    flex-wrap: wrap;
+  }
+  .diplom-banner h2 { font-family: var(--font-display); font-size: 1.6rem; color: var(--cream); margin-bottom: 0.5rem; }
+  .diplom-banner p  { font-family: var(--font-body); font-size: 1rem; color: rgba(251,247,239,0.75); max-width: 520px; line-height: 1.6; }
+
+  .btn-gold {
+    font-family: var(--font-ui);
+    font-size: 1rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    text-decoration: none;
+    background: var(--gold);
+    color: var(--burgundy);
+    padding: 0.8em 2em;
+    border-radius: 2px;
+    transition: background 0.2s ease;
+    display: inline-block;
+  }
+  .btn-gold:hover { background: var(--gold-light); }
+</style>
