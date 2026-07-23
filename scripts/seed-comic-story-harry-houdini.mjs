@@ -329,6 +329,7 @@ const SCENES = [
 ]
 
 async function uploadLocalImage(filename) {
+  if (dryRun) return `dry-run-placeholder-${filename}`
   const path = join(ASSETS_DIR, filename)
   const asset = await client.assets.upload('image', createReadStream(path), { filename })
   return asset._id
@@ -341,7 +342,7 @@ async function buildScene(scene, index) {
   if (scene.imageFile) {
     const assetId = await uploadLocalImage(scene.imageFile)
     image = { _type: 'image', asset: { _type: 'reference', _ref: assetId }, alt: scene.imageAlt }
-    console.log(`  ✔ Lastet opp hovedbilde for «${scene.chapter}» (${scene.imageFile})`)
+    console.log(`  ${dryRun ? '·' : '✔'} ${dryRun ? 'Ville lastet opp' : 'Lastet opp'} hovedbilde for «${scene.chapter}» (${scene.imageFile})`)
   } else {
     image = { _type: 'image', alt: scene.imageAlt }
     missing.push({ scene: scene.chapter, field: 'Hovedbilde', filename: scene.imageSourceFilename })
