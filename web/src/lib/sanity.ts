@@ -548,6 +548,89 @@ export async function getTrickPaths() {
     .map((t: { slug: string }) => ({ params: { slug: t.slug } }))
 }
 
+// ── Typer: ComicStory (interaktive historier, /barn/historier) ─────
+
+export interface ComicImage {
+  asset:    { _ref: string; url: string }
+  alt?:     string
+  caption?: string
+  hotspot?: { x: number; y: number }
+}
+
+export interface ComicHotspot {
+  x:     number
+  y:     number
+  label: string
+  fact:  string
+}
+
+export interface ComicDialogueLine {
+  speaker: string
+  text:    string
+}
+
+export interface ComicScene {
+  _key:      string
+  year?:     string
+  chapter:   string
+  image:     ComicImage
+  caption?:  string
+  narration: string[]
+  dialogue?: ComicDialogueLine[]
+  hotspots?: ComicHotspot[]
+  factBox?:  { title?: string; body?: string }
+  extraImages?: ComicImage[]
+}
+
+export interface ComicStory {
+  _id:          string
+  title:        string
+  slug:         string
+  subtitle?:    string
+  intro?:       string
+  creditsNote?: string
+  scenes:       ComicScene[]
+}
+
+const COMIC_SCENE_PROJECTION = `
+  _key, year, chapter, caption, narration,
+  image { asset->{ _ref, url }, alt, hotspot },
+  dialogue[] { speaker, text },
+  hotspots[] { x, y, label, fact },
+  factBox { title, body },
+  extraImages[] { asset->{ _ref, url }, alt, caption, hotspot }
+`
+
+// Alle historier — til oversiktssiden /barn/historier
+export async function getAllComicStories(): Promise<ComicStory[]> {
+  return sanityClient.fetch(`
+    *[_type == "comicStory" && isVisible != false] | order(title asc) {
+      _id, title, "slug": slug.current, subtitle, intro,
+      "scenes": scenes[0...1] { ${COMIC_SCENE_PROJECTION} }
+    }
+  `)
+}
+
+// Én historie via slug — til /barn/historier/[slug]
+export async function getComicStoryBySlug(slug: string): Promise<ComicStory | null> {
+  return sanityClient.fetch(`
+    *[_type == "comicStory" && slug.current == $slug && isVisible != false][0] {
+      _id, title, "slug": slug.current, subtitle, intro, creditsNote,
+      scenes[] { ${COMIC_SCENE_PROJECTION} }
+    }
+  `, { slug })
+}
+
+// Slugs for getStaticPaths() på /barn/historier/[slug]
+export async function getComicStoryPaths() {
+  const stories = await sanityClient.fetch(`
+    *[_type == "comicStory" && isVisible != false] { "slug": slug.current }
+  `)
+  return stories
+    .filter((s: { slug?: string }) => s.slug)
+    .map((s: { slug: string }) => ({ params: { slug: s.slug } }))
+}
+
 // ── Typer og spørring: Gode råd (delt boks på triks-sidene) ────────
 export interface GodeRadConfig {
   barnHeading:   string

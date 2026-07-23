@@ -1,0 +1,655 @@
+---
+// src/pages/barn/historier/[slug].astro
+import BaseLayout from '../../../layouts/BaseLayout.astro'
+import { getComicStoryBySlug, getComicStoryPaths, urlFor } from '../../../lib/sanity'
+import type { ComicImage, ComicScene } from '../../../lib/sanity'
+
+export async function getStaticPaths() {
+  return getComicStoryPaths()
+}
+
+const { slug } = Astro.params
+const story = await getComicStoryBySlug(slug!)
+
+if (!story) return Astro.redirect('/barn/historier')
+
+function imgSrc(img: ComicImage | undefined, width: number): string | null {
+  return img?.asset?.url ? urlFor(img).width(width).format('webp').url() : null
+}
+
+function focalPosition(img: ComicImage | undefined): string {
+  return img?.hotspot ? `${img.hotspot.x * 100}% ${img.hotspot.y * 100}%` : 'center'
+}
+
+function narrationText(scene: ComicScene): string {
+  const lines = [
+    ...(scene.dialogue?.map(d => `${d.speaker}: ${d.text}`) ?? []),
+    ...scene.narration,
+  ]
+  return lines.join(' ')
+}
+---
+
+<BaseLayout
+  title={`${story.title} — Tryllemuseet`}
+  description={story.subtitle ?? story.intro ?? `${story.title} — en interaktiv historie for barn og unge.`}
+>
+
+  <nav class="breadcrumb container">
+    <a href="/barn">Barn & unge</a>
+    <span>›</span>
+    <a href="/barn/historier">Interaktive historier</a>
+    <span>›</span>
+    <span aria-current="page">{story.title}</span>
+  </nav>
+
+  <!-- ── MOBIL TIDSLINJE ──────────────────────────────────────────── -->
+  <nav class="timeline-mobile" aria-label="Tidslinje">
+    <ol>
+      {story.scenes.map(s => (
+        <li>
+          <button type="button" class="timeline-mobile-item" data-jump={s._key}>
+            <span class="tl-year">{s.year ?? '—'}</span>
+            <span class="tl-sep">·</span>
+            <span class="tl-chapter">{s.chapter.replace(/^\d+\s·\s/, '')}</span>
+          </button>
+        </li>
+      ))}
+    </ol>
+  </nav>
+
+  <!-- ── DESKTOP TIDSLINJE ────────────────────────────────────────── -->
+  <nav class="timeline-desktop" aria-label="Tidslinje">
+    <ol>
+      {story.scenes.map(s => (
+        <li>
+          <button type="button" class="timeline-desktop-item" data-jump={s._key}>
+            <span class="tl-dot" aria-hidden="true"></span>
+            <span class="tl-text">
+              <span class="tl-year">{s.year ?? '—'}</span>
+              <span class="tl-chapter">{s.chapter}</span>
+            </span>
+          </button>
+        </li>
+      ))}
+    </ol>
+  </nav>
+
+  <main class="comic">
+
+    <section class="comic-intro">
+      <span class="comic-kicker">Interaktiv historie</span>
+      <h1>{story.title}</h1>
+      {story.subtitle && <p class="comic-subtitle">{story.subtitle}</p>}
+      {story.intro && <p class="comic-intro-text">{story.intro}</p>}
+      <div class="gold-divider" aria-hidden="true"></div>
+    </section>
+
+    {story.scenes.map(scene => (
+      <section id={scene._key} class="comic-scene" data-scene>
+        <div class="scene-head">
+          <div>
+            <div class="scene-year">{scene.year ?? '—'}</div>
+            <h2 class="scene-chapter">{scene.chapter}</h2>
+          </div>
+          <button
+            type="button"
+            class="narrate-btn"
+            data-narrate={narrationText(scene)}
+            aria-label="Les scenen høyt"
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+              <path class="narrate-wave-1" d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+              <path class="narrate-wave-2" d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
+              <line class="narrate-off" x1="22" y1="9" x2="16" y2="15"></line>
+            </svg>
+          </button>
+        </div>
+
+        <figure class="scene-figure">
+          <div class="scene-image-wrap" style={`--pos: ${focalPosition(scene.image)}`}>
+            <img
+              src={imgSrc(scene.image, 1280) ?? ''}
+              alt={scene.image.alt ?? scene.chapter}
+              loading="lazy"
+              width="1280"
+              height="800"
+            />
+            {scene.hotspots?.map(h => (
+              <button
+                type="button"
+                class="hotspot"
+                style={`left:${h.x}%; top:${h.y}%`}
+                data-hotspot-label={h.label}
+                data-hotspot-fact={h.fact}
+                aria-label={`Lær mer om ${h.label}`}
+              >
+                <span class="hotspot-ping" aria-hidden="true"></span>
+                <span class="hotspot-dot" aria-hidden="true">+</span>
+              </button>
+            ))}
+          </div>
+          {scene.caption && <figcaption>{scene.caption}</figcaption>}
+        </figure>
+
+        {scene.extraImages && scene.extraImages.length > 0 && (
+          <div class="extra-grid" data-multi={scene.extraImages.length > 1 ? '' : undefined}>
+            {scene.extraImages.map(img => (
+              <figure class="extra-fig">
+                <div class="extra-image-wrap" style={`--pos: ${focalPosition(img)}`}>
+                  <img src={imgSrc(img, 640) ?? ''} alt={img.alt ?? ''} loading="lazy" />
+                </div>
+                {img.caption && <figcaption>{img.caption}</figcaption>}
+              </figure>
+            ))}
+          </div>
+        )}
+
+        {scene.dialogue && scene.dialogue.length > 0 && (
+          <div class="dialogue-list">
+            {scene.dialogue.map(d => (
+              <div class="dialogue-line">
+                <div class="dialogue-speaker">{d.speaker}</div>
+                <p class="dialogue-text">{d.text}</p>
+              </div>
+            ))}
+          </div>
+        )}
+
+        <div class="narration">
+          {scene.narration.map(p => <p>{p}</p>)}
+        </div>
+
+        {scene.factBox && (scene.factBox.title || scene.factBox.body) && (
+          <aside class="fact-box">
+            {scene.factBox.title && <div class="fact-box-title">{scene.factBox.title}</div>}
+            {scene.factBox.body && <p>{scene.factBox.body}</p>}
+          </aside>
+        )}
+      </section>
+    ))}
+
+    <footer class="comic-footer">
+      {story.creditsNote && <p>{story.creditsNote}</p>}
+    </footer>
+
+    <div class="page-nav">
+      <a href="/barn/historier">← Alle historier</a>
+      <a href="/barn">← Barn & unge</a>
+    </div>
+
+  </main>
+
+  <!-- ── HOTSPOT-MODAL ────────────────────────────────────────────── -->
+  <div id="hotspot-modal" class="hotspot-modal" role="dialog" aria-modal="true" aria-label="Fakta" hidden>
+    <div class="hotspot-modal-backdrop" data-close="true"></div>
+    <div class="hotspot-modal-card">
+      <div class="hotspot-modal-kicker">Fakta</div>
+      <h3 id="hotspot-modal-title"></h3>
+      <p id="hotspot-modal-fact"></p>
+      <button type="button" class="hotspot-modal-close" data-close="true">Lukk</button>
+    </div>
+  </div>
+
+</BaseLayout>
+
+<script>
+  // ── Tidslinje: aktiv scene + hopp ────────────────────────────────
+  const sections = Array.from(document.querySelectorAll<HTMLElement>('[data-scene]'))
+  const jumpButtons = Array.from(document.querySelectorAll<HTMLButtonElement>('[data-jump]'))
+
+  function setActive(key: string) {
+    jumpButtons.forEach(btn => btn.classList.toggle('active', btn.dataset.jump === key))
+  }
+
+  if (sections.length) {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting && entry.intersectionRatio > 0.4) setActive(entry.target.id)
+        }
+      },
+      { threshold: [0.4, 0.6] },
+    )
+    sections.forEach(s => observer.observe(s))
+  }
+
+  jumpButtons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const key = btn.dataset.jump
+      const target = key ? document.getElementById(key) : null
+      target?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    })
+  })
+
+  // ── Hotspot-fakta ────────────────────────────────────────────────
+  const modal      = document.getElementById('hotspot-modal') as HTMLElement | null
+  const modalTitle = document.getElementById('hotspot-modal-title') as HTMLElement | null
+  const modalFact  = document.getElementById('hotspot-modal-fact') as HTMLElement | null
+
+  function openHotspot(label: string, fact: string) {
+    if (!modal || !modalTitle || !modalFact) return
+    modalTitle.textContent = label
+    modalFact.textContent = fact
+    modal.hidden = false
+    document.body.style.overflow = 'hidden'
+  }
+
+  function closeHotspot() {
+    if (!modal) return
+    modal.hidden = true
+    document.body.style.overflow = ''
+  }
+
+  document.querySelectorAll<HTMLButtonElement>('[data-hotspot-label]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      openHotspot(btn.dataset.hotspotLabel ?? '', btn.dataset.hotspotFact ?? '')
+    })
+  })
+  modal?.querySelectorAll('[data-close]').forEach(el =>
+    el.addEventListener('click', closeHotspot),
+  )
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && modal && !modal.hidden) closeHotspot()
+  })
+
+  // ── Opplesning (nettleserens Web Speech API) ────────────────────
+  let activeBtn: HTMLButtonElement | null = null
+
+  function stopNarration() {
+    window.speechSynthesis?.cancel()
+    activeBtn?.classList.remove('speaking')
+    activeBtn = null
+  }
+
+  document.querySelectorAll<HTMLButtonElement>('[data-narrate]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      if (typeof window === 'undefined' || !window.speechSynthesis) return
+      if (activeBtn === btn) {
+        stopNarration()
+        return
+      }
+      window.speechSynthesis.cancel()
+      activeBtn?.classList.remove('speaking')
+
+      const utter = new SpeechSynthesisUtterance(btn.dataset.narrate ?? '')
+      utter.lang = 'nb-NO'
+      utter.rate = 0.95
+      utter.pitch = 1.0
+      const voices = window.speechSynthesis.getVoices()
+      const nb =
+        voices.find(v => v.lang?.toLowerCase().startsWith('nb')) ??
+        voices.find(v => v.lang?.toLowerCase().startsWith('no'))
+      if (nb) utter.voice = nb
+
+      const clear = () => {
+        btn.classList.remove('speaking')
+        if (activeBtn === btn) activeBtn = null
+      }
+      utter.onend = clear
+      utter.onerror = clear
+
+      btn.classList.add('speaking')
+      activeBtn = btn
+      window.speechSynthesis.speak(utter)
+    })
+  })
+
+  window.addEventListener('beforeunload', () => window.speechSynthesis?.cancel())
+</script>
+
+<style>
+  .breadcrumb {
+    padding-block: 1.5rem 0;
+    font-family: var(--font-ui);
+    font-size: 0.85rem;
+    color: #777;
+  }
+  .breadcrumb a { color: var(--burgundy); text-decoration: none; }
+  .breadcrumb a:hover { text-decoration: underline; }
+  .breadcrumb span[aria-current] { color: #999; }
+
+  .comic { max-width: 48rem; margin: 0 auto; padding-inline: 1.25rem; }
+
+  .comic-intro { padding-block: 2.5rem 1.5rem; text-align: center; }
+  .comic-kicker {
+    display: inline-block;
+    font-family: var(--font-ui);
+    font-size: 0.75rem;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--gold);
+  }
+  .comic-intro h1 {
+    margin-top: 0.6rem;
+    font-family: var(--font-display);
+    font-size: clamp(1.9rem, 5vw, 2.8rem);
+    line-height: 1.15;
+    color: var(--burgundy);
+  }
+  .comic-subtitle {
+    margin-top: 0.6rem;
+    font-family: var(--font-body);
+    font-style: italic;
+    font-size: 1.1rem;
+    color: #6b5a4a;
+  }
+  .comic-intro-text {
+    margin: 1.25rem auto 0;
+    max-width: 38rem;
+    font-family: var(--font-body);
+    font-size: 1rem;
+    line-height: 1.7;
+    color: #444;
+  }
+  .gold-divider {
+    width: 5rem;
+    height: 1px;
+    margin: 1.75rem auto 0;
+    background: linear-gradient(90deg, transparent, var(--gold), transparent);
+  }
+
+  /* ── Tidslinje: mobil ── */
+  .timeline-mobile {
+    position: sticky;
+    top: var(--header-h);
+    z-index: 30;
+    background: rgba(251,247,239,0.92);
+    backdrop-filter: blur(6px);
+    border-bottom: 1px solid var(--cream-dark);
+  }
+  .timeline-mobile ol { display: flex; gap: 0.5rem; overflow-x: auto; padding: 0.7rem 1rem; list-style: none; margin: 0; }
+  .timeline-mobile-item {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-family: var(--font-ui);
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #777;
+    border: 1px solid var(--cream-dark);
+    border-radius: 999px;
+    padding: 0.35rem 0.8rem;
+    background: white;
+    white-space: nowrap;
+    cursor: pointer;
+  }
+  .timeline-mobile-item .tl-sep { opacity: 0.4; }
+  .timeline-mobile-item.active { color: var(--burgundy); border-color: var(--gold); background: var(--cream); }
+
+  @media (min-width: 1180px) {
+    .timeline-mobile { display: none; }
+  }
+
+  /* ── Tidslinje: desktop ── */
+  .timeline-desktop { display: none; }
+  @media (min-width: 1180px) {
+    .timeline-desktop {
+      display: block;
+      position: fixed;
+      left: max(1.25rem, calc(50% - 38rem));
+      top: 50%;
+      transform: translateY(-50%);
+      z-index: 30;
+      max-height: 70vh;
+      overflow-y: auto;
+    }
+    .timeline-desktop ol {
+      position: relative;
+      list-style: none;
+      margin: 0;
+      padding-left: 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.4rem;
+    }
+    .timeline-desktop ol::before {
+      content: '';
+      position: absolute;
+      left: 0.2rem;
+      top: 0.2rem;
+      bottom: 0.2rem;
+      width: 1px;
+      background: linear-gradient(to bottom, rgba(212,168,67,0.7), rgba(212,168,67,0.2), transparent);
+    }
+    .timeline-desktop-item {
+      display: flex;
+      align-items: center;
+      gap: 0.7rem;
+      text-align: left;
+      cursor: pointer;
+    }
+    .tl-dot {
+      flex-shrink: 0;
+      width: 0.7rem;
+      height: 0.7rem;
+      border-radius: 50%;
+      border: 1px solid rgba(212,168,67,0.5);
+      background: var(--cream);
+      transition: all 150ms ease;
+    }
+    .timeline-desktop-item:hover .tl-dot { border-color: var(--gold); }
+    .timeline-desktop-item.active .tl-dot { background: var(--gold); border-color: var(--gold); box-shadow: 0 0 0 4px rgba(212,168,67,0.2); }
+    .tl-text { display: flex; flex-direction: column; }
+    .timeline-desktop-item .tl-year {
+      font-family: var(--font-ui);
+      font-size: 0.7rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #999;
+    }
+    .timeline-desktop-item.active .tl-year { color: var(--burgundy); }
+    .timeline-desktop-item .tl-chapter { font-family: var(--font-ui); font-size: 0.85rem; color: #999; max-width: 11rem; }
+    .timeline-desktop-item.active .tl-chapter { color: var(--ink); font-weight: 600; }
+  }
+
+  /* ── Scene ── */
+  .comic-scene { scroll-margin-top: 6rem; padding-block: 3rem; border-top: 1px solid var(--cream-dark); }
+  .comic-scene:first-of-type { border-top: none; }
+
+  .scene-head { display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; margin-bottom: 1rem; }
+  .scene-year {
+    font-family: var(--font-ui);
+    font-size: 0.75rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--gold);
+  }
+  .scene-chapter { font-family: var(--font-display); font-size: clamp(1.4rem, 4vw, 1.9rem); color: var(--burgundy); margin-top: 0.2rem; }
+
+  .narrate-btn {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 50%;
+    border: 1px solid var(--cream-dark);
+    background: white;
+    color: #888;
+    cursor: pointer;
+    transition: border-color 150ms, color 150ms, background 150ms;
+  }
+  .narrate-btn:hover { border-color: var(--gold); color: var(--burgundy); }
+  .narrate-btn.speaking { border-color: var(--burgundy); background: var(--burgundy); color: white; }
+  .narrate-btn .narrate-off { display: block; }
+  .narrate-btn .narrate-wave-1, .narrate-btn .narrate-wave-2 { display: none; }
+  .narrate-btn.speaking .narrate-off { display: none; }
+  .narrate-btn.speaking .narrate-wave-1, .narrate-btn.speaking .narrate-wave-2 { display: block; }
+
+  /* ── Hovedbilde ── */
+  .scene-figure {
+    overflow: hidden;
+    border-radius: 12px;
+    border: 2px solid rgba(212,168,67,0.5);
+    box-shadow: 0 20px 45px -20px rgba(60,10,20,0.4);
+  }
+  .scene-image-wrap { position: relative; width: 100%; aspect-ratio: 16/10; background: var(--burgundy); }
+  .scene-image-wrap img { width: 100%; height: 100%; object-fit: cover; object-position: var(--pos, center); }
+  .scene-figure figcaption {
+    border-top: 1px solid rgba(212,168,67,0.35);
+    background: rgba(107,15,26,0.95);
+    color: var(--cream);
+    font-family: var(--font-display);
+    font-style: italic;
+    font-size: 0.9rem;
+    text-align: center;
+    padding: 0.75rem 1rem;
+  }
+
+  /* ── Hotspots ── */
+  .hotspot {
+    position: absolute;
+    transform: translate(-50%, -50%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
+    cursor: pointer;
+  }
+  .hotspot-ping {
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    background: rgba(212,168,67,0.4);
+    animation: hotspot-ping 1.8s cubic-bezier(0, 0, 0.2, 1) infinite;
+  }
+  .hotspot-dot {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.5rem;
+    height: 1.5rem;
+    border-radius: 50%;
+    border: 2px solid var(--gold);
+    background: var(--burgundy);
+    color: var(--gold);
+    font-size: 0.85rem;
+    font-weight: 700;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.35);
+    transition: transform 150ms ease;
+  }
+  .hotspot:hover .hotspot-dot { transform: scale(1.12); }
+  @keyframes hotspot-ping {
+    0%   { transform: scale(1);   opacity: 0.7; }
+    75%, 100% { transform: scale(1.9); opacity: 0; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .hotspot-ping { animation: none; }
+  }
+
+  /* ── Ekstra bilder ── */
+  .extra-grid { margin-top: 1rem; display: grid; gap: 1rem; grid-template-columns: 1fr; }
+  .extra-grid[data-multi] { grid-template-columns: repeat(2, 1fr); }
+  @media (max-width: 560px) {
+    .extra-grid[data-multi] { grid-template-columns: 1fr; }
+  }
+  .extra-fig {
+    overflow: hidden;
+    border-radius: 8px;
+    border: 1px solid rgba(212,168,67,0.35);
+    background: white;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+  }
+  .extra-image-wrap { position: relative; width: 100%; aspect-ratio: 4/5; background: rgba(107,15,26,0.06); }
+  .extra-image-wrap img { width: 100%; height: 100%; object-fit: cover; object-position: var(--pos, center); }
+  .extra-fig figcaption {
+    padding: 0.6rem 0.75rem;
+    font-family: var(--font-display);
+    font-style: italic;
+    font-size: 0.78rem;
+    text-align: center;
+    color: #777;
+  }
+
+  /* ── Dialog ── */
+  .dialogue-list { margin-top: 1.5rem; display: flex; flex-direction: column; gap: 0.75rem; }
+  .dialogue-line {
+    border-radius: 12px;
+    border: 1px solid var(--cream-dark);
+    background: white;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    padding: 1rem 1.25rem;
+  }
+  .dialogue-speaker {
+    font-family: var(--font-ui);
+    font-size: 0.72rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--gold);
+  }
+  .dialogue-text { margin-top: 0.3rem; font-family: var(--font-body); font-size: 1.1rem; line-height: 1.6; color: var(--ink); }
+
+  /* ── Fortellertekst ── */
+  .narration { margin-top: 1.5rem; display: flex; flex-direction: column; gap: 1rem; }
+  .narration p { font-family: var(--font-body); font-size: 1.05rem; line-height: 1.75; color: #333; }
+
+  /* ── Faktaboks ── */
+  .fact-box {
+    margin-top: 2rem;
+    border-left: 4px solid var(--gold);
+    background: rgba(212,168,67,0.08);
+    border-radius: 0 8px 8px 0;
+    padding: 1.1rem 1.35rem;
+  }
+  .fact-box-title {
+    font-family: var(--font-ui);
+    font-size: 0.72rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--gold-dark, var(--gold));
+  }
+  .fact-box p { margin-top: 0.5rem; font-family: var(--font-body); font-size: 0.98rem; line-height: 1.65; color: #444; }
+
+  /* ── Footer / navigasjon ── */
+  .comic-footer { padding-block: 2.5rem 1rem; text-align: center; font-family: var(--font-ui); font-size: 0.85rem; color: #888; }
+  .page-nav { display: flex; flex-wrap: wrap; gap: 0.75rem; padding: 1.5rem 0 3rem; border-top: 1px solid var(--cream-dark); font-family: var(--font-ui); font-size: 0.875rem; }
+  .page-nav a { color: var(--grey); text-decoration: none; border: 1px solid var(--cream-dark); padding: 0.4rem 1rem; border-radius: var(--radius); transition: color 150ms, border-color 150ms; }
+  .page-nav a:hover { color: var(--burgundy); border-color: var(--gold); }
+
+  /* ── Hotspot-modal ── */
+  .hotspot-modal { position: fixed; inset: 0; z-index: 999; }
+  .hotspot-modal[hidden] { display: none; }
+  .hotspot-modal-backdrop { position: absolute; inset: 0; background: rgba(10,5,2,0.6); }
+  .hotspot-modal-card {
+    position: relative;
+    max-width: 26rem;
+    margin: 10vh auto 0;
+    background: white;
+    border-radius: 16px;
+    border: 1px solid rgba(212,168,67,0.4);
+    box-shadow: 0 20px 60px rgba(0,0,0,0.35);
+    padding: 1.75rem;
+  }
+  .hotspot-modal-kicker {
+    font-family: var(--font-ui);
+    font-size: 0.72rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 0.25rem;
+  }
+  .hotspot-modal-card h3 { font-family: var(--font-display); font-size: 1.5rem; color: var(--burgundy); }
+  .hotspot-modal-card p { margin-top: 0.75rem; font-family: var(--font-body); font-size: 1rem; line-height: 1.65; color: #444; }
+  .hotspot-modal-close {
+    margin-top: 1.4rem;
+    font-family: var(--font-ui);
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: white;
+    background: var(--burgundy);
+    border-radius: 999px;
+    padding: 0.55rem 1.3rem;
+    cursor: pointer;
+  }
+  .hotspot-modal-close:hover { background: var(--burgundy-dk); }
+
+  @media (max-width: 640px) {
+    .hotspot-modal-card { margin: auto 1rem 1rem; position: fixed; left: 0; right: 0; bottom: 0; border-radius: 16px 16px 0 0; }
+  }
+</style>

@@ -34,6 +34,7 @@ import { quizQuestion }    from './quizQuestion'
 import { gameConfig }      from './gameConfig'
 import { gameChapter }     from './gameChapter'
 import { trick }           from './trick'
+import { comicStory }      from './comicStory'
 import { worldRecordTrick } from './worldRecordTrick'
 import { competitionResult } from './competitionResult'
 
@@ -57,6 +58,7 @@ export const schemaTypes = [
 
   // Dokumenttyper — Aktiviteter
   trick,
+  comicStory,
   godeRadConfig,
   quizConfig,
   quizTheme,
