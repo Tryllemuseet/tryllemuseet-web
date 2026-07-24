@@ -1,7 +1,7 @@
 ---
 // src/pages/barn/historier/[slug].astro
 import BaseLayout from '../../../layouts/BaseLayout.astro'
-import { getComicStoryBySlug, getComicStoryPaths, urlFor } from '../../../lib/sanity'
+import { getComicStoryBySlug, getComicStoryPaths, urlFor, portableTextToHtml, portableTextToPlainText } from '../../../lib/sanity'
 import type { ComicImage, ComicScene } from '../../../lib/sanity'
 
 export async function getStaticPaths() {
@@ -23,16 +23,21 @@ function focalPosition(img: ComicImage | undefined): string {
 
 function narrationText(scene: ComicScene): string {
   const lines = [
-    ...(scene.dialogue?.map(d => `${d.speaker}: ${d.text}`) ?? []),
-    ...scene.narration,
+    ...(scene.dialogue?.map(d => `${d.speaker}: ${portableTextToPlainText(d.text)}`) ?? []),
+    portableTextToPlainText(scene.narration),
   ]
   return lines.join(' ')
 }
+
+const metaDescription =
+  story.subtitle ??
+  (story.intro ? portableTextToPlainText(story.intro) : null) ??
+  `${story.title} — en interaktiv historie for barn og unge.`
 ---
 
 <BaseLayout
   title={`${story.title} — Tryllemuseet`}
-  description={story.subtitle ?? story.intro ?? `${story.title} — en interaktiv historie for barn og unge.`}
+  description={metaDescription}
 >
 
   <nav class="breadcrumb container">
@@ -81,7 +86,7 @@ function narrationText(scene: ComicScene): string {
       <span class="comic-kicker">Interaktiv historie</span>
       <h1>{story.title}</h1>
       {story.subtitle && <p class="comic-subtitle">{story.subtitle}</p>}
-      {story.intro && <p class="comic-intro-text">{story.intro}</p>}
+      {story.intro && <div class="comic-intro-text prose" set:html={portableTextToHtml(story.intro)} />}
       <div class="gold-divider" aria-hidden="true"></div>
     </section>
 
@@ -122,7 +127,7 @@ function narrationText(scene: ComicScene): string {
                 class="hotspot"
                 style={`left:${h.x}%; top:${h.y}%`}
                 data-hotspot-label={h.label}
-                data-hotspot-fact={h.fact}
+                data-hotspot-fact-html={portableTextToHtml(h.fact)}
                 aria-label={`Lær mer om ${h.label}`}
               >
                 <span class="hotspot-ping" aria-hidden="true"></span>
@@ -151,27 +156,25 @@ function narrationText(scene: ComicScene): string {
             {scene.dialogue.map(d => (
               <div class="dialogue-line">
                 <div class="dialogue-speaker">{d.speaker}</div>
-                <p class="dialogue-text">{d.text}</p>
+                <div class="dialogue-text prose" set:html={portableTextToHtml(d.text)} />
               </div>
             ))}
           </div>
         )}
 
-        <div class="narration">
-          {scene.narration.map(p => <p>{p}</p>)}
-        </div>
+        <div class="narration prose" set:html={portableTextToHtml(scene.narration)} />
 
-        {scene.factBox && (scene.factBox.title || scene.factBox.body) && (
+        {scene.factBox && (scene.factBox.title || scene.factBox.body?.length) && (
           <aside class="fact-box">
             {scene.factBox.title && <div class="fact-box-title">{scene.factBox.title}</div>}
-            {scene.factBox.body && <p>{scene.factBox.body}</p>}
+            {scene.factBox.body && <div class="prose" set:html={portableTextToHtml(scene.factBox.body)} />}
           </aside>
         )}
       </section>
     ))}
 
     <footer class="comic-footer">
-      {story.creditsNote && <p>{story.creditsNote}</p>}
+      {story.creditsNote && <div class="prose" set:html={portableTextToHtml(story.creditsNote)} />}
     </footer>
 
     <div class="page-nav">
@@ -187,7 +190,7 @@ function narrationText(scene: ComicScene): string {
     <div class="hotspot-modal-card">
       <div class="hotspot-modal-kicker">Fakta</div>
       <h3 id="hotspot-modal-title"></h3>
-      <p id="hotspot-modal-fact"></p>
+      <div id="hotspot-modal-fact" class="prose"></div>
       <button type="button" class="hotspot-modal-close" data-close="true">Lukk</button>
     </div>
   </div>
@@ -228,10 +231,10 @@ function narrationText(scene: ComicScene): string {
   const modalTitle = document.getElementById('hotspot-modal-title') as HTMLElement | null
   const modalFact  = document.getElementById('hotspot-modal-fact') as HTMLElement | null
 
-  function openHotspot(label: string, fact: string) {
+  function openHotspot(label: string, factHtml: string) {
     if (!modal || !modalTitle || !modalFact) return
     modalTitle.textContent = label
-    modalFact.textContent = fact
+    modalFact.innerHTML = factHtml
     modal.hidden = false
     document.body.style.overflow = 'hidden'
   }
@@ -244,7 +247,7 @@ function narrationText(scene: ComicScene): string {
 
   document.querySelectorAll<HTMLButtonElement>('[data-hotspot-label]').forEach(btn => {
     btn.addEventListener('click', () => {
-      openHotspot(btn.dataset.hotspotLabel ?? '', btn.dataset.hotspotFact ?? '')
+      openHotspot(btn.dataset.hotspotLabel ?? '', btn.dataset.hotspotFactHtml ?? '')
     })
   })
   modal?.querySelectorAll('[data-close]').forEach(el =>
@@ -338,6 +341,9 @@ function narrationText(scene: ComicScene): string {
   .comic-intro-text {
     margin: 1.25rem auto 0;
     max-width: 38rem;
+    text-align: left;
+  }
+  .comic-intro-text :global(p) {
     font-family: var(--font-body);
     font-size: 1rem;
     line-height: 1.7;
@@ -583,11 +589,19 @@ function narrationText(scene: ComicScene): string {
     text-transform: uppercase;
     color: var(--gold);
   }
-  .dialogue-text { margin-top: 0.3rem; font-family: var(--font-body); font-size: 1.1rem; line-height: 1.6; color: var(--ink); }
+  .dialogue-text { margin-top: 0.3rem; }
+  .dialogue-text p { font-family: var(--font-body); font-size: 1.1rem; line-height: 1.6; color: var(--ink); }
 
   /* ── Fortellertekst ── */
-  .narration { margin-top: 1.5rem; display: flex; flex-direction: column; gap: 1rem; }
-  .narration p { font-family: var(--font-body); font-size: 1.05rem; line-height: 1.75; color: #333; }
+  .narration { margin-top: 1.5rem; }
+  .narration p { font-family: var(--font-body); font-size: 1.05rem; line-height: 1.75; color: #333; margin-bottom: 1rem; }
+  .narration p:last-child { margin-bottom: 0; }
+
+  /* ── Rik tekst (Portable Text): lenker og innebygde bilder ── */
+  .prose a { color: var(--burgundy); text-decoration: underline; text-underline-offset: 2px; }
+  .prose a:hover { color: var(--gold-dark, var(--gold)); }
+  .prose :global(.pt-image) { margin: 1rem 0; }
+  .prose :global(.pt-image img) { width: 100%; border-radius: 8px; }
 
   /* ── Faktaboks ── */
   .fact-box {

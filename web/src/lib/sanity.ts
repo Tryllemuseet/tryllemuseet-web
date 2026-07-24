@@ -561,12 +561,12 @@ export interface ComicHotspot {
   x:     number
   y:     number
   label: string
-  fact:  string
+  fact:  PortableTextBlock[]
 }
 
 export interface ComicDialogueLine {
   speaker: string
-  text:    string
+  text:    PortableTextBlock[]
 }
 
 export interface ComicScene {
@@ -575,10 +575,10 @@ export interface ComicScene {
   chapter:   string
   image:     ComicImage
   caption?:  string
-  narration: string[]
+  narration: PortableTextBlock[]
   dialogue?: ComicDialogueLine[]
   hotspots?: ComicHotspot[]
-  factBox?:  { title?: string; body?: string }
+  factBox?:  { title?: string; body?: PortableTextBlock[] }
   extraImages?: ComicImage[]
 }
 
@@ -587,8 +587,8 @@ export interface ComicStory {
   title:        string
   slug:         string
   subtitle?:    string
-  intro?:       string
-  creditsNote?: string
+  intro?:       PortableTextBlock[]
+  creditsNote?: PortableTextBlock[]
   scenes:       ComicScene[]
 }
 
@@ -1427,6 +1427,19 @@ export function portableTextToHtml(blocks: PortableTextBlock[] | undefined | nul
       },
     },
   })
+}
+
+/**
+ * Slå sammen Portable Text-blokker til ren tekst (ingen HTML/markup) —
+ * til bruk der teksten skal leses opp (Web Speech API) i stedet for vises.
+ */
+export function portableTextToPlainText(blocks: PortableTextBlock[] | undefined | null): string {
+  if (!blocks?.length) return ''
+  return blocks
+    .filter((b): b is PortableTextBlock & { children: { text?: string }[] } => b._type === 'block')
+    .map(b => b.children?.map(c => c.text ?? '').join('') ?? '')
+    .filter(Boolean)
+    .join(' ')
 }
 
 // ── Typer: Biography ─────────────────────────────────────────────
