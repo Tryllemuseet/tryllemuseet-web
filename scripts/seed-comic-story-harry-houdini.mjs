@@ -22,6 +22,14 @@
  * image/extraImages are never touched, so images already uploaded manually
  * in Studio are never lost or re-uploaded.
  *
+ * Sequencing note: when a schema change alters an existing field's shape
+ * (like the plain-string → Portable Text migration this script went
+ * through), run this migration BEFORE deploying the new schema, not after.
+ * Deploying the new schema first leaves a window where Studio tries to
+ * render not-yet-migrated data through a field type it no longer matches,
+ * which shows up as blank/broken content in the editor even though the
+ * underlying data is untouched.
+ *
  * Targets the PRODUCTION dataset by default (explicitly confirmed for this
  * content load). Override with SANITY_DATASET=development, or pass
  * --dry-run to only print what would be written.
