@@ -16,8 +16,19 @@
  *     afterwards. A checklist is printed at the end of this script listing
  *     exactly which scene/field needs which original filename.
  *
- * Refuses to run if a document with this _id already exists, so re-running
- * never overwrites edits made in Studio (and never re-uploads images).
+ * If the document already exists (e.g. re-running after a schema change),
+ * only the text fields (intro, creditsNote, narration, dialogue, hotspots,
+ * factBox) are migrated to the current Portable Text shape via a patch —
+ * image/extraImages are never touched, so images already uploaded manually
+ * in Studio are never lost or re-uploaded.
+ *
+ * Sequencing note: when a schema change alters an existing field's shape
+ * (like the plain-string → Portable Text migration this script went
+ * through), run this migration BEFORE deploying the new schema, not after.
+ * Deploying the new schema first leaves a window where Studio tries to
+ * render not-yet-migrated data through a field type it no longer matches,
+ * which shows up as blank/broken content in the editor even though the
+ * underlying data is untouched.
  *
  * Targets the PRODUCTION dataset by default (explicitly confirmed for this
  * content load). Override with SANITY_DATASET=development, or pass
@@ -328,11 +339,61 @@ const SCENES = [
   },
 ]
 
+// Portable Text-hjelpere — bygger enkle avsnitt-blokker (ingen formatering)
+// fra vanlig tekst, slik at feltene matcher richBlockContent()-skjemaet.
+function ptBlock(key, text) {
+  return {
+    _type: 'block',
+    _key: key,
+    style: 'normal',
+    markDefs: [],
+    children: [{ _type: 'span', _key: `${key}-s0`, text, marks: [] }],
+  }
+}
+
+function ptBlocks(keyPrefix, texts) {
+  return texts.filter(Boolean).map((text, i) => ptBlock(`${keyPrefix}-${i}`, text))
+}
+
 async function uploadLocalImage(filename) {
   if (dryRun) return `dry-run-placeholder-${filename}`
   const path = join(ASSETS_DIR, filename)
   const asset = await client.assets.upload('image', createReadStream(path), { filename })
   return asset._id
+}
+
+// Bygger kun de tekstlige feltene til en scene (Portable Text) — brukes både
+// ved førstegangsopprettelse og ved migrering av tekstfelt på et allerede
+// eksisterende dokument (der bilder ikke skal røres).
+function buildSceneText(scene) {
+  const dialogue = scene.dialogue.map((d, i) => ({
+    _type: 'comicDialogueLine',
+    _key: `${scene.key}-dialogue-${i}`,
+    speaker: d.speaker,
+    text: ptBlocks(`${scene.key}-dialogue-${i}-text`, [d.text]),
+  }))
+
+  const hotspots = scene.hotspots.map((h, i) => ({
+    _type: 'comicHotspot',
+    _key: `${scene.key}-hotspot-${i}`,
+    x: h.x,
+    y: h.y,
+    label: h.label,
+    fact: ptBlocks(`${scene.key}-hotspot-${i}-fact`, [h.fact]),
+  }))
+
+  return {
+    year: scene.year,
+    chapter: scene.chapter,
+    caption: scene.caption,
+    narration: ptBlocks(`${scene.key}-narration`, scene.narration),
+    dialogue,
+    hotspots,
+    factBox: {
+      title: scene.factBox.title,
+      body: ptBlocks(`${scene.key}-factbox`, [scene.factBox.body]),
+    },
+  }
 }
 
 async function buildScene(scene, index) {
@@ -363,47 +424,50 @@ async function buildScene(scene, index) {
     }
   })
 
-  const dialogue = scene.dialogue.map((d, i) => ({
-    _type: 'comicDialogueLine',
-    _key: `${scene.key}-dialogue-${i}`,
-    speaker: d.speaker,
-    text: d.text,
-  }))
-
-  const hotspots = scene.hotspots.map((h, i) => ({
-    _type: 'comicHotspot',
-    _key: `${scene.key}-hotspot-${i}`,
-    x: h.x,
-    y: h.y,
-    label: h.label,
-    fact: h.fact,
-  }))
-
   return {
     doc: {
       _type: 'comicScene',
       _key: scene.key,
-      year: scene.year,
-      chapter: scene.chapter,
       image,
-      caption: scene.caption,
-      narration: scene.narration,
-      dialogue,
-      hotspots,
-      factBox: scene.factBox,
       extraImages,
+      ...buildSceneText(scene),
     },
     missing,
   }
 }
 
+const INTRO_TEXT =
+  'Bli med på en magisk reise gjennom livet til tidenes største illusjonist. Bla nedover for å følge historien, ' +
+  'og trykk på gullmerkene i bildene for å oppdage skjulte hemmeligheter og historiske fakta!'
+const CREDITS_TEXT =
+  'Basert på materiale fra Tryllemuseets samling. Historiske foto og plakater: Library of Congress (loc.gov).'
+
 async function run() {
   console.log(`Dataset: ${dataset}${dryRun ? ' (dry run)' : ''}`)
 
   const existing = !dryRun && (await client.fetch(`*[_id == $id][0]{_id}`, { id: DOC_ID }))
+
   if (existing) {
-    console.log(`✔ Dokumentet finnes allerede (${DOC_ID}) — gjør ingenting.`)
-    console.log('  Rediger innholdet i Sanity Studio i stedet for å kjøre dette scriptet på nytt.')
+    // Dokumentet finnes allerede (fra en tidligere kjøring med det gamle
+    // rene-streng-skjemaet). Migrer KUN tekstfeltene til Portable Text —
+    // rører ikke image/extraImages, slik at bilder som allerede er lastet
+    // opp manuelt i Studio ikke går tapt.
+    console.log(`✔ Dokumentet finnes allerede (${DOC_ID}) — migrerer tekstfelt til rik tekst (bilder røres ikke).`)
+    const patch = client.patch(DOC_ID).set({
+      intro: ptBlocks('intro', [INTRO_TEXT]),
+      creditsNote: ptBlocks('credits', [CREDITS_TEXT]),
+    })
+    for (const scene of SCENES) {
+      const text = buildSceneText(scene)
+      patch.set({
+        [`scenes[_key=="${scene.key}"].narration`]: text.narration,
+        [`scenes[_key=="${scene.key}"].dialogue`]: text.dialogue,
+        [`scenes[_key=="${scene.key}"].hotspots`]: text.hotspots,
+        [`scenes[_key=="${scene.key}"].factBox`]: text.factBox,
+      })
+    }
+    await patch.commit()
+    console.log(`✔ Migrerte tekstfelt for ${SCENES.length} scener.`)
     return
   }
 
@@ -423,11 +487,8 @@ async function run() {
     title: 'Harry Houdini: Mannen, Myten, Legenden',
     slug: { _type: 'slug', current: 'harry-houdini' },
     subtitle: 'Utbryterkongens utrolige reise fra fattig immigrant til verdensstjerne',
-    intro:
-      'Bli med på en magisk reise gjennom livet til tidenes største illusjonist. Bla nedover for å følge historien, ' +
-      'og trykk på gullmerkene i bildene for å oppdage skjulte hemmeligheter og historiske fakta!',
-    creditsNote:
-      'Basert på materiale fra Tryllemuseets samling. Historiske foto og plakater: Library of Congress (loc.gov).',
+    intro: ptBlocks('intro', [INTRO_TEXT]),
+    creditsNote: ptBlocks('credits', [CREDITS_TEXT]),
     scenes,
   }
 

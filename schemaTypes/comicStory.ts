@@ -1,5 +1,6 @@
 // schemaTypes/comicStory.ts
 import { defineType, defineField } from 'sanity'
+import { richBlockContent } from './richBlockContent'
 
 export const comicStory = defineType({
   name: 'comicStory',
@@ -43,17 +44,17 @@ export const comicStory = defineType({
     defineField({
       name: 'intro',
       title: 'Ingress',
-      type: 'text',
-      rows: 3,
+      type: 'array',
       description: 'Introtekst øverst på siden, før første scene.',
+      of: richBlockContent(),
     }),
 
     defineField({
       name: 'creditsNote',
       title: 'Kilde-/kredittekst (footer)',
-      type: 'text',
-      rows: 2,
-      description: 'F.eks. «Historiske foto og plakater: Library of Congress».',
+      type: 'array',
+      description: 'F.eks. «Historiske foto og plakater: Library of Congress» — kan inneholde lenke til kilden.',
+      of: richBlockContent(),
     }),
 
     // ── 2. SCENER ──────────────────────────────────────────────────
@@ -102,9 +103,9 @@ export const comicStory = defineType({
             name: 'narration',
             title: 'Fortellertekst',
             type: 'array',
-            description: 'Ett element per avsnitt.',
+            description: 'Løpende fortellertekst for scenen. Støtter lenker og bilder inni teksten.',
             validation: R => R.required().min(1),
-            of: [{ type: 'text', rows: 3 }],
+            of: richBlockContent(),
           }),
           defineField({
             name: 'dialogue',
@@ -116,12 +117,18 @@ export const comicStory = defineType({
               name: 'comicDialogueLine',
               fields: [
                 defineField({ name: 'speaker', title: 'Hvem snakker', type: 'string', validation: R => R.required() }),
-                defineField({ name: 'text', title: 'Replikk', type: 'text', rows: 2, validation: R => R.required() }),
+                defineField({
+                  name: 'text',
+                  title: 'Replikk',
+                  type: 'array',
+                  validation: R => R.required(),
+                  of: richBlockContent([{ title: 'Normaltekst', value: 'normal' }]),
+                }),
               ],
               preview: {
-                select: { title: 'speaker', subtitle: 'text' },
-                prepare({ title, subtitle }: { title?: string; subtitle?: string }) {
-                  return { title: title ?? '(uten navn)', subtitle }
+                select: { title: 'speaker' },
+                prepare({ title }: { title?: string }) {
+                  return { title: title ?? '(uten navn)' }
                 },
               },
             }],
@@ -148,12 +155,18 @@ export const comicStory = defineType({
                   validation: R => R.required().min(0).max(100),
                 }),
                 defineField({ name: 'label', title: 'Kort merkelapp', type: 'string', validation: R => R.required() }),
-                defineField({ name: 'fact', title: 'Fakta-tekst', type: 'text', rows: 3, validation: R => R.required() }),
+                defineField({
+                  name: 'fact',
+                  title: 'Fakta-tekst',
+                  type: 'array',
+                  validation: R => R.required(),
+                  of: richBlockContent(),
+                }),
               ],
               preview: {
-                select: { title: 'label', subtitle: 'fact' },
-                prepare({ title, subtitle }: { title?: string; subtitle?: string }) {
-                  return { title: title ?? '(uten merkelapp)', subtitle }
+                select: { title: 'label' },
+                prepare({ title }: { title?: string }) {
+                  return { title: title ?? '(uten merkelapp)' }
                 },
               },
             }],
@@ -165,7 +178,7 @@ export const comicStory = defineType({
             description: 'Valgfri utheva boks, f.eks. «Visste du?» eller «Historisk kontekst».',
             fields: [
               defineField({ name: 'title', title: 'Overskrift', type: 'string' }),
-              defineField({ name: 'body', title: 'Tekst', type: 'text', rows: 3 }),
+              defineField({ name: 'body', title: 'Tekst', type: 'array', of: richBlockContent() }),
             ],
           }),
           defineField({
