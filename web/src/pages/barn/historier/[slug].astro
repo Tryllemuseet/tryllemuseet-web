@@ -112,7 +112,7 @@ const metaDescription =
           </button>
         </div>
 
-        <figure class="scene-figure">
+        <figure class="scene-figure gallery-fig">
           <div class="scene-image-wrap" style={`--pos: ${focalPosition(scene.image)}`}>
             <img
               src={imgSrc(scene.image, 1280) ?? ''}
@@ -141,9 +141,9 @@ const metaDescription =
         {scene.extraImages && scene.extraImages.length > 0 && (
           <div class="extra-grid" data-multi={scene.extraImages.length > 1 ? '' : undefined}>
             {scene.extraImages.map(img => (
-              <figure class="extra-fig">
+              <figure class="extra-fig gallery-fig">
                 <div class="extra-image-wrap" style={`--pos: ${focalPosition(img)}`}>
-                  <img src={imgSrc(img, 640) ?? ''} alt={img.alt ?? ''} loading="lazy" />
+                  <img src={imgSrc(img, 1200) ?? ''} alt={img.alt ?? ''} loading="lazy" />
                 </div>
                 {img.caption && <figcaption>{img.caption}</figcaption>}
               </figure>
