@@ -1,0 +1,38 @@
+name: Seed hero banners
+
+# Seeds homepage.heroBannere with the five frontpage teasers (see
+# scripts/seed-hero-banners.mjs). The script uses setIfMissing, so it is
+# idempotent: it writes only when the field does not exist yet and never
+# overwrites banners edited in Studio. Runs automatically when the script
+# lands on main, and can be re-run manually from the Actions tab.
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'scripts/seed-hero-banners.mjs'
+      - '.github/workflows/seed-hero-banners.yml'
+  workflow_dispatch:
+
+jobs:
+  seed:
+    name: Seed heroBannere → Sanity
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run seed script
+        run: node scripts/seed-hero-banners.mjs
+        env:
+          SANITY_TOKEN: ${{ secrets.SANITY_TOKEN }}
