@@ -8,6 +8,43 @@ export const homepage = defineType({
   __experimental_actions: ['update', 'publish'],
   fields: [
 
+    // ─── HERO-BANNERE (karusell i toppen) ───────────────────────
+    defineField({
+      name: 'heroBannere',
+      title: 'Hero-bannere (karusell i toppen)',
+      description: 'Appetittvekkere øverst på forsiden. Hver banner har bilde eller video, en kort todelt tekst og en lenke. Vises i rekkefølgen her.',
+      type: 'array',
+      of: [{
+        type: 'object',
+        fields: [
+          defineField({ name: 'tekstLinje1', title: 'Tekstlinje 1 (stor)', type: 'string', validation: (R) => R.required() }),
+          defineField({ name: 'tekstLinje2', title: 'Tekstlinje 2', type: 'string' }),
+          defineField({ name: 'knappLabel', title: 'Knapp — tekst', type: 'string' }),
+          defineField({ name: 'href', title: 'Lenke (URL)', type: 'string', validation: (R) => R.required() }),
+          defineField({
+            name: 'bilde',
+            title: 'Bilde',
+            type: 'image',
+            options: { hotspot: true },
+            fields: [
+              defineField({ name: 'alt', title: 'Alt-tekst', type: 'string' }),
+            ],
+          }),
+          defineField({
+            name: 'video',
+            title: 'Video (valgfri — brukes i stedet for bildet)',
+            type: 'file',
+            options: { accept: 'video/*' },
+            description: 'Kort, stum løkke-video (mp4). Vises i stedet for bildet hvis satt.',
+          }),
+        ],
+        preview: {
+          select: { title: 'tekstLinje1', subtitle: 'href', media: 'bilde' },
+        },
+      }],
+      validation: (R) => R.max(6),
+    }),
+
     // ─── HERO ───────────────────────────────────────────────────
     defineField({
       name: 'hero',

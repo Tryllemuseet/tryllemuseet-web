@@ -290,7 +290,17 @@ export async function getBooksByUtstillingSlug(slug: string): Promise<Book[]> {
 
 
 // ── Typer: Forside ───────────────────────────────────────────────
+export interface HeroBanner {
+  tekstLinje1: string
+  tekstLinje2?: string
+  knappLabel?: string
+  href:        string
+  bilde?:      { asset: { _ref: string; url: string }; hotspot?: any; alt?: string }
+  videoUrl?:   string
+}
+
 export interface Homepage {
+  heroBannere?: HeroBanner[]
   hero: {
     heading:    string
     headingEm:  string
@@ -381,6 +391,11 @@ export function featuredItemHref(item: FeaturedItem): string {
 export async function getHomepage(): Promise<Homepage | null> {
   return sanityClient.fetch(`
     *[_type == "homepage"][0] {
+      heroBannere[] {
+        tekstLinje1, tekstLinje2, knappLabel, href,
+        bilde { asset->{ _ref, url }, hotspot, alt },
+        "videoUrl": video.asset->url
+      },
       hero {
         heading, headingEm, ingress,
         cta1Label, cta1Href, cta2Label, cta2Href,
