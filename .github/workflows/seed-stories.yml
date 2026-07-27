@@ -1,0 +1,38 @@
+name: Seed stories
+
+# Seeds the first three «Liten historie» documents and the /tryllehistorie
+# section card (see scripts/seed-stories.mjs). The script uses
+# createIfNotExists with fixed _ids, so it is idempotent: it never
+# overwrites stories or cards edited in Studio. Runs automatically when the
+# script lands on main, and can be re-run manually from the Actions tab.
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'scripts/seed-stories.mjs'
+      - '.github/workflows/seed-stories.yml'
+  workflow_dispatch:
+
+jobs:
+  seed:
+    name: Seed stories → Sanity
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run seed script
+        run: node scripts/seed-stories.mjs
+        env:
+          SANITY_TOKEN: ${{ secrets.SANITY_TOKEN }}
