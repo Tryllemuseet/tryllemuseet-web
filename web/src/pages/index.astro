@@ -84,11 +84,68 @@ const om = hp?.omMuseet ?? {
 function formatTime(d: string) {
   return new Date(d).toLocaleTimeString('nb-NO', { hour: '2-digit', minute: '2-digit' })
 }
+
+// ── Hero: valgbare artikler i toppen ─────────────────────────────
+// Editor-curated fremhevetInnhold drives the hero showcase when set;
+// otherwise the Gullalderen wall panels fill it. Max 4 article slides
+// after the welcome slide.
+type HeroArticleSlide = {
+  href:   string
+  kicker: string
+  title:  string
+  teaser: string
+  imgUrl: string | null
+  imgAlt: string
+}
+
+const heroFeatured = hp?.fremhevetInnhold?.elementer ?? []
+const heroArticleSlides: HeroArticleSlide[] = (heroFeatured.length
+  ? heroFeatured.map((item): HeroArticleSlide => {
+      let imgAsset: { _ref?: string; url?: string } | undefined
+      let imgAlt = item.title
+      let kicker = ''
+      let teaser = ''
+
+      if (item._type === 'legend') {
+        imgAsset = item.mainImage?.asset
+        imgAlt = item.mainImage?.alt ?? item.title
+        kicker = item.years ?? 'Fordypning'
+        teaser = item.tagline ? `«${item.tagline}»` : ''
+      } else if (item._type === 'historiskeKlippNb') {
+        const img = item.images?.[0]
+        imgAsset = img?.asset
+        imgAlt = img?.alt ?? item.title
+        kicker = [item.sourceName, item.originalDate ? new Date(item.originalDate).getFullYear() : null]
+          .filter(Boolean).join(' · ') || 'Historisk artikkel'
+        teaser = item.teaser ?? ''
+      } else {
+        imgAsset = item.featuredImage?.asset
+        imgAlt = item.featuredImage?.alt ?? item.title
+        kicker = item.year ? `Historisk opptak · ${item.year}` : 'Historisk opptak'
+      }
+
+      const imgUrl = imgAsset?._ref
+        ? urlFor(imgAsset).width(700).height(933).fit('crop').format('webp').url()
+        : (imgAsset?.url ?? (item._type === 'historicalClip' ? item.thumbnailUrl ?? null : null))
+
+      return { href: featuredItemHref(item), kicker, title: item.title, teaser, imgUrl, imgAlt }
+    })
+  : gullalderenPanels.map((m): HeroArticleSlide => ({
+      href:   `/utstillingen/${m.slug}`,
+      kicker: m.years ?? fremhevet.eraLabel ?? 'Gullalderen',
+      title:  m.title,
+      teaser: m.detailIntro ?? (m.tagline ? `«${m.tagline}»` : ''),
+      imgUrl: m.mainImage?.asset?._ref
+        ? urlFor(m.mainImage.asset).width(700).height(933).fit('crop').format('webp').url()
+        : (m.mainImage?.asset?.url ?? null),
+      imgAlt: m.mainImage?.alt ?? m.title,
+    }))
+).slice(0, 4)
 ---
 
 <BaseLayout title="Tryllemuseet — Norges mest magiske museum">
 
-  <!-- ══ HERO ════════════════════════════════════════════════════ -->
+  <!-- ══ HERO — valgbare artikler i toppen ═══════════════════════ -->
   <section class="hero" aria-label="Velkommen til Tryllemuseet">
     <div class="hero-bg" aria-hidden="true">
       {hero.bgImage?.asset?.url ? (
@@ -98,30 +155,85 @@ function formatTime(d: string) {
       )}
       <div class="hero-vignette"></div>
     </div>
-    <div class="container hero-inner">
-      <div class="hero-brand">
-        <img src="/hero-mark-gold.png" alt="" class="hero-mark" aria-hidden="true" width="76" height="70" />
-        <p class="hero-slogan">{config.siteTagline}</p>
+
+    <div class="container hero-stage" id="hero-stage">
+
+      <!-- Slide 1: velkommen -->
+      <div class="hero-slide hero-slide--welcome is-active" data-hero-slide
+           role="tabpanel" id="hero-panel-0" aria-labelledby="hero-tab-0">
+        <div class="hero-copy">
+          <div class="hero-brand">
+            <img src="/hero-mark-gold.png" alt="" class="hero-mark" aria-hidden="true" width="76" height="70" />
+            <p class="hero-slogan">{config.siteTagline}</p>
+          </div>
+          <p class="section-label hero-label">{config.addressShort} · {config.openingHoursShort}</p>
+          <h1 class="display-title hero-title">
+            {hero.heading}<br/>
+            <em class="hero-accent">{hero.headingEm}</em>
+          </h1>
+          <p class="hero-sub">{hero.ingress}</p>
+          <div class="hero-actions">
+            <a href={hero.cta1Href} class="btn-primary">{hero.cta1Label}</a>
+            <a href={hero.cta2Href} class="btn-ghost">{hero.cta2Label}</a>
+          </div>
+          <div class="hero-facts" aria-label="Fakta om museet">
+            {infoBadges.map((badge, i) => (
+              <>
+                <div class="fact"><span class="fact-label">{badge.label}</span></div>
+                {i < infoBadges.length - 1 && <div class="fact-divider" aria-hidden="true">✦</div>}
+              </>
+            ))}
+          </div>
+        </div>
       </div>
-      <p class="section-label hero-label">{config.addressShort} · {config.openingHoursShort}</p>
-      <h1 class="display-title hero-title">
-        {hero.heading}<br/>
-        <em class="hero-accent">{hero.headingEm}</em>
-      </h1>
-      <p class="hero-sub">{hero.ingress}</p>
-      <div class="hero-actions">
-        <a href={hero.cta1Href} class="btn-primary">{hero.cta1Label}</a>
-        <a href={hero.cta2Href} class="btn-ghost">{hero.cta2Label}</a>
-      </div>
-      <div class="hero-facts" aria-label="Fakta om museet">
-        {infoBadges.map((badge, i) => (
-          <>
-            <div class="fact"><span class="fact-label">{badge.label}</span></div>
-            {i < infoBadges.length - 1 && <div class="fact-divider" aria-hidden="true">✦</div>}
-          </>
-        ))}
-      </div>
+
+      <!-- Slides 2+: utvalgte artikler -->
+      {heroArticleSlides.map((s, i) => (
+        <div class="hero-slide" data-hero-slide
+             role="tabpanel" id={`hero-panel-${i + 1}`} aria-labelledby={`hero-tab-${i + 1}`}>
+          <div class="hero-copy">
+            <p class="section-label hero-label">{s.kicker}</p>
+            <h2 class="display-title hero-title hero-title--article">{s.title}</h2>
+            {s.teaser && <p class="hero-sub hero-sub--article">{s.teaser}</p>}
+            <div class="hero-actions">
+              <a href={s.href} class="btn-primary">Les artikkelen →</a>
+              <a href={hero.cta1Href} class="btn-ghost">{hero.cta1Label}</a>
+            </div>
+          </div>
+          <div class="hero-visual">
+            {s.imgUrl ? (
+              <a href={s.href} class="hero-frame" tabindex="-1" aria-hidden="true">
+                <img src={s.imgUrl} alt={s.imgAlt} loading={i === 0 ? 'eager' : 'lazy'} />
+              </a>
+            ) : (
+              <div class="hero-frame hero-frame--empty" aria-hidden="true">🎩</div>
+            )}
+          </div>
+        </div>
+      ))}
+
     </div>
+
+    {heroArticleSlides.length > 0 && (
+      <div class="hero-tabs-wrap">
+        <div class="container hero-tabs-inner">
+          <div class="hero-tabs" role="tablist" aria-label="Utvalgt fra samlingen">
+            <button type="button" class="hero-tab is-active" id="hero-tab-0" role="tab"
+                    aria-selected="true" aria-controls="hero-panel-0" data-hero-tab>
+              <span class="hero-tab-num" aria-hidden="true">✦</span>
+              <span class="hero-tab-title">Velkommen</span>
+            </button>
+            {heroArticleSlides.map((s, i) => (
+              <button type="button" class="hero-tab" id={`hero-tab-${i + 1}`} role="tab"
+                      aria-selected="false" tabindex="-1" aria-controls={`hero-panel-${i + 1}`} data-hero-tab>
+                <span class="hero-tab-num" aria-hidden="true">{String(i + 1).padStart(2, '0')}</span>
+                <span class="hero-tab-title">{s.title}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+    )}
   </section>
 
   <!-- ══ BESØKSSTRIP ═════════════════════════════════════════════ -->
@@ -660,6 +772,55 @@ function formatTime(d: string) {
     }
   }
 
+  // ── Hero: artikkelvelger ────────────────────────────────────────
+  const heroSection = document.querySelector('.hero') as HTMLElement | null
+  const heroTabs    = Array.from(document.querySelectorAll<HTMLButtonElement>('[data-hero-tab]'))
+  const heroSlides  = Array.from(document.querySelectorAll<HTMLElement>('[data-hero-slide]'))
+
+  if (heroSection && heroTabs.length > 1 && heroTabs.length === heroSlides.length) {
+    const ROTATE_MS = 8000
+    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    let current = 0
+    let timer: number | undefined
+    let userStopped = false
+
+    const showHeroSlide = (i: number) => {
+      current = i
+      heroSlides.forEach((s, idx) => s.classList.toggle('is-active', idx === i))
+      heroTabs.forEach((t, idx) => {
+        t.classList.toggle('is-active', idx === i)
+        t.setAttribute('aria-selected', String(idx === i))
+        t.tabIndex = idx === i ? 0 : -1
+      })
+    }
+    const stopRotate = () => { if (timer !== undefined) { clearInterval(timer); timer = undefined } }
+    const startRotate = () => {
+      if (reducedMotion || userStopped || timer !== undefined) return
+      timer = window.setInterval(() => showHeroSlide((current + 1) % heroSlides.length), ROTATE_MS)
+    }
+
+    heroTabs.forEach((tab, i) => {
+      tab.addEventListener('click', () => { userStopped = true; stopRotate(); showHeroSlide(i) })
+      tab.addEventListener('keydown', (e) => {
+        const dir = e.key === 'ArrowRight' ? 1 : e.key === 'ArrowLeft' ? -1 : 0
+        if (!dir) return
+        e.preventDefault()
+        userStopped = true
+        stopRotate()
+        const next = (current + dir + heroTabs.length) % heroTabs.length
+        showHeroSlide(next)
+        heroTabs[next].focus()
+      })
+    })
+
+    // Autorotasjon pauser ved hover/fokus i heroen og når fanen er skjult
+    heroSection.addEventListener('mouseenter', stopRotate)
+    heroSection.addEventListener('mouseleave', startRotate)
+    heroSection.addEventListener('focusin', () => { userStopped = true; stopRotate() })
+    document.addEventListener('visibilitychange', () => document.hidden ? stopRotate() : startRotate())
+    startRotate()
+  }
+
   // ── Karusell ────────────────────────────────────────────────────
   const track   = document.getElementById('carousel-track') as HTMLElement | null
   const btnPrev = document.getElementById('carousel-prev') as HTMLButtonElement | null
@@ -740,15 +901,46 @@ function formatTime(d: string) {
 </script>
 
 <style>
-  /* ── HERO ──────────────────────────────────────────────────────── */
-  .hero { position:relative; background:var(--burgundy-dk); color:var(--cream); padding:7rem 0 5rem; overflow:hidden; min-height:580px; display:flex; align-items:center; }
+  /* ── HERO — valgbare artikler i toppen ─────────────────────────── */
+  .hero { position:relative; background:var(--burgundy-dk); color:var(--cream); overflow:hidden; display:flex; flex-direction:column; }
   .hero-bg { position:absolute; inset:0; z-index:0; }
   .hero-bg-img { width:100%; height:100%; object-fit:cover; opacity:0.35; animation:kenBurns 22s ease-in-out infinite; }
   @keyframes kenBurns { 0%,100% { transform:scale(1); } 50% { transform:scale(1.08); } }
   @media (prefers-reduced-motion:reduce) { .hero-bg-img { animation:none; } }
   .hero-stars { position:absolute; inset:0; }
   .hero-vignette { position:absolute; inset:0; background:linear-gradient(180deg, rgba(74,10,18,0.55) 0%, rgba(74,10,18,0.15) 30%, rgba(74,10,18,0.25) 70%, rgba(74,10,18,0.6) 100%); }
-  .hero-inner { position:relative; z-index:2; max-width:680px; }
+
+  /* Slides stack in the same grid cell so the stage sizes to the tallest one */
+  .hero-stage { position:relative; z-index:2; width:100%; display:grid; align-items:center; min-height:520px; padding-top:5rem; padding-bottom:3.5rem; }
+  .hero-slide { grid-area:1/1; display:grid; grid-template-columns:minmax(0,1fr) 350px; gap:3.5rem; align-items:center; opacity:0; visibility:hidden; transform:translateY(16px); transition:opacity 480ms ease, transform 480ms ease, visibility 0s 480ms; }
+  .hero-slide.is-active { opacity:1; visibility:visible; transform:none; transition:opacity 480ms ease, transform 480ms ease, visibility 0s 0s; }
+  .hero-slide--welcome { grid-template-columns:1fr; }
+  .hero-copy { max-width:680px; }
+  .hero-title--article { font-size:clamp(2rem,5vw,3.4rem); }
+  .hero-sub--article { display:-webkit-box; -webkit-line-clamp:4; -webkit-box-orient:vertical; overflow:hidden; }
+  .hero-slide:not(.hero-slide--welcome) .hero-actions { margin-bottom:0; }
+
+  /* Innrammet portrett — vintage plakat-følelse */
+  .hero-visual { display:flex; justify-content:flex-end; }
+  .hero-frame { display:block; position:relative; width:min(330px,100%); aspect-ratio:3/4; background:var(--burgundy); border:1px solid rgba(212,168,67,0.6); outline:1px solid rgba(212,168,67,0.25); outline-offset:7px; border-radius:2px; overflow:hidden; box-shadow:0 18px 50px rgba(0,0,0,0.5); transform:rotate(1.4deg); }
+  .hero-frame img { width:100%; height:100%; object-fit:cover; }
+  .hero-frame--empty { display:flex; align-items:center; justify-content:center; font-size:4rem; }
+
+  /* Artikkelvelger nederst i heroen */
+  .hero-tabs-wrap { position:relative; z-index:2; border-top:1px solid rgba(212,168,67,0.28); background:rgba(20,4,8,0.45); backdrop-filter:blur(6px); }
+  .hero-tabs-inner { padding-left:0; padding-right:0; }
+  .hero-tabs { display:flex; align-items:stretch; overflow-x:auto; scrollbar-width:none; }
+  .hero-tabs::-webkit-scrollbar { display:none; }
+  .hero-tab { position:relative; flex:1 1 0; min-width:170px; display:flex; flex-direction:column; align-items:flex-start; gap:0.25rem; text-align:left; padding:0.85rem 1.25rem 1rem; color:var(--cream); opacity:0.55; transition:opacity 180ms, background 180ms; }
+  .hero-tab + .hero-tab { border-left:1px solid rgba(212,168,67,0.15); }
+  .hero-tab::before { content:''; position:absolute; top:-1px; left:0; right:0; height:2px; background:transparent; transition:background 180ms; }
+  .hero-tab:hover { opacity:0.85; background:rgba(212,168,67,0.07); }
+  .hero-tab:focus-visible { outline:2px solid var(--gold); outline-offset:-2px; }
+  .hero-tab.is-active { opacity:1; background:rgba(212,168,67,0.09); }
+  .hero-tab.is-active::before { background:var(--gold); }
+  .hero-tab-num { font-family:var(--font-display); font-size:0.65rem; letter-spacing:0.18em; color:var(--gold-light); }
+  .hero-tab-title { font-family:var(--font-display); font-size:0.85rem; letter-spacing:0.05em; line-height:1.3; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:100%; }
+
   .hero-brand { display:flex; align-items:center; gap:0.9rem; margin-bottom:1.5rem; }
   .hero-mark { width:52px; height:auto; flex-shrink:0; filter:drop-shadow(0 2px 10px rgba(0,0,0,0.35)); }
   .hero-slogan { font-family:var(--font-body); font-style:italic; font-size:1.05rem; color:var(--gold-light); letter-spacing:0.01em; line-height:1.3; }
@@ -941,6 +1133,9 @@ function formatTime(d: string) {
 
   /* ── RESPONSIVE ────────────────────────────────────────────────── */
   @media (max-width:900px) {
+    .hero-slide { grid-template-columns:1fr; gap:2rem; }
+    .hero-visual { display:none; }
+    .hero-tab { min-width:145px; padding:0.75rem 1rem 0.85rem; }
     .magiker-card { flex:0 0 180px; }
     .press-inner { grid-template-columns:1fr; gap:2rem; }
     .media-inner { grid-template-columns:1fr; gap:2rem; }
@@ -956,7 +1151,7 @@ function formatTime(d: string) {
     .member-sub { max-width:100%; }
   }
   @media (max-width:600px) {
-    .hero { padding:5rem 0 3.5rem; }
+    .hero-stage { min-height:0; padding-top:3.5rem; padding-bottom:2.5rem; }
     .hero-title { font-size:2.2rem; }
     .hero-mark { width:42px; }
     .hero-slogan { font-size:0.92rem; }

@@ -20,6 +20,89 @@ const page = await getTryllehistoriePage()
     </div>
   </section>
 
+  <!-- VÅR HISTORISKE FORTELLING ─────────────────────────────────── -->
+  <section class="th-story" aria-labelledby="th-story-heading">
+    <div class="container th-story-inner">
+      <p class="section-label">Vår historiske fortelling</p>
+      <h2 class="display-title th-story-title" id="th-story-heading">Magiens historie — kort fortalt</h2>
+      <p class="th-story-ingress">
+        Tryllekunst er kanskje verdens eldste form for underholdning: kunsten å få
+        andre mennesker til å undres. Fortellingen strekker seg fra faraoenes hoff
+        til dagens talentshow — og hele veien er det den samme gnisten som driver
+        den.
+      </p>
+
+      <div class="th-story-prose">
+        <h3 class="th-story-kicker">De første undrene</h3>
+        <p>
+          Lenge før det fantes teatre og TV, samlet folk seg rundt gjøglere som fikk
+          små kuler til å forsvinne under begre. Begerspillet — verdens eldste
+          kjente trylletriks — ble avbildet i Egypt for rundt fire tusen år siden,
+          og en gammel nedtegnelse forteller om magikeren Dedi, som skal ha
+          opptrådt for selveste farao Khufu. Trangen til å bli forundret er med
+          andre ord like gammel som sivilisasjonen selv.
+        </p>
+
+        <h3 class="th-story-kicker">Gjøglere i farlige tider</h3>
+        <p>
+          I middelalderens Europa levde tryllekunsten på markedsplassene, blant
+          gjøglere og omreisende artister. Men kunsten kunne være livsfarlig: Den
+          som var for flink med hendene, risikerte å bli anklaget for trolldom. Da
+          engelskmannen Reginald Scot i 1584 ga ut «The Discoverie of Witchcraft»,
+          var det nettopp for å vise at taskenspillernes triks var fingerferdighet
+          — ikke djevelskap. Boken ble samtidig den første trykte forklaringen på
+          hvordan triksene gjøres.
+        </p>
+
+        <h3 class="th-story-kicker">Fra markedsbod til teatersal</h3>
+        <p>
+          Utover 1700- og 1800-tallet flyttet magien innendørs. Den franske
+          urmakeren Jean-Eugène Robert-Houdin åpnet sitt eget teater i Paris i 1845
+          og kledde tryllekunsten i kjole og hvitt: eleganse, mekaniske
+          underverker og vitenskapens språk i stedet for gjøglerens kappe. Den
+          moderne scenetryllingen var født — og en ung amerikaner valgte senere
+          kunstnernavnet Houdini til ære for ham.
+        </p>
+
+        <h3 class="th-story-kicker">Gullalderen</h3>
+        <p>
+          Tiårene fra midten av 1800-tallet til rundt 1930 kalles gjerne magiens
+          gullalder. Herrmann, Kellar, Thurston og Houdini fylte de største
+          scenene i verden, reiste på turné med tonnevis av illusjoner og kjempet
+          om publikums gunst med praktfulle litografiske plakater. Også i Norge
+          lot man seg fortrylle — en ung Henrik Ibsen holdt sine egne
+          trylleforestillinger hjemme i Skien, og verdensstjernene fant veien til
+          norske scener.
+        </p>
+
+        <h3 class="th-story-kicker">Nedgang — og nytt liv</h3>
+        <p>
+          Så kom filmen, radioen og etter hvert fjernsynet, og de store
+          illusjonsshowene mistet publikum. Men magien døde ikke — den tilpasset
+          seg. Tryllekunstnerne samlet seg i foreninger som Magiske Cirkel Norge,
+          stiftet i Oslo i 1928, kunsten fant nye hjem i TV-studioer og
+          klubblokaler, og på 1990-tallet førte gatemagien trolldommen helt ut på
+          fortauet igjen — tett på publikum, akkurat som ved markedsbodene tusen
+          år tidligere.
+        </p>
+
+        <h3 class="th-story-kicker">Historien fortsetter</h3>
+        <p>
+          I dag lever tryllekunsten i beste velgående — på teaterscener og i
+          talentshow, i bursdagsselskaper og på skjermen. Og på Årvoll gård i Oslo
+          tar Tryllemuseet vare på hele denne fortellingen: gjenstandene,
+          plakatene, bøkene og menneskene som har viet livet til det umulige.
+          Resten av historien finner du i arkivene nedenfor.
+        </p>
+      </div>
+
+      <div class="th-story-actions">
+        <a href="/utstillingen" class="th-story-btn">Se gullalderen i utstillingen</a>
+        <a href="/tryllehistorie/fordypninger" class="th-story-btn th-story-btn--ghost">Les fordypningene</a>
+      </div>
+    </div>
+  </section>
+
   <!-- SEKSJONER ───────────────────────────────────────────────────── -->
   <main class="container th-grid-wrap">
     <div class="th-grid">
@@ -77,6 +160,23 @@ const page = await getTryllehistoriePage()
 
   .th-title { font-size: clamp(2rem, 5vw, 3.2rem); color: var(--cream); margin: 0.5rem 0 0.75rem; }
   .th-sub   { font-family: var(--font-ui); font-size: 1rem; opacity: 0.82; max-width: 580px; line-height: 1.6; }
+
+  /* ── VÅR HISTORISKE FORTELLING ─────────────────────────────────── */
+  .th-story { background: white; border-bottom: 1px solid var(--cream-dark); padding: 3.5rem 0 4rem; }
+  .th-story-inner { max-width: 720px; }
+  .th-story-title { font-size: clamp(1.6rem, 4vw, 2.2rem); margin: 0.5rem 0 1rem; }
+  .th-story-ingress { font-family: var(--font-body); font-size: 1.1rem; font-style: italic; color: var(--ink-mid); line-height: 1.75; margin-bottom: 2rem; }
+
+  .th-story-prose p { font-family: var(--font-body); font-size: 0.98rem; color: var(--ink-mid); line-height: 1.8; margin-bottom: 1.5rem; }
+  .th-story-prose p:first-of-type::first-letter { font-family: var(--font-display); font-size: 3.2rem; float: left; line-height: 0.85; padding: 0.1em 0.12em 0 0; color: var(--burgundy); }
+
+  .th-story-kicker { font-family: var(--font-ui); font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.18em; color: var(--gold-dark); margin-bottom: 0.4rem; }
+
+  .th-story-actions { display: flex; gap: 0.75rem; flex-wrap: wrap; margin-top: 0.5rem; }
+  .th-story-btn { display: inline-block; font-family: var(--font-ui); font-size: 0.9rem; font-weight: 600; padding: 0.7rem 1.5rem; border-radius: var(--radius); background: var(--burgundy); color: var(--cream); letter-spacing: 0.04em; transition: background 180ms, transform 180ms; }
+  .th-story-btn:hover { background: var(--burgundy-dk); transform: translateY(-1px); }
+  .th-story-btn--ghost { background: none; border: 1.5px solid var(--grey-light); color: var(--ink-mid); }
+  .th-story-btn--ghost:hover { background: none; border-color: var(--gold); color: var(--gold-dark); }
 
   /* ── GRID ──────────────────────────────────────────────────────── */
   .th-grid-wrap { padding-top: 3rem; padding-bottom: 5rem; }
