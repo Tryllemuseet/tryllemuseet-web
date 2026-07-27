@@ -919,7 +919,8 @@ export async function getTryllehistoriePage(): Promise<TryllehistoriePage> {
       "opptak":     count(*[_type == "historicalClip" && isVisible != false]),
       "artikler":   count(*[_type == "historiskeKlippNb" && isVisible != false && publishedAt <= now()]),
       "magikere":   count(*[_type == "legend" && isVisible != false && defined(physicalOrder)]),
-      "hvemSkulleTrodd": count(*[_type == "whoKnew" && isVisible != false])
+      "hvemSkulleTrodd": count(*[_type == "whoKnew" && isVisible != false]),
+      "historier":  count(*[_type == "story" && isVisible != false && publishedAt <= now()])
     }`, { shows: GOT_TALENT_SHOWS }),
   ])
 
@@ -934,6 +935,7 @@ export async function getTryllehistoriePage(): Promise<TryllehistoriePage> {
     '/tryllehistorie/historiske-artikler':  `${counts.artikler} artikler`,
     '/utstillingen':                        `${counts.magikere} utstillingsfelt`,
     '/tryllehistorie/hvem-skulle-trodd':    `${counts.hvemSkulleTrodd} oppføringer`,
+    '/tryllehistorie/historier':            `${counts.historier} historier`,
   }
   const withAutoBadges = (seksjoner: TryllehistorieSeksjon[]) =>
     seksjoner.map(s => {
@@ -952,6 +954,7 @@ export async function getTryllehistoriePage(): Promise<TryllehistoriePage> {
       { href: '/tryllehistorie/magiens-hvem-er-hvem',        emoji: '📖', title: 'Magiens Hvem er Hvem',               sub: 'Norske tryllekunstnere',      desc: 'Biografier over norske tryllekunstnere fra Terje Nordheims standardverk. Søk på navn, kunstnernavn og spesialitet.',                                                                    badge: 'Biografier',  soon: false },
       { href: '/utstillingen',                                emoji: '🎩', title: 'Gullalderen 1845–1930',              sub: 'Internasjonal tryllehistorie', desc: 'Robert-Houdin, Herrmann, Kellar, Thurston og Houdini — magikerne som forandret verden og skapte scenetryllingens gylne epoke.',                                                          badge: '7 utstillingsfelt', soon: false },
       { href: '/tryllehistorie/hvem-skulle-trodd',            emoji: '🎭', title: 'Hvem skulle trodd?',                 sub: 'Kjente ansikter, hemmelig magi',        desc: 'Visste du at Henrik Ibsen tryllet? Fra vitenskap til sport og kultur — kjente personligheter med et hemmelig forhold til magien.',                                                          badge: 'Artikler',         soon: false },
+      { href: '/tryllehistorie/historier',                    emoji: '✨', title: 'Små historier fra tryllekunsten',    sub: 'Ukens historie',              desc: 'Korte fortellinger fra magiens historie — én liten historie i uken, fra åndeskap og gullaldermagikere til norske kuriositeter.',                                                            badge: 'Historier',       soon: false },
       { href: '/tryllehistorie/begerspillet',                 emoji: '🏺', title: 'Begerspillet',                       sub: 'Magiens opprinnelse',         desc: 'Verdens eldste kjente trylletriks — avbildet i Egypt for over 4000 år siden. Historien om magiens aller første triks.',                                                                     badge: 'Kommer snart',    soon: true  },
       { href: '/tryllehistorie/fordypninger',                 emoji: '⭐', title: 'Fordypninger',                       sub: 'Portretter og dypdykk',       desc: 'Egelo, Jan Crosby, Arnardo og andre — norske og internasjonale tryllekunstnere som har satt spor. Dyptgående portretter.',                                                                    badge: '8 artikler',      soon: false },
       { href: '/tryllehistorie/got-talent',                   emoji: '🏆', title: 'Got Talent',                         sub: 'Nordisk TV-magi',             desc: 'Norske, svenske, danske og finske tryllekunstnere i Norske Talenter, Talang, Danmark har Talent og Talent Suomi.',                                                                          badge: '35 opptredener',  soon: false },
@@ -1908,6 +1911,81 @@ export async function getHistoriskKlippArchive(): Promise<HistoriskKlippNb[]> {
     `,
     { publicDomainCutoff: publicDomainCutoffIso() }
   )
+}
+
+// ── Typer: Story («Små historier fra tryllekunsten») ──────────────
+
+export interface Story {
+  _id:          string
+  title:        string
+  slug:         string
+  publishedAt:  string
+  featuredDurationDays?: number
+  teaser:       string
+  body?:        any[]
+  image?:       { asset: { _ref: string; url: string }; alt?: string; caption?: string }
+  sourceNote?:  string
+  sources?:     { label: string; url?: string }[]
+  someText?:    string
+  mentionedMagicians?: {
+    _id:         string
+    name:        string
+    slug:        string
+    artistName?: string
+  }[]
+}
+
+// ── Spørringer: Story ─────────────────────────────────────────────
+
+const storyProjection = `
+  _id, title, "slug": slug.current,
+  publishedAt, featuredDurationDays, teaser,
+  image { asset->{ _ref, url }, alt, caption },
+  mentionedMagicians[]-> { _id, name, "slug": slug.current, artistName }
+`
+
+// Newest story within its featured window (default 7 days) — for homepage.
+// Same mechanics as getLatestHistoriskKlipp(): the daily rebuild rotates the
+// featured story automatically, and the section disappears when none is fresh.
+export async function getLatestStory(): Promise<Story | null> {
+  return sanityClient.fetch(`
+    *[_type == "story" && isVisible != false && publishedAt <= now()
+      && (dateTime(now()) - dateTime(publishedAt)) < coalesce(featuredDurationDays, 7) * 86400
+    ] | order(publishedAt desc) [0] {
+      ${storyProjection}
+    }
+  `)
+}
+
+// All published stories, regardless of featured window — for archive page
+export async function getStoryArchive(): Promise<Story[]> {
+  return sanityClient.fetch(`
+    *[_type == "story" && isVisible != false && publishedAt <= now()] | order(publishedAt desc) {
+      ${storyProjection}
+    }
+  `)
+}
+
+export async function getStoryBySlug(slug: string): Promise<Story | null> {
+  return sanityClient.fetch(`
+    *[_type == "story" && slug.current == $slug && isVisible != false && publishedAt <= now()][0] {
+      ${storyProjection},
+      body,
+      sourceNote,
+      sources[] { label, url }
+    }
+  `, { slug })
+}
+
+// Statiske stier for story [slug].astro — scheduled stories only get a page
+// once their publish date has passed.
+export async function getStoryPaths() {
+  const entries = await sanityClient.fetch(`
+    *[_type == "story" && isVisible != false && publishedAt <= now()] { "slug": slug.current }
+  `)
+  return entries
+    .filter((e: { slug?: string }) => e.slug)
+    .map((e: { slug: string }) => ({ params: { slug: e.slug } }))
 }
 
 // ── Typer: MediaAppearance ────────────────────────────────────────
