@@ -37,6 +37,7 @@ import { trick }           from './trick'
 import { comicStory }      from './comicStory'
 import { worldRecordTrick } from './worldRecordTrick'
 import { competitionResult } from './competitionResult'
+import { story }           from './story'
 
 export const schemaTypes = [
   // Sidetyper — rekkefølge følger hovedmenyen (se siteNavigation)
@@ -74,6 +75,7 @@ export const schemaTypes = [
   // Dokumenttyper — Arkivet
   biography,
   whoKnew,
+  story,
   historiskeKlippNb,
   worldRecordTrick,
   competitionResult,
