@@ -3,7 +3,7 @@
 import BaseLayout from '../layouts/BaseLayout.astro'
 import AnimateIn from '../components/AnimateIn.astro'
 import MentionedMagicians from '../components/MentionedMagicians.astro'
-import { getGullalderenPanels, getUpcomingEvents, getHomepage, getSiteConfig, getAllPartners, getLatestHistoriskKlipp, getFeaturedMediaAppearance, getFrontpageWhoKnew, whoKnewRelatedHref, featuredItemHref, urlFor } from '../lib/sanity'
+import { getGullalderenPanels, getUpcomingEvents, getHomepage, getSiteConfig, getAllPartners, getLatestHistoriskKlipp, getFeaturedMediaAppearance, getFrontpageWhoKnew, urlFor } from '../lib/sanity'
 
 const today = new Date().toISOString().split('T')[0]
 
@@ -26,10 +26,6 @@ const categoryLabels: Record<string, string> = {
 }
 
 // ── Fallback-verdier ─────────────────────────────────────────────
-const fremhevet = hp?.fremhevetInnhold ?? {
-  eraLabel: 'Gullalderen 1845–1930',
-  heading:  'Møt mesterne',
-}
 const kurs = hp?.kursSeksjon ?? {
   heading:    'Tryllekurs for barn',
   ingress:    'Du lærer triks som er enkle å utføre, men som virker meget imponerende. Kursene går over tre ettermiddager annenhver uke.',
@@ -172,28 +168,15 @@ const heroBanners: HeroBannerSlide[] = hp?.heroBannere?.length
     )}
   </section>
 
-  <!-- ══ BESØKSSTRIP ═════════════════════════════════════════════ -->
-  <section class="visit-strip" aria-label="Praktisk informasjon">
-    <div class="container visit-strip-inner">
-      <a href="/besok#apningstider" class="visit-item">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-        <div><strong>Åpningstider</strong><span>{config.openingHoursShort}</span></div>
-      </a>
-      <div class="visit-divider" aria-hidden="true"></div>
-      <a href="/besok#adresse" class="visit-item">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-        <div><strong>Adresse</strong><span>{config.addressShort}</span></div>
-      </a>
-      <div class="visit-divider" aria-hidden="true"></div>
-      <a href="/besok#priser" class="visit-item">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
-        <div><strong>Inngang</strong><span>Gratis for alle</span></div>
-      </a>
-      <div class="visit-divider" aria-hidden="true"></div>
-      <a href={config.facebook} target="_blank" rel="noopener noreferrer" class="visit-item visit-item--highlight">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>
-        <div><strong>Følg oss</strong><span>Facebook for oppdateringer →</span></div>
-      </a>
+  <!-- ══ BESØKSLINJE (komprimert) ════════════════════════════════ -->
+  <section class="visit-line" aria-label="Praktisk informasjon">
+    <div class="container visit-line-inner">
+      <span>{config.openingHoursShort}</span>
+      <span class="visit-line-sep" aria-hidden="true">·</span>
+      <span>{config.addressShort}</span>
+      <span class="visit-line-sep" aria-hidden="true">·</span>
+      <span>Gratis inngang</span>
+      <a href="/besok" class="visit-line-link">Planlegg besøket →</a>
     </div>
   </section>
 
@@ -245,118 +228,6 @@ const heroBanners: HeroBannerSlide[] = hp?.heroBannere?.length
         </AnimateIn>
       )}
     </div>
-  </section>
-
-  <hr class="gold-rule container" />
-
-  <!-- ══ MØT MAGIKERNE ════════════════════════════════════════════ -->
-  <section class="section magikerne-section" aria-labelledby="magikerne-heading">
-    <div class="container">
-      <AnimateIn direction="up">
-        <div class="section-header">
-          <div>
-            <p class="section-label">{fremhevet.eraLabel}</p>
-            <h2 class="display-title section-title" id="magikerne-heading">{fremhevet.heading}</h2>
-          </div>
-          <a href="/utstillingen" class="btn-outline">Hele utstillingen</a>
-        </div>
-      </AnimateIn>
-    </div>
-
-    {hp?.fremhevetInnhold?.elementer?.length ? (
-      <!-- Håndplukket, blandet innhold: grid-visning -->
-      <div class="container">
-        <AnimateIn direction="up">
-          <div class="featured-grid">
-            {hp.fremhevetInnhold.elementer.map((item) => {
-              const href = featuredItemHref(item)
-              let imgAsset: { _ref?: string; url?: string } | undefined
-              let alt = item.title
-              let kicker = ''
-              let caption = ''
-
-              if (item._type === 'legend') {
-                imgAsset = item.mainImage?.asset
-                alt = item.mainImage?.alt ?? item.title
-                kicker = item.years ?? ''
-                caption = item.tagline ?? ''
-              } else if (item._type === 'historiskeKlippNb') {
-                const img = item.images?.[0]
-                imgAsset = img?.asset
-                alt = img?.alt ?? item.title
-                kicker = item.originalDate ? new Date(item.originalDate).getFullYear().toString() : ''
-                caption = item.sourceName ?? ''
-              } else {
-                imgAsset = item.featuredImage?.asset
-                alt = item.featuredImage?.alt ?? item.title
-                kicker = item.year ? String(item.year) : ''
-                caption = 'Historisk opptak'
-              }
-
-              const imgUrl = imgAsset?._ref
-                ? urlFor(imgAsset).width(800).height(1066).fit('crop').format('webp').url()
-                : (imgAsset?.url ?? (item._type === 'historicalClip' ? item.thumbnailUrl : null) ?? null)
-
-              return (
-                <a href={href} class="magiker-card featured-card" aria-label={`Les mer om ${item.title}`}>
-                  <div class="magiker-img">
-                    {imgUrl
-                      ? <img src={imgUrl} alt={alt} loading="lazy" />
-                      : <div class="magiker-img-placeholder" aria-hidden="true">🎩</div>
-                    }
-                    <div class="magiker-overlay" aria-hidden="true"></div>
-                  </div>
-                  <div class="magiker-caption">
-                    {kicker && <span class="magiker-years">{kicker}</span>}
-                    <h3 class="magiker-name">{item.title}</h3>
-                    {caption && <p class="magiker-tagline">«{caption}»</p>}
-                    <span class="magiker-link-hint">Les mer →</span>
-                  </div>
-                </a>
-              )
-            })}
-          </div>
-        </AnimateIn>
-      </div>
-    ) : (
-      <!-- Full liste: horisontal scroll-karusell (Gullalderen-panelene) -->
-      <>
-        <div class="carousel-viewport" aria-label="Magikere i utstillingen">
-          <div class="carousel-track" id="carousel-track">
-            {gullalderenPanels.map((m) => {
-              const imgUrl = m.mainImage?.asset?._ref
-                ? urlFor(m.mainImage.asset).width(600).height(800).fit('crop').format('webp').url()
-                : (m.mainImage?.asset?.url ?? null)
-              return (
-                <a href={`/utstillingen/${m.slug}`} class="magiker-card" aria-label={`Les mer om ${m.title}`}>
-                  <div class="magiker-img">
-                    {imgUrl
-                      ? <img src={imgUrl} alt={m.mainImage?.alt ?? m.title} loading="lazy" />
-                      : <div class="magiker-img-placeholder" aria-hidden="true">🎩</div>
-                    }
-                    <div class="magiker-overlay" aria-hidden="true"></div>
-                  </div>
-                  <div class="magiker-caption">
-                    {m.years && <span class="magiker-years">{m.years}</span>}
-                    <h3 class="magiker-name">{m.title}</h3>
-                    {m.tagline && <p class="magiker-tagline">«{m.tagline}»</p>}
-                    <span class="magiker-link-hint">Les mer →</span>
-                  </div>
-                </a>
-              )
-            })}
-          </div>
-          <button class="carousel-btn carousel-btn--prev" id="carousel-prev" aria-label="Forrige">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><polyline points="15 18 9 12 15 6"/></svg>
-          </button>
-          <button class="carousel-btn carousel-btn--next" id="carousel-next" aria-label="Neste">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg>
-          </button>
-        </div>
-        <div class="carousel-fade carousel-fade--left"  aria-hidden="true"></div>
-        <div class="carousel-fade carousel-fade--right" aria-hidden="true"></div>
-      </>
-    )}
   </section>
 
   <hr class="gold-rule container" />
@@ -751,31 +622,6 @@ const heroBanners: HeroBannerSlide[] = hp?.heroBannere?.length
     startRotate()
   }
 
-  // ── Karusell ────────────────────────────────────────────────────
-  const track   = document.getElementById('carousel-track') as HTMLElement | null
-  const btnPrev = document.getElementById('carousel-prev') as HTMLButtonElement | null
-  const btnNext = document.getElementById('carousel-next') as HTMLButtonElement | null
-
-  if (track && btnPrev && btnNext) {
-    const getScrollAmount = () => {
-      const card = track.querySelector('.magiker-card') as HTMLElement | null
-      return card ? card.offsetWidth + 20 : 280
-    }
-    btnNext.addEventListener('click', () => track.scrollBy({ left:  getScrollAmount(), behavior: 'smooth' }))
-    btnPrev.addEventListener('click', () => track.scrollBy({ left: -getScrollAmount(), behavior: 'smooth' }))
-
-    const updateBtns = () => {
-      const atStart = track.scrollLeft <= 8
-      const atEnd   = track.scrollLeft + track.clientWidth >= track.scrollWidth - 8
-      btnPrev.style.opacity       = atStart ? '0.25' : '1'
-      btnPrev.style.pointerEvents = atStart ? 'none' : 'auto'
-      btnNext.style.opacity       = atEnd   ? '0.25' : '1'
-      btnNext.style.pointerEvents = atEnd   ? 'none' : 'auto'
-    }
-    track.addEventListener('scroll', updateBtns, { passive: true })
-    updateBtns()
-  }
-
   // ── Partner-popup ────────────────────────────────────────────────
   const popup       = document.getElementById('partner-popup') as HTMLElement | null
   const backdrop    = popup?.querySelector('.partner-popup-backdrop') as HTMLElement | null
@@ -877,17 +723,12 @@ const heroBanners: HeroBannerSlide[] = hp?.heroBannere?.length
   .btn-outline { display:inline-block; font-family:var(--font-ui); font-size:0.875rem; font-weight:600; padding:0.6rem 1.25rem; border-radius:var(--radius); border:1.5px solid var(--grey-light); color:var(--ink-mid); transition:border-color 180ms,color 180ms; text-decoration:none; }
   .btn-outline:hover { border-color:var(--gold); color:var(--gold-dark); }
 
-  /* ── VISIT STRIP ───────────────────────────────────────────────── */
-  .visit-strip { background:white; border-bottom:1px solid var(--cream-dark); box-shadow:var(--shadow); }
-  .visit-strip-inner { display:flex; align-items:stretch; flex-wrap:wrap; }
-  .visit-item { display:flex; align-items:center; gap:0.9rem; padding:1.25rem 1.5rem; flex:1; min-width:180px; transition:background 180ms; text-decoration:none; color:var(--ink); }
-  .visit-item:hover { background:var(--cream); }
-  .visit-item--highlight { color:var(--burgundy); }
-  .visit-item svg { width:22px; height:22px; flex-shrink:0; color:var(--gold-dark); }
-  .visit-item div { display:flex; flex-direction:column; line-height:1.3; }
-  .visit-item strong { font-family:var(--font-ui); font-size:0.75rem; font-weight:700; text-transform:uppercase; letter-spacing:0.08em; color:var(--ink-mid); }
-  .visit-item span { font-family:var(--font-ui); font-size:0.875rem; color:var(--grey); }
-  .visit-divider { width:1px; background:var(--cream-dark); margin:0.75rem 0; flex-shrink:0; }
+  /* ── BESØKSLINJE (komprimert) ──────────────────────────────────── */
+  .visit-line { background:white; border-bottom:1px solid var(--cream-dark); }
+  .visit-line-inner { display:flex; align-items:center; justify-content:center; flex-wrap:wrap; gap:0.35rem 0.6rem; padding-top:0.55rem; padding-bottom:0.55rem; font-family:var(--font-ui); font-size:0.85rem; color:var(--ink-mid); }
+  .visit-line-sep { color:var(--gold); }
+  .visit-line-link { margin-left:0.75rem; font-weight:700; color:var(--burgundy); text-decoration:none; white-space:nowrap; }
+  .visit-line-link:hover { color:var(--gold-dark); }
 
   /* ── SECTION COMMON ────────────────────────────────────────────── */
   .section { padding:4rem 0; }
@@ -915,40 +756,6 @@ const heroBanners: HeroBannerSlide[] = hp?.heroBannere?.length
   .event-book:hover { background:var(--gold-light); color:var(--burgundy-dk); }
   .no-events { padding:2rem; text-align:center; background:white; border:1px solid var(--cream-dark); border-radius:6px; font-family:var(--font-ui); font-size:0.95rem; color:var(--ink-mid); }
   .no-events a { color:var(--burgundy); text-decoration:underline; }
-
-  /* ── KARUSELL ──────────────────────────────────────────────────── */
-  .magikerne-section { background:white; overflow:hidden; }
-  .magikerne-section .container { padding-bottom:0; }
-  .carousel-viewport { position:relative; margin-top:0.5rem; }
-  .carousel-track { display:flex; gap:20px; overflow-x:auto; scroll-snap-type:x mandatory; -webkit-overflow-scrolling:touch; padding:0.5rem 2.5rem 1.5rem; scrollbar-width:none; }
-  .carousel-track::-webkit-scrollbar { display:none; }
-  .magiker-card { flex:0 0 220px; scroll-snap-align:start; text-decoration:none; color:var(--ink); border-radius:4px; overflow:hidden; background:var(--cream-dark); border:1px solid var(--cream-dark); transition:transform 220ms ease,box-shadow 220ms ease,border-color 220ms ease; display:flex; flex-direction:column; }
-  .magiker-card:hover { transform:translateY(-4px); box-shadow:0 8px 28px rgba(107,15,26,0.14); border-color:var(--gold-light); }
-  .magiker-img { position:relative; aspect-ratio:3/4; overflow:hidden; background:var(--burgundy-dk); flex-shrink:0; }
-  .magiker-img img { width:100%; height:100%; object-fit:cover; transition:transform 400ms ease; }
-  .magiker-card:hover .magiker-img img { transform:scale(1.04); }
-  .magiker-img-placeholder { display:flex; align-items:center; justify-content:center; width:100%; height:100%; font-size:3.5rem; background:linear-gradient(160deg,var(--burgundy-dk),#2a1208); }
-  .magiker-overlay { position:absolute; inset:0; background:linear-gradient(to bottom,transparent 40%,rgba(26,18,8,0.72) 100%); pointer-events:none; }
-  .magiker-caption { padding:0.9rem 1rem 1.1rem; display:flex; flex-direction:column; gap:0.18rem; flex:1; background:white; }
-  .magiker-years { font-family:var(--font-ui); font-size:0.68rem; text-transform:uppercase; letter-spacing:0.1em; color:var(--grey); }
-  .magiker-name { font-family:var(--font-display); font-size:0.95rem; color:var(--burgundy); letter-spacing:0.03em; line-height:1.25; }
-  .magiker-tagline { font-family:var(--font-body); font-size:0.78rem; font-style:italic; color:var(--gold-dark); line-height:1.45; margin-top:0.1rem; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
-  .magiker-link-hint { font-family:var(--font-ui); font-size:0.72rem; font-weight:700; color:var(--gold-dark); margin-top:0.5rem; letter-spacing:0.04em; opacity:0; transform:translateX(-4px); transition:opacity 180ms,transform 180ms; }
-  .magiker-card:hover .magiker-link-hint { opacity:1; transform:translateX(0); }
-  .carousel-btn { position:absolute; top:50%; transform:translateY(-50%); width:40px; height:40px; border-radius:50%; border:1.5px solid var(--cream-dark); background:white; box-shadow:0 2px 12px rgba(0,0,0,0.12); display:flex; align-items:center; justify-content:center; cursor:pointer; transition:opacity 200ms,background 180ms,border-color 180ms; z-index:10; }
-  .carousel-btn svg { width:16px; height:16px; color:var(--ink-mid); }
-  .carousel-btn:hover { background:var(--gold); border-color:var(--gold); }
-  .carousel-btn:hover svg { color:var(--burgundy-dk); }
-  .carousel-btn--prev { left:0.5rem; }
-  .carousel-btn--next { right:0.5rem; }
-  .carousel-fade { position:absolute; top:0; bottom:0; width:60px; pointer-events:none; z-index:5; }
-  .carousel-fade--left { left:0; background:linear-gradient(to right,white,transparent); }
-  .carousel-fade--right { right:0; background:linear-gradient(to left,white,transparent); }
-
-  /* ── FEATURED CONTENT GRID ─────────────────────────────────────── */
-  .featured-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.5rem; padding: 1.5rem 0 2rem; }
-  .featured-card { flex: unset !important; }
-  @media (max-width: 420px) { .featured-grid { grid-template-columns: 1fr; } }
 
   /* ── PRESS CLIPPING ────────────────────────────────────────────── */
   .press-section { background:white; }
@@ -1045,7 +852,6 @@ const heroBanners: HeroBannerSlide[] = hp?.heroBannere?.length
 
   /* ── RESPONSIVE ────────────────────────────────────────────────── */
   @media (max-width:900px) {
-    .magiker-card { flex:0 0 180px; }
     .press-inner { grid-template-columns:1fr; gap:2rem; }
     .media-inner { grid-template-columns:1fr; gap:2rem; }
     .ibsen-inner { grid-template-columns:1fr; gap:2rem; }
@@ -1054,8 +860,6 @@ const heroBanners: HeroBannerSlide[] = hp?.heroBannere?.length
     .kids-inner { grid-template-columns:1fr; gap:2rem; }
     .kids-card--offset { margin-left:0; }
     .about-inner { grid-template-columns:1fr; gap:2rem; }
-    .visit-strip-inner { flex-direction:column; }
-    .visit-divider { width:100%; height:1px; margin:0; }
     .member-inner { flex-direction:column; text-align:center; }
     .member-sub { max-width:100%; }
   }
@@ -1068,8 +872,6 @@ const heroBanners: HeroBannerSlide[] = hp?.heroBannere?.length
     .banner-arrow--next { right:0.1rem; }
     .event-excerpt { display:none; }
     .section-header { flex-direction:column; align-items:flex-start; }
-    .magiker-card { flex:0 0 160px; }
-    .carousel-track { padding:0.5rem 1.2rem 1.5rem; gap:12px; }
   }
   
   /* ── SPONSORER ─────────────────────────────────────────────────── */
