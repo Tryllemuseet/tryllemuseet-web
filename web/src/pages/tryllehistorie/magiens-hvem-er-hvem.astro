@@ -1,7 +1,7 @@
 ---
 // src/pages/tryllehistorie/magiens-hvem-er-hvem.astro
 import BaseLayout from '../../layouts/BaseLayout.astro'
-import { getBiographyDirectory } from '../../lib/sanity'
+import { getBiographyDirectory, formatLifespan } from '../../lib/sanity'
 
 const biographies = await getBiographyDirectory()
 
@@ -115,7 +115,9 @@ const total = biographies.length
                   {bio.artistName && bio.artistName !== bio.name && (
                     <p class="bio-artist">«{bio.artistName}»</p>
                   )}
-                  {bio.years && <p class="bio-years">{bio.years}</p>}
+                  {formatLifespan(bio.birthDate, bio.deathDate, bio.years) && (
+                    <p class="bio-years">{formatLifespan(bio.birthDate, bio.deathDate, bio.years)}</p>
+                  )}
                   {bio.shortBio && (
                     <p class="bio-excerpt">{bio.shortBio}</p>
                   )}

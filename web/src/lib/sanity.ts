@@ -1482,6 +1482,24 @@ export interface BiographyImage {
   caption?: string
 }
 
+// Dato som støtter både eksakt dag og "bare årstall" — se schemaTypes/partialDate.ts
+export interface PartialDate {
+  year:    number
+  month?:  number
+  day?:    number
+  circa?:  boolean
+}
+
+export interface BiographySource {
+  _id:      string
+  title:    string
+  type?:    string
+  author?:  string
+  year?:    number
+  url?:     string
+  bookRef?: { title: string; slug?: string }
+}
+
 export interface Biography {
   _id:         string
   name:        string
@@ -1489,8 +1507,9 @@ export interface Biography {
   artistName?: string
   aliases?:    string[]
   nationality?: string
-  birthDate?:  string
-  deathDate?:  string
+  birthDate?:  PartialDate
+  birthPlace?: string
+  deathDate?:  PartialDate
   years?:      string
   collection?: string[]
   featured?:   boolean
@@ -1502,9 +1521,50 @@ export interface Biography {
   videos?:     BiographyVideo[]
   links?:      BiographyLink[]
   legendRef?:    { _ref: string; slug: string }
-  sources?:      { label: string; url?: string }[]
+  sources?:      BiographySource[]
   lastVerified?: string
   needsUpdate?:  boolean
+}
+
+// Formaterer en PartialDate til "1961", "25.12.1961" eller "ca. 1961"
+function formatPartialDate(d?: PartialDate): string {
+  if (!d?.year) return ''
+  const datePart = d.day && d.month
+    ? `${String(d.day).padStart(2, '0')}.${String(d.month).padStart(2, '0')}.${d.year}`
+    : String(d.year)
+  return (d.circa ? 'ca. ' : '') + datePart
+}
+
+// Levetid som visningsstreng, f.eks. "1912–1995" eller "f. 1961".
+// Faller tilbake til den frie years-strengen der birthDate ikke er fylt ut.
+export function formatLifespan(birthDate?: PartialDate, deathDate?: PartialDate, yearsFallback?: string): string {
+  if (!birthDate?.year) return yearsFallback ?? ''
+  const birth = formatPartialDate(birthDate)
+  return deathDate?.year ? `${birth}–${formatPartialDate(deathDate)}` : `f. ${birth}`
+}
+
+// Alder ved død, eller alder i dag hvis personen er i live. Bruker 1. jan / 1. i
+// måneden der dag/måned ikke er kjent — samme antakelse som tidligere calcAge().
+export function calcBioAge(birthDate?: PartialDate, deathDate?: PartialDate): number | null {
+  if (!birthDate?.year) return null
+  const now = new Date()
+  const endYear  = deathDate?.year  ?? now.getFullYear()
+  const endMonth = deathDate?.month ?? (now.getMonth() + 1)
+  const endDay   = deathDate?.day   ?? now.getDate()
+  const birthMonth = birthDate.month ?? 1
+  const birthDay   = birthDate.day   ?? 1
+  let age = endYear - birthDate.year
+  if (endMonth < birthMonth || (endMonth === birthMonth && endDay < birthDay)) age--
+  return age
+}
+
+// Full visningsstreng inkl. alder, f.eks. "1912–1995 (83 år)" eller "f. 1961 (64 år)".
+// Faller tilbake til years-strengen uten alder der birthDate mangler.
+export function formatBioAge(birthDate?: PartialDate, deathDate?: PartialDate, yearsFallback?: string): string {
+  if (!birthDate?.year) return yearsFallback ?? ''
+  const age = calcBioAge(birthDate, deathDate)
+  const lifespan = formatLifespan(birthDate, deathDate)
+  return age !== null ? `${lifespan} (${age} år)` : lifespan
 }
 
 // ── Typer: Legend ────────────────────────────────────────────────
@@ -1519,8 +1579,8 @@ export interface Legend {
     name:        string
     slug:        string
     artistName?: string
-    birthDate?:  string
-    deathDate?:  string
+    birthDate?:  PartialDate
+    deathDate?:  PartialDate
     years?:      string
     mainImage?:  BiographyImage
   }
@@ -1563,7 +1623,8 @@ export async function getBiographyBySlug(slug: string): Promise<Biography | null
     *[_type == "biography" && slug.current == $slug && isVisible != false][0] {
       _id, name, "slug": slug.current,
       artistName, aliases, nationality,
-      birthDate, deathDate, years,
+      birthDate { year, month, day, circa }, birthPlace,
+      deathDate { year, month, day, circa }, years,
       collection, featured, tags,
       mainImage { asset->{ _ref, url }, alt, caption },
       gallery[] { asset->{ _ref, url }, alt, caption },
@@ -1574,7 +1635,7 @@ export async function getBiographyBySlug(slug: string): Promise<Biography | null
         "internalSlug": internalRef->slug.current
       },
       "legendRef": legendRef-> { "slug": slug.current },
-      sources[] { label, url },
+      sources[]-> { _id, title, type, author, year, url, "bookRef": bookRef->{ title, "slug": slug.current } },
       lastVerified, needsUpdate
     }
   `, { slug })
@@ -1598,6 +1659,8 @@ export async function getBiographyDirectory(): Promise<Biography[]> {
       name,
       artistName,
       aliases,
+      birthDate { year, circa },
+      deathDate { year, circa },
       years,
       nationality,
       shortBio,
@@ -1626,7 +1689,7 @@ export async function getAllLegends(): Promise<Legend[]> {
       mainImage { asset->{ _ref, url }, alt },
       biographyRef-> {
         _id, name, "slug": slug.current,
-        artistName, birthDate, deathDate, years,
+        artistName, birthDate { year, month, day, circa }, deathDate { year, month, day, circa }, years,
         mainImage { asset->{ _ref, url }, alt }
       }
     }
@@ -1649,7 +1712,7 @@ export async function getLegendBySlug(slug: string): Promise<Legend | null> {
       sources[] { label, url },
       biographyRef-> {
         _id, name, "slug": slug.current,
-        artistName, birthDate, deathDate, years,
+        artistName, birthDate { year, month, day, circa }, deathDate { year, month, day, circa }, years,
         mainImage { asset->{ _ref, url }, alt }
       }
     }
