@@ -52,10 +52,26 @@ export const biography = defineType({
       initialValue: 'Norsk',
     }),
     defineField({
-      name: 'years',
-      title: 'Leveår / aktiv periode',
+      name: 'birthDate',
+      title: 'Født',
+      type: 'partialDate',
+    }),
+    defineField({
+      name: 'birthPlace',
+      title: 'Fødested',
       type: 'string',
-      description: 'F.eks. "1912–1995" eller "f. 1961"',
+    }),
+    defineField({
+      name: 'deathDate',
+      title: 'Død',
+      type: 'partialDate',
+      description: 'La stå tomt hvis personen er i live (eller det ikke er kjent).',
+    }),
+    defineField({
+      name: 'years',
+      title: 'Leveår / aktiv periode (fritekst, legacy)',
+      type: 'string',
+      description: 'Brukes som visningsfallback der Født/Død over ikke er fylt ut, og for å angi aktiv periode i stedet for levetid, f.eks. "aktiv 2018–". F.eks. ellers "1912–1995" eller "f. 1961"',
     }),
     defineField({
       name: 'featured',
@@ -230,7 +246,8 @@ export const biography = defineType({
       name: 'sources',
       title: 'Kilder',
       type: 'array',
-      of: [{ type: 'sourceItem' }],
+      description: 'Velg fra kilderegisteret. Opprett en ny kilde der hvis den du trenger ikke finnes fra før.',
+      of: [{ type: 'reference', to: [{ type: 'source' }] }],
     }),
 
     // ── 6. REDAKSJONELT ──────────────────────────────────────────
@@ -274,18 +291,23 @@ export const biography = defineType({
     select: {
       title:  'name',
       subtitle: 'years',
+      birthYear: 'birthDate.year',
+      deathYear: 'deathDate.year',
       media:  'mainImage',
       needs:  'needsUpdate',
     },
-    prepare({ title, subtitle, media, needs }: {
+    prepare({ title, subtitle, birthYear, deathYear, media, needs }: {
       title?: string
       subtitle?: string
+      birthYear?: number
+      deathYear?: number
       media?: unknown
       needs?: boolean
     }) {
+      const years = birthYear ? `${birthYear}–${deathYear ?? ''}` : subtitle
       return {
         title:    (needs ? '⚠️ ' : '') + (title ?? '(uten navn)'),
-        subtitle: subtitle ?? '',
+        subtitle: years ?? '',
         media:    media,
       }
     },

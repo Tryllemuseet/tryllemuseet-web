@@ -1,7 +1,7 @@
 ---
 // src/pages/tryllehistorie/magiens-hvem-er-hvem/[slug].astro
 import BaseLayout from '../../../layouts/BaseLayout.astro'
-import { getBiographyBySlug, getBiographyPaths, portableTextToHtml, urlFor } from '../../../lib/sanity'
+import { getBiographyBySlug, getBiographyPaths, portableTextToHtml, urlFor, formatBioAge } from '../../../lib/sanity'
 
 export async function getStaticPaths() {
   return getBiographyPaths()
@@ -15,16 +15,7 @@ if (!bio) return Astro.redirect('/tryllehistorie/magiens-hvem-er-hvem', 301)
 const fullBioHtml = portableTextToHtml(bio.fullBio)
 
 // Aldersberegning
-function calcAge(birth: string, death?: string): string {
-  const b = new Date(birth)
-  const d = death ? new Date(death) : new Date()
-  const age = d.getFullYear() - b.getFullYear() -
-    (d < new Date(d.getFullYear(), b.getMonth(), b.getDate()) ? 1 : 0)
-  if (death) return `${b.getFullYear()}–${new Date(death).getFullYear()} (${age} år)`
-  return `f. ${b.getFullYear()} (${age} år)`
-}
-
-const ageStr = bio.birthDate ? calcAge(bio.birthDate, bio.deathDate ?? undefined) : (bio.years ?? '')
+const ageStr = formatBioAge(bio.birthDate, bio.deathDate, bio.years)
 
 const linkIcons: Record<string, string> = {
   wikipedia: '📖',
@@ -62,8 +53,8 @@ const videoTypeLabel: Record<string, string> = {
         </p>
         <h1 class="display-title hero-name">{bio.name}</h1>
         {bio.artistName && <p class="hero-artist">Kunstnernavn: <em>{bio.artistName}</em></p>}
-        {ageStr && <p class="hero-years">{ageStr}</p>}
-        {bio.years && bio.birthDate && <p class="hero-years">Aktiv: {bio.years}</p>}
+        {ageStr && <p class="hero-years">{ageStr}{bio.birthPlace && ` — født i ${bio.birthPlace}`}</p>}
+        {bio.years && bio.birthDate?.year && <p class="hero-years">Aktiv: {bio.years}</p>}
 
         {bio.tags && bio.tags.length > 0 && (
           <div class="hero-tags">
@@ -171,12 +162,12 @@ const videoTypeLabel: Record<string, string> = {
             <li>
               {src.url
                 ? <a href={src.url} target="_blank" rel="noopener noreferrer">
-                    {src.label}
+                    {src.title}
                     <svg class="ext-icon" viewBox="0 0 12 12" fill="none" aria-label="Åpnes i ny fane">
                       <path d="M2 10L10 2M10 2H5M10 2V7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
                     </svg>
                   </a>
-                : <span>{src.label}</span>
+                : <span>{src.title}</span>
               }
             </li>
           ))}

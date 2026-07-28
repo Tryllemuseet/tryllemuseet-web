@@ -2,7 +2,7 @@
 // src/pages/tryllehistorie/fordypninger/[slug].astro
 import BaseLayout from '../../../layouts/BaseLayout.astro'
 import LegendBody from '../../../components/LegendBody.astro'
-import { getLegendBySlug, getLegendPaths } from '../../../lib/sanity'
+import { getLegendBySlug, getLegendPaths, formatBioAge } from '../../../lib/sanity'
 import type { Legend } from '../../../lib/sanity'
 
 export async function getStaticPaths() {
@@ -18,18 +18,7 @@ const bio = leg.biographyRef
 const heroImg = leg.mainImage ?? bio?.mainImage
 
 // Aldersberegning — kun mulig når artikkelen er koblet til en biografi
-function calcAge(birth: string, death?: string): string {
-  const b = new Date(birth)
-  const d = death ? new Date(death) : new Date()
-  const age = d.getFullYear() - b.getFullYear() -
-    (d < new Date(d.getFullYear(), b.getMonth(), b.getDate()) ? 1 : 0)
-  if (death) {
-    return `${b.getFullYear()}–${new Date(death).getFullYear()} (${age} år)`
-  }
-  return `f. ${b.getFullYear()} (${age} år)`
-}
-
-const ageStr = bio?.birthDate ? calcAge(bio.birthDate, bio.deathDate ?? undefined) : (bio?.years ?? leg.years ?? '')
+const ageStr = formatBioAge(bio?.birthDate, bio?.deathDate, bio?.years ?? leg.years)
 ---
 
 <BaseLayout

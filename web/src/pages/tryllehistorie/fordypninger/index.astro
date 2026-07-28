@@ -1,7 +1,7 @@
 ---
 // src/pages/tryllehistorie/fordypninger/index.astro
 import BaseLayout from '../../../layouts/BaseLayout.astro'
-import { getAllLegends } from '../../../lib/sanity'
+import { getAllLegends, formatLifespan } from '../../../lib/sanity'
 import type { Legend } from '../../../lib/sanity'
 
 const legends = await getAllLegends()
@@ -82,7 +82,7 @@ const allTags = [...new Set(
       const bio = leg.biographyRef
       const img = leg.mainImage ?? bio?.mainImage
       const navn = bio?.name ?? leg.title
-      const years = bio?.years ?? (bio?.birthDate ? bio.birthDate.slice(0, 4) : '')
+      const years = formatLifespan(bio?.birthDate, bio?.deathDate, bio?.years)
       const tags = (leg.tags ?? []).filter(t => t !== INTERNAL_TAG)
       return (
         <article
