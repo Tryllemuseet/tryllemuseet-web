@@ -1,9 +1,16 @@
 ---
 // src/pages/tryllehistorie/magiens-hvem-er-hvem.astro
 import BaseLayout from '../../layouts/BaseLayout.astro'
-import { getBiographyDirectory } from '../../lib/sanity'
+import { getBiographyDirectory, type Biography } from '../../lib/sanity'
 
 const biographies = await getBiographyDirectory()
+
+// Visningsår — foretrekk fritekst ("years"), ellers strukturert fødsels-/dødsår
+function displayYears(bio: Biography): string {
+  if (bio.years) return bio.years
+  if (bio.birthYear) return bio.deathYear ? `${bio.birthYear}–${bio.deathYear}` : `f. ${bio.birthYear}`
+  return ''
+}
 
 // Grupper alfabetisk
 const grouped: Record<string, typeof biographies> = {}
@@ -87,7 +94,7 @@ const total = biographies.length
       <section class="letter-section" id={`letter-${letter}`} data-letter={letter}>
         <h2 class="letter-heading" aria-label={`Bokstav ${letter}`}>{letter}</h2>
         <div class="bio-grid">
-          {grouped[letter].map((bio: import('../../lib/sanity').Biography) => (
+          {grouped[letter].map((bio: Biography) => (
             <article
               class="bio-card"
               data-name={bio.name.toLowerCase()}
@@ -115,7 +122,7 @@ const total = biographies.length
                   {bio.artistName && bio.artistName !== bio.name && (
                     <p class="bio-artist">«{bio.artistName}»</p>
                   )}
-                  {bio.years && <p class="bio-years">{bio.years}</p>}
+                  {displayYears(bio) && <p class="bio-years">{displayYears(bio)}</p>}
                   {bio.shortBio && (
                     <p class="bio-excerpt">{bio.shortBio}</p>
                   )}

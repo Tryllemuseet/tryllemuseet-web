@@ -96,7 +96,7 @@ export interface UtstillingEntry {
   mainImage?:     { asset: { _ref: string; url: string }; alt?: string }
   gallery?:       { asset: { _ref: string; url: string }; alt?: string; caption?: string }[]
   stations?:      LegendStation[]
-  sources?:       { label: string; url?: string }[]
+  sources?:       SourceRef[]
   biographyRef?:  { name: string; slug: string; isVisible?: boolean }
 }
 
@@ -143,7 +143,7 @@ export async function getUtstillingEntryBySlug(slug: string): Promise<Utstilling
       mainImage { asset->{ _ref, url }, alt },
       gallery[] { asset->{ _ref, url }, alt, caption },
       stations[] { title, order, year, image { asset->{ _ref, url }, alt }, textKids, textAdults, activityPrompt },
-      sources[] { label, url },
+      sources[] { label, url, sourceRef-> { title, author, type, year, url } },
       "biographyRef": biographyRef->{ name, "slug": slug.current, isVisible }
     }
   `, { slug })
@@ -1482,6 +1482,18 @@ export interface BiographyImage {
   caption?: string
 }
 
+export interface SourceRef {
+  label?:  string
+  url?:    string
+  sourceRef?: {
+    title:   string
+    author?: string
+    type?:   string
+    year?:   number
+    url?:    string
+  }
+}
+
 export interface Biography {
   _id:         string
   name:        string
@@ -1489,10 +1501,11 @@ export interface Biography {
   artistName?: string
   aliases?:    string[]
   nationality?: string
+  birthYear?:  number
   birthDate?:  string
+  deathYear?:  number
   deathDate?:  string
   years?:      string
-  collection?: string[]
   featured?:   boolean
   tags?:       string[]
   mainImage?:  BiographyImage
@@ -1501,8 +1514,8 @@ export interface Biography {
   fullBio?:    any[]
   videos?:     BiographyVideo[]
   links?:      BiographyLink[]
-  legendRef?:    { _ref: string; slug: string }
-  sources?:      { label: string; url?: string }[]
+  legendRef?:    { slug: string }
+  sources?:      SourceRef[]
   lastVerified?: string
   needsUpdate?:  boolean
 }
@@ -1519,7 +1532,9 @@ export interface Legend {
     name:        string
     slug:        string
     artistName?: string
+    birthYear?:  number
     birthDate?:  string
+    deathYear?:  number
     deathDate?:  string
     years?:      string
     mainImage?:  BiographyImage
@@ -1529,7 +1544,7 @@ export interface Legend {
   content?:     any[]
   videos?:      BiographyVideo[]
   tags?:        string[]
-  sources?:     { label: string; url?: string }[]
+  sources?:     SourceRef[]
   // Utstillingen-felt — se schemaTypes/legend.ts. Kun satt på dokumenter som
   // også har physicalOrder og/eller stasjoner (filtrert bort fra getAllLegends
   // / getLegendBySlug / getLegendPaths under, som er for /tryllehistorie).
@@ -1563,8 +1578,8 @@ export async function getBiographyBySlug(slug: string): Promise<Biography | null
     *[_type == "biography" && slug.current == $slug && isVisible != false][0] {
       _id, name, "slug": slug.current,
       artistName, aliases, nationality,
-      birthDate, deathDate, years,
-      collection, featured, tags,
+      birthYear, birthDate, deathYear, deathDate, years,
+      featured, tags,
       mainImage { asset->{ _ref, url }, alt, caption },
       gallery[] { asset->{ _ref, url }, alt, caption },
       shortBio, fullBio,
@@ -1573,8 +1588,8 @@ export async function getBiographyBySlug(slug: string): Promise<Biography | null
         label, type, url,
         "internalSlug": internalRef->slug.current
       },
-      "legendRef": legendRef-> { "slug": slug.current },
-      sources[] { label, url },
+      "legendRef": *[_type == "legend" && biographyRef._ref == ^._id && isVisible != false][0] { "slug": slug.current },
+      sources[] { label, url, sourceRef-> { title, author, type, year, url } },
       lastVerified, needsUpdate
     }
   `, { slug })
@@ -1598,6 +1613,8 @@ export async function getBiographyDirectory(): Promise<Biography[]> {
       name,
       artistName,
       aliases,
+      birthYear,
+      deathYear,
       years,
       nationality,
       shortBio,
@@ -1626,7 +1643,7 @@ export async function getAllLegends(): Promise<Legend[]> {
       mainImage { asset->{ _ref, url }, alt },
       biographyRef-> {
         _id, name, "slug": slug.current,
-        artistName, birthDate, deathDate, years,
+        artistName, birthYear, birthDate, deathYear, deathDate, years,
         mainImage { asset->{ _ref, url }, alt }
       }
     }
@@ -1646,10 +1663,10 @@ export async function getLegendBySlug(slug: string): Promise<Legend | null> {
       content,
       videos[] { title, url, type, year },
       stations[] { title, order, year, image { asset->{ _ref, url }, alt }, textKids, textAdults, activityPrompt },
-      sources[] { label, url },
+      sources[] { label, url, sourceRef-> { title, author, type, year, url } },
       biographyRef-> {
         _id, name, "slug": slug.current,
-        artistName, birthDate, deathDate, years,
+        artistName, birthYear, birthDate, deathYear, deathDate, years,
         mainImage { asset->{ _ref, url }, alt }
       }
     }
@@ -1685,7 +1702,7 @@ export interface WhoKnew {
   body?:               any[]
   image?:              { asset: { _ref: string; url: string }; alt?: string }
   relatedRef?:         WhoKnewRelated
-  sources?:            { label: string; url?: string }[]
+  sources?:            SourceRef[]
   featureOnFrontpage?: boolean
 }
 
@@ -1722,7 +1739,7 @@ export async function getWhoKnewBySlug(slug: string): Promise<WhoKnew | null> {
     *[_type == "whoKnew" && slug.current == $slug && isVisible != false][0] {
       ${whoKnewCardProjection},
       body,
-      sources[] { label, url }
+      sources[] { label, url, sourceRef-> { title, author, type, year, url } }
     }
   `, { slug })
 }
@@ -1925,7 +1942,7 @@ export interface Story {
   body?:        any[]
   image?:       { asset: { _ref: string; url: string }; alt?: string; caption?: string }
   sourceNote?:  string
-  sources?:     { label: string; url?: string }[]
+  sources?:     SourceRef[]
   someText?:    string
   mentionedMagicians?: {
     _id:         string
@@ -1972,7 +1989,7 @@ export async function getStoryBySlug(slug: string): Promise<Story | null> {
       ${storyProjection},
       body,
       sourceNote,
-      sources[] { label, url }
+      sources[] { label, url, sourceRef-> { title, author, type, year, url } }
     }
   `, { slug })
 }
@@ -2124,7 +2141,7 @@ export interface MagicOrganization {
   keyPeople?:      MagicOrgPerson[]
   articles?:       MagicOrgArticle[]
   gallery?:        { asset: { _ref: string; url: string }; alt?: string; caption?: string; year?: number }[]
-  sources?:        { label: string; url?: string }[]
+  sources?:        SourceRef[]
 }
 
 // ── Spørringer: MagicOrganization ────────────────────────────────
@@ -2174,7 +2191,7 @@ export async function getMagicOrganizationBySlug(slug: string): Promise<MagicOrg
         }
       },
       gallery[] { asset->{ _ref, url }, alt, caption, year },
-      sources[] { label, url }
+      sources[] { label, url, sourceRef-> { title, author, type, year, url } }
     }
   `, { slug })
 }

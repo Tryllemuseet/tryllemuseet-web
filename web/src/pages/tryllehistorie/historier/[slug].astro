@@ -73,14 +73,18 @@ const publishedDate = new Date(s.publishedAt).toLocaleDateString('nb-NO', { day:
         <div class="kilder-boks">
           <h3 class="faktaboks-heading">Kilder</h3>
           <ul class="kilder-liste">
-            {s.sources.map((k) => (
-              <li>
-                {k.url
-                  ? <a href={k.url} target="_blank" rel="noopener noreferrer">{k.label}</a>
-                  : <span>{k.label}</span>
-                }
-              </li>
-            ))}
+            {s.sources.map((k) => {
+              const url = k.url ?? k.sourceRef?.url
+              const label = k.label ?? k.sourceRef?.title
+              return (
+                <li>
+                  {url
+                    ? <a href={url} target="_blank" rel="noopener noreferrer">{label}</a>
+                    : <span>{label}</span>
+                  }
+                </li>
+              )
+            })}
           </ul>
         </div>
       )}

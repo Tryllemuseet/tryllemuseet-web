@@ -182,14 +182,18 @@ function yearRange(): string {
     <section class="container sources-section">
       <h2 class="section-heading">Kilder</h2>
       <ul class="sources-list">
-        {org.sources.map((s) => (
-          <li>
-            {s.url
-              ? <a href={s.url} target="_blank" rel="noopener noreferrer">{s.label}</a>
-              : <span>{s.label}</span>
-            }
-          </li>
-        ))}
+        {org.sources.map((s) => {
+          const url = s.url ?? s.sourceRef?.url
+          const label = s.label ?? s.sourceRef?.title
+          return (
+            <li>
+              {url
+                ? <a href={url} target="_blank" rel="noopener noreferrer">{label}</a>
+                : <span>{label}</span>
+              }
+            </li>
+          )
+        })}
       </ul>
     </section>
   )}

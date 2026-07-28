@@ -1,6 +1,7 @@
 import { historiskeKlippNb } from './historiskeKlippNb'
 import { contentSection } from './contentSection'
 import { sourceItem }     from './sourceItem'
+import { source }         from './source'
 import { event }          from './event'
 import { siteConfig }     from './siteConfig'
 import { siteNavigation } from './siteNavigation'
@@ -80,6 +81,7 @@ export const schemaTypes = [
   worldRecordTrick,
   competitionResult,
   book,
+  source,
 
   // Dokumenttyper — Om oss
   mediaAppearance,

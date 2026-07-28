@@ -52,10 +52,36 @@ export const biography = defineType({
       initialValue: 'Norsk',
     }),
     defineField({
+      name: 'birthYear',
+      title: 'Fødselsår',
+      type: 'number',
+      description: 'Brukes når vi bare kjenner året (de aller fleste tilfeller). Gjør biografien sorterbar/filtrerbar selv uten eksakt dato.',
+      validation: R => R.integer().min(1400).max(2100),
+    }),
+    defineField({
+      name: 'birthDate',
+      title: 'Fødselsdato (eksakt)',
+      type: 'date',
+      description: 'Kun hvis vi kjenner hele datoen — brukes da til presis alderberegning. La stå tom hvis vi bare kjenner året.',
+    }),
+    defineField({
+      name: 'deathYear',
+      title: 'Dødsår',
+      type: 'number',
+      description: 'Brukes når vi bare kjenner året. La stå tom hvis personen lever.',
+      validation: R => R.integer().min(1400).max(2100),
+    }),
+    defineField({
+      name: 'deathDate',
+      title: 'Dødsdato (eksakt)',
+      type: 'date',
+      description: 'Kun hvis vi kjenner hele datoen. La stå tom hvis vi bare kjenner året, eller hvis personen lever.',
+    }),
+    defineField({
       name: 'years',
-      title: 'Leveår / aktiv periode',
+      title: 'Leveår / aktiv periode (fritekst, reserve)',
       type: 'string',
-      description: 'F.eks. "1912–1995" eller "f. 1961"',
+      description: 'Brukes kun når fødsels-/dødsår over ikke dekker det vi vet, f.eks. "aktiv 1950-tallet" eller "ca. 1930–1990". Fyll ut birthYear/deathYear når de er kjent — da vises de automatisk, og dette feltet trengs ikke.',
     }),
     defineField({
       name: 'featured',
@@ -125,6 +151,39 @@ export const biography = defineType({
         ],
       }],
     }),
+    defineField({
+      name: 'videos',
+      title: 'Videoer',
+      type: 'array',
+      description: 'TV-opptredener, intervjuer o.l. med denne personen.',
+      of: [{
+        type: 'object',
+        fields: [
+          defineField({ name: 'title', title: 'Tittel', type: 'string', validation: R => R.required() }),
+          defineField({ name: 'url',   title: 'URL',    type: 'url',    validation: R => R.required() }),
+          defineField({
+            name: 'type',
+            title: 'Type',
+            type: 'string',
+            options: {
+              list: [
+                { title: 'TV-opptreden',  value: 'tv'        },
+                { title: 'Intervju',      value: 'intervju'  },
+                { title: 'Opptreden',     value: 'opptreden' },
+                { title: 'Annet',         value: 'annet'     },
+              ],
+            },
+          }),
+          defineField({ name: 'year', title: 'År', type: 'number' }),
+        ],
+        preview: {
+          select: { title: 'title', year: 'year' },
+          prepare({ title, year }: { title?: string; year?: number }) {
+            return { title: title ?? '(uten tittel)', subtitle: year ? String(year) : '' }
+          },
+        },
+      }],
+    }),
 
     // ── 3. TEKST ──────────────────────────────────────────────────
     defineField({
@@ -132,7 +191,7 @@ export const biography = defineType({
       title: 'Kortbiografi',
       type: 'text',
       rows: 4,
-      description: 'Vises i listevisning. Maks 280 tegn.',
+      description: 'Vises i listevisning. En selvstendig oppsummering (hvem, kjent for hva) — ikke bare de(t) første avsnittet/setningen klippet fra fullbiografien. Maks 280 tegn.',
       validation: R => R.max(280),
     }),
     defineField({
@@ -272,20 +331,25 @@ export const biography = defineType({
 
   preview: {
     select: {
-      title:  'name',
-      subtitle: 'years',
-      media:  'mainImage',
-      needs:  'needsUpdate',
+      title:      'name',
+      subtitle:   'years',
+      birthYear:  'birthYear',
+      deathYear:  'deathYear',
+      media:      'mainImage',
+      needs:      'needsUpdate',
     },
-    prepare({ title, subtitle, media, needs }: {
+    prepare({ title, subtitle, birthYear, deathYear, media, needs }: {
       title?: string
       subtitle?: string
+      birthYear?: number
+      deathYear?: number
       media?: unknown
       needs?: boolean
     }) {
+      const years = subtitle || (birthYear ? (deathYear ? `${birthYear}–${deathYear}` : `f. ${birthYear}`) : '')
       return {
         title:    (needs ? '⚠️ ' : '') + (title ?? '(uten navn)'),
-        subtitle: subtitle ?? '',
+        subtitle: years,
         media:    media,
       }
     },

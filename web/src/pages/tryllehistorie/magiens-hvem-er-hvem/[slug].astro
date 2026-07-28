@@ -14,8 +14,8 @@ if (!bio) return Astro.redirect('/tryllehistorie/magiens-hvem-er-hvem', 301)
 
 const fullBioHtml = portableTextToHtml(bio.fullBio)
 
-// Aldersberegning
-function calcAge(birth: string, death?: string): string {
+// Aldersberegning — presis når vi har eksakt dato, ellers årstall-basert, ellers fritekst
+function calcAgeFromDate(birth: string, death?: string): string {
   const b = new Date(birth)
   const d = death ? new Date(death) : new Date()
   const age = d.getFullYear() - b.getFullYear() -
@@ -24,7 +24,17 @@ function calcAge(birth: string, death?: string): string {
   return `f. ${b.getFullYear()} (${age} år)`
 }
 
-const ageStr = bio.birthDate ? calcAge(bio.birthDate, bio.deathDate ?? undefined) : (bio.years ?? '')
+function calcAgeFromYear(birthYear: number, deathYear?: number): string {
+  if (deathYear) return `${birthYear}–${deathYear} (${deathYear - birthYear} år)`
+  const age = new Date().getFullYear() - birthYear
+  return `f. ${birthYear} (${age} år)`
+}
+
+const ageStr = bio.birthDate
+  ? calcAgeFromDate(bio.birthDate, bio.deathDate ?? undefined)
+  : bio.birthYear
+    ? calcAgeFromYear(bio.birthYear, bio.deathYear ?? undefined)
+    : (bio.years ?? '')
 
 const linkIcons: Record<string, string> = {
   wikipedia: '📖',
@@ -63,7 +73,7 @@ const videoTypeLabel: Record<string, string> = {
         <h1 class="display-title hero-name">{bio.name}</h1>
         {bio.artistName && <p class="hero-artist">Kunstnernavn: <em>{bio.artistName}</em></p>}
         {ageStr && <p class="hero-years">{ageStr}</p>}
-        {bio.years && bio.birthDate && <p class="hero-years">Aktiv: {bio.years}</p>}
+        {bio.years && (bio.birthDate || bio.birthYear) && <p class="hero-years">Aktiv: {bio.years}</p>}
 
         {bio.tags && bio.tags.length > 0 && (
           <div class="hero-tags">
@@ -167,26 +177,28 @@ const videoTypeLabel: Record<string, string> = {
       <section class="sources-section">
         <h2 class="section-heading">Kilder</h2>
         <ul class="sources-list">
-          {bio.sources.map((src: any) => (
-            <li>
-              {src.url
-                ? <a href={src.url} target="_blank" rel="noopener noreferrer">
-                    {src.label}
-                    <svg class="ext-icon" viewBox="0 0 12 12" fill="none" aria-label="Åpnes i ny fane">
-                      <path d="M2 10L10 2M10 2H5M10 2V7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-                    </svg>
-                  </a>
-                : <span>{src.label}</span>
-              }
-            </li>
-          ))}
+          {bio.sources.map((src) => {
+            const url = src.url ?? src.sourceRef?.url
+            const label = src.label ?? src.sourceRef?.title
+            return (
+              <li>
+                {url
+                  ? <a href={url} target="_blank" rel="noopener noreferrer">
+                      {label}
+                      <svg class="ext-icon" viewBox="0 0 12 12" fill="none" aria-label="Åpnes i ny fane">
+                        <path d="M2 10L10 2M10 2H5M10 2V7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                      </svg>
+                    </a>
+                  : <span>{label}</span>
+                }
+              </li>
+            )
+          })}
         </ul>
 
         <p class="source-disclaimer">
-          Denne biografien er basert på <em>«Magiens Hvem er Hvem»</em> av Terje Nordheim (2005)
-          og dekker perioden frem til ca. år 2000.
-          {bio.lastVerified && ` Sist verifisert: ${new Date(bio.lastVerified).toLocaleDateString('nb-NO', {year:'numeric',month:'long'})}.`}
-          {bio.needsUpdate && ' ⚠️ Denne biografien er merket for oppdatering.'}
+          {bio.lastVerified && `Sist verifisert: ${new Date(bio.lastVerified).toLocaleDateString('nb-NO', {year:'numeric',month:'long'})}. `}
+          {bio.needsUpdate && '⚠️ Denne biografien er merket for oppdatering. '}
           <a href="/kontakt">Bidra med korreksjoner</a>.
         </p>
       </section>

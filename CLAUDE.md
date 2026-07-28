@@ -14,7 +14,7 @@ The site serves dual audiences: children (with interactive exhibitions and activ
 
 ### Content Layer (Sanity CMS)
 
-The schema defines 31 registered content types in `/schemaTypes` (see `schemaTypes/index.ts`):
+The schema defines 32 registered content types in `/schemaTypes` (see `schemaTypes/index.ts`):
 
 **Page Types** (singletons):
 - `homepage.ts` — Hero, exhibitions focus, sections, partnerships
@@ -31,13 +31,14 @@ The schema defines 31 registered content types in `/schemaTypes` (see `schemaTyp
 
 **Document Types** (queryable collections):
 - `magician.ts`, `exhibitionShow.ts`, `exhibitionStation.ts` — **Removed (2026-07)**, superseded by `legend.ts`. Content was migrated to `legend` docs via `scripts/migrate-exhibits-to-legend.mjs`, then the old documents and schema types were deleted once nothing referenced them.
-- `biography.ts` — "Hvem er hvem" (Who's Who) reference: full name, aliases, birth/death dates, nationality, magician references
+- `biography.ts` — "Hvem er hvem" (Who's Who) reference: full name, aliases, nationality, magician references. Birth/death: `birthYear`/`deathYear` (number, used for the common case where only the year is known) plus optional `birthDate`/`deathDate` (exact date, only when known) — `years` is a free-text fallback for cases the structured fields don't cover (e.g. "aktiv 1950-tallet"). Prefer the structured fields for new/edited entries.
 - `legend.ts` (Studio label: "Fordypning") — Unified deep-dive article type: dual-audience wall-panel text (`childText`/`wallText`), free-form article body (`content`, or `detailIntro`/`sections`), an optional multi-part `stations` array, and optional physical-placement metadata (`qrNumber`/`physicalOrder`). Covers everything from short biographical portraits to the Gullalderen wall panels and the Houdini exhibition. A doc with `physicalOrder` and/or `stations` set routes to `/utstillingen`; otherwise to `/tryllehistorie/fordypninger` (see `NOT_UTSTILLING` in `sanity.ts`). Both routes render through `web/src/components/LegendBody.astro`.
 - `tvAppearance.ts` — TV show appearances (Got Talent formats, Penn & Teller: Fool Us)
 - `historicalClip.ts` — Archival video clips with metadata (synced daily from YouTube via GitHub Actions)
 - `historiskeKlippNb.ts` — Historical newspaper articles (nb.no references, rewritten text, 70-year copyright gating for facsimiles)
 - `mediaAppearance.ts` — The museum's own press/media coverage ("I media")
 - `book.ts` — Library catalog with author, publication, availability status
+- `source.ts` (Studio label: "Kilde (register)") — Reusable source registry (title, author, type, year, URL). `sourceItem` (see Helper Types below) references a `source` doc via `sourceRef` instead of retyping the citation as free text each time. Any `sourceItem` array (on `biography`, `legend`, `book`, `whoKnew`, `story`, `magicOrganization`, `trick`) can use it.
 - `event.ts` — Upcoming events/courses with dates, pricing, booking
 - `artifact.ts` — Museum objects: origin, materials, condition, gallery images
 - `partner.ts` — Sponsors/partners with category grouping
@@ -47,7 +48,7 @@ The schema defines 31 registered content types in `/schemaTypes` (see `schemaTyp
 
 **Helper Types** (object types used inline by document types):
 - `contentSection.ts` — Reusable heading + rich text block
-- `sourceItem.ts` — External link with label
+- `sourceItem.ts` — Citation used in `sources` arrays: prefer `sourceRef` (reference to a `source` doc); `label`/`url` remain as free-text fallback for one-off citations or a per-use URL override
 
 ### Query Layer (Sanity Client)
 
