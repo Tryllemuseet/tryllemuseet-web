@@ -189,21 +189,25 @@ const videoTypeLabel: Record<string, string> = {
     <section class="sources-section" aria-label="Kilder">
       <h2 class="section-heading">Kilder</h2>
       <ul class="sources-list">
-        {entry.sources.map(src => (
-          <li>
-            {src.url
-              ? (
-                <a href={src.url} target="_blank" rel="noopener noreferrer">
-                  {src.label}
-                  <svg class="ext-icon" viewBox="0 0 12 12" fill="none" aria-label="Åpnes i ny fane">
-                    <path d="M2 10L10 2M10 2H5M10 2V7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-                  </svg>
-                </a>
-              )
-              : <span>{src.label}</span>
-            }
-          </li>
-        ))}
+        {entry.sources.map(src => {
+          const url = src.url ?? src.sourceRef?.url
+          const label = src.label ?? src.sourceRef?.title
+          return (
+            <li>
+              {url
+                ? (
+                  <a href={url} target="_blank" rel="noopener noreferrer">
+                    {label}
+                    <svg class="ext-icon" viewBox="0 0 12 12" fill="none" aria-label="Åpnes i ny fane">
+                      <path d="M2 10L10 2M10 2H5M10 2V7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                    </svg>
+                  </a>
+                )
+                : <span>{label}</span>
+              }
+            </li>
+          )
+        })}
       </ul>
     </section>
   )}

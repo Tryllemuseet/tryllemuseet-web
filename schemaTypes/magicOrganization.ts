@@ -307,16 +307,7 @@ export default defineType({
       type: 'array',
       description: 'Lenker til Wikipedia, arkiver, nasjonalbiblioteket osv.',
       of: [
-        {
-          type: 'object',
-          fields: [
-            defineField({ name: 'label', title: 'Lenketekst', type: 'string' }),
-            defineField({ name: 'url', title: 'URL', type: 'url' }),
-          ],
-          preview: {
-            select: { title: 'label', subtitle: 'url' },
-          },
-        },
+        { type: 'sourceItem' },
       ],
     }),
 
