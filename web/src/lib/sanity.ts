@@ -1589,14 +1589,15 @@ export interface Legend {
   slug:         string
   excerpt?:     string
   biographyRef?: {
-    _id:         string
-    name:        string
-    slug:        string
-    artistName?: string
-    birthDate?:  PartialDate
-    deathDate?:  PartialDate
-    years?:      string
-    mainImage?:  BiographyImage
+    _id:          string
+    name:         string
+    slug:         string
+    artistName?:  string
+    nationality?: string
+    birthDate?:   PartialDate
+    deathDate?:   PartialDate
+    years?:       string
+    mainImage?:   BiographyImage
   }
   mainImage?:   BiographyImage
   gallery?:     BiographyImage[]
@@ -1703,7 +1704,7 @@ export async function getAllLegends(): Promise<Legend[]> {
       mainImage { asset->{ _ref, url }, alt },
       biographyRef-> {
         _id, name, "slug": slug.current,
-        artistName, birthDate { year, month, day, circa }, deathDate { year, month, day, circa }, years,
+        artistName, nationality, birthDate { year, month, day, circa }, deathDate { year, month, day, circa }, years,
         mainImage { asset->{ _ref, url }, alt }
       }
     }

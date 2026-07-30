@@ -13,6 +13,11 @@ const INTERNAL_TAG = 'norske-legender'
 const allTags = [...new Set(
   legends.flatMap((leg: Legend) => leg.tags ?? []).filter(t => t !== INTERNAL_TAG)
 )].sort() as string[]
+
+function nationalityBucket(nat?: string): '' | 'norsk' | 'internasjonal' {
+  if (!nat) return ''
+  return nat === 'Norsk' ? 'norsk' : 'internasjonal'
+}
 ---
 
 <BaseLayout
@@ -52,17 +57,28 @@ const allTags = [...new Set(
         <button class="search-clear" id="search-clear" aria-label="Tøm søk" hidden>✕</button>
       </div>
 
-      {allTags.length > 0 && (
+      <div class="search-bar-filters">
         <div class="filter-group">
-          <label class="filter-label" for="filter-tag">Tema</label>
-          <select id="filter-tag" class="filter-select">
-            <option value="">Alle temaer</option>
-            {allTags.map((tag: string) => (
-              <option value={tag}>{tag}</option>
-            ))}
+          <label class="filter-label" for="filter-nationality">Land</label>
+          <select id="filter-nationality" class="filter-select">
+            <option value="">Alle land</option>
+            <option value="norsk">Norsk</option>
+            <option value="internasjonal">Internasjonal</option>
           </select>
         </div>
-      )}
+
+        {allTags.length > 0 && (
+          <div class="filter-group">
+            <label class="filter-label" for="filter-tag">Tema</label>
+            <select id="filter-tag" class="filter-select">
+              <option value="">Alle temaer</option>
+              {allTags.map((tag: string) => (
+                <option value={tag}>{tag}</option>
+              ))}
+            </select>
+          </div>
+        )}
+      </div>
     </div>
   </div>
 
@@ -89,6 +105,7 @@ const allTags = [...new Set(
           class="legend-card"
           data-title={leg.title.toLowerCase()}
           data-tags={tags.join(' ').toLowerCase()}
+          data-nationality={nationalityBucket(bio?.nationality)}
         >
           <a href={`/tryllehistorie/fordypninger/${leg.slug}`} class="legend-link">
 
@@ -135,6 +152,7 @@ const allTags = [...new Set(
   const searchInput = document.getElementById('fordypning-search') as HTMLInputElement
   const searchClear = document.getElementById('search-clear') as HTMLButtonElement
   const tagSelect    = document.getElementById('filter-tag') as HTMLSelectElement | null
+  const natSelect    = document.getElementById('filter-nationality') as HTMLSelectElement | null
   const noResults    = document.getElementById('no-results') as HTMLElement
   const resultCount  = document.getElementById('result-count') as HTMLElement
   const cards        = document.querySelectorAll<HTMLElement>('.legend-card')
@@ -142,6 +160,7 @@ const allTags = [...new Set(
   function applyFilters() {
     const q   = searchInput.value.trim().toLowerCase()
     const tag = tagSelect?.value ?? ''
+    const nat = natSelect?.value ?? ''
     searchClear.hidden = q.length === 0
 
     let visible = 0
@@ -150,7 +169,8 @@ const allTags = [...new Set(
       const tags  = card.dataset.tags  ?? ''
       const matchesQuery = !q || title.includes(q) || tags.includes(q)
       const matchesTag   = !tag || tags.split(' ').includes(tag.toLowerCase())
-      const match = matchesQuery && matchesTag
+      const matchesNat   = !nat || card.dataset.nationality === nat
+      const match = matchesQuery && matchesTag && matchesNat
       card.hidden = !match
       if (match) visible++
     })
@@ -161,6 +181,7 @@ const allTags = [...new Set(
 
   searchInput?.addEventListener('input', applyFilters)
   tagSelect?.addEventListener('change', applyFilters)
+  natSelect?.addEventListener('change', applyFilters)
 
   searchClear?.addEventListener('click', () => {
     searchInput.value = ''
@@ -227,6 +248,7 @@ const allTags = [...new Set(
   .search-clear { font-size: 0.8rem; color: var(--grey); padding: 0.1rem 0.3rem; border-radius: 3px; transition: color 180ms; cursor: pointer; }
   .search-clear:hover { color: var(--ink); }
 
+  .search-bar-filters { display: flex; flex-wrap: wrap; gap: 1rem; }
   .filter-group { display: flex; align-items: center; gap: 0.5rem; }
   .filter-label { font-family: var(--font-ui); font-size: 0.75rem; font-weight: 600; color: var(--ink-mid); white-space: nowrap; }
   .filter-select {
@@ -280,6 +302,10 @@ const allTags = [...new Set(
 
   @media (max-width: 560px) {
     .legend-grid { grid-template-columns: 1fr; gap: 1rem; }
-    .search-bar-inner { flex-direction: column; align-items: stretch; }
+    .search-bar-inner { flex-direction: column; align-items: stretch; gap: 0.6rem; padding-top: 0.6rem; padding-bottom: 0.6rem; }
+    .search-bar-filters { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem 0.6rem; }
+    .filter-group { flex-direction: column; align-items: stretch; gap: 0.15rem; }
+    .filter-label { font-size: 0.6rem; }
+    .filter-select { width: 100%; font-size: 0.8rem; padding: 0.4rem 0.55rem; }
   }
 </style>
