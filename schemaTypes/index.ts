@@ -25,6 +25,7 @@ import { partner }        from './partner'
 import artifact           from './artifact'
 import { tvAppearance }    from './tvAppearance'
 import { historicalClip }  from './historicalClip'
+import { youtubeSource }    from './youtubeSource'
 import { mediaAppearance } from './mediaAppearance'
 import signageQuote        from './signageQuote'
 import signageConfig       from './signageConfig'
@@ -73,6 +74,7 @@ export const schemaTypes = [
   // Dokumenttyper — Opptredener
   tvAppearance,
   historicalClip,
+  youtubeSource,
 
   // Dokumenttyper — Arkivet
   biography,
