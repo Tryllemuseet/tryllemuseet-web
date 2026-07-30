@@ -1,4 +1,4 @@
-name: Sync YouTube clips (Egelos)
+name: Sync YouTube clips
 
 on:
   schedule:

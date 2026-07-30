@@ -14,7 +14,7 @@ The site serves dual audiences: children (with interactive exhibitions and activ
 
 ### Content Layer (Sanity CMS)
 
-The schema defines 31 registered content types in `/schemaTypes` (see `schemaTypes/index.ts`):
+The schema defines 35 registered content types in `/schemaTypes` (see `schemaTypes/index.ts`):
 
 **Page Types** (singletons):
 - `homepage.ts` — Hero, exhibitions focus, sections, partnerships
@@ -35,6 +35,7 @@ The schema defines 31 registered content types in `/schemaTypes` (see `schemaTyp
 - `legend.ts` (Studio label: "Fordypning") — Unified deep-dive article type: dual-audience wall-panel text (`childText`/`wallText`), free-form article body (`content`, or `detailIntro`/`sections`), an optional multi-part `stations` array, and optional physical-placement metadata (`qrNumber`/`physicalOrder`). Covers everything from short biographical portraits to the Gullalderen wall panels and the Houdini exhibition. A doc with `physicalOrder` and/or `stations` set routes to `/utstillingen`; otherwise to `/tryllehistorie/fordypninger` (see `NOT_UTSTILLING` in `sanity.ts`). Both routes render through `web/src/components/LegendBody.astro`.
 - `tvAppearance.ts` — TV show appearances (Got Talent formats, Penn & Teller: Fool Us)
 - `historicalClip.ts` — Archival video clips with metadata (synced daily from YouTube via GitHub Actions)
+- `youtubeSource.ts` — YouTube channel(s) the daily sync pulls from (`channelId`, `sourceLabel`, `isActive`). Add a document here to subscribe to another channel — no code change needed. `scripts/importYouTubeClips.mjs` matches existing `historicalClip` docs by `youtubeId` (not `_id`), so hand-curated entries get updated in place instead of duplicated.
 - `historiskeKlippNb.ts` — Historical newspaper articles (nb.no references, rewritten text, 70-year copyright gating for facsimiles)
 - `mediaAppearance.ts` — The museum's own press/media coverage ("I media")
 - `book.ts` — Library catalog with author, publication, availability status

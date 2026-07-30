@@ -1,0 +1,9 @@
+{
+  "name": "tryllemuseet-deploy-debouncer",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "dependencies": {
+    "@sanity/client": "^7.22.1"
+  }
+}
