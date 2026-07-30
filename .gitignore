@@ -32,3 +32,6 @@
 /nb-search-results/
 *.ndjson
 /nb-verifisering.csv
+
+# One-off content import scripts (may contain unpublished draft text)
+/importGullalder.mjs
