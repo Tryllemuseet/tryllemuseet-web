@@ -78,14 +78,18 @@ const categoryLabels: Record<string, string> = {
         <div class="kilder-boks">
           <h3 class="faktaboks-heading">Kilder</h3>
           <ul class="kilder-liste">
-            {w.sources.map((s) => (
-              <li>
-                {s.url
-                  ? <a href={s.url} target="_blank" rel="noopener noreferrer">{s.label}</a>
-                  : <span>{s.label}</span>
-                }
-              </li>
-            ))}
+            {w.sources.map((s) => {
+              const url = s.url ?? s.sourceRef?.url
+              const label = s.label ?? s.sourceRef?.title
+              return (
+                <li>
+                  {url
+                    ? <a href={url} target="_blank" rel="noopener noreferrer">{label}</a>
+                    : <span>{label}</span>
+                  }
+                </li>
+              )
+            })}
           </ul>
         </div>
       )}
