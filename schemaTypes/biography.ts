@@ -141,6 +141,39 @@ export const biography = defineType({
         ],
       }],
     }),
+    defineField({
+      name: 'videos',
+      title: 'Videoer',
+      type: 'array',
+      description: 'TV-opptredener, intervjuer o.l. med denne personen.',
+      of: [{
+        type: 'object',
+        fields: [
+          defineField({ name: 'title', title: 'Tittel', type: 'string', validation: R => R.required() }),
+          defineField({ name: 'url',   title: 'URL',    type: 'url',    validation: R => R.required() }),
+          defineField({
+            name: 'type',
+            title: 'Type',
+            type: 'string',
+            options: {
+              list: [
+                { title: 'TV-opptreden',  value: 'tv'        },
+                { title: 'Intervju',      value: 'intervju'  },
+                { title: 'Opptreden',     value: 'opptreden' },
+                { title: 'Annet',         value: 'annet'     },
+              ],
+            },
+          }),
+          defineField({ name: 'year', title: 'År', type: 'number' }),
+        ],
+        preview: {
+          select: { title: 'title', year: 'year' },
+          prepare({ title, year }: { title?: string; year?: number }) {
+            return { title: title ?? '(uten tittel)', subtitle: year ? String(year) : '' }
+          },
+        },
+      }],
+    }),
 
     // ── 3. TEKST ──────────────────────────────────────────────────
     defineField({
