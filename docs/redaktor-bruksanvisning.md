@@ -163,18 +163,27 @@ Fysiske QR-koder administreres **ikke** som et felt på Fordypning-dokumentet
 **Meny:** QR-kode
 
 QR-koder er en oversiktlig tabell i Studio: hver rad er ett QR-kodedokument
-med et **QR-kodenummer** og et **Peker til (Fordypning)**-felt der du søker
-opp og velger artikkelen koden skal lenke til (kun artikler med en gyldig
-URL-slug dukker opp som treff — du kan ikke skrive inn en slug/URL for hånd
-og risikere en skrivefeil). Lista i Studio viser umiddelbart hvilken
-`/utstillingen/{slug}`-URL nummeret faktisk løser seg til, slik at du kan
-verifisere koblingen før du publiserer.
+med et **QR-kodenummer** og ett av to felt som sier hvor koden skal peke:
+
+- **Peker til (Fordypning)** — søk opp og velg artikkelen koden skal lenke
+  til (kun artikler med en gyldig URL-slug dukker opp som treff — du kan
+  ikke skrive inn en slug/URL for hånd og risikere en skrivefeil). Bruk
+  dette for QR-koder som peker til én bestemt Fordypning-artikkel — Sanity
+  regner selv ut om artikkelen hører hjemme under `/utstillingen` eller
+  `/tryllehistorie/fordypninger`.
+- **Fast side-URL** — bruk denne i stedet hvis QR-koden skal peke til en
+  fast side på nettsiden som ikke er en Fordypning-artikkel, f.eks.
+  `/tryllehistorie`. Skriv inn stien med innledende skråstrek.
+
+Fyll ut kun ett av de to feltene — Sanity varsler hvis begge eller ingen er
+fylt ut. Lista i Studio viser umiddelbart hvilken URL nummeret faktisk
+løser seg til, slik at du kan verifisere koblingen før du publiserer.
 
 1. Klikk **+ Nytt dokument → QR-kode**.
 2. Fyll inn **QR-kodenummer** — samme tall som er trykt/laminert på den
    fysiske QR-koden i museet. Sanity varsler hvis tallet allerede er i bruk
    av en annen QR-kode.
-3. Fyll inn **Peker til (Fordypning)** — søk opp riktig artikkel.
+3. Fyll inn **enten** Peker til (Fordypning) **eller** Fast side-URL.
 4. Klikk **Publiser**.
 
 **Viktig om selve QR-koden:** koden som trykkes/lamineres skal alltid peke
