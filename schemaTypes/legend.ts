@@ -58,14 +58,8 @@ export const legend = defineType({
     }),
 
     // ── 2. PLASSERING — kun ved fysisk tilstedeværelse i museet ────
-    defineField({
-      name: 'qrNumber',
-      title: 'QR-kodenummer (internt)',
-      type: 'number',
-      description: 'Fylles kun ut hvis artikkelen har en fysisk QR-kode i museet. Selve QR-koden skal trykkes med URL-en https://tryllemuseet.no/qr/{nummer} — IKKE en direkte lenke til artikkelen, siden slug/plassering kan endre seg. Nummeret må være unikt på tvers av alle fordypninger.',
-      validation: R => R.min(1),
-    }),
-
+    // QR-koder administreres nå som egne QR-kode-dokumenter (schemaTypes/qrCode.ts),
+    // som peker hit via en referanse — ikke som et felt på selve artikkelen.
     defineField({
       name: 'physicalOrder',
       title: 'Rekkefølge på vegg (internt)',

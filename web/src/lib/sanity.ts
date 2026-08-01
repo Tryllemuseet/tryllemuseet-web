@@ -74,7 +74,7 @@ export interface Artifact {
 
 // ── Utstillingen (legend: fysisk plassering + dybdeartikler) ─────
 //
-// Ett legend-dokument kan dekke veggpanel-dybden (physicalOrder/qrNumber,
+// Ett legend-dokument kan dekke veggpanel-dybden (physicalOrder,
 // childText/wallText), stasjons-dybden (stations), eller begge — se
 // schemaTypes/legend.ts og scripts/migrate-exhibits-to-legend.mjs.
 // Erstatter de tidligere separate magician- og exhibitionShow/
@@ -86,7 +86,6 @@ export interface UtstillingEntry {
   slug:           string
   tagline?:       string
   years?:         string
-  qrNumber?:      number
   physicalOrder?: number
   childText?:     string
   childActivity?: string
@@ -105,14 +104,16 @@ export interface QrRedirectEntry {
   slug:     string
 }
 
-// Oppslagstabell for fysiske QR-koder i museet — se web/src/pages/qr/[number].astro.
-// QR-klistremerket peker til den stabile URL-en /qr/{nummer}; denne slår opp
-// hvilket legend-dokument nummeret tilhører akkurat nå, slik at klistremerket
-// ikke må byttes ut selv om artikkelen får ny slug eller flyttes.
+// Oppslagstabell for fysiske QR-koder i museet — se web/src/pages/qr/[number].astro
+// og det egne qrCode-dokumentet (schemaTypes/qrCode.ts), som peker til legend
+// via en referanse. QR-klistremerket peker til den stabile URL-en /qr/{nummer};
+// denne slår opp hvilket legend-dokument nummeret peker til akkurat nå, slik at
+// klistremerket ikke må byttes ut selv om artikkelen får ny slug eller flyttes.
 export async function getQrRedirects(): Promise<QrRedirectEntry[]> {
   return sanityClient.fetch(`
-    *[_type == "legend" && isVisible != false && defined(qrNumber)] {
-      qrNumber, "slug": slug.current
+    *[_type == "qrCode" && defined(qrNumber) && defined(target->slug.current) && target->isVisible != false] {
+      qrNumber,
+      "slug": target->slug.current
     }
   `)
 }
@@ -122,7 +123,7 @@ export async function getGullalderenPanels(): Promise<UtstillingEntry[]> {
   return sanityClient.fetch(`
     *[_type == "legend" && isVisible != false && defined(physicalOrder)] | order(physicalOrder asc) {
       _id, title, "slug": slug.current,
-      physicalOrder, qrNumber, years, tagline, detailIntro,
+      physicalOrder, years, tagline, detailIntro,
       mainImage { asset->{ _ref, url }, alt }
     }
   `)
@@ -154,7 +155,7 @@ export async function getUtstillingEntryBySlug(slug: string): Promise<Utstilling
   return sanityClient.fetch(`
     *[_type == "legend" && slug.current == $slug && isVisible != false][0] {
       _id, title, "slug": slug.current,
-      tagline, years, qrNumber, physicalOrder,
+      tagline, years, physicalOrder,
       childText, childActivity, wallText,
       detailIntro, sections[] { heading, body },
       mainImage { asset->{ _ref, url }, alt },
@@ -1652,7 +1653,6 @@ export interface Legend {
   // / getLegendBySlug / getLegendPaths under, som er for /tryllehistorie).
   tagline?:       string
   years?:         string
-  qrNumber?:      number
   physicalOrder?: number
   childText?:     string
   childActivity?: string

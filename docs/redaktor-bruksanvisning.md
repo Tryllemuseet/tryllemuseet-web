@@ -155,18 +155,36 @@ to feltene er fylt ut:
   ikke for en vanlig fordypningsartikkel med flere avsnitt (bruk **Utdypende
   tekst — seksjoner** til det, se punkt 7).
 
-Fyll ut **QR-kodenummer (internt)** kun hvis feltet har fått en fysisk
-QR-kode i museet. La det stå tomt ellers. Nummeret må være unikt — bruk
-aldri samme nummer på to dokumenter.
+Fysiske QR-koder administreres **ikke** som et felt på Fordypning-dokumentet
+— se egen dokumenttype **QR-kode** lenger ned i dette punktet.
+
+### QR-koder — egen tabell
+
+**Meny:** QR-kode
+
+QR-koder er en oversiktlig tabell i Studio: hver rad er ett QR-kodedokument
+med et **QR-kodenummer** og et **Peker til (Fordypning)**-felt der du søker
+opp og velger artikkelen koden skal lenke til (kun artikler med en gyldig
+URL-slug dukker opp som treff — du kan ikke skrive inn en slug/URL for hånd
+og risikere en skrivefeil). Lista i Studio viser umiddelbart hvilken
+`/utstillingen/{slug}`-URL nummeret faktisk løser seg til, slik at du kan
+verifisere koblingen før du publiserer.
+
+1. Klikk **+ Nytt dokument → QR-kode**.
+2. Fyll inn **QR-kodenummer** — samme tall som er trykt/laminert på den
+   fysiske QR-koden i museet. Sanity varsler hvis tallet allerede er i bruk
+   av en annen QR-kode.
+3. Fyll inn **Peker til (Fordypning)** — søk opp riktig artikkel.
+4. Klikk **Publiser**.
 
 **Viktig om selve QR-koden:** koden som trykkes/lamineres skal alltid peke
 til `https://tryllemuseet.no/qr/{nummer}` (f.eks. `https://tryllemuseet.no/qr/7`)
 — **aldri** en direkte lenke til artikkelen (f.eks.
 `/utstillingen/finn-jon`). Den korte `/qr/{nummer}`-URL-en slår opp riktig
-artikkel på byggetidspunkt, slik at et fysisk klistremerke fortsetter å
-virke selv om artikkelen får ny tittel/slug eller flyttes. Endre aldri
-QR-kodenummeret på et publisert dokument uten å også bytte ut klistremerket
-i museet.
+artikkel på byggetidspunkt via QR-kode-dokumentet, slik at et fysisk
+klistremerke fortsetter å virke selv om artikkelen den peker til får ny
+tittel/slug eller flyttes. Skal en QR-kode peke til en annen artikkel —
+endre **Peker til**-feltet på QR-kode-dokumentet, ikke nummeret.
 
 For alle andre felt (barnetekst, voksentekst, kilder osv.) — se den fulle
 feltoversikten under [7. Fordypninger](#7-fordypninger).
@@ -243,8 +261,10 @@ når disse skal fylles ut. La dem stå tomme for en vanlig fordypningsartikkel.
 
 | Felt | Merknad |
 |---|---|
-| QR-kodenummer (internt) | Kun ved fysisk QR-kode i museet. Må være unikt. Selve koden trykkes med URL-en `https://tryllemuseet.no/qr/{nummer}`, se [5. Utstillingen](#5-utstillingen--gullalderen-og-dybdeutstillinger) |
 | Rekkefølge på vegg (internt) | Kun ved fast fysisk plassering, f.eks. i Gullalderen |
+
+QR-kode håndteres ikke som et felt her — se egen **QR-kode**-dokumenttype
+under [5. Utstillingen](#5-utstillingen--gullalderen-og-dybdeutstillinger).
 
 ### Innhold — velg det som passer artikkelen
 
@@ -626,9 +646,11 @@ Se [Hvem er hvem](#6-hvem-er-hvem--biografiregisteret) → «Legge til en ny per
 5. Legg gjerne på noen **Tagger** hvis artikkelen hører til et tema
    (f.eks. «kvinner-i-norsk-trylling») — brukes til filtrering på
    `/tryllehistorie/fordypninger`.
-6. La **QR-kodenummer**, **Rekkefølge på vegg** og **Stasjoner** stå tomme
-   med mindre artikkelen faktisk skal vises under `/utstillingen` — se
-   [5. Utstillingen](#5-utstillingen--gullalderen-og-dybdeutstillinger).
+6. La **Rekkefølge på vegg** og **Stasjoner** stå tomme med mindre artikkelen
+   faktisk skal vises under `/utstillingen` — se
+   [5. Utstillingen](#5-utstillingen--gullalderen-og-dybdeutstillinger). Skal
+   artikkelen ha en fysisk QR-kode, opprett et eget **QR-kode**-dokument
+   som peker til den (samme sted).
 7. Klikk **Publiser**.
 
 ### Registrere en TV-opptreden

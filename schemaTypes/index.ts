@@ -8,6 +8,7 @@ import { siteConfig }     from './siteConfig'
 import { siteNavigation } from './siteNavigation'
 import { biography }      from './biography'
 import { legend }         from './legend'
+import { qrCode }         from './qrCode'
 import { whoKnew }        from './whoKnew'
 import { book }           from './book'
 import { homepage }       from './homepage'
@@ -59,6 +60,7 @@ export const schemaTypes = [
   legend,
   artifact,
   magicOrganization,
+  qrCode,
 
   // Dokumenttyper — Aktiviteter
   trick,
