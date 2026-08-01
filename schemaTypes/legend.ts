@@ -62,7 +62,7 @@ export const legend = defineType({
       name: 'qrNumber',
       title: 'QR-kodenummer (internt)',
       type: 'number',
-      description: 'Fylles kun ut hvis artikkelen har en fysisk QR-kode i museet.',
+      description: 'Fylles kun ut hvis artikkelen har en fysisk QR-kode i museet. Selve QR-koden skal trykkes med URL-en https://tryllemuseet.no/qr/{nummer} — IKKE en direkte lenke til artikkelen, siden slug/plassering kan endre seg. Nummeret må være unikt på tvers av alle fordypninger.',
       validation: R => R.min(1),
     }),
 

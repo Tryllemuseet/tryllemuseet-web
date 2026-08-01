@@ -100,6 +100,23 @@ export interface UtstillingEntry {
   biographyRef?:  { name: string; slug: string; isVisible?: boolean }
 }
 
+export interface QrRedirectEntry {
+  qrNumber: number
+  slug:     string
+}
+
+// Oppslagstabell for fysiske QR-koder i museet — se web/src/pages/qr/[number].astro.
+// QR-klistremerket peker til den stabile URL-en /qr/{nummer}; denne slår opp
+// hvilket legend-dokument nummeret tilhører akkurat nå, slik at klistremerket
+// ikke må byttes ut selv om artikkelen får ny slug eller flyttes.
+export async function getQrRedirects(): Promise<QrRedirectEntry[]> {
+  return sanityClient.fetch(`
+    *[_type == "legend" && isVisible != false && defined(qrNumber)] {
+      qrNumber, "slug": slug.current
+    }
+  `)
+}
+
 // De fysiske veggfeltene i Gullalderen — til oversiktssiden
 export async function getGullalderenPanels(): Promise<UtstillingEntry[]> {
   return sanityClient.fetch(`
