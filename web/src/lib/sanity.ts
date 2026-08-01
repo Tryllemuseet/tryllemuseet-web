@@ -968,7 +968,7 @@ export async function getTryllehistoriePage(): Promise<TryllehistoriePage> {
   `),
     sanityClient.fetch(`{
       "biografier": count(*[_type == "biography" && isVisible != false]),
-      "legender":   count(*[_type == "legend" && isVisible != false && ${NOT_UTSTILLING}]),
+      "legender":   count(*[_type == "legend" && isVisible != false]),
       "gotTalent":  count(*[_type == "tvAppearance" && show in $shows && isVisible != false]),
       "foolUs":     count(*[_type == "tvAppearance" && show == "fool-us" && isVisible != false]),
       "opptak":     count(*[_type == "historicalClip" && isVisible != false]),
@@ -1666,6 +1666,7 @@ export interface Legend {
   tagline?:       string
   years?:         string
   physicalOrder?: number
+  stationCount?:  number
   childText?:     string
   childActivity?: string
   wallText?:      any[]
@@ -1775,12 +1776,18 @@ export async function getMonthlyBiographyPick(): Promise<MonthlyBiographyPick | 
 // /utstillingen, se getGullalderenPanels / getUtstillingDeepDives / getUtstillingEntryBySlug.
 const NOT_UTSTILLING = `!defined(physicalOrder) && (!defined(stations) || count(stations) == 0)`
 
-// Alle legender — til oversiktssiden
+// Alle legender — til oversiktssiden. Inkluderer med vilje også
+// utstillingen-artikler (physicalOrder/stasjoner) slik at Gullalderens
+// personer, Plasma-kulen og filmene er søkbare/synlige for nettbesøkende
+// også — men lenken for hvert kort må regnes ut med featuredItemHref()
+// (physicalOrder/stationCount), IKKE anta /tryllehistorie/fordypninger/{slug},
+// siden de fortsatt bor på /utstillingen/{slug} (unngår duplikatsider).
 export async function getAllLegends(): Promise<Legend[]> {
   return sanityClient.fetch(`
-    *[_type == "legend" && isVisible != false && ${NOT_UTSTILLING}] | order(title asc) {
+    *[_type == "legend" && isVisible != false] | order(title asc) {
       _id, title, "slug": slug.current,
       excerpt, tags,
+      physicalOrder, "stationCount": count(stations),
       mainImage { asset->{ _ref, url }, alt },
       biographyRef-> {
         _id, name, "slug": slug.current,

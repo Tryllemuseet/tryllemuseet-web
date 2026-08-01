@@ -1,7 +1,7 @@
 ---
 // src/pages/tryllehistorie/fordypninger/index.astro
 import BaseLayout from '../../../layouts/BaseLayout.astro'
-import { getAllLegends, formatLifespan } from '../../../lib/sanity'
+import { getAllLegends, formatLifespan, featuredItemHref } from '../../../lib/sanity'
 import type { Legend } from '../../../lib/sanity'
 
 const legends = await getAllLegends()
@@ -19,7 +19,7 @@ function nationalityBucket(nat?: string): '' | 'norsk' | 'internasjonal' {
 
 <BaseLayout
   title="Fordypninger — Tryllemuseet"
-  description={`${total} fordypende artikler om tryllekunstens store navn — norske og internasjonale.`}
+  description={`${total} fordypninger i tryllekunstens historie — norske og internasjonale.`}
 >
 
   <!-- HERO ──────────────────────────────────────────────────────── -->
@@ -28,8 +28,8 @@ function nationalityBucket(nat?: string): '' | 'norsk' | 'internasjonal' {
       <p class="section-label"><a href="/tryllehistorie" class="breadcrumb-link">Tryllehistorie</a></p>
       <h1 class="display-title hero-title">Fordypninger</h1>
       <p class="hero-sub">
-        {total} fordypende artikler om de store navnene i tryllekunsten —
-        norske og internasjonale.
+        {total} fordypninger i tryllekunstens historie — norske og
+        internasjonale.
       </p>
     </div>
   </section>
@@ -97,6 +97,14 @@ function nationalityBucket(nat?: string): '' | 'norsk' | 'internasjonal' {
       const navn = bio?.name ?? leg.title
       const years = formatLifespan(bio?.birthDate, bio?.deathDate, bio?.years)
       const tags = leg.tags ?? []
+      const href = featuredItemHref({
+        _type: 'legend',
+        _id: leg._id,
+        title: leg.title,
+        slug: leg.slug,
+        physicalOrder: leg.physicalOrder,
+        stationCount: leg.stationCount ?? 0,
+      })
       return (
         <article
           class="legend-card"
@@ -104,7 +112,7 @@ function nationalityBucket(nat?: string): '' | 'norsk' | 'internasjonal' {
           data-tags={tags.join(' ').toLowerCase()}
           data-nationality={nationalityBucket(bio?.nationality)}
         >
-          <a href={`/tryllehistorie/fordypninger/${leg.slug}`} class="legend-link">
+          <a href={href} class="legend-link">
 
             <div class="legend-img">
               {img?.asset?.url ? (
