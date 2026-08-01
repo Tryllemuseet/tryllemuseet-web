@@ -156,7 +156,17 @@ to feltene er fylt ut:
   tekst — seksjoner** til det, se punkt 7).
 
 Fyll ut **QR-kodenummer (internt)** kun hvis feltet har fått en fysisk
-QR-kode i museet. La det stå tomt ellers.
+QR-kode i museet. La det stå tomt ellers. Nummeret må være unikt — bruk
+aldri samme nummer på to dokumenter.
+
+**Viktig om selve QR-koden:** koden som trykkes/lamineres skal alltid peke
+til `https://tryllemuseet.no/qr/{nummer}` (f.eks. `https://tryllemuseet.no/qr/7`)
+— **aldri** en direkte lenke til artikkelen (f.eks.
+`/utstillingen/finn-jon`). Den korte `/qr/{nummer}`-URL-en slår opp riktig
+artikkel på byggetidspunkt, slik at et fysisk klistremerke fortsetter å
+virke selv om artikkelen får ny tittel/slug eller flyttes. Endre aldri
+QR-kodenummeret på et publisert dokument uten å også bytte ut klistremerket
+i museet.
 
 For alle andre felt (barnetekst, voksentekst, kilder osv.) — se den fulle
 feltoversikten under [7. Fordypninger](#7-fordypninger).
@@ -233,7 +243,7 @@ når disse skal fylles ut. La dem stå tomme for en vanlig fordypningsartikkel.
 
 | Felt | Merknad |
 |---|---|
-| QR-kodenummer (internt) | Kun ved fysisk QR-kode i museet |
+| QR-kodenummer (internt) | Kun ved fysisk QR-kode i museet. Må være unikt. Selve koden trykkes med URL-en `https://tryllemuseet.no/qr/{nummer}`, se [5. Utstillingen](#5-utstillingen--gullalderen-og-dybdeutstillinger) |
 | Rekkefølge på vegg (internt) | Kun ved fast fysisk plassering, f.eks. i Gullalderen |
 
 ### Innhold — velg det som passer artikkelen

@@ -7,11 +7,8 @@ import type { Legend } from '../../../lib/sanity'
 const legends = await getAllLegends()
 const total = legends.length
 
-// Intern grupperingstag — brukes ikke som filter/synlig merkelapp
-const INTERNAL_TAG = 'norske-legender'
-
 const allTags = [...new Set(
-  legends.flatMap((leg: Legend) => leg.tags ?? []).filter(t => t !== INTERNAL_TAG)
+  legends.flatMap((leg: Legend) => leg.tags ?? [])
 )].sort() as string[]
 
 function nationalityBucket(nat?: string): '' | 'norsk' | 'internasjonal' {
@@ -99,7 +96,7 @@ function nationalityBucket(nat?: string): '' | 'norsk' | 'internasjonal' {
       const img = leg.mainImage ?? bio?.mainImage
       const navn = bio?.name ?? leg.title
       const years = formatLifespan(bio?.birthDate, bio?.deathDate, bio?.years)
-      const tags = (leg.tags ?? []).filter(t => t !== INTERNAL_TAG)
+      const tags = leg.tags ?? []
       return (
         <article
           class="legend-card"
