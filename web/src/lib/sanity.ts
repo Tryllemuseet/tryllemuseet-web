@@ -1080,10 +1080,11 @@ export async function getRessurserPage(): Promise<RessurserPage> {
 
 
 // ── Typer: Utstillingen (side) ────────────────────────────────────
+// gullalderSeksjon/fremhevedeSlugs fantes tidligere her, men Gullalderen
+// har fått sin egen samleside (/utstillingen/gullalderen, se
+// getGullalderenPanels()) — feltene er ikke lenger i bruk på nettsiden.
 export interface UtstillingPage {
   hero: { eraLabel: string; heading: string; ingress: string }
-  gullalderSeksjon: { label: string; heading: string; ingress: string }
-  fremhevedeSlugs: string[]
   kommerSnartSeksjon: { label: string; heading: string }
   seksjoner: { icon: string; label: string; title: string; description: string; slug: string; ready: boolean }[]
 }
@@ -1092,8 +1093,6 @@ export async function getUtstillingPage(): Promise<UtstillingPage> {
   const d = await sanityClient.fetch(`
     *[_type == "utstillingPage"][0] {
       hero { eraLabel, heading, ingress },
-      gullalderSeksjon { label, heading, ingress },
-      fremhevedeSlugs,
       kommerSnartSeksjon { label, heading },
       seksjoner[] { icon, label, title, description, slug, ready }
     }
@@ -1104,17 +1103,12 @@ export async function getUtstillingPage(): Promise<UtstillingPage> {
       heading:  d?.hero?.heading  ?? 'Utstillingen',
       ingress:  d?.hero?.ingress  ?? 'Tryllekunsten har en rik og fascinerende historie. Her møter du magikerne som formet verden — fra teatersalene i Paris til de store scenene i Amerika. Utforsk gullalderen, norske legender, og museets unike samling.',
     },
-    gullalderSeksjon: {
-      label:   d?.gullalderSeksjon?.label   ?? 'Fremhevet',
-      heading: d?.gullalderSeksjon?.heading ?? 'Tryllingens gullalder',
-      ingress: d?.gullalderSeksjon?.ingress ?? 'Tre ikoner som definerte en epoke. I det fysiske museet bærer filmene og den mystiske kula vitnesbyrd om gullalderens storhet.',
-    },
-    fremhevedeSlugs: d?.fremhevedeSlugs ?? ['robert-houdin', 'alexander', 'houdini'],
     kommerSnartSeksjon: {
       label:   d?.kommerSnartSeksjon?.label   ?? 'Mer å utforske',
       heading: d?.kommerSnartSeksjon?.heading ?? 'I utstillingen',
     },
     seksjoner: d?.seksjoner ?? [
+      { icon: '🔮',   label: 'Fast utstilling',      title: 'Tryllekunstens gullalder', description: 'Robert-Houdin, Herrmann, Kellar, Thurston og Houdini — veggpanelene i Gullalder-salen.', slug: 'gullalderen',        ready: true  },
       { icon: '⭐',   label: 'Portretter',          title: 'Fordypninger',       description: 'Fra Arnardo til Finn Jon — tryllekunstnerne som satte spor.',                                slug: 'fordypninger',       ready: false },
       { icon: '🎩',   label: 'Samlingen',           title: 'Artefakter',         description: 'Sjeldne rekvisitter, historiske gjenstander og mysterier fra museets samling.',              slug: 'artefakter',         ready: true  },
       { icon: '♣',    label: 'Organisasjonene',     title: 'Trylleforeningene',  description: 'Magiske Cirkel Norge og Den magiske ring — fellesskapet bak kunsten.',                      slug: 'trylleforeningene',  ready: true  },

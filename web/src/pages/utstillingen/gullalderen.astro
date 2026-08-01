@@ -1,0 +1,142 @@
+---
+// src/pages/utstillingen/gullalderen.astro
+//
+// Egen samleside for veggpanelene i Gullalder-salen (legend-dokumenter med
+// physicalOrder) — flyttet ut av /utstillingen-forsiden. Hver person/gjenstand
+// viser sitt eget årstall i stedet for én felles (og delvis feil) periode i en
+// overskrift, siden Robert-Houdin (1805–1871) regnes som grunnleggeren FØR
+// gullalderen, mens Thurston (d. 1936) rundet den av lenge etter 1925.
+import BaseLayout from '../../layouts/BaseLayout.astro'
+import { getGullalderenPanels, urlFor } from '../../lib/sanity'
+
+const panels = await getGullalderenPanels()
+
+function posterUrl(image: any, width: number) {
+  if (!image?.asset) return null
+  return urlFor(image).width(width).height(Math.round(width * 4 / 3)).format('webp').fit('crop').url()
+}
+---
+
+<BaseLayout
+  title="Tryllekunstens gullalder — Tryllemuseet"
+  description="Fra grunnleggeren Robert-Houdin til Howard Thurstons enorme turnéshow — veggpanelene i museets Gullalder-sal, personlighet for personlighet."
+>
+
+  <!-- HERO ──────────────────────────────────────────────────────── -->
+  <section class="page-hero">
+    <div class="container">
+      <p class="section-label">Utstillingen</p>
+      <h1 class="display-title page-title">🔮 Tryllekunstens gullalder</h1>
+      <p class="page-sub">
+        Fra Robert-Houdins teater i Paris på 1840-tallet til Howard Thurstons
+        enorme turnéshow på 1930-tallet — veggpanelene i denne salen følger
+        tryllekunstens mest dramatiske æra, personlighet for personlighet.
+      </p>
+    </div>
+  </section>
+
+  <!-- GRID ──────────────────────────────────────────────────────── -->
+  <main class="container panel-grid">
+    {panels.length === 0 && (
+      <p class="empty-notice">Ingen veggpaneler er registrert ennå.</p>
+    )}
+
+    {panels.map((m) => {
+      const imgUrl = posterUrl(m.mainImage, 500)
+      return (
+        <a href={`/utstillingen/${m.slug}`} class="panel-card">
+          {imgUrl ? (
+            <div class="panel-img">
+              <img
+                src={imgUrl}
+                alt={m.mainImage?.alt ?? m.title}
+                width="500"
+                height="667"
+                loading="lazy"
+              />
+            </div>
+          ) : (
+            <div class="panel-img panel-img--placeholder">
+              <span>🎩</span>
+            </div>
+          )}
+          <div class="panel-body">
+            {m.years && <p class="panel-years">{m.years}</p>}
+            <h2 class="panel-title">{m.title}</h2>
+            {m.tagline && <p class="panel-tagline">{m.tagline}</p>}
+            {m.detailIntro && <p class="panel-intro">{m.detailIntro}</p>}
+            <span class="panel-cta">Les mer →</span>
+          </div>
+        </a>
+      )
+    })}
+  </main>
+
+  <div class="container back-link">
+    <a href="/utstillingen">← Tilbake til utstillingen</a>
+  </div>
+
+</BaseLayout>
+
+<style>
+  /* ── HERO ── */
+  .page-hero {
+    background: var(--burgundy-dk);
+    padding: 3.5rem 0 2.5rem;
+    border-bottom: 2px solid var(--gold-dark);
+    color: var(--cream);
+  }
+  .page-title { font-size: clamp(1.8rem, 5vw, 3rem); color: var(--cream); margin: 0.5rem 0 0.75rem; }
+  .page-sub   { font-family: var(--font-ui); font-size: 1rem; opacity: 0.8; max-width: 62ch; line-height: 1.65; }
+
+  /* ── GRID ── */
+  .panel-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1.5rem;
+    padding: 2.5rem 0 3rem;
+  }
+
+  .panel-card {
+    display: flex; flex-direction: column;
+    background: white; border: 1px solid var(--cream-dark);
+    border-radius: 6px; overflow: hidden;
+    text-decoration: none; color: var(--ink);
+    transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease;
+  }
+  .panel-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-lg); border-color: var(--gold-light); }
+
+  .panel-img { aspect-ratio: 3/4; overflow: hidden; background: var(--cream-dark); max-height: 320px; }
+  .panel-img img { width: 100%; height: 100%; object-fit: cover; transition: transform 320ms ease; }
+  .panel-card:hover .panel-img img { transform: scale(1.04); }
+  .panel-img--placeholder { display: flex; align-items: center; justify-content: center; font-size: 5rem; }
+
+  .panel-body    { padding: 1.25rem 1.5rem 1.5rem; display: flex; flex-direction: column; flex: 1; }
+  .panel-years   { font-family: var(--font-ui); font-size: 0.75rem; color: var(--grey); margin-bottom: 0.3rem; }
+  .panel-title   { font-family: var(--font-display); font-size: 1.3rem; color: var(--burgundy); margin-bottom: 0.2rem; letter-spacing: 0.03em; }
+  .panel-tagline { font-family: var(--font-body); font-size: 0.9rem; font-style: italic; color: var(--gold-dark); margin-bottom: 0.75rem; }
+  .panel-intro   { font-family: var(--font-ui); font-size: 0.875rem; color: var(--ink-mid); line-height: 1.55; flex: 1; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+  .panel-cta     { font-family: var(--font-ui); font-size: 0.875rem; font-weight: 600; color: var(--burgundy); margin-top: 1rem; transition: color 180ms ease; }
+  .panel-card:hover .panel-cta { color: var(--gold-dark); }
+
+  /* ── EMPTY / BACK ── */
+  .empty-notice {
+    padding: 3rem 1.5rem;
+    font-family: var(--font-ui);
+    color: var(--grey);
+    text-align: center;
+  }
+  .back-link { padding: 0.5rem 0 3rem; font-family: var(--font-ui); font-size: 0.875rem; }
+  .back-link a {
+    color: var(--grey); text-decoration: none;
+    border: 1px solid var(--cream-dark); padding: 0.4rem 1rem;
+    border-radius: var(--radius);
+    transition: color 150ms, border-color 150ms;
+  }
+  .back-link a:hover { color: var(--burgundy); border-color: var(--gold); }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 600px) {
+    .panel-grid { grid-template-columns: 1fr; }
+  }
+</style>
