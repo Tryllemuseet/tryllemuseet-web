@@ -166,6 +166,17 @@ const metaDescription =
       {story.creditsNote && <div class="prose" set:html={portableTextToHtml(story.creditsNote)} />}
     </footer>
 
+    {story.relatedLinks && story.relatedLinks.length > 0 && (
+      <aside class="related-links" aria-label="Se også">
+        <p class="related-links-label">Se også</p>
+        <ul>
+          {story.relatedLinks.map(l => (
+            <li><a href={l.path}>{l.label} →</a></li>
+          ))}
+        </ul>
+      </aside>
+    )}
+
     <div class="page-nav">
       <a href="/barn/historier">← Alle historier</a>
       <a href="/barn">← Barn & unge</a>
@@ -543,6 +554,27 @@ const metaDescription =
     color: var(--gold-dark, var(--gold));
   }
   .fact-box p { margin-top: 0.5rem; font-family: var(--font-body); font-size: 0.98rem; line-height: 1.65; color: #444; }
+
+  /* ── Se også ── */
+  .related-links {
+    margin-top: 1.5rem;
+    background: rgba(212,168,67,0.08);
+    border: 1px solid rgba(212,168,67,0.35);
+    border-radius: 8px;
+    padding: 1.1rem 1.35rem;
+  }
+  .related-links-label {
+    font-family: var(--font-ui);
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--gold-dark, var(--gold));
+    margin-bottom: 0.6rem;
+  }
+  .related-links ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0.4rem; }
+  .related-links a { font-family: var(--font-ui); font-size: 0.95rem; font-weight: 600; color: var(--burgundy); text-decoration: underline; text-underline-offset: 2px; }
+  .related-links a:hover { color: var(--gold-dark, var(--gold)); }
 
   /* ── Footer / navigasjon ── */
   .comic-footer { padding-block: 2.5rem 1rem; text-align: center; font-family: var(--font-ui); font-size: 0.85rem; color: #888; }

@@ -507,6 +507,7 @@ export interface Trick {
   gallery?: BiographyImage[]
   links?: { label: string; url?: string }[]
   order?: number
+  relatedLinks?: LegendRelatedLink[]
 }
 
 // ── Typer: Verdens mest… ──────────────────────────────────────────
@@ -610,7 +611,8 @@ export async function getTrickBySlug(slug: string): Promise<Trick | null> {
       videoUrl, externalUrl, order,
       mainImage { asset->{ _ref, url }, alt, caption },
       gallery[] { asset->{ _ref, url }, alt, caption },
-      links[] { label, url }
+      links[] { label, url },
+      relatedLinks[] { label, path }
     }
   `, { slug })
 }
@@ -667,6 +669,7 @@ export interface ComicStory {
   intro?:       PortableTextBlock[]
   creditsNote?: PortableTextBlock[]
   scenes:       ComicScene[]
+  relatedLinks?: LegendRelatedLink[]
 }
 
 const COMIC_SCENE_PROJECTION = `
@@ -693,7 +696,8 @@ export async function getComicStoryBySlug(slug: string): Promise<ComicStory | nu
   return sanityClient.fetch(`
     *[_type == "comicStory" && slug.current == $slug && isVisible != false][0] {
       _id, title, "slug": slug.current, subtitle, intro, creditsNote,
-      scenes[] { ${COMIC_SCENE_PROJECTION} }
+      scenes[] { ${COMIC_SCENE_PROJECTION} },
+      relatedLinks[] { label, path }
     }
   `, { slug })
 }
