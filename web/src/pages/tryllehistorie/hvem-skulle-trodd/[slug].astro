@@ -1,7 +1,8 @@
 ---
 // src/pages/tryllehistorie/hvem-skulle-trodd/[slug].astro
 import BaseLayout from '../../../layouts/BaseLayout.astro'
-import { getWhoKnewBySlug, getWhoKnewPaths, whoKnewRelatedHref, portableTextToHtml } from '../../../lib/sanity'
+import NarrateButton from '../../../components/NarrateButton.astro'
+import { getWhoKnewBySlug, getWhoKnewPaths, whoKnewRelatedHref, portableTextToHtml, portableTextToPlainText } from '../../../lib/sanity'
 import type { WhoKnew } from '../../../lib/sanity'
 
 export async function getStaticPaths() {
@@ -15,6 +16,7 @@ const w = await getWhoKnewBySlug(slug!) as WhoKnew | null
 if (!w) return Astro.redirect('/tryllehistorie/hvem-skulle-trodd')
 
 const contentHtml = portableTextToHtml(w.body)
+const contentPlain = portableTextToPlainText(w.body) || w.hook
 
 const categoryLabels: Record<string, string> = {
   vitenskap: 'Vitenskap', politikk: 'Politikk & samfunn', sport: 'Sport', kultur: 'Kultur & underholdning',
@@ -51,6 +53,9 @@ const categoryLabels: Record<string, string> = {
     <!-- ARTIKKELTEKST ──────────────────────────────────────────── -->
     <main class="article-main">
 
+      <div class="narrate-row">
+        <NarrateButton text={contentPlain} label="Les artikkelen høyt" />
+      </div>
       {contentHtml ? (
         <div class="prose" set:html={contentHtml} />
       ) : (
@@ -123,6 +128,8 @@ const categoryLabels: Record<string, string> = {
   /* ── Layout ── */
   .article-layout { display: grid; grid-template-columns: 1fr 280px; gap: 3.5rem; align-items: start; padding-block: 3rem; }
   @media (max-width: 768px) { .article-layout { grid-template-columns: 1fr; } }
+
+  .narrate-row { display: flex; justify-content: flex-end; margin-bottom: 0.5rem; }
 
   /* ── Prose ── */
   .prose :global(p)          { font-family: var(--font-body); font-size: 1rem; color: #333; line-height: 1.8; margin-bottom: 1.1em; }

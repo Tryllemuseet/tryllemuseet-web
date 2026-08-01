@@ -1,7 +1,8 @@
 ---
 // src/pages/utstillingen/artefakter/[slug].astro
 import BaseLayout from '../../../layouts/BaseLayout.astro'
-import { getAllArtifacts, getArtifactBySlug, urlFor, portableTextToHtml } from '../../../lib/sanity'
+import NarrateButton from '../../../components/NarrateButton.astro'
+import { getAllArtifacts, getArtifactBySlug, urlFor, portableTextToHtml, portableTextToPlainText } from '../../../lib/sanity'
 
 export async function getStaticPaths() {
   const artifacts = await getAllArtifacts()
@@ -16,6 +17,7 @@ const a = await getArtifactBySlug(slug!)
 if (!a) return Astro.redirect('/utstillingen/artefakter', 301)
 
 const notesHtml = portableTextToHtml(a.notes)
+const notesPlain = portableTextToPlainText(a.notes)
 
 const categoryLabels: Record<string, string> = {
   rekvisitt:  'Rekvisitt',
@@ -144,7 +146,10 @@ const mainImgUrl = a.mainImage?.asset
     <!-- 2. PROVENIENS ───────────────────────────────────────── -->
     {a.provenance && (
       <section class="prose-section" aria-label="Proveniens">
-        <h2 class="section-heading">Proveniens / historikk</h2>
+        <div class="section-head">
+          <h2 class="section-heading">Proveniens / historikk</h2>
+          <NarrateButton text={a.provenance} label="Les proveniensen høyt" />
+        </div>
         <p class="prose-text">{a.provenance}</p>
       </section>
     )}
@@ -152,7 +157,10 @@ const mainImgUrl = a.mainImage?.asset
     <!-- 3. UTFYLLENDE TEKST ─────────────────────────────────── -->
     {notesHtml && (
       <section class="prose-section" aria-label="Mer om gjenstanden">
-        <h2 class="section-heading">Les mer</h2>
+        <div class="section-head">
+          <h2 class="section-heading">Les mer</h2>
+          <NarrateButton text={notesPlain} label="Les avsnittet høyt" />
+        </div>
         <div class="prose" set:html={notesHtml} />
       </section>
     )}
@@ -242,6 +250,9 @@ const mainImgUrl = a.mainImage?.asset
     border-bottom: 1px solid var(--cream-dark);
     letter-spacing: 0.04em;
   }
+
+  .section-head { display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; }
+  .section-head .section-heading { flex: 1; }
 
   /* ── FAKTA ─────────────────────────────────────────────────── */
   .facts-list {
