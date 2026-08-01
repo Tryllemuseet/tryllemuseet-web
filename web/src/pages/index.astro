@@ -3,14 +3,14 @@
 import BaseLayout from '../layouts/BaseLayout.astro'
 import AnimateIn from '../components/AnimateIn.astro'
 import MentionedMagicians from '../components/MentionedMagicians.astro'
-import { getGullalderenPanels, getUpcomingEvents, getHomepage, getSiteConfig, getAllPartners, getLatestHistoriskKlipp, getLatestStory, getFeaturedMediaAppearance, getFrontpageWhoKnew, urlFor } from '../lib/sanity'
+import { getGullalderenPanels, getUpcomingEvents, getHomepage, getSiteConfig, getAllPartners, getLatestHistoriskKlipp, getLatestStory, getFeaturedMediaAppearance, getFrontpageWhoKnew, getMonthlyLegendPick, getMonthlyBiographyPick, getMonthlyArtifactPick, getOnThisDayClippings, featuredItemHref, urlFor } from '../lib/sanity'
 
 const today = new Date().toISOString().split('T')[0]
 
 const mediaTypeLabels: Record<string, string> = {
   avis: 'Avis', nettavis: 'Nettavis', tv: 'TV', radio: 'Radio', podkast: 'Podkast',
 }
-const [gullalderenPanels, events, hp, config, partners, latestClipping, latestStory, featuredMedia, whoKnewEntries] = await Promise.all([
+const [gullalderenPanels, events, hp, config, partners, latestClipping, latestStory, featuredMedia, whoKnewEntries, monthlyLegendFallback, monthlyBiography, monthlyArtifact, onThisDayClippings] = await Promise.all([
   getGullalderenPanels(),
   getUpcomingEvents(3),
   getHomepage(),
@@ -20,7 +20,20 @@ const [gullalderenPanels, events, hp, config, partners, latestClipping, latestSt
   getLatestStory(),
   getFeaturedMediaAppearance(today),
   getFrontpageWhoKnew(3),
+  getMonthlyLegendPick(),
+  getMonthlyBiographyPick(),
+  getMonthlyArtifactPick(),
+  getOnThisDayClippings(),
 ])
+
+// «Fremhevet innhold» — redaktørens kuratering fra Sanity (hp.fremhevetInnhold),
+// eller et automatisk månedsplukk fra fordypningene når feltet står tomt.
+// Feltet fantes i skjemaet fra før, men ble aldri rendret på forsiden.
+const fremhevet = (hp?.fremhevetInnhold?.elementer?.length ?? 0) > 0
+  ? hp!.fremhevetInnhold
+  : monthlyLegendFallback
+    ? { eraLabel: undefined, heading: 'Fra arkivet', elementer: [monthlyLegendFallback] }
+    : null
 
 const categoryLabels: Record<string, string> = {
   vitenskap: 'Vitenskap', politikk: 'Politikk & samfunn', sport: 'Sport', kultur: 'Kultur & underholdning',
@@ -266,6 +279,137 @@ const heroBanners: HeroBannerSlide[] = hp?.heroBannere?.length
                 </a>
               ))}
             </div>
+          </AnimateIn>
+        </div>
+      </section>
+
+      <hr class="gold-rule container" />
+    </>
+  )}
+
+  <!-- ══ FREMHEVET FRA ARKIVET ═══════════════════════════════════ -->
+  {fremhevet && fremhevet.elementer && fremhevet.elementer.length > 0 && (
+    <>
+      <section class="section fremhevet-section" aria-labelledby="fremhevet-heading">
+        <div class="container">
+          <AnimateIn direction="up">
+            <div class="section-header">
+              <div>
+                {fremhevet.eraLabel && <p class="section-label">{fremhevet.eraLabel}</p>}
+                <h2 class="display-title section-title" id="fremhevet-heading">{fremhevet.heading}</h2>
+              </div>
+              <a href="/tryllehistorie/fordypninger" class="btn-outline">Alle fordypninger</a>
+            </div>
+          </AnimateIn>
+          <AnimateIn direction="up">
+            <div class="fremhevet-grid">
+              {fremhevet.elementer.map((item) => {
+                const img = item._type === 'legend'
+                  ? item.mainImage?.asset?.url
+                  : item._type === 'historiskeKlippNb'
+                    ? item.images?.[0]?.asset?.url
+                    : (item.featuredImage?.asset?.url ?? item.thumbnailUrl)
+                const kicker = item._type === 'legend'
+                  ? item.tagline
+                  : item._type === 'historiskeKlippNb'
+                    ? item.sourceName
+                    : (item.year ? String(item.year) : undefined)
+                return (
+                  <a href={featuredItemHref(item)} class="fremhevet-card" aria-label={`Les mer om ${item.title}`}>
+                    <div class="fremhevet-img">
+                      {img
+                        ? <img src={img} alt="" loading="lazy" />
+                        : <div class="fremhevet-img-placeholder" aria-hidden="true">🎩</div>
+                      }
+                    </div>
+                    <div class="fremhevet-body">
+                      {kicker && <span class="fremhevet-kicker">{kicker}</span>}
+                      <h3 class="fremhevet-title">{item.title}</h3>
+                      <span class="fremhevet-link-hint">Les mer →</span>
+                    </div>
+                  </a>
+                )
+              })}
+            </div>
+          </AnimateIn>
+        </div>
+      </section>
+
+      <hr class="gold-rule container" />
+    </>
+  )}
+
+  <!-- ══ MÅNEDENS MAGIKER & ARTEFAKT ═════════════════════════════ -->
+  {(monthlyBiography || monthlyArtifact) && (
+    <>
+      <section class="section monthly-section" aria-labelledby="monthly-heading">
+        <div class="container">
+          <AnimateIn direction="up">
+            <p class="section-label">Denne måneden</p>
+            <h2 class="display-title section-title" id="monthly-heading">Månedens magiker & artefakt</h2>
+          </AnimateIn>
+          <AnimateIn direction="up">
+            <div class="monthly-grid">
+              {monthlyBiography && (
+                <a href={`/tryllehistorie/magiens-hvem-er-hvem/${monthlyBiography.slug}`} class="monthly-card">
+                  <div class="monthly-img">
+                    {monthlyBiography.mainImage?.asset?.url && (
+                      <img src={monthlyBiography.mainImage.asset.url} alt={monthlyBiography.mainImage.alt ?? monthlyBiography.name} loading="lazy" />
+                    )}
+                  </div>
+                  <div class="monthly-body">
+                    <span class="monthly-kicker">Magiker</span>
+                    <h3 class="monthly-title">{monthlyBiography.artistName ?? monthlyBiography.name}</h3>
+                    {monthlyBiography.years && <p class="monthly-meta">{monthlyBiography.years}</p>}
+                    <p class="monthly-teaser">{monthlyBiography.shortBio}</p>
+                    <span class="fremhevet-link-hint">Se profilen →</span>
+                  </div>
+                </a>
+              )}
+              {monthlyArtifact && (
+                <a href={`/utstillingen/artefakter/${monthlyArtifact.slug}`} class="monthly-card">
+                  <div class="monthly-img">
+                    {monthlyArtifact.mainImage?.asset?.url && (
+                      <img src={monthlyArtifact.mainImage.asset.url} alt={monthlyArtifact.mainImage.alt ?? monthlyArtifact.title} loading="lazy" />
+                    )}
+                  </div>
+                  <div class="monthly-body">
+                    <span class="monthly-kicker">Artefakt</span>
+                    <h3 class="monthly-title">{monthlyArtifact.title}</h3>
+                    <p class="monthly-teaser">{monthlyArtifact.description}</p>
+                    <span class="fremhevet-link-hint">Se gjenstanden →</span>
+                  </div>
+                </a>
+              )}
+            </div>
+          </AnimateIn>
+        </div>
+      </section>
+
+      <hr class="gold-rule container" />
+    </>
+  )}
+
+  <!-- ══ PÅ DENNE DAGEN ═══════════════════════════════════════════ -->
+  {onThisDayClippings.length > 0 && (
+    <>
+      <section class="section onthisday-section" aria-labelledby="onthisday-heading">
+        <div class="container">
+          <AnimateIn direction="up">
+            <p class="section-label">På denne dagen</p>
+            <h2 class="display-title section-title" id="onthisday-heading">Fra avisarkivet</h2>
+            <ul class="onthisday-list">
+              {onThisDayClippings.map((c) => (
+                <li>
+                  <a href={`/tryllehistorie/historiske-artikler#artikkel-${c.slug}`}>{c.title}</a>
+                  {c.originalDate && (
+                    <span class="onthisday-date">
+                      {new Date(c.originalDate).toLocaleDateString('nb-NO', { day: 'numeric', month: 'long', year: 'numeric' })}
+                    </span>
+                  )}
+                </li>
+              ))}
+            </ul>
           </AnimateIn>
         </div>
       </section>
@@ -839,6 +983,43 @@ const heroBanners: HeroBannerSlide[] = hp?.heroBannere?.length
   .whoknew-link-hint { font-family:var(--font-ui); font-size:0.72rem; font-weight:700; color:var(--gold-dark); margin-top:0.35rem; letter-spacing:0.04em; }
   @media (max-width:700px) { .whoknew-grid { grid-template-columns:1fr 1fr; } }
   @media (max-width:480px) { .whoknew-grid { grid-template-columns:1fr; } }
+
+  /* ── FREMHEVET FRA ARKIVET ────────────────────────────────────────── */
+  .fremhevet-section { background:white; }
+  .fremhevet-grid { display:grid; grid-template-columns:repeat(3, 1fr); gap:1.5rem; margin-top:0.5rem; }
+  .fremhevet-card { display:flex; flex-direction:column; text-decoration:none; color:var(--ink); border-radius:4px; overflow:hidden; background:var(--cream); border:1px solid var(--cream-dark); transition:transform 220ms ease,box-shadow 220ms ease,border-color 220ms ease; }
+  .fremhevet-card:hover { transform:translateY(-4px); box-shadow:0 8px 28px rgba(107,15,26,0.14); border-color:var(--gold-light); }
+  .fremhevet-img { position:relative; aspect-ratio:4/3; overflow:hidden; background:var(--burgundy-dk); flex-shrink:0; }
+  .fremhevet-img img { width:100%; height:100%; object-fit:cover; transition:transform 400ms ease; }
+  .fremhevet-card:hover .fremhevet-img img { transform:scale(1.04); }
+  .fremhevet-img-placeholder { display:flex; align-items:center; justify-content:center; width:100%; height:100%; font-size:3rem; background:linear-gradient(160deg,var(--burgundy-dk),#2a1208); }
+  .fremhevet-body { padding:1.1rem 1.25rem 1.3rem; display:flex; flex-direction:column; gap:0.35rem; flex:1; }
+  .fremhevet-kicker { font-family:var(--font-ui); font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:0.08em; color:var(--gold-dark); }
+  .fremhevet-title { font-family:var(--font-display); font-size:1.05rem; color:var(--burgundy); letter-spacing:0.02em; line-height:1.3; }
+  .fremhevet-link-hint { font-family:var(--font-ui); font-size:0.72rem; font-weight:700; color:var(--gold-dark); margin-top:0.35rem; letter-spacing:0.04em; }
+  @media (max-width:700px) { .fremhevet-grid { grid-template-columns:1fr 1fr; } }
+  @media (max-width:480px) { .fremhevet-grid { grid-template-columns:1fr; } }
+
+  /* ── MÅNEDENS MAGIKER & ARTEFAKT ─────────────────────────────────── */
+  .monthly-section { background:var(--cream); }
+  .monthly-grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(260px, 1fr)); gap:1.5rem; margin-top:1.5rem; }
+  .monthly-card { display:flex; flex-direction:column; text-decoration:none; color:var(--ink); border-radius:6px; overflow:hidden; background:white; border:1px solid var(--cream-dark); box-shadow:var(--shadow); transition:transform 220ms ease,box-shadow 220ms ease; }
+  .monthly-card:hover { transform:translateY(-4px); box-shadow:var(--shadow-lg); }
+  .monthly-img { aspect-ratio:16/9; overflow:hidden; background:var(--burgundy-dk); }
+  .monthly-img img { width:100%; height:100%; object-fit:cover; }
+  .monthly-body { padding:1.25rem 1.5rem 1.5rem; display:flex; flex-direction:column; gap:0.4rem; }
+  .monthly-kicker { font-family:var(--font-ui); font-size:0.68rem; font-weight:700; text-transform:uppercase; letter-spacing:0.1em; color:var(--gold-dark); }
+  .monthly-title { font-family:var(--font-display); font-size:1.2rem; color:var(--burgundy); letter-spacing:0.02em; }
+  .monthly-meta { font-family:var(--font-ui); font-size:0.8rem; color:var(--grey); }
+  .monthly-teaser { font-family:var(--font-ui); font-size:0.9rem; color:var(--ink-mid); line-height:1.6; }
+
+  /* ── PÅ DENNE DAGEN ───────────────────────────────────────────────── */
+  .onthisday-section { background:white; }
+  .onthisday-list { list-style:none; display:flex; flex-direction:column; gap:0.75rem; margin-top:1.5rem; }
+  .onthisday-list li { display:flex; align-items:baseline; gap:0.75rem; flex-wrap:wrap; padding-bottom:0.75rem; border-bottom:1px solid var(--cream-dark); }
+  .onthisday-list a { font-family:var(--font-display); font-size:1rem; color:var(--burgundy); text-decoration:none; }
+  .onthisday-list a:hover { color:var(--gold-dark); }
+  .onthisday-date { font-family:var(--font-ui); font-size:0.8rem; color:var(--grey); }
 
   /* ── KURS ──────────────────────────────────────────────────────── */
   .kurs-section { background:white; }

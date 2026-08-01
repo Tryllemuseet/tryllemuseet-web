@@ -214,6 +214,31 @@ export async function getArtifactBySlug(slug: string): Promise<Artifact | null> 
   `, { slug })
 }
 
+export interface MonthlyArtifactPick {
+  _id:          string
+  title:        string
+  slug:         string
+  description?: string
+  category?:    string
+  mainImage?:   { asset: { _ref: string; url: string }; alt?: string }
+}
+
+// «Månedens artefakt» — deterministisk plukk fra artefakter med bilde og
+// beskrivelse (for tynt datagrunnlag ellers til en kortere syklus). Stabilt
+// gjennom måneden, bytter ved månedsskifte via den daglige rebyggingen.
+export async function getMonthlyArtifactPick(): Promise<MonthlyArtifactPick | null> {
+  const items: MonthlyArtifactPick[] = await sanityClient.fetch(`
+    *[_type == "artifact" && isVisible != false && defined(mainImage) && defined(description)]
+      | order(slug.current asc) {
+      _id, title, description, category,
+      "slug": slug.current,
+      mainImage { asset->{ _ref, url }, alt }
+    }
+  `)
+  if (items.length === 0) return null
+  return items[new Date().getMonth() % items.length]
+}
+
 // ── Typer: Bok ───────────────────────────────────────────────────
 export interface BookAuthor {
   name:       string
@@ -1610,6 +1635,32 @@ export async function getBiographyDirectory(): Promise<Biography[]> {
   `)
 }
 
+export interface MonthlyBiographyPick {
+  _id:         string
+  name:        string
+  slug:        string
+  artistName?: string
+  years?:      string
+  shortBio?:   string
+  mainImage?:  BiographyImage
+}
+
+// «Månedens magiker» — deterministisk plukk fra biografier med bilde og
+// kortbio (for tynt datagrunnlag ellers til en kortere syklus). Stabilt
+// gjennom måneden, bytter ved månedsskifte via den daglige rebyggingen.
+export async function getMonthlyBiographyPick(): Promise<MonthlyBiographyPick | null> {
+  const items: MonthlyBiographyPick[] = await sanityClient.fetch(`
+    *[_type == "biography" && isVisible != false && defined(mainImage) && defined(shortBio)]
+      | order(slug.current asc) {
+      _id, name, artistName, years, shortBio,
+      "slug": slug.current,
+      mainImage { asset->{ _ref, url }, alt, caption }
+    }
+  `)
+  if (items.length === 0) return null
+  return items[new Date().getMonth() % items.length]
+}
+
 // ── Spørringer: Legend ───────────────────────────────────────────
 
 // Filter delt av alle spørringer under: ekskluderer utstillingen-artikler
@@ -1664,6 +1715,23 @@ export async function getLegendPaths() {
   return legends
     .filter((l: { slug?: string }) => l.slug)
     .map((l: { slug: string }) => ({ params: { slug: l.slug } }))
+}
+
+// «Månedens fordypning» — fallback for homepage.fremhevetInnhold når
+// redaktøren ikke har kuratert noe der selv. Samme NOT_UTSTILLING-pool som
+// getAllLegends(), formet som en FeaturedLegendItem så den kan rendres med
+// samme kortmal og featuredItemHref() som det kuraterte innholdet.
+export async function getMonthlyLegendPick(): Promise<FeaturedLegendItem | null> {
+  const items: FeaturedLegendItem[] = await sanityClient.fetch(`
+    *[_type == "legend" && isVisible != false && ${NOT_UTSTILLING} && defined(mainImage)]
+      | order(slug.current asc) {
+      _type, _id, title, "slug": slug.current, tagline, years,
+      physicalOrder, "stationCount": count(stations),
+      mainImage { asset->{ _ref, url }, alt }
+    }
+  `)
+  if (items.length === 0) return null
+  return items[new Date().getMonth() % items.length]
 }
 
 // ── Typer: WhoKnew ────────────────────────────────────────────────
@@ -1911,6 +1979,27 @@ export async function getHistoriskKlippArchive(): Promise<HistoriskKlippNb[]> {
     `,
     { publicDomainCutoff: publicDomainCutoffIso() }
   )
+}
+
+// «På denne dagen» — avisartikler hvor dag+måned i originalDate matcher
+// dagens dato, uansett år. GROQ har ikke egne dag/måned-funksjoner, så
+// matchingen gjøres i JS etter henting. Kjøres via den daglige rebyggingen —
+// ingen ny automasjon eller nye felt trengs (originalDate finnes allerede).
+export async function getOnThisDayClippings(): Promise<HistoriskKlippNb[]> {
+  const all: HistoriskKlippNb[] = await sanityClient.fetch(
+    `
+    *[_type == "historiskeKlippNb" && isVisible != false && publishedAt <= now() && defined(originalDate)] {
+      ${historiskKlippProjection}
+    }
+    `,
+    { publicDomainCutoff: publicDomainCutoffIso() }
+  )
+
+  const today = new Date()
+  return all.filter(c => {
+    const d = new Date(c.originalDate!)
+    return d.getMonth() === today.getMonth() && d.getDate() === today.getDate()
+  })
 }
 
 // ── Typer: Story («Små historier fra tryllekunsten») ──────────────
