@@ -2,7 +2,8 @@
 // src/pages/tryllehistorie/historier/[slug].astro
 import BaseLayout from '../../../layouts/BaseLayout.astro'
 import MentionedMagicians from '../../../components/MentionedMagicians.astro'
-import { getStoryBySlug, getStoryPaths, portableTextToHtml } from '../../../lib/sanity'
+import NarrateButton from '../../../components/NarrateButton.astro'
+import { getStoryBySlug, getStoryPaths, portableTextToHtml, portableTextToPlainText } from '../../../lib/sanity'
 import type { Story } from '../../../lib/sanity'
 
 export async function getStaticPaths() {
@@ -16,6 +17,7 @@ const s = await getStoryBySlug(slug!) as Story | null
 if (!s) return Astro.redirect('/tryllehistorie/historier')
 
 const contentHtml = portableTextToHtml(s.body)
+const contentPlain = portableTextToPlainText(s.body)
 const publishedDate = new Date(s.publishedAt).toLocaleDateString('nb-NO', { day: 'numeric', month: 'long', year: 'numeric' })
 ---
 
@@ -49,6 +51,9 @@ const publishedDate = new Date(s.publishedAt).toLocaleDateString('nb-NO', { day:
     <!-- HISTORIEN ──────────────────────────────────────────────── -->
     <main class="article-main">
 
+      <div class="narrate-row">
+        <NarrateButton text={contentPlain} label="Les historien høyt" />
+      </div>
       <div class="prose" set:html={contentHtml} />
 
       {s.sourceNote && (
@@ -118,6 +123,8 @@ const publishedDate = new Date(s.publishedAt).toLocaleDateString('nb-NO', { day:
   /* ── Layout ── */
   .article-layout { display: grid; grid-template-columns: 1fr 280px; gap: 3.5rem; align-items: start; padding-block: 3rem; }
   @media (max-width: 768px) { .article-layout { grid-template-columns: 1fr; } }
+
+  .narrate-row { display: flex; justify-content: flex-end; margin-bottom: 0.5rem; }
 
   /* ── Prose ── */
   .prose :global(p)          { font-family: var(--font-body); font-size: 1rem; color: #333; line-height: 1.8; margin-bottom: 1.1em; }

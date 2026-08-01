@@ -377,6 +377,52 @@ const allNavLinks = mainAreas.map(a => ({ href: a.link, label: a.label }))
       if (d) closeDropdown(t, d);
     });
   });
+
+  // ── Opplesning (nettleserens Web Speech API) ────────────────────
+  // Delegert på document slik at ethvert <NarrateButton> — på enhver side —
+  // fungerer uten side-spesifikk script. Se src/components/NarrateButton.astro.
+  let activeNarrateBtn: HTMLButtonElement | null = null;
+
+  function stopNarration() {
+    window.speechSynthesis?.cancel();
+    activeNarrateBtn?.classList.remove('speaking');
+    activeNarrateBtn = null;
+  }
+
+  document.addEventListener('click', (e) => {
+    const btn = (e.target as HTMLElement)?.closest?.('[data-narrate]') as HTMLButtonElement | null;
+    if (!btn || typeof window === 'undefined' || !window.speechSynthesis) return;
+
+    if (activeNarrateBtn === btn) {
+      stopNarration();
+      return;
+    }
+    window.speechSynthesis.cancel();
+    activeNarrateBtn?.classList.remove('speaking');
+
+    const utter = new SpeechSynthesisUtterance(btn.dataset.narrate ?? '');
+    utter.lang = 'nb-NO';
+    utter.rate = 0.95;
+    utter.pitch = 1.0;
+    const voices = window.speechSynthesis.getVoices();
+    const nb =
+      voices.find(v => v.lang?.toLowerCase().startsWith('nb')) ??
+      voices.find(v => v.lang?.toLowerCase().startsWith('no'));
+    if (nb) utter.voice = nb;
+
+    const clear = () => {
+      btn.classList.remove('speaking');
+      if (activeNarrateBtn === btn) activeNarrateBtn = null;
+    };
+    utter.onend = clear;
+    utter.onerror = clear;
+
+    btn.classList.add('speaking');
+    activeNarrateBtn = btn;
+    window.speechSynthesis.speak(utter);
+  });
+
+  window.addEventListener('beforeunload', () => window.speechSynthesis?.cancel());
 </script>
 
 <style is:global>
