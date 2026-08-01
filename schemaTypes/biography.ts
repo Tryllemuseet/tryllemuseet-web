@@ -159,7 +159,64 @@ export const biography = defineType({
       description: 'Full tekst med avsnitt. Vises på detaljsiden.',
     }),
 
-    // ── 4. LENKER ─────────────────────────────────────────────────
+    // ── 4. VIDEOER ────────────────────────────────────────────────
+    defineField({
+      name: 'videos',
+      title: 'Videoer',
+      type: 'array',
+      description: 'Egenprodusert/promo-video knyttet direkte til denne personen (showreel, trailer, intervju, TV-opptreden). For arkivopptak: opprett heller et eget "Historisk TV-opptak"-dokument og koble det til denne personen der — det vises da automatisk her også.',
+      of: [{
+        type: 'object',
+        name: 'video',
+        title: 'Video',
+        fields: [
+          defineField({
+            name: 'title',
+            title: 'Tittel',
+            type: 'string',
+            validation: R => R.required(),
+          }),
+          defineField({
+            name: 'url',
+            title: 'URL',
+            type: 'url',
+            validation: R => R.required(),
+          }),
+          defineField({
+            name: 'type',
+            title: 'Type',
+            type: 'string',
+            options: {
+              list: [
+                { title: '📺 TV-opptreden', value: 'tv'        },
+                { title: '🎙️ Intervju',     value: 'intervju'  },
+                { title: '🎩 Opptreden',    value: 'opptreden' },
+                { title: '🔗 Annet',        value: 'annet'     },
+              ],
+              layout: 'radio',
+            },
+          }),
+          defineField({
+            name: 'year',
+            title: 'År',
+            type: 'number',
+            validation: R => R.min(1900).max(2100),
+          }),
+        ],
+        preview: {
+          select: { title: 'title', year: 'year', type: 'type' },
+          prepare({ title, year, type }: { title?: string; year?: number; type?: string }) {
+            const typeEmoji: Record<string, string> = { tv: '📺', intervju: '🎙️', opptreden: '🎩', annet: '🔗' }
+            return {
+              title: `${type ? typeEmoji[type] ?? '🔗' : '🔗'} ${title ?? '(uten tittel)'}`,
+              subtitle: year ? String(year) : undefined,
+            }
+          },
+        },
+      }],
+    }),
+
+    // ── 5. LENKER ─────────────────────────────────────────────────
     defineField({
       name: 'links',
       title: 'Lenker',
@@ -241,7 +298,7 @@ export const biography = defineType({
       }],
     }),
 
-    // ── 5. KILDER ─────────────────────────────────────────────────
+    // ── 6. KILDER ─────────────────────────────────────────────────
     defineField({
       name: 'sources',
       title: 'Kilder',
@@ -250,7 +307,7 @@ export const biography = defineType({
       of: [{ type: 'reference', to: [{ type: 'source' }] }],
     }),
 
-    // ── 6. REDAKSJONELT ──────────────────────────────────────────
+    // ── 7. REDAKSJONELT ──────────────────────────────────────────
     defineField({
       name: 'lastVerified',
       title: 'Sist verifisert / oppdatert',
