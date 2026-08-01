@@ -17,7 +17,7 @@ interface Props {
   entry: Pick<Legend,
     | 'title' | 'childText' | 'childActivity' | 'wallText' | 'content'
     | 'detailIntro' | 'sections' | 'stations'
-    | 'gallery' | 'videos' | 'sources' | 'biographyRef'
+    | 'gallery' | 'videos' | 'sources' | 'biographyRef' | 'relatedLinks'
   >
 }
 
@@ -210,7 +210,19 @@ const videoTypeLabel: Record<string, string> = {
     </aside>
   )}
 
-  <!-- 8. KILDER ──────────────────────────────────────────────── -->
+  <!-- 8. SE OGSÅ ──────────────────────────────────────────────── -->
+  {entry.relatedLinks && entry.relatedLinks.length > 0 && (
+    <aside class="related-links" aria-label="Se også">
+      <p class="related-links-label">Se også</p>
+      <ul>
+        {entry.relatedLinks.map(l => (
+          <li><a href={l.path}>{l.label} →</a></li>
+        ))}
+      </ul>
+    </aside>
+  )}
+
+  <!-- 9. KILDER ──────────────────────────────────────────────── -->
   {entry.sources && entry.sources.length > 0 && (
     <section class="sources-section" aria-label="Kilder">
       <h2 class="section-heading">Kilder</h2>
@@ -461,6 +473,34 @@ const videoTypeLabel: Record<string, string> = {
     transition: color 150ms;
   }
   .related-magician a:hover { color: var(--gold-dark); }
+
+  /* ── SE OGSÅ ────────────────────────────────────────────────────── */
+  .related-links {
+    background: var(--cream);
+    border: 1px solid var(--cream-dark);
+    border-radius: 6px;
+    padding: 1.25rem 1.5rem;
+  }
+  .related-links-label {
+    font-family: var(--font-ui);
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--gold-dark);
+    margin-bottom: 0.6rem;
+  }
+  .related-links ul { list-style: none; display: flex; flex-direction: column; gap: 0.4rem; }
+  .related-links a {
+    font-family: var(--font-ui);
+    font-size: 0.95rem;
+    color: var(--burgundy);
+    font-weight: 600;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+    transition: color 150ms;
+  }
+  .related-links a:hover { color: var(--gold-dark); }
 
   /* ── KILDER ─────────────────────────────────────────────────────── */
   .sources-list {
