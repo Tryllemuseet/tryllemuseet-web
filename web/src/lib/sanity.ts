@@ -96,7 +96,13 @@ export interface UtstillingEntry {
   gallery?:       { asset: { _ref: string; url: string }; alt?: string; caption?: string }[]
   stations?:      LegendStation[]
   sources?:       SourceRef[]
+  relatedLinks?:  LegendRelatedLink[]
   biographyRef?:  { name: string; slug: string; isVisible?: boolean }
+}
+
+export interface LegendRelatedLink {
+  label: string
+  path:  string
 }
 
 export interface QrRedirectEntry {
@@ -174,6 +180,7 @@ export async function getUtstillingEntryBySlug(slug: string): Promise<Utstilling
       gallery[] { asset->{ _ref, url }, alt, caption },
       stations[] { title, order, year, image { asset->{ _ref, url }, alt }, textKids, textAdults, activityPrompt },
       sources[] { label, url, sourceRef-> { title, author, type, year, url } },
+      relatedLinks[] { label, path },
       "biographyRef": biographyRef->{ name, "slug": slug.current, isVisible }
     }
   `, { slug })
@@ -1667,6 +1674,7 @@ export interface Legend {
   detailIntro?:   string
   sections?:      { heading: string; body: any[] }[]
   stations?:      LegendStation[]
+  relatedLinks?:  LegendRelatedLink[]
 }
 
 export interface LegendStation {
@@ -1806,6 +1814,7 @@ export async function getLegendBySlug(slug: string): Promise<Legend | null> {
       videos[] { title, url, type, year },
       stations[] { title, order, year, image { asset->{ _ref, url }, alt }, textKids, textAdults, activityPrompt },
       sources[] { label, url, sourceRef-> { title, author, type, year, url } },
+      relatedLinks[] { label, path },
       biographyRef-> {
         _id, name, "slug": slug.current,
         artistName, birthDate { year, month, day, circa }, deathDate { year, month, day, circa }, years,
