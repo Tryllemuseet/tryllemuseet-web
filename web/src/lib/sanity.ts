@@ -101,21 +101,33 @@ export interface UtstillingEntry {
 
 export interface QrRedirectEntry {
   qrNumber: number
-  slug:     string
+  path:     string
 }
 
 // Oppslagstabell for fysiske QR-koder i museet — se web/src/pages/qr/[number].astro
-// og det egne qrCode-dokumentet (schemaTypes/qrCode.ts), som peker til legend
-// via en referanse. QR-klistremerket peker til den stabile URL-en /qr/{nummer};
-// denne slår opp hvilket legend-dokument nummeret peker til akkurat nå, slik at
-// klistremerket ikke må byttes ut selv om artikkelen får ny slug eller flyttes.
+// og det egne qrCode-dokumentet (schemaTypes/qrCode.ts). En qrCode peker enten
+// til en legend-artikkel (via referanse — havner under /utstillingen eller
+// /tryllehistorie/fordypninger avhengig av NOT_UTSTILLING lenger ned i denne
+// filen) eller til en fast side-URL (customPath, f.eks. /tryllehistorie).
+// QR-klistremerket peker til den stabile URL-en /qr/{nummer}; denne slår opp
+// gjeldende mål på byggetidspunkt, slik at klistremerket ikke må byttes ut
+// selv om artikkelen får ny slug eller flyttes.
 export async function getQrRedirects(): Promise<QrRedirectEntry[]> {
-  return sanityClient.fetch(`
-    *[_type == "qrCode" && defined(qrNumber) && defined(target->slug.current) && target->isVisible != false] {
+  const rows = await sanityClient.fetch(`
+    *[_type == "qrCode" && defined(qrNumber) && (
+      defined(customPath) ||
+      (defined(target->slug.current) && target->isVisible != false)
+    )] {
       qrNumber,
-      "slug": target->slug.current
+      customPath,
+      "slug": target->slug.current,
+      "isUtstilling": defined(target->physicalOrder) || count(target->stations) > 0
     }
   `)
+  return rows.map((r: { qrNumber: number; customPath?: string; slug?: string; isUtstilling: boolean }) => ({
+    qrNumber: r.qrNumber,
+    path: r.customPath ?? (r.isUtstilling ? `/utstillingen/${r.slug}` : `/tryllehistorie/fordypninger/${r.slug}`),
+  }))
 }
 
 // De fysiske veggfeltene i Gullalderen — til oversiktssiden
