@@ -1,0 +1,154 @@
+---
+// src/components/TemaHub.astro
+//
+// Samleside for ett Tema (schemaTypes/tema.ts): hero + kort for hvert
+// tilknyttede innholdselement (Fordypning, interaktiv historie, quiz,
+// artefakt, trylleforening), gruppert etter type. Brukes av
+// /utstillingen/[slug].astro når slugen matcher et Tema fremfor en enkelt
+// Fordypning.
+import { urlFor } from '../lib/sanity'
+import type { Tema, TemaContentItem } from '../lib/sanity'
+
+interface Props { tema: Tema }
+const { tema } = Astro.props
+
+const kindLabel: Record<TemaContentItem['_type'], string> = {
+  legend: 'Fordypning',
+  comicStory: 'For barn — interaktiv historie',
+  quizTheme: 'Quiz',
+  artifact: 'Artefakt',
+  magicOrganization: 'Trylleforening',
+}
+const kindIcon: Record<TemaContentItem['_type'], string> = {
+  legend: '🌟',
+  comicStory: '📖',
+  quizTheme: '🧠',
+  artifact: '🎩',
+  magicOrganization: '🏛️',
+}
+
+function cardImgUrl(item: TemaContentItem, width = 640) {
+  return item.cardImage?.asset
+    ? urlFor(item.cardImage).width(width).height(Math.round(width * 0.72)).format('webp').fit('crop').url()
+    : null
+}
+
+const heroImgUrl = tema.heroImage?.asset
+  ? urlFor(tema.heroImage).width(1200).format('webp').url()
+  : null
+---
+
+<section class="tema-hero" style={heroImgUrl ? `--tema-hero-bg: url(${heroImgUrl})` : undefined}>
+  <div class="container tema-hero-inner">
+    {tema.icon && <span class="tema-hero-icon" aria-hidden="true">{tema.icon}</span>}
+    <h1 class="display-title tema-hero-title">{tema.title}</h1>
+    {tema.intro && <p class="tema-hero-intro">{tema.intro}</p>}
+  </div>
+</section>
+
+<section class="container tema-grid-section">
+  <p class="section-label">Utforsk {tema.title}</p>
+  <div class="tema-grid">
+    {tema.content.map((item) => {
+      const imgUrl = cardImgUrl(item)
+      return (
+        <a href={item.cardHref} class="tema-card">
+          <div class="tema-card-media">
+            {imgUrl ? (
+              <img src={imgUrl} alt={item.cardImage?.alt ?? item.cardTitle} loading="lazy" />
+            ) : (
+              <span class="tema-card-media-fallback" aria-hidden="true">{kindIcon[item._type] ?? '✨'}</span>
+            )}
+          </div>
+          <div class="tema-card-body">
+            <p class="tema-card-kind">
+              {kindLabel[item._type] ?? item._type}
+              {item.stationCount ? ` · ${item.stationCount} ${item.stationCount === 1 ? 'stasjon' : 'stasjoner'}` : ''}
+            </p>
+            <h2 class="tema-card-title">{item.cardTitle}</h2>
+            {item.cardExcerpt && <p class="tema-card-excerpt">{item.cardExcerpt}</p>}
+            <span class="tema-card-cta">Utforsk →</span>
+          </div>
+        </a>
+      )
+    })}
+  </div>
+</section>
+
+<div class="container back-link">
+  <a href="/utstillingen">← Tilbake til utstillingen</a>
+</div>
+
+<style>
+  /* ── HERO ── */
+  .tema-hero {
+    background: var(--burgundy-dk);
+    background-image: linear-gradient(rgba(26,10,14,0.72), rgba(26,10,14,0.72)), var(--tema-hero-bg, none);
+    background-size: cover;
+    background-position: center;
+    padding: 4rem 0 3rem;
+    border-bottom: 2px solid var(--gold-dark);
+    color: var(--cream);
+    text-align: center;
+  }
+  .tema-hero-icon { font-size: 2.5rem; display: block; margin-bottom: 0.5rem; }
+  .tema-hero-title { font-size: clamp(2rem, 5vw, 3.2rem); color: var(--cream); margin-bottom: 0.75rem; }
+  .tema-hero-intro {
+    font-family: var(--font-ui);
+    font-size: 1.05rem;
+    color: var(--gold-light);
+    opacity: 0.9;
+    max-width: 640px;
+    margin: 0 auto;
+    line-height: 1.65;
+  }
+
+  /* ── GRID ── */
+  .tema-grid-section { padding: 2.5rem 0 1rem; }
+  .tema-grid-section .section-label { margin-bottom: 1.25rem; }
+
+  .tema-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1.5rem;
+  }
+
+  .tema-card {
+    display: flex; flex-direction: column;
+    background: white; border: 1px solid var(--cream-dark);
+    border-radius: 6px; overflow: hidden;
+    text-decoration: none; color: var(--ink);
+    transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease;
+  }
+  .tema-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-lg); border-color: var(--gold-light); }
+
+  .tema-card-media { aspect-ratio: 4/3; overflow: hidden; background: var(--cream-dark); display: flex; align-items: center; justify-content: center; }
+  .tema-card-media img { width: 100%; height: 100%; object-fit: cover; transition: transform 320ms ease; }
+  .tema-card:hover .tema-card-media img { transform: scale(1.04); }
+  .tema-card-media-fallback { font-size: 3rem; }
+
+  .tema-card-body { padding: 1.25rem 1.5rem 1.5rem; display: flex; flex-direction: column; flex: 1; }
+  .tema-card-kind {
+    font-family: var(--font-ui); font-size: 0.7rem; font-weight: 600;
+    letter-spacing: 0.1em; text-transform: uppercase; color: var(--gold-dark);
+    margin-bottom: 0.4rem;
+  }
+  .tema-card-title { font-family: var(--font-display); font-size: 1.2rem; color: var(--burgundy); margin-bottom: 0.4rem; letter-spacing: 0.02em; }
+  .tema-card-excerpt { font-family: var(--font-ui); font-size: 0.875rem; color: var(--ink-mid); line-height: 1.55; flex: 1; }
+  .tema-card-cta { font-family: var(--font-ui); font-size: 0.875rem; font-weight: 600; color: var(--burgundy); margin-top: 1rem; transition: color 180ms ease; }
+  .tema-card:hover .tema-card-cta { color: var(--gold-dark); }
+
+  /* ── BACK LINK ── */
+  .back-link { padding: 1rem 0 4rem; font-family: var(--font-ui); font-size: 0.875rem; }
+  .back-link a {
+    color: var(--grey); text-decoration: none;
+    border: 1px solid var(--cream-dark); padding: 0.4rem 1rem;
+    border-radius: var(--radius);
+    transition: color 150ms, border-color 150ms;
+  }
+  .back-link a:hover { color: var(--burgundy); border-color: var(--gold); }
+
+  @media (max-width: 600px) {
+    .tema-grid { grid-template-columns: 1fr; }
+  }
+</style>

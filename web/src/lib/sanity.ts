@@ -157,10 +157,16 @@ export interface UtstillingSummary {
   stationCount: number
 }
 
-// Dybdeartikler med stasjoner — «Aktuell utstilling» på utstillingen/index.astro
+// Dybdeartikler med stasjoner — «Aktuell utstilling» på utstillingen/index.astro.
+// Ekskluderer artikler som allerede er pakket inn i et Tema (se getAllTemaer
+// under), slik at f.eks. Houdini-utstillingen ikke vises både som eget kort
+// her OG som del av Tema-kortet — Tema-kortet er da forsiden inn til den.
 export async function getUtstillingDeepDives(): Promise<UtstillingSummary[]> {
   return sanityClient.fetch(`
-    *[_type == "legend" && isVisible != false && count(stations) > 0] | order(_createdAt desc) {
+    *[
+      _type == "legend" && isVisible != false && count(stations) > 0
+      && !(_id in *[_type == "tema" && isVisible != false].content[]._ref)
+    ] | order(_createdAt desc) {
       _id, title, "slug": slug.current, tagline, detailIntro,
       mainImage { asset->{ _ref, url }, alt },
       "stationCount": count(stations)
@@ -194,6 +200,93 @@ export async function getUtstillingPaths() {
   return entries
     .filter((e: { slug?: string }) => e.slug)
     .map((e: { slug: string }) => ({ params: { slug: e.slug } }))
+}
+
+// ── Tema (samlingsledd over utstillingen/aktivitetene) ────────────
+//
+// Et tema knytter sammen flere frittstående innholdstyper som hører til
+// samme opplevelse i museet — se schemaTypes/tema.ts. cardHref/cardImage/
+// cardExcerpt er en felles «kort»-projeksjon på tvers av de fem typene
+// temaet kan peke til, så /utstillingen/[slug] (Tema-hub) kan vise dem
+// ensartet uten å vite hvilken type hvert element er.
+
+export interface TemaContentItem {
+  _type:         'legend' | 'comicStory' | 'quizTheme' | 'artifact' | 'magicOrganization'
+  _id:           string
+  cardTitle:     string
+  cardExcerpt?:  string
+  cardImage?:    { asset: { _ref: string; url: string }; alt?: string }
+  cardHref:      string
+  stationCount?: number
+}
+
+export interface Tema {
+  _id:               string
+  title:             string
+  slug:              string
+  icon?:             string
+  intro?:            string
+  heroImage?:        { asset: { _ref: string; url: string }; alt?: string }
+  physicalPresence?: 'none' | 'wallPanel' | 'room'
+  content:           TemaContentItem[]
+}
+
+// select()-grener med projeksjon inni hver gren (ikke kjedet etter select()
+// som helhet) — samme mønster som "images" i historiskKlippProjection lenger
+// ned i denne filen, som er bekreftet virkende i denne API-versjonen.
+const TEMA_CONTENT_PROJECTION = `
+  _type, _id,
+  "cardTitle": coalesce(title, name),
+  "cardExcerpt": coalesce(tagline, subtitle, ingress, description, excerpt),
+  "cardImage": select(
+    _type == "comicStory" => scenes[0].image { asset->{ _ref, url }, alt },
+    _type == "magicOrganization" => logoHistory[-1].logo { asset->{ _ref, url }, alt },
+    mainImage { asset->{ _ref, url }, alt }
+  ),
+  "cardHref": select(
+    _type == "legend" && (defined(physicalOrder) || count(stations) > 0) => "/utstillingen/" + slug.current,
+    _type == "legend" => "/tryllehistorie/fordypninger/" + slug.current,
+    _type == "comicStory" => "/barn/historier/" + slug.current,
+    _type == "quizTheme" => "/tryllequiz?tema=" + slug.current,
+    _type == "artifact" => "/utstillingen/artefakter/" + slug.current,
+    _type == "magicOrganization" => "/utstillingen/trylleforeningene/" + slug.current
+  ),
+  "stationCount": count(stations)
+`
+
+const TEMA_PROJECTION = `
+  _id, title, "slug": slug.current, icon, intro, physicalPresence,
+  heroImage { asset->{ _ref, url }, alt },
+  "content": content[]->{ ${TEMA_CONTENT_PROJECTION} }
+`
+
+// Alle temaer — til temakortene på /utstillingen
+export async function getAllTemaer(): Promise<Tema[]> {
+  return sanityClient.fetch(`
+    *[_type == "tema" && isVisible != false] | order(coalesce(order, 9999) asc, title asc) {
+      ${TEMA_PROJECTION}
+    }
+  `)
+}
+
+// Ett tema via slug — til Tema-hub-visningen på /utstillingen/[slug]
+export async function getTemaBySlug(slug: string): Promise<Tema | null> {
+  return sanityClient.fetch(`
+    *[_type == "tema" && slug.current == $slug && isVisible != false][0] {
+      ${TEMA_PROJECTION}
+    }
+  `, { slug })
+}
+
+// Statiske stier for temaer — kombineres med getUtstillingPaths() i
+// /utstillingen/[slug].astro sin getStaticPaths()
+export async function getTemaPaths() {
+  const temaer = await sanityClient.fetch(`
+    *[_type == "tema" && isVisible != false] { "slug": slug.current }
+  `)
+  return temaer
+    .filter((t: { slug?: string }) => t.slug)
+    .map((t: { slug: string }) => ({ params: { slug: t.slug } }))
 }
 
 // Kommende arrangementer
