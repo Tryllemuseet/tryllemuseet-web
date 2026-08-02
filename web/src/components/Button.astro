@@ -1,0 +1,79 @@
+---
+// src/components/Button.astro
+// Shared button/link component — consolidates the btn-primary/btn-outline/
+// btn-ghost/btn-gold/btn-member(-big) variants that used to be redefined
+// locally on almost every page.
+export interface Props {
+  variant?: 'primary' | 'secondary' | 'outline' | 'text' | 'membership'
+  href?: string
+  external?: boolean
+  'aria-label'?: string
+  class?: string
+}
+
+const {
+  variant = 'primary',
+  href,
+  external,
+  'aria-label': ariaLabel,
+  class: className,
+} = Astro.props
+
+const isExternal = external ?? (href?.startsWith('http') ?? false)
+const Tag = href ? 'a' : 'button'
+---
+
+<Tag
+  class:list={['btn', `btn--${variant}`, className]}
+  href={href}
+  type={href ? undefined : 'button'}
+  target={isExternal ? '_blank' : undefined}
+  rel={isExternal ? 'noopener noreferrer' : undefined}
+  aria-label={ariaLabel}
+>
+  <slot name="icon" />
+  <slot />
+</Tag>
+
+<style>
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    min-height: 44px;
+    font-family: var(--font-ui);
+    font-size: var(--text-sm);
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    padding: 0.7rem 1.4rem;
+    border-radius: var(--radius-sm);
+    border: 1.5px solid transparent;
+    text-decoration: none;
+    white-space: nowrap;
+    transition: background var(--transition), color var(--transition), border-color var(--transition), transform var(--transition);
+  }
+  .btn:hover { transform: translateY(-1px); }
+
+  .btn--primary { background: var(--burgundy); color: var(--cream); }
+  .btn--primary:hover { background: var(--burgundy-dk); }
+
+  .btn--secondary { background: var(--gold); color: var(--burgundy-dk); }
+  .btn--secondary:hover { background: var(--gold-light); }
+
+  .btn--outline { background: transparent; border-color: var(--grey-light); color: var(--ink-mid); }
+  .btn--outline:hover { border-color: var(--gold); color: var(--gold-dark); background: transparent; }
+
+  .btn--text {
+    min-height: auto;
+    padding: 0.3rem 0.1rem;
+    background: none;
+    color: var(--burgundy);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+  .btn--text:hover { color: var(--gold-dark); transform: none; }
+
+  .btn--membership { background: var(--gold); color: var(--burgundy-dk); font-weight: 700; padding: 0.75rem 1.75rem; }
+  .btn--membership:hover { background: var(--gold-light); }
+</style>
