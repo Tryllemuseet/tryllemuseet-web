@@ -1,9 +1,10 @@
 ---
 // src/pages/utstillingen/index.astro
 import BaseLayout from '../../layouts/BaseLayout.astro'
-import { getUtstillingDeepDives, getUtstillingPage, urlFor } from '../../lib/sanity'
+import { getAllTemaer, getUtstillingDeepDives, getUtstillingPage, urlFor } from '../../lib/sanity'
 
-const [exhibitions, page] = await Promise.all([
+const [temaer, exhibitions, page] = await Promise.all([
+  getAllTemaer(),
   getUtstillingDeepDives(),
   getUtstillingPage(),
 ])
@@ -21,6 +22,40 @@ const [exhibitions, page] = await Promise.all([
     <p class="hero-intro">{page.hero.ingress}</p>
     <hr class="gold-rule" />
   </section>
+
+  <!-- ── TEMAER ────────────────────────────────────────────────────── -->
+  {temaer.length > 0 && (
+    <section class="container tema-section">
+      <p class="section-label">{temaer.length > 1 ? 'Temaer' : 'Tema'}</p>
+      <div class="tema-cards-grid">
+        {temaer.map((t) => {
+          const imgUrl = t.heroImage?.asset
+            ? urlFor(t.heroImage).width(700).height(500).format('webp').fit('crop').url()
+            : null
+          return (
+            <a href={`/utstillingen/${t.slug}`} class="tema-mini-card">
+              {imgUrl ? (
+                <div class="tema-mini-img">
+                  <img src={imgUrl} alt={t.heroImage?.alt ?? t.title} loading="lazy" />
+                </div>
+              ) : (
+                <div class="tema-mini-img tema-mini-img--placeholder">
+                  <span>{t.icon ?? '✨'}</span>
+                </div>
+              )}
+              <div class="tema-mini-body">
+                <h2 class="tema-mini-title">{t.icon && `${t.icon} `}{t.title}</h2>
+                {t.intro && <p class="tema-mini-intro">{t.intro}</p>}
+                <span class="tema-mini-cta">
+                  {t.content.length} {t.content.length === 1 ? 'opplevelse' : 'opplevelser'} →
+                </span>
+              </div>
+            </a>
+          )
+        })}
+      </div>
+    </section>
+  )}
 
   <!-- ── AKTUELL UTSTILLING ────────────────────────────────────────── -->
   {exhibitions.length > 0 && (
@@ -98,6 +133,32 @@ const [exhibitions, page] = await Promise.all([
   .hero          { padding: 4rem 0 2rem; }
   .hero-title    { font-size: clamp(2.2rem, 5vw, 3.5rem); margin: 0.4rem 0 1.25rem; }
   .hero-intro    { font-family: var(--font-ui); font-size: 1.05rem; color: var(--ink-mid); max-width: 640px; line-height: 1.7; }
+
+  /* ── TEMAER ── */
+  .tema-section { padding-bottom: 2.5rem; }
+  .tema-cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1.5rem;
+    margin-top: 1rem;
+  }
+  .tema-mini-card {
+    display: flex; flex-direction: column;
+    background: white; border: 1px solid var(--cream-dark);
+    border-radius: 6px; overflow: hidden;
+    text-decoration: none; color: var(--ink);
+    transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease;
+  }
+  .tema-mini-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-lg); border-color: var(--gold-light); }
+  .tema-mini-img { aspect-ratio: 7/5; overflow: hidden; background: var(--cream-dark); }
+  .tema-mini-img img { width: 100%; height: 100%; object-fit: cover; transition: transform 320ms ease; }
+  .tema-mini-card:hover .tema-mini-img img { transform: scale(1.04); }
+  .tema-mini-img--placeholder { display: flex; align-items: center; justify-content: center; font-size: 3rem; }
+  .tema-mini-body { padding: 1.25rem 1.5rem 1.5rem; display: flex; flex-direction: column; flex: 1; }
+  .tema-mini-title { font-family: var(--font-display); font-size: 1.2rem; color: var(--burgundy); margin-bottom: 0.4rem; letter-spacing: 0.02em; }
+  .tema-mini-intro { font-family: var(--font-ui); font-size: 0.875rem; color: var(--ink-mid); line-height: 1.55; flex: 1; }
+  .tema-mini-cta { font-family: var(--font-ui); font-size: 0.875rem; font-weight: 600; color: var(--burgundy); margin-top: 1rem; transition: color 180ms ease; }
+  .tema-mini-card:hover .tema-mini-cta { color: var(--gold-dark); }
 
   /* ── AKTUELL UTSTILLING ── */
   .aktuell-section { padding-bottom: 2.5rem; }

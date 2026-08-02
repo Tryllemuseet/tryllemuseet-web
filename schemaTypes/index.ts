@@ -3,6 +3,7 @@ import { contentSection } from './contentSection'
 import { sourceItem }     from './sourceItem'
 import { partialDate }    from './partialDate'
 import { source }         from './source'
+import { tema }           from './tema'
 import { event }          from './event'
 import { siteConfig }     from './siteConfig'
 import { siteNavigation } from './siteNavigation'
@@ -57,6 +58,7 @@ export const schemaTypes = [
   personvernPage,
 
   // Dokumenttyper — Utstillingen
+  tema,
   legend,
   artifact,
   magicOrganization,
