@@ -1,0 +1,91 @@
+---
+// src/components/PageHero.astro
+// Shared hero for ordinary main pages (Besøk, Utstillingen, Aktiviteter,
+// For barn, Magiens historie, Om museet). The homepage keeps its own
+// full-bleed banner — it's structurally different (carousel-turned-single
+// banner with video support) and isn't one of the pages this hero targets.
+export interface Props {
+  label?: string
+  title: string
+  intro?: string
+  theme?: 'dark' | 'light'
+  compact?: boolean
+  image?: { src: string; alt: string }
+}
+
+const { label, title, intro, theme = 'dark', compact = false, image } = Astro.props
+---
+
+<section
+  class:list={[
+    'page-hero',
+    `page-hero--${theme}`,
+    { 'page-hero--compact': compact, 'page-hero--image': !!image },
+  ]}
+>
+  {image && (
+    <div class="page-hero-bg" aria-hidden="true">
+      <img src={image.src} alt="" loading="eager" />
+      <div class="page-hero-scrim"></div>
+    </div>
+  )}
+  <div class="container page-hero-inner">
+    {label && <p class="section-label page-hero-label">{label}</p>}
+    <h1 class="display-title page-hero-title">{title}</h1>
+    {intro && <p class="page-hero-intro">{intro}</p>}
+    <div class="page-hero-extra"><slot /></div>
+  </div>
+</section>
+
+<style>
+  .page-hero {
+    position: relative;
+    padding: 3.5rem 0 2.5rem;
+  }
+  .page-hero--compact { padding: 2.5rem 0 1.5rem; }
+
+  .page-hero--dark {
+    background: var(--burgundy-dk);
+    border-bottom: 2px solid var(--gold-dark);
+    color: var(--cream);
+  }
+  .page-hero--light {
+    background: transparent;
+    color: var(--ink);
+  }
+
+  .page-hero-inner { position: relative; z-index: 2; }
+
+  .page-hero-label { opacity: 0.85; }
+  .page-hero--light .page-hero-label { opacity: 1; }
+
+  .page-hero-title {
+    font-size: var(--text-3xl);
+    margin: 0.5rem 0 0.75rem;
+    color: inherit;
+  }
+
+  .page-hero-intro {
+    font-family: var(--font-ui);
+    font-size: var(--text-base);
+    opacity: 0.85;
+    max-width: 620px;
+    line-height: 1.6;
+  }
+  .page-hero--light .page-hero-intro { color: var(--ink-mid); opacity: 1; }
+
+  .page-hero-extra:empty { display: none; }
+  .page-hero-extra {
+    margin-top: 1.25rem;
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+  }
+
+  /* Optional full-bleed background image (used when a page supplies `image`) */
+  .page-hero--image { color: #fff; padding: 4rem 0; min-height: 320px; display: flex; align-items: center; }
+  .page-hero-bg { position: absolute; inset: 0; overflow: hidden; }
+  .page-hero-bg img { width: 100%; height: 100%; object-fit: cover; }
+  .page-hero-scrim { position: absolute; inset: 0; background: rgba(20,4,8,0.5); }
+  .page-hero--image .page-hero-intro { color: rgba(255,255,255,0.9); opacity: 1; }
+</style>

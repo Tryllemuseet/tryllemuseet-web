@@ -2,6 +2,8 @@
 // src/pages/om-oss.astro
 import BaseLayout from '../layouts/BaseLayout.astro'
 import AnimateIn from '../components/AnimateIn.astro'
+import PageHero from '../components/PageHero.astro'
+import Button from '../components/Button.astro'
 import { getOmOssPage, getAllPartners, getSiteConfig, portableTextToHtml } from '../lib/sanity'
 
 const [p, partnerDocs, site] = await Promise.all([getOmOssPage(), getAllPartners(), getSiteConfig()])
@@ -43,27 +45,13 @@ const historieHtml = portableTextToHtml(om.historieTekst)
 >
 
   <!-- ── HERO ─────────────────────────────────────────────────── -->
-  <section class="om-hero">
-    <div class="om-hero-deco"></div>
-    <div class="container om-hero-inner">
-      <AnimateIn direction="left">
-        <div class="om-hero-tekst">
-          <span class="etikett">{hero.label}</span>
-          <h1>{hero.heading}<br/><em>{hero.headingEm}</em></h1>
-          <p>{hero.ingress}</p>
-        </div>
-      </AnimateIn>
-      <AnimateIn direction="right">
-        <div class="om-hero-ornament">
-          <img
-            src="/Logosirkel_m_tekst.jpg"
-            alt="Norges minste, merkeligste og mest magiske museum"
-            class="hero-sirkel-img"
-          />
-        </div>
-      </AnimateIn>
-    </div>
-  </section>
+  <PageHero label={hero.label} title={`${hero.heading} ${hero.headingEm}`} intro={hero.ingress} theme="dark">
+    <img
+      src="/Logosirkel_m_tekst.jpg"
+      alt="Norges minste, merkeligste og mest magiske museum"
+      class="hero-sirkel-img"
+    />
+  </PageHero>
 
   <!-- ── OM MUSEET ────────────────────────────────────────────── -->
   <section class="om-museet section-pad">
@@ -171,9 +159,7 @@ const historieHtml = portableTextToHtml(om.historieTekst)
         {presse.label && <span class="etikett">{presse.label}</span>}
         <h2>{presse.heading}</h2>
         {presse.tekst.split('\n').map(linje => <p>{linje}</p>)}
-        <a href={presse.knappHref} class="btn btn-primary" style="margin-top:1rem; display:inline-block">
-          {presse.knappLabel}
-        </a>
+        <Button variant="secondary" href={presse.knappHref} class="presse-btn">{presse.knappLabel}</Button>
       </div>
       </AnimateIn>
       <AnimateIn direction="right">
@@ -258,16 +244,6 @@ const historieHtml = portableTextToHtml(om.historieTekst)
 </BaseLayout>
 
 <style>
-  /* ── Hero ── */
-  .om-hero { background: var(--burgundy); padding-block: 5rem; position: relative; overflow: hidden; }
-  .om-hero-deco {
-    position: absolute; inset: 0;
-    background-image:
-      radial-gradient(circle at 80% 50%, rgba(212,168,67,0.1) 0%, transparent 60%),
-      repeating-linear-gradient(-45deg, transparent, transparent 60px, rgba(212,168,67,0.03) 60px, rgba(212,168,67,0.03) 61px);
-  }
-  .om-hero-inner { position: relative; z-index: 1; display: flex; align-items: center; justify-content: space-between; gap: 3rem; }
-  .om-hero-tekst { max-width: 620px; }
   .etikett {
     display: inline-block;
     font-family: var(--font-ui);
@@ -279,19 +255,18 @@ const historieHtml = portableTextToHtml(om.historieTekst)
     padding-bottom: 0.2em;
     margin-bottom: 1rem;
   }
-  .om-hero-tekst h1 { font-family: var(--font-display); font-size: clamp(1.8rem, 4vw, 2.8rem); color: var(--cream); line-height: 1.2; margin-bottom: 1.2rem; }
-  .om-hero-tekst h1 em { font-style: normal; color: var(--gold); }
-  .om-hero-tekst p  { font-family: var(--font-body); font-size: 1.05rem; color: rgba(251,247,239,0.8); line-height: 1.7; }
+
+  /* ── Hero ── */
   .hero-sirkel-img {
-    width: 300px; height: 300px;
+    width: 140px; height: 140px;
     border-radius: 50%;
     object-fit: cover;
     display: block;
-    flex-shrink: 0;
     border: 2px solid rgba(212,168,67,0.35);
-    box-shadow: 0 0 0 12px rgba(212,168,67,0.07), 0 8px 40px rgba(0,0,0,0.25);
+    box-shadow: 0 0 0 8px rgba(212,168,67,0.07), 0 8px 40px rgba(0,0,0,0.25);
   }
-  @media (max-width: 640px) { .om-hero-ornament { display: none; } }
+
+  :global(.presse-btn) { margin-top: 0.5rem; }
 
   /* ── Sections ── */
   .section-pad { padding-block: 5rem; }
@@ -395,8 +370,4 @@ const historieHtml = portableTextToHtml(om.historieTekst)
   .partner-kort p { font-family: var(--font-ui); font-size: 0.85rem; color: #777; margin: 0; }
   .partner-kort a { color: var(--gold); text-decoration: none; }
 
-  /* ── Buttons ── */
-  .btn { font-family: var(--font-ui); font-size: 0.85rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; text-decoration: none; padding: 0.75em 1.8em; border-radius: 2px; transition: all 0.2s ease; display: inline-block; }
-  .btn-primary { background: var(--gold); color: var(--burgundy); }
-  .btn-primary:hover { background: var(--gold-light); }
 </style>

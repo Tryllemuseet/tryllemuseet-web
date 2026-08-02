@@ -59,6 +59,8 @@ const allNavLinks = mainAreas.map(a => ({ href: a.link, label: a.label }))
 </head>
 <body>
 
+  <a href="#main-content" class="skip-link">Hopp til innhold</a>
+
   <!-- ── HEADER ─────────────────────────────────────────────────── -->
   <header class="site-header">
     <div class="header-inner">
@@ -235,8 +237,10 @@ const allNavLinks = mainAreas.map(a => ({ href: a.link, label: a.label }))
   const lbImg     = document.getElementById('lightbox-img') as HTMLImageElement
   const lbCaption = document.getElementById('lightbox-caption') as HTMLElement
   const lbClose   = document.getElementById('lightbox-close') as HTMLButtonElement
+  let lbTrigger: HTMLElement | null = null
 
-  function openLightbox(src: string, alt: string, caption: string) {
+  function openLightbox(src: string, alt: string, caption: string, trigger: HTMLElement) {
+    lbTrigger = trigger
     lbImg.src = src
     lbImg.alt = alt
     lbCaption.textContent = caption
@@ -250,6 +254,8 @@ const allNavLinks = mainAreas.map(a => ({ href: a.link, label: a.label }))
     lightbox.hidden = true
     lbImg.src = ''
     document.body.style.overflow = ''
+    lbTrigger?.focus()
+    lbTrigger = null
   }
 
   // Click on images inside .prose, .gallery-grid, .gallery-fig, .sidebar-portrett
@@ -260,7 +266,7 @@ const allNavLinks = mainAreas.map(a => ({ href: a.link, label: a.label }))
     if (!parent) return
     const img = target as HTMLImageElement
     const caption = target.closest('figure')?.querySelector('figcaption')?.textContent ?? ''
-    openLightbox(img.src, img.alt, caption)
+    openLightbox(img.src, img.alt, caption, img)
   })
 
   // Close on overlay click, button click, or Escape
@@ -304,20 +310,35 @@ const allNavLinks = mainAreas.map(a => ({ href: a.link, label: a.label }))
 
   // ── Hamburger
 
-  const toggle = document.getElementById('menu-toggle');
+  const toggle = document.getElementById('menu-toggle') as HTMLButtonElement | null;
   const menu   = document.getElementById('mobile-menu');
+
+  function openMobileMenu() {
+    if (!toggle || !menu) return;
+    menu.classList.add('open');
+    toggle.setAttribute('aria-expanded', 'true');
+    menu.setAttribute('aria-hidden', 'false');
+    document.body.style.overflow = 'hidden';
+  }
+  function closeMobileMenu(returnFocus = false) {
+    if (!toggle || !menu) return;
+    menu.classList.remove('open');
+    toggle.setAttribute('aria-expanded', 'false');
+    menu.setAttribute('aria-hidden', 'true');
+    document.body.style.overflow = '';
+    if (returnFocus) toggle.focus();
+  }
+
   toggle?.addEventListener('click', () => {
-    const open = menu?.classList.toggle('open');
-    toggle.setAttribute('aria-expanded', String(open));
-    menu?.setAttribute('aria-hidden', String(!open));
+    if (menu?.classList.contains('open')) closeMobileMenu();
+    else openMobileMenu();
   });
   menu?.querySelectorAll('a').forEach(a =>
-    a.addEventListener('click', () => {
-      menu.classList.remove('open');
-      toggle?.setAttribute('aria-expanded', 'false');
-      menu.setAttribute('aria-hidden', 'true');
-    })
+    a.addEventListener('click', () => closeMobileMenu())
   );
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && menu?.classList.contains('open')) closeMobileMenu(true);
+  });
 
   // Desktop dropdowns — åpnes ved hover via CSS for mus,
   // og via klikk på chevron-knappen for touch/tastatur (der :hover ikke finnes)
@@ -443,10 +464,37 @@ const allNavLinks = mainAreas.map(a => ({ href: a.link, label: a.label }))
     --font-ui:      'Source Sans 3', system-ui, sans-serif;
     --header-h:    72px;
     --max-w:       1200px;
+    --max-w-narrow: 720px;
     --radius:      4px;
+    --radius-sm:   4px;
+    --radius-md:   6px;
+    --radius-lg:   8px;
+    --shadow-sm:   0 1px 6px rgba(26,18,8,0.08);
     --shadow:      0 2px 16px rgba(26,18,8,0.12);
     --shadow-lg:   0 8px 40px rgba(26,18,8,0.18);
     --transition:  200ms ease;
+    --focus-ring:  3px solid var(--gold);
+
+    /* Spacing scale */
+    --space-1: 0.25rem;
+    --space-2: 0.5rem;
+    --space-3: 0.75rem;
+    --space-4: 1rem;
+    --space-5: 1.5rem;
+    --space-6: 2rem;
+    --space-7: 3rem;
+    --space-8: 4rem;
+
+    /* Type scale */
+    --text-xs:  0.75rem;
+    --text-sm:  0.875rem;
+    --text-base: 1rem;
+    --text-md:  1.125rem;
+    --text-lg:  1.25rem;
+    --text-xl:  1.5rem;
+    --text-2xl: clamp(1.75rem, 3.5vw, 2.2rem);
+    --text-3xl: clamp(2rem, 5vw, 3rem);
+    --text-4xl: clamp(2.2rem, 6vw, 3.6rem);
   }
 
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -457,6 +505,37 @@ const allNavLinks = mainAreas.map(a => ({ href: a.link, label: a.label }))
   ul { list-style: none; }
   button { cursor: pointer; border: none; background: none; font: inherit; }
   main { flex: 1; padding-top: var(--header-h); }
+
+  /* ── ACCESSIBILITY ── */
+  :focus-visible { outline: var(--focus-ring); outline-offset: 2px; }
+
+  .skip-link {
+    position: absolute;
+    top: -100%;
+    left: 0.75rem;
+    z-index: 200;
+    background: var(--burgundy);
+    color: var(--cream);
+    font-family: var(--font-ui);
+    font-size: var(--text-sm);
+    font-weight: 700;
+    padding: 0.75rem 1.25rem;
+    border-radius: var(--radius-sm);
+    box-shadow: var(--shadow-lg);
+    transition: top var(--transition);
+  }
+  .skip-link:focus {
+    top: 0.75rem;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
 
   /* ── HEADER ── */
   .site-header { position: fixed; top: 0; left: 0; right: 0; z-index: 100; background: var(--burgundy); border-bottom: 2px solid var(--gold-dark); box-shadow: 0 2px 20px rgba(0,0,0,0.35); }
@@ -489,7 +568,11 @@ const allNavLinks = mainAreas.map(a => ({ href: a.link, label: a.label }))
     font-size: 0.65rem;
     color: var(--cream);
     opacity: 0.7;
-    padding: 0.4rem 0.5rem;
+    min-width: 44px;
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     line-height: 1;
     border-radius: var(--radius);
     transition: opacity var(--transition), color var(--transition), background var(--transition);
@@ -574,7 +657,7 @@ const allNavLinks = mainAreas.map(a => ({ href: a.link, label: a.label }))
   }
 
   /* Hamburger */
-  .hamburger { display: none; flex-direction: column; gap: 5px; padding: 8px; grid-column: 3; justify-self: end; margin-left: auto; }
+  .hamburger { display: none; flex-direction: column; align-items: center; justify-content: center; gap: 5px; width: 44px; height: 44px; grid-column: 3; justify-self: end; margin-left: auto; }
   .hamburger span { display: block; width: 24px; height: 2px; background: var(--cream); border-radius: 2px; transition: transform var(--transition), opacity var(--transition); }
 
   /* ── MOBILMENY ── */
@@ -582,13 +665,13 @@ const allNavLinks = mainAreas.map(a => ({ href: a.link, label: a.label }))
   .mobile-menu.open { display: block; }
   .mobile-menu > ul { max-width: var(--max-w); margin: 0 auto; padding: 0.5rem 1.5rem 0.75rem; display: flex; flex-direction: column; gap: 0.1rem; }
 
-  .mobile-nav-link { display: block; font-family: var(--font-ui); font-size: 1rem; font-weight: 600; line-height: 1.2; color: var(--cream); padding: 0.25rem 0.75rem; border-radius: var(--radius); transition: color var(--transition), background var(--transition); letter-spacing: 0.03em; }
+  .mobile-nav-link { display: flex; align-items: center; min-height: 44px; font-family: var(--font-ui); font-size: 1rem; font-weight: 600; line-height: 1.2; color: var(--cream); padding: 0.25rem 0.75rem; border-radius: var(--radius); transition: color var(--transition), background var(--transition); letter-spacing: 0.03em; }
   .mobile-nav-link:hover, .mobile-nav-link.active { color: var(--gold); background: rgba(212,168,67,0.1); }
   .mobile-nav-cta { color: var(--gold); border: 1px solid var(--gold-dark); margin-top: 0.25rem; }
   .mobile-nav-cta:hover { background: var(--gold); color: var(--burgundy-dk); }
 
   .mobile-sub { padding: 0.1rem 0 0.1rem 1.25rem; display: flex; flex-direction: column; gap: 0; }
-  .mobile-sub-link { display: block; font-family: var(--font-ui); font-size: 0.875rem; line-height: 1.2; color: var(--cream); opacity: 0.7; padding: 0.2rem 0.75rem; border-radius: var(--radius); transition: opacity var(--transition), color var(--transition); }
+  .mobile-sub-link { display: flex; align-items: center; min-height: 40px; font-family: var(--font-ui); font-size: 0.875rem; line-height: 1.2; color: var(--cream); opacity: 0.7; padding: 0.2rem 0.75rem; border-radius: var(--radius); transition: opacity var(--transition), color var(--transition); }
   .mobile-sub-link:hover { opacity: 1; color: var(--gold-light); }
   .mobile-sub-link--soon { opacity: 0.35; pointer-events: none; }
 
@@ -604,7 +687,7 @@ const allNavLinks = mainAreas.map(a => ({ href: a.link, label: a.label }))
   .footer-cta { display: inline-block; font-family: var(--font-ui); font-size: 0.875rem; font-weight: 600; color: var(--gold); border: 1px solid var(--gold-dark); padding: 0.5rem 1rem; border-radius: var(--radius); transition: background var(--transition), color var(--transition); margin-bottom: 1.25rem; }
   .footer-cta:hover { background: var(--gold); color: var(--burgundy-dk); }
   .social-links { display: flex; gap: 0.75rem; }
-  .social-links a { display: flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 50%; border: 1px solid var(--gold-dark); color: var(--cream); transition: background var(--transition), color var(--transition), border-color var(--transition); }
+  .social-links a { display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; border-radius: 50%; border: 1px solid var(--gold-dark); color: var(--cream); transition: background var(--transition), color var(--transition), border-color var(--transition); }
   .social-links a:hover { background: var(--gold); color: var(--burgundy-dk); border-color: var(--gold); }
   .social-links svg { width: 16px; height: 16px; }
   .footer-bottom { border-top: 1px solid rgba(212,168,67,0.2); padding: 1rem 1.5rem; text-align: center; font-family: var(--font-ui); font-size: 0.8rem; color: var(--cream); opacity: 0.5; }
@@ -680,7 +763,11 @@ const allNavLinks = mainAreas.map(a => ({ href: a.link, label: a.label }))
     font-size: 1.25rem;
     color: var(--cream);
     opacity: 0.7;
-    padding: 0.4rem 0.7rem;
+    min-width: 44px;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     border-radius: 3px;
     transition: opacity 150ms, background 150ms;
     z-index: 1000;
