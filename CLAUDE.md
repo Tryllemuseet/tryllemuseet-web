@@ -184,6 +184,22 @@ const html = portableTextToHtml(entry.wallText)  // <p>, <strong>, links, inline
 
 `portableTextToHtml()` centralizes link/internalLink mark handling and inline image rendering, so every page benefits when it's improved once.
 
+### Read-Aloud (Narration)
+
+Prose-heavy content — anything a visitor might want read aloud instead of just reading (legend entries, biographies, artifacts, magic organizations, TV appearance descriptions, articles, trick instructions) — should get a `<NarrateButton>` next to its main heading, following the pattern in `LegendBody.astro`:
+
+```astro
+import NarrateButton from '../components/NarrateButton.astro'
+import { portableTextToPlainText } from '../lib/sanity'
+
+<div class="section-head">
+  <h2 class="section-heading">Om {entry.title}</h2>
+  <NarrateButton text={portableTextToPlainText(entry.wallText)} label={`Les om ${entry.title} høyt`} />
+</div>
+```
+
+`NarrateButton.astro` renders markup only (`data-narrate="<plain text>"`); the actual speech-synthesis handling (Web Speech API, `nb-NO` voice, play/stop toggle) lives once in `BaseLayout.astro`'s global script via event delegation on `[data-narrate]` — so any page gets working narration for free just by dropping the button in, no per-page script needed. Always pass plain text via `portableTextToPlainText()`, never raw Portable Text or HTML. When adding a new prose-heavy page or content type, add the button then — don't wait for it to be requested separately.
+
 ### Image Optimization
 
 ```typescript
