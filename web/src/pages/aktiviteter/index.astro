@@ -2,6 +2,7 @@
 // src/pages/aktiviteter/index.astro
 import BaseLayout from '../../layouts/BaseLayout.astro'
 import AnimateIn from '../../components/AnimateIn.astro'
+import PageHero from '../../components/PageHero.astro'
 import { getAllEvents, getSiteConfig } from '../../lib/sanity'
 import { getMagiskeCirkelEvents } from '../../lib/icalendar'
 
@@ -73,16 +74,12 @@ function formatTime(d: string) {
   description="Kurs, arrangementer og magiske opplevelser for barn og voksne på Tryllemuseet — og i det norske tryllemiljøet."
 >
 
-  <section class="hero">
-    <div class="container">
-      <p class="section-label">Tryllemuseet</p>
-      <h1 class="display-title">Aktiviteter</h1>
-      <p class="hero-sub">
-        Kurs, arrangementer og magiske opplevelser for barn og voksne —
-        på museet og i det norske tryllemiljøet.
-      </p>
-    </div>
-  </section>
+  <PageHero
+    label="Tryllemuseet"
+    title="Aktiviteter"
+    intro="Kurs, arrangementer og magiske opplevelser for barn og voksne — på museet og i det norske tryllemiljøet."
+    theme="dark"
+  />
 
   <!-- FILTER ─────────────────────────────────────────────────────── -->
   <div class="filter-bar-wrap">
@@ -247,11 +244,6 @@ function formatTime(d: string) {
 </script>
 
 <style>
-  /* ── HERO ──────────────────────────────────────────────────────── */
-  .hero { background: var(--burgundy-dk); padding: 3.5rem 0 2.5rem; border-bottom: 2px solid var(--gold-dark); color: var(--cream); }
-  .hero h1 { font-size: clamp(2rem, 5vw, 3rem); color: var(--cream); margin: 0.5rem 0 0.75rem; }
-  .hero-sub { font-family: var(--font-ui); font-size: 1rem; opacity: 0.8; max-width: 560px; line-height: 1.6; }
-
   /* ── FILTER ────────────────────────────────────────────────────── */
   .filter-bar-wrap { position: sticky; top: var(--header-h); z-index: 50; background: white; border-bottom: 1px solid var(--cream-dark); box-shadow: 0 2px 12px rgba(26,18,8,0.06); }
   .filter-bar-inner { display: flex; flex-wrap: wrap; gap: 0.75rem; align-items: flex-end; padding: 0.75rem 1.5rem; }

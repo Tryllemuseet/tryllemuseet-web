@@ -2,6 +2,8 @@
 // src/pages/barn.astro
 import BaseLayout from '../layouts/BaseLayout.astro'
 import AnimateIn from '../components/AnimateIn.astro'
+import PageHero from '../components/PageHero.astro'
+import Button from '../components/Button.astro'
 import { getBarnPage } from '../lib/sanity'
 
 const bp = await getBarnPage()
@@ -38,18 +40,10 @@ const kurs = bp?.kursBanner ?? {
 >
 
   <!-- ── HERO ─────────────────────────────────────────────────── -->
-  <section class="barn-hero">
-    <div class="hero-overlay"></div>
-    <div class="hero-content container">
-      <span class="hero-label">{hero.label}</span>
-      <h1>{hero.heading}<br/><em>{hero.headingEm}</em></h1>
-      <p class="hero-ingress">{hero.ingress}</p>
-      <div class="hero-buttons">
-        <a href={hero.cta1Href} class="btn btn-primary">{hero.cta1Label}</a>
-        <a href={hero.cta2Href} class="btn btn-ghost">{hero.cta2Label}</a>
-      </div>
-    </div>
-  </section>
+  <PageHero label={hero.label} title={`${hero.heading} ${hero.headingEm}`} intro={hero.ingress} theme="dark">
+    <Button variant="secondary" href={hero.cta1Href}>{hero.cta1Label}</Button>
+    <Button variant="outline" href={hero.cta2Href} class="hero-btn-outline">{hero.cta2Label}</Button>
+  </PageHero>
 
   <!-- ── LÆR ET TRIKS (teaser) ────────────────────────────────── -->
   <section class="triks-teaser section-pad">
@@ -62,7 +56,7 @@ const kurs = bp?.kursBanner ?? {
         </div>
       </AnimateIn>
       <AnimateIn direction="right">
-        <a href="/barn/laer-et-triks" class="btn btn-primary">Se triksene</a>
+        <Button variant="primary" href="/barn/laer-et-triks">Se triksene</Button>
       </AnimateIn>
     </div>
   </section>
@@ -78,7 +72,7 @@ const kurs = bp?.kursBanner ?? {
         </div>
       </AnimateIn>
       <AnimateIn direction="right">
-        <a href="/barn/historier" class="btn btn-primary">Se historiene</a>
+        <Button variant="primary" href="/barn/historier">Se historiene</Button>
       </AnimateIn>
     </div>
   </section>
@@ -136,7 +130,7 @@ const kurs = bp?.kursBanner ?? {
             {skole.detaljer.map(d => <li>{d}</li>)}
           </ul>
         )}
-        <a href={skole.knappHref} class="btn btn-primary">{skole.knappLabel}</a>
+        <Button variant="primary" href={skole.knappHref}>{skole.knappLabel}</Button>
       </div>
       </AnimateIn>
       <AnimateIn direction="right">
@@ -160,7 +154,7 @@ const kurs = bp?.kursBanner ?? {
         </div>
       </AnimateIn>
       <AnimateIn direction="right">
-        <a href={kurs.knappHref} class="btn btn-gold">{kurs.knappLabel}</a>
+        <Button variant="secondary" href={kurs.knappHref}>{kurs.knappLabel}</Button>
       </AnimateIn>
     </div>
   </section>
@@ -168,83 +162,8 @@ const kurs = bp?.kursBanner ?? {
 </BaseLayout>
 
 <style>
-  /* ── Hero ── */
-  .barn-hero {
-    position: relative;
-    min-height: 520px;
-    display: flex;
-    align-items: center;
-    background: var(--burgundy);
-    overflow: hidden;
-  }
-  .barn-hero::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background-image: repeating-linear-gradient(
-      45deg, transparent, transparent 40px,
-      rgba(212,168,67,0.04) 40px, rgba(212,168,67,0.04) 80px
-    );
-  }
-  .hero-overlay {
-    position: absolute;
-    inset: 0;
-    background: radial-gradient(ellipse at 60% 50%, rgba(212,168,67,0.12) 0%, transparent 70%);
-  }
-  .hero-content {
-    position: relative;
-    z-index: 2;
-    padding-block: 5rem;
-    max-width: 680px;
-  }
-  .hero-label {
-    display: inline-block;
-    font-family: var(--font-ui);
-    font-size: 0.8rem;
-    letter-spacing: 0.18em;
-    text-transform: uppercase;
-    color: var(--gold);
-    margin-bottom: 1rem;
-    border: 1px solid rgba(212,168,67,0.4);
-    padding: 0.3em 0.9em;
-    border-radius: 2px;
-  }
-  .hero-content h1 {
-    font-family: var(--font-display);
-    font-size: clamp(2rem, 5vw, 3.2rem);
-    color: var(--cream);
-    line-height: 1.15;
-    margin-bottom: 1.2rem;
-  }
-  .hero-content h1 em { font-style: normal; color: var(--gold); }
-  .hero-ingress {
-    font-family: var(--font-body);
-    font-size: 1.1rem;
-    color: rgba(251,247,239,0.8);
-    line-height: 1.7;
-    margin-bottom: 2rem;
-  }
-  .hero-buttons { display: flex; gap: 1rem; flex-wrap: wrap; }
-
-  /* ── Buttons ── */
-  .btn {
-    font-family: var(--font-ui);
-    font-size: 0.9rem;
-    font-weight: 600;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    text-decoration: none;
-    padding: 0.75em 1.8em;
-    border-radius: 2px;
-    transition: all 0.2s ease;
-    display: inline-block;
-  }
-  .btn-primary { background: var(--gold); color: var(--burgundy); }
-  .btn-primary:hover { background: var(--gold-light); transform: translateY(-1px); }
-  .btn-ghost { border: 1px solid rgba(212,168,67,0.5); color: var(--cream); }
-  .btn-ghost:hover { border-color: var(--gold); color: var(--gold); }
-  .btn-gold { background: var(--gold); color: var(--burgundy); font-size: 1rem; padding: 0.8em 2em; }
-  .btn-gold:hover { background: var(--gold-light); }
+  :global(.hero-btn-outline) { border-color: rgba(212,168,67,0.5); color: var(--cream); }
+  :global(.hero-btn-outline:hover) { border-color: var(--gold); color: var(--gold); background: transparent; }
 
   /* ── Sections ── */
   .section-pad { padding-block: 5rem; }

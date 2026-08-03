@@ -1,0 +1,45 @@
+---
+// src/components/SectionHeader.astro
+// Replaces the repeated "section-label + display-title + 'Se alle' link"
+// combination that used to be hand-rolled on every section of index.astro.
+import Button from './Button.astro'
+
+export interface Props {
+  label?: string
+  title: string
+  intro?: string
+  href?: string
+  linkLabel?: string
+  alignment?: 'left' | 'center'
+  id?: string
+}
+
+const { label, title, intro, href, linkLabel, alignment = 'left', id } = Astro.props
+---
+
+<div class:list={['section-header', `section-header--${alignment}`]}>
+  <div class="section-header-text">
+    {label && <p class="section-label">{label}</p>}
+    <h2 class="display-title section-title" id={id}>{title}</h2>
+    {intro && <p class="section-intro">{intro}</p>}
+  </div>
+  {href && linkLabel && (
+    <Button variant="outline" href={href}>{linkLabel}</Button>
+  )}
+</div>
+
+<style>
+  .section-header {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+    margin-bottom: 2rem;
+  }
+  .section-header--center { text-align: center; justify-content: center; flex-direction: column; align-items: center; }
+  .section-header--center .section-header-text { max-width: 640px; }
+
+  .section-title { font-size: var(--text-2xl); margin: 0.3rem 0 0.5rem; }
+  .section-intro { font-family: var(--font-ui); font-size: var(--text-base); color: var(--ink-mid); line-height: 1.6; max-width: 620px; }
+</style>

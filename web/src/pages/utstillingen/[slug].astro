@@ -2,26 +2,33 @@
 // src/pages/utstillingen/[slug].astro
 import BaseLayout from '../../layouts/BaseLayout.astro'
 import LegendBody from '../../components/LegendBody.astro'
+import TemaHub from '../../components/TemaHub.astro'
 import {
   getUtstillingEntryBySlug,
   getUtstillingPaths,
+  getTemaBySlug,
+  getTemaPaths,
   getBooksByUtstillingSlug,
   urlFor,
 } from '../../lib/sanity'
 
 export async function getStaticPaths() {
-  return getUtstillingPaths()
+  const [legendPaths, temaPaths] = await Promise.all([getUtstillingPaths(), getTemaPaths()])
+  // Et Tema tar forrang dersom slugen skulle kollidere med en Fordypnings slug.
+  const temaSlugs = new Set(temaPaths.map((p: { params: { slug: string } }) => p.params.slug))
+  return [...temaPaths, ...legendPaths.filter((p: { params: { slug: string } }) => !temaSlugs.has(p.params.slug))]
 }
 
 const { slug } = Astro.params
-const entry = await getUtstillingEntryBySlug(slug!)
+const tema = await getTemaBySlug(slug!)
+const entry = tema ? null : await getUtstillingEntryBySlug(slug!)
 
-if (!entry) return Astro.redirect('/utstillingen', 301)
+if (!tema && !entry) return Astro.redirect('/utstillingen', 301)
 
-const books = await getBooksByUtstillingSlug(slug!)
-const stations = entry.stations ?? []
+const books = entry ? await getBooksByUtstillingSlug(slug!) : []
+const stations = entry?.stations ?? []
 
-const posterUrl = entry.mainImage?.asset
+const posterUrl = entry?.mainImage?.asset
   ? urlFor(entry.mainImage).width(800).format('webp').url()
   : null
 
@@ -31,12 +38,20 @@ const availabilityLabel: Record<string, string> = {
   checkAvailability: 'Sjekk tilgjengelighet',
   rare:              'Sjelden / antikvarisk',
 }
+
+const pageTitle = tema?.title ?? entry?.title ?? ''
+const pageDescription = tema?.intro ?? entry?.detailIntro ?? entry?.tagline ?? `Les om ${pageTitle} på Tryllemuseet`
 ---
 
 <BaseLayout
-  title={`${entry.title} — Tryllemuseet`}
-  description={entry.detailIntro ?? entry.tagline ?? `Les om ${entry.title} på Tryllemuseet`}
+  title={`${pageTitle} — Tryllemuseet`}
+  description={pageDescription}
 >
+
+{tema ? (
+  <TemaHub tema={tema} />
+) : entry && (
+  <>
 
   <!-- HERO ────────────────────────────────────────────────────── -->
   <section class="entry-hero">
@@ -113,6 +128,9 @@ const availabilityLabel: Record<string, string> = {
       <a href="/utstillingen" class="btn-nav">← Utstillingen</a>
     </nav>
   </LegendBody>
+
+  </>
+)}
 
 </BaseLayout>
 

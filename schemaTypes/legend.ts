@@ -58,14 +58,8 @@ export const legend = defineType({
     }),
 
     // ── 2. PLASSERING — kun ved fysisk tilstedeværelse i museet ────
-    defineField({
-      name: 'qrNumber',
-      title: 'QR-kodenummer (internt)',
-      type: 'number',
-      description: 'Fylles kun ut hvis artikkelen har en fysisk QR-kode i museet.',
-      validation: R => R.min(1),
-    }),
-
+    // QR-koder administreres nå som egne QR-kode-dokumenter (schemaTypes/qrCode.ts),
+    // som peker hit via en referanse — ikke som et felt på selve artikkelen.
     defineField({
       name: 'physicalOrder',
       title: 'Rekkefølge på vegg (internt)',
@@ -243,6 +237,38 @@ export const legend = defineType({
       title: 'Kilder',
       type: 'array',
       of: [{ type: 'sourceItem' }],
+    }),
+
+    // ── 8. SE OGSÅ ────────────────────────────────────────────────
+    defineField({
+      name: 'relatedLinks',
+      title: 'Se også (relaterte lenker)',
+      type: 'array',
+      description: 'Valgfritt: lenker til annet innhold om samme tema andre steder på nettsiden — f.eks. en barnehistorie eller «Lær et triks»-side om samme person. Vises som en liten «Se også»-boks nederst på siden.',
+      of: [{
+        type: 'object',
+        name: 'relatedLink',
+        title: 'Lenke',
+        fields: [
+          defineField({
+            name: 'label',
+            title: 'Lenketekst',
+            type: 'string',
+            description: 'F.eks. «Barnehistorie: Harry Houdini»',
+            validation: R => R.required(),
+          }),
+          defineField({
+            name: 'path',
+            title: 'Sti på nettsiden',
+            type: 'string',
+            description: 'Intern sti, f.eks. /barn/historier/harry-houdini. Må starte med «/».',
+            validation: R => R.required().custom(v => (v?.startsWith('/') ? true : 'Må starte med "/", f.eks. /barn/historier/harry-houdini.')),
+          }),
+        ],
+        preview: {
+          select: { title: 'label', subtitle: 'path' },
+        },
+      }],
     }),
 
   ],

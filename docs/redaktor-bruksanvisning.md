@@ -12,6 +12,7 @@ Denne bruksanvisningen dekker de oppgavene en redaktør utfører til daglig.
 3. [Globale innstillinger](#3-globale-innstillinger)
 4. [Arrangementer](#4-arrangementer)
 5. [Utstillingen — Gullalderen og dybdeutstillinger](#5-utstillingen--gullalderen-og-dybdeutstillinger)
+   - [5b. Tema — samle flere opplevelser om samme sak](#5b-tema--samle-flere-opplevelser-om-samme-sak)
 6. [Hvem er hvem — biografiregisteret](#6-hvem-er-hvem--biografiregisteret)
 7. [Fordypninger](#7-fordypninger)
 8. [TV-opptredener](#8-tv-opptredener)
@@ -155,11 +156,90 @@ to feltene er fylt ut:
   ikke for en vanlig fordypningsartikkel med flere avsnitt (bruk **Utdypende
   tekst — seksjoner** til det, se punkt 7).
 
-Fyll ut **QR-kodenummer (internt)** kun hvis feltet har fått en fysisk
-QR-kode i museet. La det stå tomt ellers.
+Fysiske QR-koder administreres **ikke** som et felt på Fordypning-dokumentet
+— se egen dokumenttype **QR-kode** lenger ned i dette punktet.
+
+### QR-koder — egen tabell
+
+**Meny:** QR-kode
+
+QR-koder er en oversiktlig tabell i Studio: hver rad er ett QR-kodedokument
+med et **QR-kodenummer** og ett av to felt som sier hvor koden skal peke:
+
+- **Peker til (Fordypning)** — søk opp og velg artikkelen koden skal lenke
+  til (kun artikler med en gyldig URL-slug dukker opp som treff — du kan
+  ikke skrive inn en slug/URL for hånd og risikere en skrivefeil). Bruk
+  dette for QR-koder som peker til én bestemt Fordypning-artikkel — Sanity
+  regner selv ut om artikkelen hører hjemme under `/utstillingen` eller
+  `/tryllehistorie/fordypninger`.
+- **Fast side-URL** — bruk denne i stedet hvis QR-koden skal peke til en
+  fast side på nettsiden som ikke er en Fordypning-artikkel, f.eks.
+  `/tryllehistorie`. Skriv inn stien med innledende skråstrek.
+
+Fyll ut kun ett av de to feltene — Sanity varsler hvis begge eller ingen er
+fylt ut. Lista i Studio viser umiddelbart hvilken URL nummeret faktisk
+løser seg til, slik at du kan verifisere koblingen før du publiserer.
+
+1. Klikk **+ Nytt dokument → QR-kode**.
+2. Fyll inn **QR-kodenummer** — samme tall som er trykt/laminert på den
+   fysiske QR-koden i museet. Sanity varsler hvis tallet allerede er i bruk
+   av en annen QR-kode.
+3. Fyll inn **enten** Peker til (Fordypning) **eller** Fast side-URL.
+4. Klikk **Publiser**.
+
+**Viktig om selve QR-koden:** koden som trykkes/lamineres skal alltid peke
+til `https://tryllemuseet.no/qr/{nummer}` (f.eks. `https://tryllemuseet.no/qr/7`)
+— **aldri** en direkte lenke til artikkelen (f.eks.
+`/utstillingen/finn-jon`). Den korte `/qr/{nummer}`-URL-en slår opp riktig
+artikkel på byggetidspunkt via QR-kode-dokumentet, slik at et fysisk
+klistremerke fortsetter å virke selv om artikkelen den peker til får ny
+tittel/slug eller flyttes. Skal en QR-kode peke til en annen artikkel —
+endre **Peker til**-feltet på QR-kode-dokumentet, ikke nummeret.
 
 For alle andre felt (barnetekst, voksentekst, kilder osv.) — se den fulle
 feltoversikten under [7. Fordypninger](#7-fordypninger).
+
+---
+
+## 5b. Tema — samle flere opplevelser om samme sak
+
+**Meny:** Tema (under Utstillingen)
+
+> **Nytt 2026-08.** Innført fordi museets Houdini-innhold vokste til tre
+> frittstående biter — veggutstillingen (Fordypning), en interaktiv
+> tegneserie for barn og en quiz — uten noen måte å vise besøkende at de
+> hørte sammen. Et Tema løser akkurat det problemet, og bare det: det er
+> ikke en ny plass å skrive innhold, det er en samleside som peker videre
+> til innhold som allerede finnes andre steder.
+
+Bruk et Tema når noe i museet har **mer enn ett ben** — f.eks. en fysisk
+utstilling som også har en tegneserie og/eller en quiz. De aller fleste
+Fordypninger (enkle portrettartikler) trenger **ikke** noe Tema — de vises
+som vanlig direkte under `/tryllehistorie/fordypninger`, uendret.
+
+### Opprette et Tema
+
+1. Klikk **+ Nytt dokument → Tema**.
+2. Fyll inn **Tittel** (f.eks. «Houdini») og generer **URL-slug**.
+   - **Viktig:** ikke bruk samme slug som en Fordypning temaet peker til —
+     da lenker Fordypnings-kortet på temaets egen side tilbake til seg selv.
+     Se eksempelet i `scripts/create-houdini-tema.mjs`: Fordypningen heter
+     `houdini`, så Temaet heter i stedet `harry-houdini`.
+3. Skriv en kort **intro** (vises både på temakortet på `/utstillingen` og
+   øverst på temaets egen side) og last opp et **hovedbilde** hvis du har et.
+4. Under **Innhold i temaet**, klikk «Add item» og velg blant Fordypning,
+   Interaktiv historie, Quiz: Tema, Artefakt og Trylleforening — så mange du
+   vil, i den rekkefølgen du vil vise dem.
+5. Klikk **Publiser**.
+
+Temaet dukker da opp som et eget kort på `/utstillingen`, med en egen side
+på `/utstillingen/{slug}` som viser kort for alt du la til i steg 4 — hvert
+kort lenker videre til innholdets egen, uendrede side (Fordypningen sin
+vanlige side, tegneseriens side under `/barn/historier`, osv.).
+
+**Merk:** Å skjule et Tema («Vis på nettsted» av) skjuler kun samlesiden —
+det påvirker ikke synligheten til Fordypningen/tegneserien/quizen temaet
+peker til. De styres fortsatt av sine egne «Vis på nettsted»-brytere.
 
 ---
 
@@ -233,8 +313,10 @@ når disse skal fylles ut. La dem stå tomme for en vanlig fordypningsartikkel.
 
 | Felt | Merknad |
 |---|---|
-| QR-kodenummer (internt) | Kun ved fysisk QR-kode i museet |
 | Rekkefølge på vegg (internt) | Kun ved fast fysisk plassering, f.eks. i Gullalderen |
+
+QR-kode håndteres ikke som et felt her — se egen **QR-kode**-dokumenttype
+under [5. Utstillingen](#5-utstillingen--gullalderen-og-dybdeutstillinger).
 
 ### Innhold — velg det som passer artikkelen
 
@@ -616,9 +698,11 @@ Se [Hvem er hvem](#6-hvem-er-hvem--biografiregisteret) → «Legge til en ny per
 5. Legg gjerne på noen **Tagger** hvis artikkelen hører til et tema
    (f.eks. «kvinner-i-norsk-trylling») — brukes til filtrering på
    `/tryllehistorie/fordypninger`.
-6. La **QR-kodenummer**, **Rekkefølge på vegg** og **Stasjoner** stå tomme
-   med mindre artikkelen faktisk skal vises under `/utstillingen` — se
-   [5. Utstillingen](#5-utstillingen--gullalderen-og-dybdeutstillinger).
+6. La **Rekkefølge på vegg** og **Stasjoner** stå tomme med mindre artikkelen
+   faktisk skal vises under `/utstillingen` — se
+   [5. Utstillingen](#5-utstillingen--gullalderen-og-dybdeutstillinger). Skal
+   artikkelen ha en fysisk QR-kode, opprett et eget **QR-kode**-dokument
+   som peker til den (samme sted).
 7. Klikk **Publiser**.
 
 ### Registrere en TV-opptreden

@@ -1,7 +1,8 @@
 ---
 // src/pages/tryllehistorie/magiens-hvem-er-hvem/[slug].astro
 import BaseLayout from '../../../layouts/BaseLayout.astro'
-import { getBiographyBySlug, getBiographyPaths, portableTextToHtml, urlFor, formatBioAge } from '../../../lib/sanity'
+import NarrateButton from '../../../components/NarrateButton.astro'
+import { getBiographyBySlug, getBiographyPaths, portableTextToHtml, portableTextToPlainText, urlFor, formatBioAge } from '../../../lib/sanity'
 
 export async function getStaticPaths() {
   return getBiographyPaths()
@@ -13,6 +14,7 @@ const bio = await getBiographyBySlug(slug!)
 if (!bio) return Astro.redirect('/tryllehistorie/magiens-hvem-er-hvem', 301)
 
 const fullBioHtml = portableTextToHtml(bio.fullBio)
+const bioPlain = [bio.shortBio, portableTextToPlainText(bio.fullBio)].filter(Boolean).join(' ')
 
 // Aldersberegning
 const ageStr = formatBioAge(bio.birthDate, bio.deathDate, bio.years)
@@ -83,7 +85,10 @@ const videoTypeLabel: Record<string, string> = {
     <!-- FULL BIOGRAFI ───────────────────────────────────────────── -->
     {fullBioHtml && (
       <section class="full-bio">
-        <h2 class="section-heading">Biografi</h2>
+        <div class="section-head">
+          <h2 class="section-heading">Biografi</h2>
+          <NarrateButton text={bioPlain} label={`Les biografien om ${bio.name} høyt`} />
+        </div>
         <div class="prose" set:html={fullBioHtml} />
       </section>
     )}
@@ -117,6 +122,24 @@ const videoTypeLabel: Record<string, string> = {
                 <svg class="ext-icon" viewBox="0 0 12 12" fill="none" aria-label="Åpnes i ny fane">
                   <path d="M2 10L10 2M10 2H5M10 2V7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
                 </svg>
+              </a>
+            </li>
+          ))}
+        </ul>
+      </section>
+    )}
+
+    <!-- ARKIVOPPTAK ─────────────────────────────────────────────── -->
+    {bio.archiveClips && bio.archiveClips.length > 0 && (
+      <section class="links-section">
+        <h2 class="section-heading">Arkivopptak</h2>
+        <ul class="links-list">
+          {bio.archiveClips.map((clip: any) => (
+            <li>
+              <a href={`/tryllehistorie/historiske-opptak/${clip.slug}`}>
+                <span class="link-icon" aria-hidden="true">📼</span>
+                {clip.title}
+                {clip.year && <span class="video-year">({clip.year})</span>}
               </a>
             </li>
           ))}
@@ -296,6 +319,9 @@ const videoTypeLabel: Record<string, string> = {
     border-bottom: 1px solid var(--cream-dark);
     letter-spacing: 0.04em;
   }
+
+  .section-head { display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; }
+  .section-head .section-heading { flex: 1; }
 
   .prose { font-family: var(--font-body); font-size: 1rem; line-height: 1.75; color: var(--ink); }
   .prose :global(p) { margin-bottom: 1rem; }

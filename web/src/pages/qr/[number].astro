@@ -1,0 +1,22 @@
+---
+// src/pages/qr/[number].astro
+//
+// Stabil URL trykt på fysiske QR-koder i museet: /qr/{qrNumber}. Slår opp
+// gjeldende målside for nummeret på byggetidspunkt, slik at et klistremerke
+// ikke trenger byttes ut selv om artikkelen får ny slug eller flyttes.
+// Se getQrRedirects() i lib/sanity.ts og schemaTypes/qrCode.ts.
+import { getQrRedirects } from '../../lib/sanity'
+
+export async function getStaticPaths() {
+  const entries = await getQrRedirects()
+  return entries
+    .filter(e => e.path)
+    .map(e => ({
+      params: { number: String(e.qrNumber) },
+      props: { path: e.path },
+    }))
+}
+
+const { path } = Astro.props
+return Astro.redirect(path, 301)
+---

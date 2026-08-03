@@ -1,0 +1,55 @@
+---
+// src/components/NarrateButton.astro
+// Reusable "read aloud" button (Web Speech API). Renders markup only —
+// the click handling (speechSynthesis, nb-NO voice pick, speaking-state
+// toggle) lives once in BaseLayout.astro's global script via event
+// delegation on [data-narrate], so dropping this component in anywhere
+// wires up narration for free, on any page that uses BaseLayout.
+interface Props {
+  text: string | null | undefined
+  label?: string
+  class?: string
+}
+
+const { text, label = 'Les teksten høyt', class: className } = Astro.props
+const trimmed = text?.trim()
+---
+
+{trimmed && (
+  <button
+    type="button"
+    class:list={['narrate-btn', className]}
+    data-narrate={trimmed}
+    aria-label={label}
+  >
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+      <path class="narrate-wave-1" d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+      <path class="narrate-wave-2" d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
+      <line class="narrate-off" x1="22" y1="9" x2="16" y2="15"></line>
+    </svg>
+  </button>
+)}
+
+<style>
+  .narrate-btn {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 50%;
+    border: 1px solid var(--cream-dark);
+    background: white;
+    color: #888;
+    cursor: pointer;
+    transition: border-color 150ms, color 150ms, background 150ms;
+  }
+  .narrate-btn:hover { border-color: var(--gold); color: var(--burgundy); }
+  .narrate-btn.speaking { border-color: var(--burgundy); background: var(--burgundy); color: white; }
+  .narrate-btn .narrate-off { display: block; }
+  .narrate-btn .narrate-wave-1, .narrate-btn .narrate-wave-2 { display: none; }
+  .narrate-btn.speaking .narrate-off { display: none; }
+  .narrate-btn.speaking .narrate-wave-1, .narrate-btn.speaking .narrate-wave-2 { display: block; }
+</style>

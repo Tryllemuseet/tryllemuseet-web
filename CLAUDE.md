@@ -30,6 +30,7 @@ The schema defines 35 registered content types in `/schemaTypes` (see `schemaTyp
 - `siteConfig.ts` — Global settings (email, address, contact info)
 
 **Document Types** (queryable collections):
+- `tema.ts` (Studio label: "Tema", added 2026-08) — Optional collection hub sitting *above* the other content types: a Tema references any mix of `legend`, `comicStory`, `quizTheme`, `artifact` and `magicOrganization` docs that belong to the same museum experience (e.g. Houdini: the station-based `legend` exhibition + the `comicStory` for kids + the `quizTheme`). Renders as a hub page at `/utstillingen/{tema-slug}` (see `TemaHub.astro`) that `web/src/pages/utstillingen/[slug].astro` serves in place of a plain `legend` entry when the slug matches a Tema. Most Fordypninger (simple portrait articles with no physical placement, comic or quiz) don't need a Tema at all — it's opt-in for content that genuinely has more than one "leg". **Important:** give a Tema a slug distinct from any `legend` doc it wraps — if they share a slug, the Tema hub's own "Fordypning" card links back to itself (see the comment in `scripts/create-houdini-tema.mjs`, which deliberately uses `harry-houdini` for the Tema since the legend already owns `houdini`).
 - `magician.ts`, `exhibitionShow.ts`, `exhibitionStation.ts` — **Removed (2026-07)**, superseded by `legend.ts`. Content was migrated to `legend` docs via `scripts/migrate-exhibits-to-legend.mjs`, then the old documents and schema types were deleted once nothing referenced them.
 - `biography.ts` — "Hvem er hvem" (Who's Who) reference: full name, aliases, birth/death (`partialDate` — supports year-only or full precision, plus a `circa` flag), nationality, magician references. `sources` is an array of direct references to `source` docs (migrated from free text; see `scripts/migrate-biography-sources.mjs`).
 - `legend.ts` (Studio label: "Fordypning") — Unified deep-dive article type: dual-audience wall-panel text (`childText`/`wallText`), free-form article body (`content`, or `detailIntro`/`sections`), an optional multi-part `stations` array, and optional physical-placement metadata (`qrNumber`/`physicalOrder`). Covers everything from short biographical portraits to the Gullalderen wall panels and the Houdini exhibition. A doc with `physicalOrder` and/or `stations` set routes to `/utstillingen`; otherwise to `/tryllehistorie/fordypninger` (see `NOT_UTSTILLING` in `sanity.ts`). Both routes render through `web/src/components/LegendBody.astro`.
@@ -69,7 +70,7 @@ The schema defines 35 registered content types in `/schemaTypes` (see `schemaTyp
 - `det-trettende-kabinett.astro` — Story game "Det trettende kabinett" (Act I); same `isActive`/coming-soon/nav pattern via `gameConfig` (see `docs/det-trettende-kabinett-concept.md`)
 - `om-oss/i-media/` — Museum press coverage
 - `aktiviteter/`, `ressurser/` — Section landing pages; the library lives at `ressurser/bibliotek.astro` (`/bibliotek` redirects there)
-- `utstillingen/` — Exhibition: `index`, `[slug]` (`legend` docs with `physicalOrder`/`stations` — Gullalderen panels, Houdini), `artefakter` (+ `[slug]`), `trylleforeningene/` (+ `[slug]`), `tryllebutikken`
+- `utstillingen/` — Exhibition: `index` (shows `tema` cards, then any not-yet-migrated `legend` station exhibits, then the curated "coming" sections), `[slug]` (checks `tema` first via `TemaHub.astro`, then falls back to a `legend` doc with `physicalOrder`/`stations` — Gullalderen panels, Houdini), `artefakter` (+ `[slug]`), `trylleforeningene/` (+ `[slug]`), `tryllebutikken`
 - `tryllehistorie/` — Magic history archive:
   - `magiens-hvem-er-hvem` (+ `[slug]`) — biography directory
   - `fordypninger/` (+ `[slug]`) — deep-dive articles, norske og internasjonale (incl. `henrik-ibsen` as a slug); renamed 2026-07 from `norske-legender`, old URL redirects
@@ -183,6 +184,22 @@ const html = portableTextToHtml(entry.wallText)  // <p>, <strong>, links, inline
 
 `portableTextToHtml()` centralizes link/internalLink mark handling and inline image rendering, so every page benefits when it's improved once.
 
+### Read-Aloud (Narration)
+
+Prose-heavy content — anything a visitor might want read aloud instead of just reading (legend entries, biographies, artifacts, magic organizations, TV appearance descriptions, articles, trick instructions) — should get a `<NarrateButton>` next to its main heading, following the pattern in `LegendBody.astro`:
+
+```astro
+import NarrateButton from '../components/NarrateButton.astro'
+import { portableTextToPlainText } from '../lib/sanity'
+
+<div class="section-head">
+  <h2 class="section-heading">Om {entry.title}</h2>
+  <NarrateButton text={portableTextToPlainText(entry.wallText)} label={`Les om ${entry.title} høyt`} />
+</div>
+```
+
+`NarrateButton.astro` renders markup only (`data-narrate="<plain text>"`); the actual speech-synthesis handling (Web Speech API, `nb-NO` voice, play/stop toggle) lives once in `BaseLayout.astro`'s global script via event delegation on `[data-narrate]` — so any page gets working narration for free just by dropping the button in, no per-page script needed. Always pass plain text via `portableTextToPlainText()`, never raw Portable Text or HTML. When adding a new prose-heavy page or content type, add the button then — don't wait for it to be requested separately.
+
 ### Image Optimization
 
 ```typescript
@@ -195,7 +212,8 @@ urlFor(image).width(800).format('webp').url()
 ALL GROQ queries live in `web/src/lib/sanity.ts` — pages must import query functions from there, never call `sanityClient.fetch()` inline. (Exception: `web/public/skjerm.html`, which queries Sanity client-side by design.)
 
 Key GROQ functions in `sanity.ts`:
-- `getGullalderenPanels()` / `getUtstillingDeepDives()` / `getUtstillingEntryBySlug(slug)` / `getUtstillingPaths()` — `legend` docs for `/utstillingen` (physical wall panels and/or `stations`)
+- `getGullalderenPanels()` / `getUtstillingDeepDives()` / `getUtstillingEntryBySlug(slug)` / `getUtstillingPaths()` — `legend` docs for `/utstillingen` (physical wall panels and/or `stations`). `getUtstillingDeepDives()` excludes any `legend` already referenced by a `tema` doc, so a wrapped exhibition doesn't also show as its own raw card.
+- `getAllTemaer()` / `getTemaBySlug(slug)` / `getTemaPaths()` — `tema` hub docs for `/utstillingen/{slug}`; each item in `Tema.content` carries a pre-computed `cardHref`/`cardImage`/`cardExcerpt` so the hub page can render `legend`/`comicStory`/`quizTheme`/`artifact`/`magicOrganization` cards uniformly without branching per type.
 - `getAllLegends()` / `getLegendBySlug(slug)` / `getLegendPaths()` — `legend` docs for `/tryllehistorie/fordypninger` (everything else)
 - `getBooksByUtstillingSlug(slug)` — Books linked to a Gullalderen/utstilling entry (looks up the legacy `magician` doc by slug, since `book.ts` still references `magician`, not `legend`)
 - `getAllMagicians()` / `getMagicianBySlug(slug)` — **Legacy**, still used by the homepage carousel (`index.astro`) and `hp.utstillingsFokus.felt`; do not use for new `/utstillingen` or `/tryllehistorie` work
@@ -251,6 +269,7 @@ All content document types (`magician`, `biography`, `legend`, `event`, `tvAppea
 |------|-------|
 | Schema definitions | `/schemaTypes/*.ts` |
 | Sanity config | `/sanity.config.ts`, `/sanity.cli.ts` |
+| Studio navigation (desk structure) | `/structure.ts` — groups the flat document-type list into folders (Utstillingen, Aktiviteter, Arkivet, …) |
 | Queries and types | `/web/src/lib/sanity.ts` |
 | Pages | `/web/src/pages/*.astro` |
 | Dynamic routes | `/web/src/pages/utstillingen/` and similar |

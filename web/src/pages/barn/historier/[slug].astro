@@ -1,6 +1,7 @@
 ---
 // src/pages/barn/historier/[slug].astro
 import BaseLayout from '../../../layouts/BaseLayout.astro'
+import NarrateButton from '../../../components/NarrateButton.astro'
 import { getComicStoryBySlug, getComicStoryPaths, urlFor, portableTextToHtml, portableTextToPlainText } from '../../../lib/sanity'
 import type { ComicImage, ComicScene } from '../../../lib/sanity'
 
@@ -97,19 +98,7 @@ const metaDescription =
             <div class="scene-year">{scene.year ?? '—'}</div>
             <h2 class="scene-chapter">{scene.chapter}</h2>
           </div>
-          <button
-            type="button"
-            class="narrate-btn"
-            data-narrate={narrationText(scene)}
-            aria-label="Les scenen høyt"
-          >
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-              <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
-              <path class="narrate-wave-1" d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
-              <path class="narrate-wave-2" d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
-              <line class="narrate-off" x1="22" y1="9" x2="16" y2="15"></line>
-            </svg>
-          </button>
+          <NarrateButton text={narrationText(scene)} label="Les scenen høyt" />
         </div>
 
         <figure class="scene-figure gallery-fig">
@@ -176,6 +165,17 @@ const metaDescription =
     <footer class="comic-footer">
       {story.creditsNote && <div class="prose" set:html={portableTextToHtml(story.creditsNote)} />}
     </footer>
+
+    {story.relatedLinks && story.relatedLinks.length > 0 && (
+      <aside class="related-links" aria-label="Se også">
+        <p class="related-links-label">Se også</p>
+        <ul>
+          {story.relatedLinks.map(l => (
+            <li><a href={l.path}>{l.label} →</a></li>
+          ))}
+        </ul>
+      </aside>
+    )}
 
     <div class="page-nav">
       <a href="/barn/historier">← Alle historier</a>
@@ -256,50 +256,6 @@ const metaDescription =
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape' && modal && !modal.hidden) closeHotspot()
   })
-
-  // ── Opplesning (nettleserens Web Speech API) ────────────────────
-  let activeBtn: HTMLButtonElement | null = null
-
-  function stopNarration() {
-    window.speechSynthesis?.cancel()
-    activeBtn?.classList.remove('speaking')
-    activeBtn = null
-  }
-
-  document.querySelectorAll<HTMLButtonElement>('[data-narrate]').forEach(btn => {
-    btn.addEventListener('click', () => {
-      if (typeof window === 'undefined' || !window.speechSynthesis) return
-      if (activeBtn === btn) {
-        stopNarration()
-        return
-      }
-      window.speechSynthesis.cancel()
-      activeBtn?.classList.remove('speaking')
-
-      const utter = new SpeechSynthesisUtterance(btn.dataset.narrate ?? '')
-      utter.lang = 'nb-NO'
-      utter.rate = 0.95
-      utter.pitch = 1.0
-      const voices = window.speechSynthesis.getVoices()
-      const nb =
-        voices.find(v => v.lang?.toLowerCase().startsWith('nb')) ??
-        voices.find(v => v.lang?.toLowerCase().startsWith('no'))
-      if (nb) utter.voice = nb
-
-      const clear = () => {
-        btn.classList.remove('speaking')
-        if (activeBtn === btn) activeBtn = null
-      }
-      utter.onend = clear
-      utter.onerror = clear
-
-      btn.classList.add('speaking')
-      activeBtn = btn
-      window.speechSynthesis.speak(utter)
-    })
-  })
-
-  window.addEventListener('beforeunload', () => window.speechSynthesis?.cancel())
 </script>
 
 <style>
@@ -465,27 +421,6 @@ const metaDescription =
   }
   .scene-chapter { font-family: var(--font-display); font-size: clamp(1.4rem, 4vw, 1.9rem); color: var(--burgundy); margin-top: 0.2rem; }
 
-  .narrate-btn {
-    flex-shrink: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 2.5rem;
-    height: 2.5rem;
-    border-radius: 50%;
-    border: 1px solid var(--cream-dark);
-    background: white;
-    color: #888;
-    cursor: pointer;
-    transition: border-color 150ms, color 150ms, background 150ms;
-  }
-  .narrate-btn:hover { border-color: var(--gold); color: var(--burgundy); }
-  .narrate-btn.speaking { border-color: var(--burgundy); background: var(--burgundy); color: white; }
-  .narrate-btn .narrate-off { display: block; }
-  .narrate-btn .narrate-wave-1, .narrate-btn .narrate-wave-2 { display: none; }
-  .narrate-btn.speaking .narrate-off { display: none; }
-  .narrate-btn.speaking .narrate-wave-1, .narrate-btn.speaking .narrate-wave-2 { display: block; }
-
   /* ── Hovedbilde ── */
   .scene-figure {
     overflow: hidden;
@@ -619,6 +554,27 @@ const metaDescription =
     color: var(--gold-dark, var(--gold));
   }
   .fact-box p { margin-top: 0.5rem; font-family: var(--font-body); font-size: 0.98rem; line-height: 1.65; color: #444; }
+
+  /* ── Se også ── */
+  .related-links {
+    margin-top: 1.5rem;
+    background: rgba(212,168,67,0.08);
+    border: 1px solid rgba(212,168,67,0.35);
+    border-radius: 8px;
+    padding: 1.1rem 1.35rem;
+  }
+  .related-links-label {
+    font-family: var(--font-ui);
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--gold-dark, var(--gold));
+    margin-bottom: 0.6rem;
+  }
+  .related-links ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0.4rem; }
+  .related-links a { font-family: var(--font-ui); font-size: 0.95rem; font-weight: 600; color: var(--burgundy); text-decoration: underline; text-underline-offset: 2px; }
+  .related-links a:hover { color: var(--gold-dark, var(--gold)); }
 
   /* ── Footer / navigasjon ── */
   .comic-footer { padding-block: 2.5rem 1rem; text-align: center; font-family: var(--font-ui); font-size: 0.85rem; color: #888; }

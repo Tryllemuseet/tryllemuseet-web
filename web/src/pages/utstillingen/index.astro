@@ -1,167 +1,77 @@
 ---
 // src/pages/utstillingen/index.astro
 import BaseLayout from '../../layouts/BaseLayout.astro'
-import { getGullalderenPanels, getUtstillingDeepDives, getUtstillingPage, urlFor } from '../../lib/sanity'
+import PageHero from '../../components/PageHero.astro'
+import ContentCard from '../../components/ContentCard.astro'
+import { getAllTemaer, getUtstillingDeepDives, getUtstillingPage, urlFor } from '../../lib/sanity'
 
-const [magicians, exhibitions, page] = await Promise.all([
-  getGullalderenPanels(),
+const [temaer, exhibitions, page] = await Promise.all([
+  getAllTemaer(),
   getUtstillingDeepDives(),
   getUtstillingPage(),
 ])
-
-// Featured cards follow the editor-controlled order in fremhevedeSlugs
-const featured = page.fremhevedeSlugs
-  .map(slug => magicians.find(m => m.slug === slug))
-  .filter((m): m is NonNullable<typeof m> => Boolean(m))
-const remaining = magicians.filter(m => !page.fremhevedeSlugs.includes(m.slug))
-
-function posterUrl(image: any, width: number) {
-  if (!image?.asset) return null
-  return urlFor(image).width(width).height(Math.round(width * 4 / 3)).format('webp').fit('crop').url()
-}
 ---
 
 <BaseLayout
   title="Utstillingen — Tryllemuseet"
-  description="Utforsk tryllekunstens gullalderhistorie — fra Robert-Houdin som skapte scenemagien til Houdini som ble et verdensomspennende fenomen."
+  description="Houdini er museets aktuelle utstilling — pluss et tilbakeblikk på tryllekunstens gullalder, fra Robert-Houdin til Kellar og Thurston."
 >
 
   <!-- ── HERO ──────────────────────────────────────────────────────── -->
-  <section class="hero container">
-    <p class="section-label">{page.hero.eraLabel}</p>
-    <h1 class="display-title hero-title">{page.hero.heading}</h1>
-    <p class="hero-intro">{page.hero.ingress}</p>
-    <hr class="gold-rule" />
-  </section>
+  <PageHero label={page.hero.eraLabel} title={page.hero.heading} intro={page.hero.ingress} theme="light" compact />
+  <div class="container"><hr class="gold-rule" /></div>
+
+  <!-- ── TEMAER ────────────────────────────────────────────────────── -->
+  {temaer.length > 0 && (
+    <section class="container tema-section">
+      <p class="section-label">{temaer.length > 1 ? 'Temaer' : 'Tema'}</p>
+      <div class="card-grid">
+        {temaer.map((t) => {
+          const imgUrl = t.heroImage?.asset
+            ? urlFor(t.heroImage).width(700).height(500).format('webp').fit('crop').url()
+            : undefined
+          return (
+            <ContentCard
+              imageUrl={imgUrl}
+              imageAlt={t.heroImage?.alt ?? t.title}
+              icon={imgUrl ? undefined : (t.icon ?? '✨')}
+              title={t.title}
+              description={t.intro}
+              href={`/utstillingen/${t.slug}`}
+              ctaText={`${t.content.length} ${t.content.length === 1 ? 'opplevelse' : 'opplevelser'} →`}
+            />
+          )
+        })}
+      </div>
+    </section>
+  )}
 
   <!-- ── AKTUELL UTSTILLING ────────────────────────────────────────── -->
   {exhibitions.length > 0 && (
     <section class="container aktuell-section">
       <p class="section-label">{exhibitions.length > 1 ? 'Aktuelle utstillinger' : 'Aktuell utstilling'}</p>
-      {exhibitions.map((ex) => {
-        const imgUrl = ex.mainImage?.asset
-          ? urlFor(ex.mainImage).width(900).height(600).format('webp').fit('crop').url()
-          : null
-        return (
-          <a href={`/utstillingen/${ex.slug}`} class="aktuell-card">
-            {imgUrl ? (
-              <div class="aktuell-img">
-                <img
-                  src={imgUrl}
-                  alt={ex.mainImage?.alt ?? ex.title}
-                  width="900"
-                  height="600"
-                  loading="eager"
-                />
-              </div>
-            ) : (
-              <div class="aktuell-img aktuell-img--placeholder">
-                <span>🎟️</span>
-              </div>
-            )}
-            <div class="aktuell-body">
-              {ex.stationCount > 0 && (
-                <p class="aktuell-meta">{ex.stationCount} {ex.stationCount === 1 ? 'stasjon' : 'stasjoner'}</p>
-              )}
-              <h2 class="display-title aktuell-title">{ex.title}</h2>
-              {ex.tagline && <p class="aktuell-subtitle">{ex.tagline}</p>}
-              {ex.detailIntro && <p class="aktuell-intro">{ex.detailIntro}</p>}
-              <span class="aktuell-cta">Se utstillingen →</span>
-            </div>
-          </a>
-        )
-      })}
+      <div class="aktuell-stack">
+        {exhibitions.map((ex) => {
+          const imgUrl = ex.mainImage?.asset
+            ? urlFor(ex.mainImage).width(900).height(600).format('webp').fit('crop').url()
+            : undefined
+          return (
+            <ContentCard
+              variant="dark"
+              imageUrl={imgUrl}
+              imageAlt={ex.mainImage?.alt ?? ex.title}
+              icon={imgUrl ? undefined : '🎟️'}
+              label={ex.stationCount > 0 ? `${ex.stationCount} ${ex.stationCount === 1 ? 'stasjon' : 'stasjoner'}` : undefined}
+              title={ex.title}
+              description={[ex.tagline, ex.detailIntro].filter(Boolean).join(' — ') || undefined}
+              href={`/utstillingen/${ex.slug}`}
+              ctaText="Se utstillingen →"
+            />
+          )
+        })}
+      </div>
     </section>
   )}
-
-  <!-- ── TRYLLINGENS GULLALDER ─────────────────────────────────────── -->
-  <section class="container gullalder-section">
-    <div class="section-header">
-      <div>
-        <p class="section-label">{page.gullalderSeksjon.label}</p>
-        <h2 class="display-title section-title">{page.gullalderSeksjon.heading}</h2>
-        <p class="section-intro">{page.gullalderSeksjon.ingress}</p>
-      </div>
-    </div>
-
-    <!-- Featured three -->
-    <div class="featured-grid">
-      {featured.map((m) => {
-        const imgUrl = posterUrl(m.mainImage, 600)
-        return (
-          <a href={`/utstillingen/${m.slug}`} class="featured-card">
-            {imgUrl ? (
-              <div class="featured-img">
-                <img
-                  src={imgUrl}
-                  alt={m.mainImage?.alt ?? m.title}
-                  width="600"
-                  height="800"
-                  loading="eager"
-                />
-                <div class="featured-img-overlay" />
-              </div>
-            ) : (
-              <div class="featured-img featured-img--placeholder">
-                <span>🎩</span>
-              </div>
-            )}
-            <div class="featured-body">
-              {m.years && <p class="card-years">{m.years}</p>}
-              <h3 class="featured-name">{m.title}</h3>
-              <p class="featured-tagline">{m.tagline}</p>
-              <p class="featured-intro">{m.detailIntro}</p>
-              <span class="featured-cta">Les mer →</span>
-            </div>
-          </a>
-        )
-      })}
-    </div>
-
-    <!-- Remaining magicians — hidden by default -->
-    {remaining.length > 0 && (
-      <>
-        <div class="remaining-grid" id="remaining-grid" aria-hidden="true">
-          {remaining.map((m) => {
-            const imgUrl = posterUrl(m.mainImage, 400)
-            return (
-              <a href={`/utstillingen/${m.slug}`} class="magician-card">
-                {imgUrl ? (
-                  <div class="card-image">
-                    <img
-                      src={imgUrl}
-                      alt={m.mainImage?.alt ?? m.title}
-                      width="400"
-                      height="533"
-                      loading="lazy"
-                    />
-                  </div>
-                ) : (
-                  <div class="card-image card-image--placeholder">
-                    <span>🎩</span>
-                  </div>
-                )}
-                <div class="card-body">
-                  <h3 class="card-title">{m.title}</h3>
-                  {m.years && <p class="card-years">{m.years}</p>}
-                  <p class="card-tagline">{m.tagline}</p>
-                  <p class="card-intro">{m.detailIntro}</p>
-                  <span class="card-cta">Les mer →</span>
-                </div>
-              </a>
-            )
-          })}
-        </div>
-
-        <div class="see-all-wrap">
-          <button class="see-all-btn" id="see-all-btn" aria-expanded="false" aria-controls="remaining-grid">
-            <span class="see-all-label">Se utstillingen</span>
-            <span class="see-all-icon">↓</span>
-          </button>
-        </div>
-      </>
-    )}
-  </section>
 
   <!-- ── DIVIDER ────────────────────────────────────────────────────── -->
   <div class="container"><hr class="gold-rule section-rule" /></div>
@@ -171,21 +81,18 @@ function posterUrl(image: any, width: number) {
     <p class="section-label">{page.kommerSnartSeksjon.label}</p>
     <h2 class="display-title section-title">{page.kommerSnartSeksjon.heading}</h2>
 
-    <div class="sections-grid">
+    <div class="card-grid">
       {page.seksjoner.map((s) => (
-        <div class:list={['section-card', { 'section-card--soon': !s.ready }]}>
-          <div class="section-card-icon">{s.icon}</div>
-          <div class="section-card-body">
-            <p class="section-card-label">{s.label}</p>
-            <h3 class="section-card-title">{s.title}</h3>
-            <p class="section-card-desc">{s.description}</p>
-          </div>
-          {s.ready ? (
-            <a href={`/utstillingen/${s.slug}`} class="section-card-link">Utforsk →</a>
-          ) : (
-            <span class="section-card-soon">Kommer snart</span>
-          )}
-        </div>
+        <ContentCard
+          variant="compact"
+          icon={s.icon}
+          label={s.label}
+          title={s.title}
+          description={s.description}
+          href={s.ready ? `/utstillingen/${s.slug}` : undefined}
+          ctaText={s.ready ? 'Utforsk →' : undefined}
+          status={s.ready ? undefined : 'Kommer snart'}
+        />
       ))}
     </div>
   </section>
@@ -194,194 +101,34 @@ function posterUrl(image: any, width: number) {
 
 </BaseLayout>
 
-<script>
-  const btn  = document.getElementById('see-all-btn')
-  const grid = document.getElementById('remaining-grid')
-
-  btn?.addEventListener('click', () => {
-    const expanded = btn.getAttribute('aria-expanded') === 'true'
-
-    if (!expanded) {
-      grid?.classList.add('open')
-      grid?.removeAttribute('aria-hidden')
-      btn.setAttribute('aria-expanded', 'true')
-      btn.querySelector('.see-all-label')!.textContent = 'Vis færre'
-      btn.querySelector('.see-all-icon')!.textContent  = '↑'
-    } else {
-      grid?.classList.remove('open')
-      grid?.setAttribute('aria-hidden', 'true')
-      btn.setAttribute('aria-expanded', 'false')
-      btn.querySelector('.see-all-label')!.textContent = 'Se utstillingen'
-      btn.querySelector('.see-all-icon')!.textContent  = '↓'
-      btn.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
-    }
-  })
-</script>
-
 <style>
-  /* ── HERO ── */
-  .hero          { padding: 4rem 0 2rem; }
-  .hero-title    { font-size: clamp(2.2rem, 5vw, 3.5rem); margin: 0.4rem 0 1.25rem; }
-  .hero-intro    { font-family: var(--font-ui); font-size: 1.05rem; color: var(--ink-mid); max-width: 640px; line-height: 1.7; }
+  /* ── CARD GRIDS (Temaer + Kommende seksjoner) ── */
+  .tema-section { padding-bottom: 2.5rem; }
+  .card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1.5rem;
+    margin-top: 1rem;
+  }
 
   /* ── AKTUELL UTSTILLING ── */
   .aktuell-section { padding-bottom: 2.5rem; }
   .aktuell-section .section-label { margin-bottom: 1rem; }
-  .aktuell-card {
-    display: grid;
-    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
-    background: var(--burgundy-dk);
-    border: 1px solid var(--gold-dark);
-    border-radius: 8px; overflow: hidden;
-    text-decoration: none; color: var(--cream);
-    transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease;
-  }
-  .aktuell-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-lg); border-color: var(--gold); }
-  .aktuell-card + .aktuell-card { margin-top: 1.5rem; }
-
-  .aktuell-img { position: relative; min-height: 260px; overflow: hidden; background: rgba(255,255,255,0.05); }
-  .aktuell-img img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transition: transform 320ms ease; }
-  .aktuell-card:hover .aktuell-img img { transform: scale(1.04); }
-  .aktuell-img--placeholder { display: flex; align-items: center; justify-content: center; font-size: 5rem; }
-
-  .aktuell-body     { padding: 2rem 2.25rem; display: flex; flex-direction: column; }
-  .aktuell-meta     { font-family: var(--font-ui); font-size: 0.75rem; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: var(--gold-light); margin-bottom: 0.6rem; }
-  .aktuell-title    { font-size: clamp(1.5rem, 3vw, 2.1rem); color: var(--cream); margin-bottom: 0.4rem; }
-  .aktuell-subtitle { font-family: var(--font-body); font-size: 1rem; font-style: italic; color: var(--gold-light); margin-bottom: 0.9rem; }
-  .aktuell-intro    { font-family: var(--font-ui); font-size: 0.925rem; line-height: 1.65; color: rgba(244,238,225,0.85); flex: 1; }
-  .aktuell-cta      { font-family: var(--font-ui); font-size: 0.9rem; font-weight: 600; color: var(--gold-light); margin-top: 1.25rem; transition: color 180ms ease; }
-  .aktuell-card:hover .aktuell-cta { color: var(--gold); }
-
-  @media (max-width: 720px) {
-    .aktuell-card { grid-template-columns: 1fr; }
-    .aktuell-img  { min-height: 200px; }
-    .aktuell-body { padding: 1.5rem; }
-  }
-
-  /* ── GULLALDER ── */
-  .gullalder-section { padding-bottom: 1rem; }
-  .section-header    { margin-bottom: 2rem; }
-  .section-title     { font-size: clamp(1.5rem, 3vw, 2.2rem); margin: 0.3rem 0 0.75rem; }
-  .section-intro     { font-family: var(--font-ui); font-size: 0.975rem; color: var(--ink-mid); max-width: 560px; line-height: 1.65; }
-
-  /* Featured three */
-  .featured-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 1.5rem;
-    margin-bottom: 1.5rem;
-  }
-  .featured-card {
-    display: flex; flex-direction: column;
-    background: white;
-    border: 1px solid var(--cream-dark);
-    border-radius: 6px; overflow: hidden;
-    text-decoration: none; color: var(--ink);
-    transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease;
-  }
-  .featured-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-lg); border-color: var(--gold-light); }
-
-  .featured-img {
-    aspect-ratio: 3/4; overflow: hidden;
-    background: var(--cream-dark); max-height: 320px;
-    position: relative;
-  }
-  .featured-img img { width: 100%; height: 100%; object-fit: cover; transition: transform 320ms ease; }
-  .featured-card:hover .featured-img img { transform: scale(1.04); }
-  .featured-img-overlay {
-    position: absolute; inset: 0;
-    background: linear-gradient(to top, rgba(26,18,8,0.18) 0%, transparent 50%);
-    pointer-events: none;
-  }
-  .featured-img--placeholder { display: flex; align-items: center; justify-content: center; font-size: 5rem; }
-
-  .featured-body    { padding: 1.25rem 1.5rem 1.5rem; display: flex; flex-direction: column; flex: 1; }
-  .featured-name    { font-family: var(--font-display); font-size: 1.3rem; color: var(--burgundy); margin-bottom: 0.2rem; letter-spacing: 0.03em; }
-  .featured-tagline { font-family: var(--font-body); font-size: 0.9rem; font-style: italic; color: var(--gold-dark); margin-bottom: 0.75rem; }
-  .featured-intro   { font-family: var(--font-ui); font-size: 0.875rem; color: var(--ink-mid); line-height: 1.55; flex: 1; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
-  .featured-cta     { font-family: var(--font-ui); font-size: 0.875rem; font-weight: 600; color: var(--burgundy); margin-top: 1rem; transition: color 180ms ease; }
-  .featured-card:hover .featured-cta { color: var(--gold-dark); }
-
-  /* Remaining grid */
-  .remaining-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 1.25rem;
-    max-height: 0; overflow: hidden; opacity: 0;
-    transition: max-height 480ms ease, opacity 360ms ease;
-    margin-bottom: 0;
-  }
-  .remaining-grid.open { max-height: 2000px; opacity: 1; margin-bottom: 1.5rem; }
-
-  .magician-card {
-    display: flex; flex-direction: column;
-    background: white; border: 1px solid var(--cream-dark);
-    border-radius: 6px; overflow: hidden;
-    text-decoration: none; color: var(--ink);
-    transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease;
-  }
-  .magician-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-lg); border-color: var(--gold-light); }
-  .card-image { aspect-ratio: 3/4; overflow: hidden; background: var(--cream-dark); max-height: 240px; }
-  .card-image img { width: 100%; height: 100%; object-fit: cover; transition: transform 300ms ease; }
-  .magician-card:hover .card-image img { transform: scale(1.03); }
-  .card-image--placeholder { display: flex; align-items: center; justify-content: center; font-size: 4rem; }
-  .card-body    { padding: 1rem 1.25rem 1.25rem; display: flex; flex-direction: column; flex: 1; }
-  .card-title   { font-family: var(--font-display); font-size: 1.1rem; color: var(--burgundy); margin-bottom: 0.2rem; letter-spacing: 0.03em; }
-  .card-years   { font-family: var(--font-ui); font-size: 0.75rem; color: var(--grey); margin-bottom: 0.35rem; }
-  .card-tagline { font-family: var(--font-body); font-size: 0.875rem; font-style: italic; color: var(--gold-dark); margin-bottom: 0.65rem; }
-  .card-intro   { font-family: var(--font-ui); font-size: 0.85rem; color: var(--ink-mid); line-height: 1.55; flex: 1; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
-  .card-cta     { font-family: var(--font-ui); font-size: 0.85rem; font-weight: 600; color: var(--burgundy); margin-top: 0.9rem; transition: color 180ms ease; }
-  .magician-card:hover .card-cta { color: var(--gold-dark); }
-
-  /* See all button */
-  .see-all-wrap { display: flex; justify-content: center; margin: 0.5rem 0 2.5rem; }
-  .see-all-btn {
-    display: inline-flex; align-items: center; gap: 0.6rem;
-    font-family: var(--font-ui); font-size: 0.875rem; font-weight: 600;
-    color: var(--burgundy); border: 1px solid var(--cream-dark);
-    background: white; padding: 0.6rem 1.5rem; border-radius: 2rem;
-    transition: border-color 180ms ease, color 180ms ease, box-shadow 180ms ease;
-  }
-  .see-all-btn:hover { border-color: var(--gold); color: var(--gold-dark); box-shadow: 0 2px 12px rgba(212,168,67,0.18); }
-  .see-all-icon { font-size: 1rem; transition: transform 180ms ease; }
-  .see-all-btn[aria-expanded="true"] .see-all-icon { transform: rotate(180deg); }
+  .aktuell-stack { display: flex; flex-direction: column; gap: 1.5rem; }
 
   /* ── SECTION RULE ── */
   .section-rule { margin: 1rem 0 3rem; }
+  .section-title { font-size: clamp(1.5rem, 3vw, 2.2rem); margin: 0.3rem 0 0.75rem; }
 
   /* ── COMING SECTIONS ── */
   .coming-section { padding-bottom: 1rem; }
-  .sections-grid {
-    display: grid; grid-template-columns: repeat(2, 1fr);
-    gap: 1.25rem; margin-top: 2rem;
-  }
-  .section-card {
-    display: flex; align-items: flex-start; gap: 1.25rem;
-    background: white; border: 1px solid var(--cream-dark);
-    border-radius: 6px; padding: 1.5rem; position: relative;
-    transition: border-color 180ms ease, box-shadow 180ms ease;
-  }
-  .section-card:not(.section-card--soon):hover { border-color: var(--gold-light); box-shadow: var(--shadow); }
-  .section-card--soon { opacity: 0.72; }
-  .section-card-icon  { font-size: 2rem; line-height: 1; flex-shrink: 0; margin-top: 0.1rem; }
-  .section-card-body  { flex: 1; }
-  .section-card-label { font-family: var(--font-ui); font-size: 0.68rem; font-weight: 600; letter-spacing: 0.18em; text-transform: uppercase; color: var(--gold-dark); margin-bottom: 0.2rem; }
-  .section-card-title { font-family: var(--font-display); font-size: 1.1rem; color: var(--burgundy); margin-bottom: 0.4rem; letter-spacing: 0.03em; }
-  .section-card-desc  { font-family: var(--font-ui); font-size: 0.875rem; color: var(--ink-mid); line-height: 1.55; }
-  .section-card-link  { display: inline-block; margin-top: 0.9rem; font-family: var(--font-ui); font-size: 0.85rem; font-weight: 600; color: var(--burgundy); transition: color 180ms ease; }
-  .section-card-link:hover { color: var(--gold-dark); }
-  .section-card-soon  { display: inline-block; margin-top: 0.9rem; font-family: var(--font-ui); font-size: 0.75rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--grey); border: 1px solid var(--grey-light); padding: 0.2rem 0.65rem; border-radius: 2rem; }
+  .coming-section .card-grid { grid-template-columns: repeat(2, 1fr); margin-top: 2rem; }
 
   /* ── BOTTOM PAD ── */
   .section-bottom-pad { height: 5rem; }
 
-  /* ── RESPONSIVE ── */
+  /* ── RESPONSIVE ────────────────────────────────────────────────── */
   @media (max-width: 900px) {
-    .featured-grid { grid-template-columns: repeat(2, 1fr); }
-    .sections-grid { grid-template-columns: 1fr; }
-  }
-  @media (max-width: 600px) {
-    .featured-grid  { grid-template-columns: 1fr; }
-    .remaining-grid { grid-template-columns: 1fr; }
+    .coming-section .card-grid { grid-template-columns: 1fr; }
   }
 </style>

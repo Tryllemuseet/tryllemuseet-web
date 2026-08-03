@@ -1,0 +1,42 @@
+---
+// src/components/InfoCard.astro
+// Thin wrapper for practical-information blocks (opening hours, prices,
+// address, transport, contact, shows) — replaces besok.astro's repeated
+// `.info-card` section + h2 pattern.
+export interface Props {
+  icon?: string
+  title: string
+  id?: string
+}
+
+const { icon, title, id } = Astro.props
+---
+
+<section class="info-card" id={id}>
+  <h2 class="info-card-heading">
+    {icon && <span aria-hidden="true">{icon}</span>}
+    {title}
+  </h2>
+  <div class="info-card-body">
+    <slot />
+  </div>
+</section>
+
+<style>
+  .info-card {
+    background: white;
+    border: 1px solid var(--cream-dark);
+    border-radius: var(--radius-md);
+    padding: 1.5rem;
+  }
+  .info-card-heading {
+    font-family: var(--font-display);
+    font-size: var(--text-md);
+    color: var(--burgundy);
+    letter-spacing: 0.04em;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+</style>

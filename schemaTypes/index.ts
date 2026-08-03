@@ -3,11 +3,13 @@ import { contentSection } from './contentSection'
 import { sourceItem }     from './sourceItem'
 import { partialDate }    from './partialDate'
 import { source }         from './source'
+import { tema }           from './tema'
 import { event }          from './event'
 import { siteConfig }     from './siteConfig'
 import { siteNavigation } from './siteNavigation'
 import { biography }      from './biography'
 import { legend }         from './legend'
+import { qrCode }         from './qrCode'
 import { whoKnew }        from './whoKnew'
 import { book }           from './book'
 import { homepage }       from './homepage'
@@ -56,9 +58,11 @@ export const schemaTypes = [
   personvernPage,
 
   // Dokumenttyper — Utstillingen
+  tema,
   legend,
   artifact,
   magicOrganization,
+  qrCode,
 
   // Dokumenttyper — Aktiviteter
   trick,
