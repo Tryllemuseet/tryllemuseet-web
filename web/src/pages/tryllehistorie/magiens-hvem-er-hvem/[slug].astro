@@ -129,6 +129,24 @@ const videoTypeLabel: Record<string, string> = {
       </section>
     )}
 
+    <!-- ARKIVOPPTAK ─────────────────────────────────────────────── -->
+    {bio.archiveClips && bio.archiveClips.length > 0 && (
+      <section class="links-section">
+        <h2 class="section-heading">Arkivopptak</h2>
+        <ul class="links-list">
+          {bio.archiveClips.map((clip: any) => (
+            <li>
+              <a href={`/tryllehistorie/historiske-opptak/${clip.slug}`}>
+                <span class="link-icon" aria-hidden="true">📼</span>
+                {clip.title}
+                {clip.year && <span class="video-year">({clip.year})</span>}
+              </a>
+            </li>
+          ))}
+        </ul>
+      </section>
+    )}
+
     <!-- LENKER ──────────────────────────────────────────────────── -->
     {bio.links && bio.links.length > 0 && (
       <section class="links-section">

@@ -1649,6 +1649,17 @@ export interface BiographySource {
   bookRef?: { title: string; slug?: string }
 }
 
+// Arkivopptak koblet til denne personen via historicalClip.magician — hentes med
+// et omvendt oppslag, ikke et eget referansefelt (se schemaTypes/biography.ts, VIDEOER).
+export interface BiographyArchiveClip {
+  _id:      string
+  title:    string
+  slug:     string
+  year?:    number
+  show?:    string
+  broadcaster?: string
+}
+
 export interface Biography {
   _id:         string
   name:        string
@@ -1670,6 +1681,7 @@ export interface Biography {
   videos?:     BiographyVideo[]
   links?:      BiographyLink[]
   legendRef?:    { _ref: string; slug: string }
+  archiveClips?: BiographyArchiveClip[]
   sources?:      BiographySource[]
   lastVerified?: string
   needsUpdate?:  boolean
@@ -1800,6 +1812,9 @@ export async function getBiographyBySlug(slug: string): Promise<Biography | null
         "internalSlug": internalRef->slug.current
       },
       "legendRef": legendRef-> { "slug": slug.current },
+      "archiveClips": *[_type == "historicalClip" && references(^._id) && isVisible != false] | order(year asc) {
+        _id, title, "slug": slug.current, year, show, broadcaster
+      },
       sources[]-> { _id, title, type, author, year, url, "bookRef": bookRef->{ title, "slug": slug.current } },
       lastVerified, needsUpdate
     }
