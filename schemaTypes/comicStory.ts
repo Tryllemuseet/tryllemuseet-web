@@ -209,6 +209,37 @@ export const comicStory = defineType({
       }],
     }),
 
+    defineField({
+      name: 'relatedLinks',
+      title: 'Se også (relaterte lenker)',
+      type: 'array',
+      description: 'Valgfritt: lenker til annet innhold om samme tema andre steder på nettsiden — f.eks. utstillingssiden eller et «Lær et triks»-oppsett om samme person. Vises som en liten «Se også»-boks nederst på siden.',
+      of: [{
+        type: 'object',
+        name: 'relatedLink',
+        title: 'Lenke',
+        fields: [
+          defineField({
+            name: 'label',
+            title: 'Lenketekst',
+            type: 'string',
+            description: 'F.eks. «Utstillingen: Harry Houdini»',
+            validation: R => R.required(),
+          }),
+          defineField({
+            name: 'path',
+            title: 'Sti på nettsiden',
+            type: 'string',
+            description: 'Intern sti, f.eks. /utstillingen/houdini. Må starte med «/».',
+            validation: R => R.required().custom(v => (v?.startsWith('/') ? true : 'Må starte med "/", f.eks. /utstillingen/houdini.')),
+          }),
+        ],
+        preview: {
+          select: { title: 'label', subtitle: 'path' },
+        },
+      }],
+    }),
+
   ],
 
   orderings: [
