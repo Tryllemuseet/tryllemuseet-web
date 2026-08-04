@@ -1,0 +1,145 @@
+---
+// src/pages/tryllehistorie/fordypninger/magic-club/[slug].astro
+import BaseLayout from '../../../../layouts/BaseLayout.astro'
+import { getMagicClubEditionBySlug, getMagicClubEditionPaths } from '../../../../lib/sanity'
+import type { MagicClubEdition } from '../../../../lib/sanity'
+
+export async function getStaticPaths() {
+  return getMagicClubEditionPaths()
+}
+
+const { slug } = Astro.params
+const ed = await getMagicClubEditionBySlug(slug!) as MagicClubEdition | null
+
+if (!ed) return Astro.redirect('/tryllehistorie/fordypninger/magic-club')
+
+const dateStr = new Date(ed.date).toLocaleDateString('nb-NO', { day: 'numeric', month: 'long', year: 'numeric' })
+---
+
+<BaseLayout
+  title={`Magic Club — ${dateStr} — Tryllemuseet`}
+  description={`Magic Club på ${ed.venue}, ${dateStr}. ${ed.guestStars?.map(g => g.name).join(', ') ?? ''}`}
+>
+
+  <!-- HERO ──────────────────────────────────────────────────────── -->
+  <section class="edition-hero">
+    <div class="edition-hero-bg">
+      {ed.poster?.asset?.url && (
+        <img src={ed.poster.asset.url} alt="" aria-hidden="true" class="hero-bg-img" />
+      )}
+      <div class="hero-bg-overlay"></div>
+    </div>
+    <div class="container edition-hero-inner">
+      <nav class="breadcrumb">
+        <a href="/tryllehistorie">Tryllehistorie</a>
+        <span>›</span>
+        <a href="/tryllehistorie/fordypninger">Fordypninger</a>
+        <span>›</span>
+        <a href="/tryllehistorie/fordypninger/magic-club">Magic Club</a>
+      </nav>
+      <h1 class="edition-hero-title">Magic Club</h1>
+      <p class="edition-hero-sub">{dateStr} — {ed.venue}</p>
+    </div>
+  </section>
+
+  <div class="container edition-content">
+    <div class="edition-main">
+
+      {ed.poster?.asset?.url && (
+        <img
+          src={ed.poster.asset.url}
+          alt={ed.poster.alt ?? `Plakat, Magic Club ${dateStr}`}
+          class="poster-img"
+        />
+      )}
+
+      {ed.guestStars && ed.guestStars.length > 0 && (
+        <section class="block">
+          <h2>Gjestestjerner</h2>
+          <ul class="plain-list">
+            {ed.guestStars.map(g => (
+              <li><strong>{g.name}</strong>{g.description && <> — {g.description}</>}</li>
+            ))}
+          </ul>
+        </section>
+      )}
+
+      {ed.lineup && ed.lineup.length > 0 && (
+        <section class="block">
+          <h2>Norsk lineup</h2>
+          <ul class="plain-list">
+            {ed.lineup.map(l => (
+              <li>
+                {l.bioRef?.slug
+                  ? <a href={`/tryllehistorie/magiens-hvem-er-hvem/${l.bioRef.slug}`}>{l.name}</a>
+                  : <>{l.name}</>}
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
+      {ed.otherActs && ed.otherActs.length > 0 && (
+        <section class="block">
+          <h2>Øvrige innslag</h2>
+          <ul class="plain-list">
+            {ed.otherActs.map(a => (
+              <li>{a.category && <strong>{a.category}: </strong>}{a.names}</li>
+            ))}
+          </ul>
+        </section>
+      )}
+
+      {ed.notes && (
+        <section class="block">
+          <h2>Om denne kvelden</h2>
+          <p>{ed.notes}</p>
+        </section>
+      )}
+
+      {ed.sourceUrl && (
+        <p class="source-note">
+          Kilde: <a href={ed.sourceUrl} target="_blank" rel="noopener noreferrer">{ed.sourceUrl}</a>
+        </p>
+      )}
+
+    </div>
+
+    <nav class="page-nav" aria-label="Naviger i Magic Club-arkivet">
+      <a href="/tryllehistorie/fordypninger/magic-club">← Magic Club</a>
+      <a href="/tryllehistorie/fordypninger">← Fordypninger</a>
+    </nav>
+  </div>
+
+</BaseLayout>
+
+<style>
+  .edition-hero { position: relative; min-height: 300px; display: flex; align-items: flex-end; padding-bottom: 3rem; color: var(--cream); overflow: hidden; }
+  .edition-hero-bg { position: absolute; inset: 0; }
+  .hero-bg-img { width: 100%; height: 100%; object-fit: cover; object-position: top center; }
+  .hero-bg-overlay { position: absolute; inset: 0; background: linear-gradient(to bottom, rgba(10,5,2,0.4) 0%, rgba(10,5,2,0.9) 100%); }
+  .edition-hero-inner { position: relative; z-index: 1; }
+  .breadcrumb { display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap; font-family: var(--font-ui); font-size: 0.7rem; font-weight: 600; letter-spacing: 0.15em; text-transform: uppercase; margin-bottom: 1rem; }
+  .breadcrumb a { color: var(--gold); text-decoration: none; }
+  .breadcrumb a:hover { text-decoration: underline; }
+  .breadcrumb span { color: rgba(251,247,239,0.4); }
+  .edition-hero-title { font-family: var(--font-display); font-size: clamp(1.8rem, 5vw, 3rem); color: var(--cream); line-height: 1.2; margin-bottom: 0.5rem; }
+  .edition-hero-sub { font-family: var(--font-ui); font-size: 1rem; color: var(--gold); letter-spacing: 0.03em; }
+
+  .edition-content { padding-block: 2.5rem 3rem; }
+  .edition-main { max-width: 680px; }
+  .poster-img { width: 100%; max-width: 420px; border-radius: 8px; margin-bottom: 2rem; display: block; }
+
+  .block { margin-bottom: 2rem; }
+  .block h2 { font-family: var(--font-display); font-size: 1.3rem; color: var(--burgundy); margin-bottom: 0.75rem; }
+  .plain-list { list-style: none; padding: 0; margin: 0; font-family: var(--font-body); font-size: 0.95rem; line-height: 1.7; }
+  .plain-list li { padding: 0.15rem 0; }
+  .plain-list a { color: var(--burgundy); text-decoration: underline; }
+
+  .source-note { font-family: var(--font-ui); font-size: 0.8rem; color: var(--grey); margin-top: 1.5rem; }
+  .source-note a { color: var(--grey); }
+
+  .page-nav { display: flex; flex-wrap: wrap; gap: 0.75rem; padding-top: 2rem; border-top: 1px solid var(--cream-dark); font-family: var(--font-ui); font-size: 0.875rem; }
+  .page-nav a { color: var(--grey); text-decoration: none; border: 1px solid var(--cream-dark); padding: 0.4rem 1rem; border-radius: var(--radius); transition: color 150ms, border-color 150ms; }
+  .page-nav a:hover { color: var(--burgundy); border-color: var(--gold); }
+</style>

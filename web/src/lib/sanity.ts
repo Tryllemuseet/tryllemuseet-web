@@ -1962,6 +1962,80 @@ export async function getMonthlyLegendPick(): Promise<FeaturedLegendItem | null>
   return items[new Date().getMonth() % items.length]
 }
 
+// ── Typer: Magic Club (Oslo, 2015–) ───────────────────────────────
+// Én kveld i den faste magikerkvelden «Magic Club», skapt og hostet av
+// Davido. Samleartikkelen om selve konseptet er et vanlig Legend-dokument
+// (koblet via seriesRef) — se schemaTypes/magicClubEdition.ts.
+
+export interface MagicClubGuestStar {
+  name: string
+  description?: string
+}
+
+export interface MagicClubLineupEntry {
+  name: string
+  bioRef?: { _id: string; name: string; "slug": string }
+}
+
+export interface MagicClubOtherAct {
+  category?: string
+  names?:    string
+}
+
+export interface MagicClubEdition {
+  _id:         string
+  date:        string
+  venue:       string
+  slug:        string
+  poster?:     { asset: { _ref: string; url: string }; alt?: string }
+  guestStars?: MagicClubGuestStar[]
+  lineup?:     MagicClubLineupEntry[]
+  otherActs?:  MagicClubOtherAct[]
+  notes?:      string
+  sourceUrl?:  string
+  seriesRef?:  { _id: string; title: string; "slug": string }
+}
+
+// ── Spørringer: Magic Club ────────────────────────────────────────
+
+const magicClubEditionProjection = `
+  _id, date, venue, "slug": slug.current,
+  poster { asset->{ _ref, url }, alt },
+  guestStars[] { name, description },
+  lineup[] { name, bioRef-> { _id, name, "slug": slug.current } },
+  otherActs[] { category, names },
+  notes, sourceUrl,
+  seriesRef-> { _id, title, "slug": slug.current }
+`
+
+// Alle kvelder — til oversiktssiden, nyest først
+export async function getMagicClubEditions(): Promise<MagicClubEdition[]> {
+  return sanityClient.fetch(`
+    *[_type == "magicClubEdition" && isVisible != false] | order(date desc) {
+      ${magicClubEditionProjection}
+    }
+  `)
+}
+
+// Én kveld via slug — til detaljsiden
+export async function getMagicClubEditionBySlug(slug: string): Promise<MagicClubEdition | null> {
+  return sanityClient.fetch(`
+    *[_type == "magicClubEdition" && slug.current == $slug && isVisible != false][0] {
+      ${magicClubEditionProjection}
+    }
+  `, { slug })
+}
+
+// Statiske stier for magic-club [slug].astro
+export async function getMagicClubEditionPaths() {
+  const editions = await sanityClient.fetch(`
+    *[_type == "magicClubEdition" && isVisible != false] { "slug": slug.current }
+  `)
+  return editions
+    .filter((e: { slug?: string }) => e.slug)
+    .map((e: { slug: string }) => ({ params: { slug: e.slug } }))
+}
+
 // ── Typer: WhoKnew ────────────────────────────────────────────────
 
 export type WhoKnewCategory = 'vitenskap' | 'politikk' | 'sport' | 'kultur'
