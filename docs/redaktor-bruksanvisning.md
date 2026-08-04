@@ -11,16 +11,24 @@ Denne bruksanvisningen dekker de oppgavene en redaktør utfører til daglig.
 2. [Grunnleggende arbeidsflyt](#2-grunnleggende-arbeidsflyt)
 3. [Globale innstillinger](#3-globale-innstillinger)
 4. [Arrangementer](#4-arrangementer)
+   - [4b. Triks — Lær et triks](#4b-triks--lær-et-triks)
+   - [4c. Interaktive historier (tegneserier)](#4c-interaktive-historier-tegneserier)
 5. [Utstillingen — Gullalderen og dybdeutstillinger](#5-utstillingen--gullalderen-og-dybdeutstillinger)
    - [5b. Tema — samle flere opplevelser om samme sak](#5b-tema--samle-flere-opplevelser-om-samme-sak)
 6. [Hvem er hvem — biografiregisteret](#6-hvem-er-hvem--biografiregisteret)
+   - [6b. Visste du at](#6b-visste-du-at)
+   - [6c. Liten historie](#6c-liten-historie)
 7. [Fordypninger](#7-fordypninger)
+   - [7b. Magic Club — kvelder](#7b-magic-club--kvelder)
 8. [TV-opptredener](#8-tv-opptredener)
 9. [Bokregisteret](#9-bokregisteret)
+   - [9b. Verdens mest… og Norden i FISM](#9b-verdens-mest-og-norden-i-fism)
+   - [9c. Kilderegisteret](#9c-kilderegisteret)
 10. [Artefakter](#10-artefakter)
 11. [Partnere og sponsorer](#11-partnere-og-sponsorer)
 12. [Infoskjerm](#12-infoskjerm)
 13. [Sideinnhold](#13-sideinnhold)
+    - [13b. Navigasjon (header/meny)](#13b-navigasjon-headermeny)
 14. [Skjule innhold uten å slette](#14-skjule-innhold-uten-å-slette)
 15. [Vanlige oppgaver — steg for steg](#15-vanlige-oppgaver--steg-for-steg)
 16. [Tryllequiz](#16-tryllequiz)
@@ -127,6 +135,77 @@ Brukes til kurs, spesialåpninger og andre datofestede hendelser. Vises på `/ar
 ### Arkivere et passert arrangement
 
 Passerte arrangementer vises ikke automatisk, men de blir liggende i lista. Du kan enten slette dem eller sette «Vis på nettsted» til av (se [Skjule innhold](#14-skjule-innhold-uten-å-slette)).
+
+---
+
+## 4b. Triks — Lær et triks
+
+**Meny:** Triks (Lær et triks) — under Aktiviteter
+
+Enkle trylletriks barn kan øve på hjemme. Vises på `/barn/laer-et-triks` (oversikt) og som egen side per triks.
+
+| Felt | Påkrevd | Merknad |
+|---|---|---|
+| Tittel | Ja | F.eks. «Den forsvinnende mynten» |
+| URL-slug | Ja | Genereres fra tittelen |
+| Vanskelighetsgrad | Ja | Enkel / Litt vanskeligere |
+| Kort beskrivelse | Ja | Vises på kortet i oversikten, én-to setninger |
+| Du trenger | Nei | Enkel liste over ting man trenger, f.eks. «En vanlig kortstokk» |
+| Fremgangsmåte | Nei | Fritekst steg-for-steg som supplement til videoen. Støtter bilder inni teksten. Kan stå tom hvis videoen er nok |
+| Video-lenke (YouTube) | Nei | Full YouTube-lenke. Vises personvernvennlig innebygd (youtube-nocookie.com) |
+| Ekstern lenke | Nei | Bruk kun hvis trikset heller peker til en ekstern side (f.eks. en samarbeidspartner) i stedet for video |
+| Hovedbilde | Nei | Vises øverst på egen side og som miniatyrbilde i oversikten |
+| Bildegalleri | Nei | Flere bilder/illustrasjoner av triksets steg |
+| Flere lenker | Nei | Ekstra ressurser, f.eks. lenke til rekvisitter |
+| Rekkefølge | Nei | Lavere tall vises først. La stå tom hvis rekkefølgen ikke spiller noen rolle |
+| Se også (relaterte lenker) | Nei | Lenketekst + intern sti (må starte med «/») til annet relatert innhold, f.eks. utstillingssiden om samme person. Vises som en liten boks nederst på siden |
+
+### Gode råd (delt tekst for alle triks)
+
+**Meny:** Gode råd (Lær et triks) — under Aktiviteter
+
+Ett felles dokument styrer «Gode råd»-boksen som vises nederst på **hver** enkelt triks-side. Opprett bare ett dokument av denne typen.
+
+| Felt | Merknad |
+|---|---|
+| Overskrift — til barn | Standard: «Til deg som øver» |
+| Råd til barn | Liste med korte tips, ett per linje |
+| Overskrift — til voksne | Standard: «Til voksne» |
+| Råd til voksne | Liste med korte tips, ett per linje |
+
+---
+
+## 4c. Interaktive historier (tegneserier)
+
+**Meny:** Interaktiv historie (tegneserie) — under Aktiviteter
+
+Scenebaserte, tegneserie-lignende fortellinger for barn (f.eks. «Harry Houdini: Mannen, Myten, Legenden»). Vises på `/barn/historier` (oversikt) og som egen side per historie, med tidslinje og klikkbare punkter i bildene.
+
+| Felt | Påkrevd | Merknad |
+|---|---|---|
+| Tittel | Ja | |
+| URL-slug | Ja | Genereres fra tittelen |
+| Undertittel | Nei | |
+| Ingress | Nei | Introtekst øverst på siden, før første scene |
+| Kilde-/kredittekst (footer) | Nei | F.eks. «Historiske foto og plakater: Library of Congress», kan inneholde lenke |
+| Scener | Ja, minst 1 | Se under |
+| Se også (relaterte lenker) | Nei | Lenketekst + intern sti (må starte med «/») til annet relatert innhold, f.eks. et «Lær et triks»-oppsett om samme person |
+
+### Hver scene
+
+Klikk «Add item» under **Scener** for å legge til en ny scene. Rekkefølgen på listen styrer rekkefølgen historien fortelles i.
+
+| Felt | Påkrevd | Merknad |
+|---|---|---|
+| Årstall | Nei | F.eks. «1899» — vises i tidslinjen |
+| Kapitteltittel | Ja | F.eks. «4 · Rådet som endret alt» |
+| Hovedbilde (+ alt-tekst) | Ja | Bruk fokuspunkt-verktøyet i Sanity til å styre beskjæring på ulike skjermstørrelser |
+| Bildetekst | Nei | Kort tekst under hovedbildet |
+| Fortellertekst | Ja, minst 1 avsnitt | Løpende tekst for scenen. Støtter lenker og bilder inni teksten |
+| Dialog | Nei | Valgfrie replikker mellom personer i scenen (hvem snakker + replikk) |
+| Klikkbare punkter på hovedbildet (hotspots) | Nei | Gullmerker barnet kan trykke på for å lære mer. Posisjoneres med **vannrett/loddrett posisjon i prosent** (0–100) fra henholdsvis venstre og toppen av bildet — juster og se resultatet i forhåndsvisningen. Hvert punkt har en kort merkelapp og en fakta-tekst |
+| Faktaboks | Nei | Valgfri utheva boks, f.eks. «Visste du?» eller «Historisk kontekst» — egen overskrift og tekst |
+| Ekstra bilder | Nei | Flere tilleggsbilder til scenen (historiske plakater, foto) |
 
 ---
 
@@ -267,6 +346,7 @@ Registeret over norske tryllekunstnere (over 170 registrerte). Disse vises på `
 | Kortbiografi | Nei | Maks 280 tegn. Vises i listevisning |
 | Fullstendig biografi | Nei | Rik tekst. Vises på detaljsiden |
 | Lenker | Nei | Wikipedia, nettside, YouTube, Facebook, Instagram |
+| Videoer | Nei | Egenprodusert/promo-video knyttet direkte til personen (showreel, trailer, intervju). For arkivopptak: opprett heller et **Historisk TV-opptak**-dokument og koble det til personen der (se [18. Historiske TV-opptak](#18-historiske-tv-opptak)) — det vises da automatisk her også |
 | Trenger oppdatering | Nei | Merk med ⚠️ hvis biografien er utdatert |
 | Sist verifisert | Nei | Dato biografien sist ble sjekket |
 | Redaksjonell merknad | Nei | Vises ikke på nettsiden — kun til intern bruk |
@@ -278,6 +358,52 @@ Registeret over norske tryllekunstnere (over 170 registrerte). Disse vises på `
 Sett **Trenger oppdatering** til på. Dokumentet vises da med ⚠️ i lista. Bruk sorteringsvalget «Trenger oppdatering» i listemenyen for å finne alle merkede.
 
 Husk å slå av «Trenger oppdatering» og fylle inn **Sist verifisert** etter at du har oppdatert.
+
+---
+
+## 6b. Visste du at
+
+**Meny:** Visste du at — under Arkivet (Studio-tittelen på selve dokumenttypen er «Hvem skulle trodd?», samme som overskriften på nettsiden)
+
+Korte «visste du at»-portretter av kjente personer med et overraskende forhold til magien (vitenskap, politikk, sport, kultur). Vises på `/tryllehistorie/hvem-skulle-trodd` med kategorifilter, og som egen side per oppføring.
+
+| Felt | Påkrevd | Merknad |
+|---|---|---|
+| Navn | Ja | |
+| URL-slug | Ja | Genereres fra navnet |
+| Kategori | Ja | Vitenskap / Politikk & samfunn / Sport / Kultur & underholdning |
+| Krok (korttekst) | Ja | Kort «visste du at»-tekst til spotlight-kortet, 2–3 setninger |
+| Brødtekst | Nei | Valgfri, lengre artikkeltekst til egen side. Kan stå tom hvis «Koblet til» peker på en side som allerede har historien |
+| Bilde | Nei | |
+| Koblet til | Nei | Valgfri kobling til en Fordypning eller en biografi (Hvem er hvem) — lenkes til fra egen side som «Les hele historien» |
+| Kilder | Nei | |
+| Fremhev på forsiden / Rekkefølge på forsiden | Nei | Se merknad under |
+
+> **Merk:** «Fremhev på forsiden» har for øyeblikket ingen synlig effekt — forsiden fikk et nytt design uten en egen «Hvem skulle trodd?»-seksjon, men feltet ligger fortsatt i skjemaet i tilfelle seksjonen kommer tilbake. Oppføringene er uansett fullt browsable i sitt eget arkiv uansett hva bryteren står på.
+
+---
+
+## 6c. Liten historie
+
+**Meny:** Historie — under Arkivet (Studio-tittel: «Liten historie»)
+
+Korte, frittstående anekdoter fra tryllekunstens historie, publisert omtrent ukentlig — samme mekanikk som [Historiske avisartikler](#17-historiske-avisartikler). Vises i arkivet på `/tryllehistorie/historier`, og den nyeste dukker automatisk opp som «Ukens historie» i «Historie og aktuelt»-seksjonen på forsiden.
+
+| Felt | Påkrevd | Merknad |
+|---|---|---|
+| Tittel | Ja | |
+| URL-slug | Ja | Genereres fra tittelen |
+| Ingress / teaser | Ja | Vises i kortlisten og på forsiden. Maks ~200 tegn |
+| Historien | Ja | Selve teksten. Støtter lenker, interne lenker til Hvem er hvem og bilder i teksten |
+| Bilde | Nei | Vises i kortlisten, på forsiden og på historiens egen side |
+| Kildenote | Nei | Fritekst-kildenote vist under historien |
+| Kildelenker | Nei | Valgfrie lenker til kilder på nett |
+| Omtalte tryllekunstnere | Nei | Koble til personer i Hvem er hvem — lenkes automatisk til profilen |
+| Publiseres på tryllemuseet.no | Ja | Sett en **fremtidig dato** — historien dukker opp av seg selv fra denne datoen (ved neste nattlige bygging), akkurat som avisartiklene |
+| Fremhevet på forsiden i antall dager | Nei | Standard 7. Hvor lenge historien vises som «Ukens historie» på forsiden. Forblir uansett i arkivet permanent |
+| SoMe-tekst | Nei | Ferdig posttekst inkl. emneknagger til Instagram/Facebook — kopieres til Meta Business Suite, vises ikke på nettsiden |
+
+> **Tips:** Skriv gjerne flere historier på forskudd med én publiseringsdato per uke, så bygger arkivet seg opp automatisk.
 
 ---
 
@@ -340,6 +466,7 @@ Ikke bland begge mønstrene i samme artikkel uten grunn — velg ett.
 | Utdypende tekst — seksjoner | Del utdypingen i flere seksjoner med egen overskrift — «Add item» for hver seksjon |
 | Brødtekst | Fri, løpende artikkeltekst — det vanlige valget for en portrettartikkel. Støtter bilder og lenker (eksterne og interne, til Hvem er hvem) satt inn midt i teksten, ikke bare i Bildegalleriet nederst |
 | Tagger | Fritekst — brukes til gruppering/filtrering på oversiktssiden. Fritt valgte ord, f.eks. «kvinner-i-norsk-trylling», «jubileum», «foreningshistorie» |
+| Se også (relaterte lenker) | Valgfritt: lenketekst + intern sti (må starte med «/») til annet relatert innhold andre steder på nettsiden, f.eks. en barnehistorie eller et «Lær et triks»-oppsett om samme person. Vises som en liten boks nederst på siden |
 
 ### Stasjoner / dybder (valgfritt, sjeldent brukt)
 
@@ -357,6 +484,29 @@ inndelt artikkel.
 | Bildegalleri | Legg til flere bilder |
 | Videoer | YouTube-lenker med tittel, type og år |
 | Kilder | Eksterne lenker til Wikipedia, arkiver osv. |
+
+---
+
+## 7b. Magic Club — kvelder
+
+**Meny:** Magic Club — kveld ⚠️ *se merknad om menyplassering nedenfor*
+
+Dokumenterer enkeltkvelder av **Magic Club**, Davidos faste magikerkveld i Oslo (2015–). Vises på `/tryllehistorie/fordypninger/magic-club` (oversikt) og som egen side per kveld. Selve samleartikkelen om konseptet er et vanlig **Fordypning**-dokument (se [7. Fordypninger](#7-fordypninger)) — «Magic Club — kveld» brukes kun til de enkelte kveldene.
+
+| Felt | Påkrevd | Merknad |
+|---|---|---|
+| Dato | Ja | |
+| Spillested | Ja | |
+| URL-slug | Ja | Skrives inn manuelt, f.eks. «2019-10-17» — pass på at ikke to kvelder får samme slug |
+| Konsept-artikkel | Nei | Kobling tilbake til Fordypning-artikkelen om selve Magic Club-konseptet |
+| Plakat | Nei | |
+| Gjestestjerner | Nei | Internasjonale eller spesielle gjester denne kvelden — navn + kort beskrivelse, f.eks. «Livin' Legend» |
+| Norsk lineup | Nei | Navn, med valgfri kobling til personens biografi hvis den finnes i Hvem er hvem |
+| Øvrige innslag | Nei | F.eks. dansere eller musikalske innslag — kategori + navn |
+| Notater | Nei | Hva gjorde akkurat denne kvelden spesiell, hvis kjent |
+| Kilde-URL | Nei | F.eks. lenke til Facebook-posten informasjonen er hentet fra |
+
+> ⚠️ **Manglende menypunkt:** Denne dokumenttypen finnes i Studio, men er (ennå) ikke lagt inn i venstremenyens mappestruktur — trykk **Ctrl+K** (Cmd+K på Mac) og søk etter «Magic Club», eller bruk **+ Nytt dokument** øverst i Studio, for å opprette eller finne en kveld. Si fra til Trond hvis du vil ha den lagt til som egen menylenke under Fordypninger.
 
 ---
 
@@ -419,6 +569,67 @@ Bibliotekskatalogen over bøker om tryllekunst. Vises på `/ressurser/bibliotek`
 | Forlag / ISBN / Utgave | Forlagsopplysninger |
 | Fremhevet | Vis i kuraterte utvalg |
 | Interne notater | Vises ikke på nettsiden |
+
+---
+
+## 9b. Verdens mest… og Norden i FISM
+
+To dokumenttyper med korte, kategoriserte fakta-/rekordhistorier fra tryllekunstens verden, hver på sin egen side.
+
+### Verdensrekord-triks
+
+**Meny:** Verdensrekord-triks — under Arkivet (Studio-tittel: «Verdens mest… (oppføring)»)
+
+Vises gruppert på `/tryllehistorie/verdens-mest`.
+
+| Felt | Påkrevd | Merknad |
+|---|---|---|
+| Kategori | Ja | 💀 Verdens farligste / 🕰️ Verdens eldste / 🇳🇴 Verdens mest norske bidrag / 🔁 Verdens mest kopierte / 💰 Verdens dyreste illusjoner / ⚡ Verdens mest omdiskuterte |
+| Tittel | Ja | F.eks. «Kulefangst-trikset», «Davidos Guinness-rekord» |
+| Teaser | Ja | Kort, dramatisk — vises i oversikten |
+| Full historie | Ja | Rik tekst |
+| Relatert person i registeret | Nei | Valgfri kobling til en biografi, f.eks. Davido eller Finn Jon |
+| Kilder | Nei | Fritekst, én kilde per linje (f.eks. «Wikipedia — Bullet catch» eller en URL) |
+| Trenger verifisering før publisering | Nei | Skru på ⚠️ hvis en påstand i teksten ikke er 100 % bekreftet ennå |
+| Rekkefølge innen kategori | Nei | |
+
+### Konkurranseresultat
+
+**Meny:** Konkurranseresultat — under Arkivet
+
+Nordiske pallplasseringer og andre konkurranseresultater. Vises på `/tryllehistorie/norden-i-fism`: FISM-resultater i én tabell øverst, øvrige (Nordisk/NM/Annet) i en egen tabell under.
+
+| Felt | Påkrevd | Merknad |
+|---|---|---|
+| Navn | Ja | Fritekst — brukes alltid til visning, selv om Person i registeret er satt |
+| Person i registeret | Nei | Sett hvis personen finnes i Hvem er hvem — navnet lenkes da til profilen |
+| Land | Ja | Norge / Sverige / Danmark / Finland / Island |
+| Konkurranse | Ja | FISM (VM) / Nordisk mesterskap / Norgesmesterskap (NM) / Annet |
+| År | Ja | |
+| Sted | Nei | F.eks. «Madrid», «Trondheim» |
+| Kategori/disiplin | Nei | Fritekst, f.eks. «Manipulasjon», «Korttriks», «Scenemagi» |
+| Resultat/plassering | Ja | F.eks. «1. plass (Verdensmester)», «2. plass», «Grand Prix» |
+| Kilde | Nei | F.eks. «fism.org/championships/winners» |
+
+---
+
+## 9c. Kilderegisteret
+
+**Meny:** Kilde — under Arkivet
+
+En gjenbrukbar liste over kilder. I stedet for å skrive den samme kilden om og om igjen, kan du opprette den her én gang og deretter **koble til den** fra «Kilder»-feltet på de fleste andre dokumenttyper (Fordypning, Trylleforening, Triks, Liten historie, Visste du at m.fl.) — velg kilden fra listen i stedet for å skrive fritekst.
+
+| Felt | Påkrevd | Merknad |
+|---|---|---|
+| Tittel / kildebeskrivelse | Ja | F.eks. «Magiens Hvem er Hvem — Terje Nordheim (2005)» eller «Store norske leksikon» |
+| Kildetype | Nei | Bok / Nettside / leksikon / Avisartikkel / Arkiv / dokument / Intervju / Annet |
+| Forfatter | Nei | |
+| Utgivelses-/publiseringsår | Nei | |
+| URL | Nei | La stå tom for bøker uten nettlenke |
+| Kobling til bok i bokregisteret | Nei | Bruk hvis kilden også finnes som eget dokument i [Bokregisteret](#9-bokregisteret) |
+| Interne notater | Nei | Vises ikke på nettsiden |
+
+> **Merk:** Kilder-feltet på **Hvem er hvem**-biografier er unntaket — det er alltid en direkte liste av kilde-koblinger til denne registertypen, ikke fritekst med et valgfritt kobling-alternativ. Se [6. Hvem er hvem](#6-hvem-er-hvem--biografiregisteret).
 
 ---
 
@@ -647,6 +858,43 @@ og publisere.
 > den daglige kl. 05:30, eller en manuell «Daily rebuild» trigget av Trond via
 > GitHub Actions). Det er normalt — ikke et tegn på at noe gikk galt.
 
+> **Om «Hero»-feltet og «Info-badges»:** Skjemaet har fortsatt et eget «Hero»-objekt
+> (Overskrift, Kursiv del, Ingress, Knapp 1/2, Bakgrunnsbilde) og «Info-badges»
+> fra en tidligere forsideversjon. Disse leses ikke lenger av forsiden — den
+> bruker i dag **Hero-bannere (karusell i toppen)** i stedet, se tabellen over.
+> Ikke bruk tid på å redigere «Hero»/«Info-badges»; de har ingen synlig effekt
+> akkurat nå.
+
+---
+
+## 13b. Navigasjon (header/meny)
+
+**Meny:** Sitenavigasjon (nederst i Studio-menyen, ved siden av Globale innstillinger)
+
+Ett felles dokument styrer hele hovedmenyen — header (desktop-dropdown), mobilmeny og footerens «Utforsk»-liste leses alle fra samme sted. Opprett bare ett dokument av denne typen.
+
+> ⚠️ **Vær forsiktig:** Dette er en strukturell innstilling som påvirker navigasjonen på hele nettsiden for alle besøkende. Test grundig og spør Trond ved usikkerhet før du gjør større endringer.
+
+Under **Hovedområder** legger du til ett element per toppnivå-punkt i menyen (rekkefølgen i lista styrer rekkefølgen i menyen):
+
+| Felt | Merknad |
+|---|---|
+| Tittel | Menyteksten |
+| Lenke | |
+| Stier som markerer dette som aktivt | Alle stier som skal gi gyllen uthevning i menyen når man er på en underside — f.eks. matcher «Aktiviteter» også `/barn` og `/tryllequiz` |
+| Plassering i header (desktop) | Venstre / Høyre — styrer kun hvilken side av logoen punktet vises på ved desktop-bredde. Mobilmeny og footer følger uansett rekkefølgen i lista |
+| Synlig | Av: skjuler hele hovedområdet (inkl. underområder) fra header, mobilmeny og footer uten å slette det |
+| Underområder | Fritt antall — se under. La stå tom hvis hovedområdet ikke skal ha noen nedtrekksmeny |
+
+Hvert **underområde** (nedtrekksmeny-punkt) har:
+
+| Felt | Merknad |
+|---|---|
+| Tittel | |
+| Lenke | Relativ sti, f.eks. `/utstillingen/artefakter` |
+| Synlig | Av: skjuler underpunktet uten å slette det |
+| Koblet til funksjonsbryter | Kun for Tryllequiz og Det trettende kabinett — punktet vises da bare når **både** dette er «Synlig» **og** hovedbryteren i quizConfig/gameConfig er aktiv (se [16. Tryllequiz](#16-tryllequiz) og [21. Det trettende kabinett](#21-det-trettende-kabinett-spillet)) |
+
 ---
 
 ## 14. Skjule innhold uten å slette
@@ -775,6 +1023,18 @@ forsiden** hvis saken også skal vises på forsiden.
 2. Åpne klippet under **Historisk TV-opptak** og fyll inn **Magiker / person**.
 3. Sett **Tilkoblingsstatus** til ✅ Koblet (eller 🔍 Gjennomgått).
 4. Klikk **Publiser**.
+
+### Legge til et nytt triks eller en ny barnehistorie
+
+Se [4b. Triks — Lær et triks](#4b-triks--lær-et-triks) eller
+[4c. Interaktive historier](#4c-interaktive-historier-tegneserier). Husk
+**Rekkefølge**-feltet på triks hvis du vil styre hvor det havner i lista.
+
+### Publisere en «Liten historie»
+
+Se [6c. Liten historie](#6c-liten-historie). Husk: sett **Publiseres på
+tryllemuseet.no** til ønsket dato, akkurat som avisartiklene — historien
+dukker opp av seg selv når datoen passeres.
 
 ---
 
@@ -933,6 +1193,20 @@ Synkroniseringen henter bare rådata. Redaktørens jobb er å berike klippene:
 
 Klipp kan skjules fra nettsiden med **Vis på nettsted**, som alt annet innhold.
 
+### Legge til flere YouTube-kanaler i synken
+
+**Meny:** YouTube-kilde (synk) — under Arkivet
+
+Synk-jobben henter fra én eller flere kanaler, styrt av egne dokumenter her — ikke av kode. For å abonnere på en ny kanal:
+
+1. Klikk **+ Nytt dokument** under YouTube-kilde (synk).
+2. Fyll inn **Visningsnavn** (brukt internt i Studio og i synk-loggen).
+3. Fyll inn **YouTube kanal-ID** — den stabile ID-en som starter med «UC…», *ikke* @handle. Finnes via kanalens «Om»-side → «Del kanal» → «Kopier kanal-ID».
+4. Fyll inn **Kanal-handle** (f.eks. «@Egelosvideosamling») og **Kildetekst** — teksten som settes i «Kilde / samling»-feltet på nye opptak fra denne kanalen.
+5. Kontroller at **Aktiv i synk** er på, og klikk **Publiser**.
+
+Slå av **Aktiv i synk** for å midlertidig hoppe over en kanal uten å slette allerede importerte opptak.
+
 ---
 
 ## 19. Tryllemuseet i media
@@ -984,7 +1258,10 @@ Norge). Vises på `/utstillingen/trylleforeningene` med egen side per forening.
 | Logohistorikk | Logoer i kronologisk rekkefølge (år + logo + merknad). Nyeste vises som aktiv logo |
 | Brødtekst | Rik tekst. Kan lenke direkte til personer i Hvem er hvem via «Intern lenke» |
 | Sentrale skikkelser | Koble personer fra Hvem er hvem med rolle og periode, f.eks. «Formann 1952–1960» |
-| Underartikler | Lengre fordypningstekster knyttet til foreningen |
+| Underartikler | Lengre fordypningstekster knyttet til foreningen — tittel, egen URL-slug (valgfri), ingress, brødtekst, tilknyttede personer og egne kilder |
+| Bildegalleri | Flere bilder, hvert med alt-tekst, bildetekst og valgfritt årstall |
+| Kilder | Lenker til Wikipedia, arkiver, nasjonalbiblioteket osv. |
+| Interne notater | Vises ikke på nettsiden |
 
 ---
 
