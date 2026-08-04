@@ -1675,7 +1675,6 @@ export interface Biography {
   birthPlace?: string
   deathDate?:  PartialDate
   years?:      string
-  collection?: string[]
   featured?:   boolean
   tags?:       string[]
   mainImage?:  BiographyImage
@@ -1684,7 +1683,7 @@ export interface Biography {
   fullBio?:    any[]
   videos?:     BiographyVideo[]
   links?:      BiographyLink[]
-  legendRef?:    { _ref: string; slug: string }
+  legendRef?:    { slug: string }
   archiveClips?: BiographyArchiveClip[]
   sources?:      BiographySource[]
   lastVerified?: string
@@ -1806,7 +1805,7 @@ export async function getBiographyBySlug(slug: string): Promise<Biography | null
       artistName, aliases, nationality,
       birthDate { year, month, day, circa }, birthPlace,
       deathDate { year, month, day, circa }, years,
-      collection, featured, tags,
+      featured, tags,
       mainImage { asset->{ _ref, url }, alt, caption },
       gallery[] { asset->{ _ref, url }, alt, caption },
       shortBio, fullBio,
@@ -1815,7 +1814,7 @@ export async function getBiographyBySlug(slug: string): Promise<Biography | null
         label, type, url,
         "internalSlug": internalRef->slug.current
       },
-      "legendRef": legendRef-> { "slug": slug.current },
+      "legendRef": *[_type == "legend" && biographyRef._ref == ^._id && isVisible != false][0] { "slug": slug.current },
       "archiveClips": *[_type == "historicalClip" && references(^._id) && isVisible != false] | order(year asc) {
         _id, title, "slug": slug.current, year, show, broadcaster
       },

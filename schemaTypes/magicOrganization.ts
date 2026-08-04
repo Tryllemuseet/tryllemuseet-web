@@ -265,16 +265,7 @@ export default defineType({
               title: 'Kilder',
               type: 'array',
               of: [
-                {
-                  type: 'object',
-                  fields: [
-                    defineField({ name: 'label', title: 'Lenketekst', type: 'string' }),
-                    defineField({ name: 'url', title: 'URL', type: 'url' }),
-                  ],
-                  preview: {
-                    select: { title: 'label', subtitle: 'url' },
-                  },
-                },
+                { type: 'sourceItem' },
               ],
             }),
           ],
