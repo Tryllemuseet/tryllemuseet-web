@@ -17,6 +17,9 @@ const [site, quizConfig, gameConfig, navigation] = await Promise.all([
   getSiteConfig(), getQuizConfig(), getGameConfig(), getSiteNavigation(),
 ])
 const metaDescription = description ?? site.seoDescription
+
+// "production" i Vercel prod-miljø; alt annet (test, preview, lokalt) skal ikke indekseres
+const isProdEnv = import.meta.env.PUBLIC_VERCEL_ENV === 'production'
 const quizActive = quizConfig?.isActive === true
 const gameActive = gameConfig?.isActive === true
 
@@ -52,6 +55,7 @@ const allNavLinks = mainAreas.map(a => ({ href: a.link, label: a.label }))
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="description" content={metaDescription} />
+  {!isProdEnv && <meta name="robots" content="noindex, nofollow" />}
   <title>{title}</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />

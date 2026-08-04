@@ -27,6 +27,9 @@
 
 # Dotenv and similar local-only files
 *.local
+.env
+.env.*
+!.env.example
 
 # NB.no search result files (local curation output, not for version control)
 /nb-search-results/
