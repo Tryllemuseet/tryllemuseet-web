@@ -9,7 +9,10 @@ export default defineConfig({
   title: 'Tryllemuseet',
 
   projectId: 'n2ynpgty',
-  dataset: 'production',
+  // Lar deg peke en lokal `sanity dev` mot et annet datasett (f.eks. et
+  // development-datasett for skjematesting) uten å endre denne filen —
+  // sett SANITY_STUDIO_DATASET i .env. Faller tilbake til production.
+  dataset: process.env.SANITY_STUDIO_DATASET || 'production',
 
   plugins: [structureTool({structure}), visionTool()],
 
