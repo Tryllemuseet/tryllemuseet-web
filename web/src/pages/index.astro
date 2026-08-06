@@ -75,10 +75,10 @@ const om = hp?.omMuseet ?? {
   tekst:      'Den 9. desember 2001 åpnet daværende Oslo-ordfører Albert Nordengen dørene til Norsk Tryllemuseum i Munkedamsveien. Etter flere flyttinger og mange år på lager ble museet gjenåpnet på Årvoll gård 1. desember 2024 — takket være frivillige ildsjeler som holdt magien i live.',
 }
 
-// ── Hero: ett enkelt banner (ikke lenger karusell) ────────────────
-// Editor-managed heroBannere from Sanity still support multiple slides in
-// the data model — we simply render the first one. Until they are seeded,
-// a hardcoded set of fallbacks fills it.
+// ── Hero: bannerkarusell (appetittvekkere) ───────────────────────
+// Editor-managed heroBannere from Sanity drive the top carousel; until
+// they are seeded, a hardcoded set of five teasers fills it. Each slide
+// is a full-bleed image/video with a short two-part text and a button.
 type HeroBannerSlide = {
   href:      string
   line1:     string
@@ -101,6 +101,10 @@ const fallbackBanners: HeroBannerSlide[] = [
       : (houdiniPanel?.mainImage?.asset?.url ?? null),
     imgAlt: houdiniPanel?.mainImage?.alt ?? 'Houdini',
   },
+  { href: '/barn',          line1: 'Magi for barn',                 line2: 'Ta på, prøv selv — magi du kan oppleve med hendene', button: 'Utforsk barnesiden',  imgUrl: null, imgAlt: '' },
+  { href: '/aktiviteter',   line1: 'Tryllekurs og arrangementer',   line2: 'Lær triks som imponerer — kurs for barn fra 6 år',   button: 'Se hva som skjer',    imgUrl: null, imgAlt: '' },
+  { href: '/tryllehistorie',line1: '4000 år med magi',              line2: 'Fra faraoens hoff til norske scener',                button: 'Utforsk historien',   imgUrl: null, imgAlt: '' },
+  { href: '/tryllehistorie/magiens-hvem-er-hvem', line1: 'Magiens hvem er hvem', line2: 'Norske tryllekunstnere fra A til Å',    button: 'Bla i registeret',    imgUrl: null, imgAlt: '' },
 ]
 
 const heroBanners: HeroBannerSlide[] = hp?.heroBannere?.length
@@ -116,8 +120,6 @@ const heroBanners: HeroBannerSlide[] = hp?.heroBannere?.length
       videoUrl: b.videoUrl,
     }))
   : fallbackBanners
-
-const activeBanner = heroBanners[0]
 
 // ── «Dette kan du oppleve» — fast utvalg av fire hovedseksjoner ────
 const opplevKort = [
@@ -239,27 +241,54 @@ const archiveCards = archiveCandidates.filter(c => c.title).slice(0, 4)
 
 <BaseLayout title="Tryllemuseet — Norges mest magiske museum">
 
-  <!-- ══ HERO — ett banner ═══════════════════════════════════════ -->
+  <!-- ══ HERO — bannerkarusell ═══════════════════════════════════ -->
   <section class="hero-banner" aria-label="Utvalgt innhold">
     <h1 class="sr-only">Tryllemuseet — {config.siteTagline}</h1>
 
-    <a href={activeBanner.href} class="banner-slide">
-      <div class="banner-media" aria-hidden="true">
-        {activeBanner.videoUrl ? (
-          <video src={activeBanner.videoUrl} autoplay muted loop playsinline preload="auto"></video>
-        ) : activeBanner.imgUrl ? (
-          <img src={activeBanner.imgUrl} alt="" loading="eager" />
-        ) : (
-          <div class="banner-stars"></div>
-        )}
-        <div class="banner-scrim"></div>
-      </div>
-      <div class="banner-content">
-        <p class="banner-line1">{activeBanner.line1}</p>
-        {activeBanner.line2 && <p class="banner-line2">{activeBanner.line2}</p>}
-        {activeBanner.button && <span class="banner-btn">{activeBanner.button}</span>}
-      </div>
-    </a>
+    <div class="banner-track">
+      {heroBanners.map((b, i) => (
+        <a href={b.href}
+           class:list={['banner-slide', { 'is-active': i === 0 }]}
+           data-banner-slide
+           aria-hidden={i === 0 ? undefined : 'true'}
+           tabindex={i === 0 ? undefined : -1}>
+          <div class="banner-media" aria-hidden="true">
+            {b.videoUrl ? (
+              <video src={b.videoUrl} autoplay muted loop playsinline preload={i === 0 ? 'auto' : 'none'}></video>
+            ) : b.imgUrl ? (
+              <img src={b.imgUrl} alt="" loading={i === 0 ? 'eager' : 'lazy'} />
+            ) : (
+              <div class="banner-stars"></div>
+            )}
+            <div class="banner-scrim"></div>
+          </div>
+          <div class="banner-content">
+            <p class="banner-line1">{b.line1}</p>
+            {b.line2 && <p class="banner-line2">{b.line2}</p>}
+            {b.button && <span class="banner-btn">{b.button}</span>}
+          </div>
+        </a>
+      ))}
+    </div>
+
+    {heroBanners.length > 1 && (
+      <>
+        <button type="button" class="banner-arrow banner-arrow--prev" id="banner-prev" aria-label="Forrige banner">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><polyline points="15 18 9 12 15 6"/></svg>
+        </button>
+        <button type="button" class="banner-arrow banner-arrow--next" id="banner-next" aria-label="Neste banner">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
+        <div class="banner-dots" role="tablist" aria-label="Velg banner">
+          {heroBanners.map((b, i) => (
+            <button type="button"
+                    class:list={['banner-dot', { 'is-active': i === 0 }]}
+                    role="tab" aria-selected={i === 0 ? 'true' : 'false'}
+                    aria-label={b.line1} data-banner-dot></button>
+          ))}
+        </div>
+      </>
+    )}
   </section>
 
   <!-- ══ BESØKSLINJE (komprimert) ════════════════════════════════ -->
@@ -461,6 +490,50 @@ const archiveCards = archiveCandidates.filter(c => c.title).slice(0, 4)
     }
   })
 
+  // ── Hero: bannerkarusell ────────────────────────────────────────
+  const bannerSection = document.querySelector('.hero-banner') as HTMLElement | null
+  const bannerSlides  = Array.from(document.querySelectorAll<HTMLElement>('[data-banner-slide]'))
+  const bannerDots    = Array.from(document.querySelectorAll<HTMLButtonElement>('[data-banner-dot]'))
+  const bannerPrev    = document.getElementById('banner-prev')
+  const bannerNext    = document.getElementById('banner-next')
+
+  if (bannerSection && bannerSlides.length > 1) {
+    const ROTATE_MS = 7000
+    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    let current = 0
+    let timer: number | undefined
+
+    const showBanner = (i: number) => {
+      current = (i + bannerSlides.length) % bannerSlides.length
+      bannerSlides.forEach((s, idx) => {
+        const active = idx === current
+        s.classList.toggle('is-active', active)
+        if (active) { s.removeAttribute('aria-hidden'); s.removeAttribute('tabindex') }
+        else { s.setAttribute('aria-hidden', 'true'); s.setAttribute('tabindex', '-1') }
+      })
+      bannerDots.forEach((d, idx) => {
+        d.classList.toggle('is-active', idx === current)
+        d.setAttribute('aria-selected', String(idx === current))
+      })
+    }
+    const stopRotate = () => { if (timer !== undefined) { clearInterval(timer); timer = undefined } }
+    const startRotate = () => {
+      if (reducedMotion || timer !== undefined) return
+      timer = window.setInterval(() => showBanner(current + 1), ROTATE_MS)
+    }
+    // Manuell navigering nullstiller klokka så neste autobytte ikke kommer brått
+    const goTo = (i: number) => { stopRotate(); showBanner(i); startRotate() }
+
+    bannerPrev?.addEventListener('click', () => goTo(current - 1))
+    bannerNext?.addEventListener('click', () => goTo(current + 1))
+    bannerDots.forEach((dot, i) => dot.addEventListener('click', () => goTo(i)))
+
+    bannerSection.addEventListener('mouseenter', stopRotate)
+    bannerSection.addEventListener('mouseleave', startRotate)
+    document.addEventListener('visibilitychange', () => document.hidden ? stopRotate() : startRotate())
+    startRotate()
+  }
+
   // ── Partner-popup ────────────────────────────────────────────────
   const popup       = document.getElementById('partner-popup') as HTMLElement | null
   const backdrop    = popup?.querySelector('.partner-popup-backdrop') as HTMLElement | null
@@ -518,9 +591,11 @@ const archiveCards = archiveCandidates.filter(c => c.title).slice(0, 4)
 <style>
   .sr-only { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
 
-  /* ── HERO — enkelt banner ──────────────────────────────────────── */
+  /* ── HERO — bannerkarusell ─────────────────────────────────────── */
   .hero-banner { position:relative; height:clamp(260px, 32vw, 420px); background:var(--burgundy-dk); overflow:hidden; }
-  .banner-slide { position:relative; display:flex; align-items:center; justify-content:center; height:100%; }
+  .banner-track { position:relative; height:100%; }
+  .banner-slide { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; opacity:0; visibility:hidden; transition:opacity 600ms ease, visibility 0s 600ms; }
+  .banner-slide.is-active { opacity:1; visibility:visible; transition:opacity 600ms ease, visibility 0s 0s; }
 
   .banner-media { position:absolute; inset:0; }
   .banner-media img, .banner-media video { width:100%; height:100%; object-fit:cover; display:block; }
@@ -533,6 +608,19 @@ const archiveCards = archiveCandidates.filter(c => c.title).slice(0, 4)
   .banner-btn { display:inline-block; margin-top:0.75rem; font-family:var(--font-ui); font-size:clamp(0.8rem, 1.4vw, 0.95rem); font-weight:700; letter-spacing:0.08em; text-transform:uppercase; background:var(--gold); color:var(--burgundy-dk); padding:0.6rem 1.6rem; border-radius:2px; transition:background 180ms, transform 180ms; }
   .banner-slide:hover .banner-btn { background:var(--gold-light); transform:translateY(-1px); }
   .banner-slide:focus-visible { outline:3px solid var(--gold); outline-offset:-3px; }
+
+  .banner-arrow { position:absolute; top:50%; transform:translateY(-50%); z-index:3; width:44px; height:44px; display:flex; align-items:center; justify-content:center; color:#fff; filter:drop-shadow(0 2px 8px rgba(0,0,0,0.6)); opacity:0.85; transition:opacity 150ms, transform 150ms; }
+  .banner-arrow svg { width:30px; height:30px; }
+  .banner-arrow:hover { opacity:1; transform:translateY(-50%) scale(1.12); }
+  .banner-arrow:focus-visible { outline:2px solid var(--gold); outline-offset:2px; border-radius:4px; }
+  .banner-arrow--prev { left:0.6rem; }
+  .banner-arrow--next { right:0.6rem; }
+
+  .banner-dots { position:absolute; bottom:0.9rem; left:50%; transform:translateX(-50%); z-index:3; display:flex; gap:0.6rem; }
+  .banner-dot { width:9px; height:9px; border-radius:50%; background:rgba(255,255,255,0.45); padding:0; transition:background 180ms, transform 180ms; }
+  .banner-dot:hover { background:rgba(255,255,255,0.75); }
+  .banner-dot.is-active { background:#fff; transform:scale(1.15); }
+  .banner-dot:focus-visible { outline:2px solid var(--gold); outline-offset:2px; }
 
   .hero-banner::after { content:''; position:absolute; bottom:0; left:0; right:0; height:3px; z-index:3; background:linear-gradient(90deg,transparent,var(--gold),var(--gold-light),var(--gold),transparent); }
   .star { position:absolute; background:var(--gold-light); border-radius:50%; opacity:0; animation:twinkle ease-in-out infinite; }
