@@ -37,6 +37,7 @@ export interface Event {
   ageGroup?:  string
   price?:     string
   excerpt?:   string
+  description?: PortableTextBlock[]
   featured?:  boolean
   image?:     { asset: { _ref: string; url: string }; alt: string }
   bookingUrl?: string
@@ -306,7 +307,7 @@ export async function getAllEvents(): Promise<Event[]> {
   return sanityClient.fetch(`
     *[_type == "event" && isVisible != false] | order(date asc) {
       _id, title, "slug": slug.current,
-      date, ageGroup, price, excerpt, featured,
+      date, ageGroup, price, excerpt, description, featured,
       image { asset->{ _ref, url }, alt },
       bookingUrl
     }
