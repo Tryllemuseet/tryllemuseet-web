@@ -84,6 +84,13 @@ export const event = defineType({
       description: 'Lenke til skjema eller Eventbrite. La stå tom om det ikke kreves påmelding.',
     }),
     defineField({
+      name: 'infoUrl',
+      title: 'Mer info-lenke',
+      type: 'url',
+      description: 'Lenke til mer informasjon, f.eks. en utstillingsside — brukes når arrangementet ikke krever påmelding. Vises som «Mer →» i stedet for «Meld på →». Ignoreres hvis påmeldingslenke også er fylt ut.',
+      validation: R => R.uri({ scheme: ['http', 'https'], allowRelative: true }),
+    }),
+    defineField({
       name: 'featured',
       title: 'Fremhev på forsiden',
       type: 'boolean',

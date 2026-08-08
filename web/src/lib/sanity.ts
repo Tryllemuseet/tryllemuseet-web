@@ -41,6 +41,7 @@ export interface Event {
   featured?:  boolean
   image?:     { asset: { _ref: string; url: string }; alt: string }
   bookingUrl?: string
+  infoUrl?:   string
 }
 
 export interface Artifact {
@@ -309,7 +310,7 @@ export async function getAllEvents(): Promise<Event[]> {
       _id, title, "slug": slug.current,
       date, ageGroup, price, excerpt, description, featured,
       image { asset->{ _ref, url }, alt },
-      bookingUrl
+      bookingUrl, infoUrl
     }
   `)
 }
