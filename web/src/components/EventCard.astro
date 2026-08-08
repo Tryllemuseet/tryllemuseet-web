@@ -15,10 +15,13 @@ export interface Props {
 
 const { date, title, excerpt, ageGroup, price, bookingUrl, href = '/aktiviteter' } = Astro.props
 
+// Arrangementene er i Oslo — vis alltid klokkeslett/dato i Oslo lokaltid,
+// uavhengig av hvilken tidssone build-serveren kjører i (statisk generert).
+const TZ = 'Europe/Oslo'
 const d = new Date(date)
-const day = d.getDate()
-const month = d.toLocaleDateString('nb-NO', { month: 'short' })
-const time = d.toLocaleTimeString('nb-NO', { hour: '2-digit', minute: '2-digit' })
+const day = d.toLocaleDateString('nb-NO', { day: 'numeric', timeZone: TZ })
+const month = d.toLocaleDateString('nb-NO', { month: 'short', timeZone: TZ })
+const time = d.toLocaleTimeString('nb-NO', { hour: '2-digit', minute: '2-digit', timeZone: TZ })
 ---
 
 <article class="event-card">
