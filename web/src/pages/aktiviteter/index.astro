@@ -34,7 +34,7 @@ const activities: Activity[] = [
     title:      e.title,
     date:       e.date,
     source:     'tryllemuseet',
-    url:        e.bookingUrl,
+    url:        e.bookingUrl ?? e.infoUrl,
     excerpt:    e.excerpt,
     description: e.description,
     ageGroup:   e.ageGroup,
