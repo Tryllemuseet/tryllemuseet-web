@@ -131,7 +131,7 @@ function formatYear(d: string) {
         const isPast = new Date(a.date).getTime() < now
         return (
           <article
-            class:list={['activity-row', { 'activity-row--featured': a.featured }]}
+            class:list={['activity-row', { 'activity-row--featured': a.featured, 'activity-row--expandable': a.description && a.description.length > 0 }]}
             style={isPast ? 'display:none' : ''}
             data-source={a.source}
             data-time={new Date(a.date).getTime()}
@@ -265,6 +265,18 @@ function formatYear(d: string) {
   selSource?.addEventListener('change', apply)
   sortBtn.addEventListener('click', () => { ascending = !ascending; apply() })
 
+  // Tapping/clicking anywhere on an expandable row toggles "Les mer" —
+  // bigger touch target on mobile. The booking/info link and the native
+  // <details>/<summary> keep their own click behavior untouched.
+  list.addEventListener('click', (e) => {
+    const row = (e.target as HTMLElement).closest<HTMLElement>('.activity-row--expandable')
+    if (!row) return
+    const target = e.target as HTMLElement
+    if (target.closest('.row-link') || target.closest('.row-details')) return
+    const details = row.querySelector<HTMLDetailsElement>('.row-details')
+    if (details) details.open = !details.open
+  })
+
   apply()
 </script>
 
@@ -302,6 +314,7 @@ function formatYear(d: string) {
   }
   .activity-row:hover { box-shadow: var(--shadow); border-color: var(--gold-light); }
   .activity-row--featured { border-color: var(--gold); border-width: 2px; }
+  .activity-row--expandable { cursor: pointer; }
   .featured-badge { font-family: var(--font-ui); font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--burgundy); background: rgba(212,168,67,0.2); padding: 0.15rem 0.5rem; border-radius: 3px; }
 
   .row-date { display: flex; flex-direction: column; align-items: center; min-width: 56px; }
