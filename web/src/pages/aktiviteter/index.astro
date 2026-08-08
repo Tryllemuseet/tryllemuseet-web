@@ -60,15 +60,31 @@ const sourceLabels: Record<string, string> = {
   magiskecirkel: 'MCN',
 }
 
+// Arrangementene er i Oslo — vis alltid klokkeslett/dato i Oslo lokaltid,
+// uavhengig av hvilken tidssone build-serveren kjører i (statisk generert).
+const TZ = 'Europe/Oslo'
+
 function formatDate(d: string) {
   return new Date(d).toLocaleDateString('nb-NO', {
-    weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
+    weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', timeZone: TZ,
   })
 }
 
 function formatTime(d: string) {
-  const t = new Date(d).toLocaleTimeString('nb-NO', { hour: '2-digit', minute: '2-digit' })
+  const t = new Date(d).toLocaleTimeString('nb-NO', { hour: '2-digit', minute: '2-digit', timeZone: TZ })
   return t === '00:00' ? '' : t
+}
+
+function formatDay(d: string) {
+  return new Date(d).toLocaleDateString('nb-NO', { day: 'numeric', timeZone: TZ })
+}
+
+function formatMonth(d: string) {
+  return new Date(d).toLocaleDateString('nb-NO', { month: 'short', timeZone: TZ })
+}
+
+function formatYear(d: string) {
+  return new Date(d).toLocaleDateString('nb-NO', { year: 'numeric', timeZone: TZ })
 }
 ---
 
@@ -121,9 +137,9 @@ function formatTime(d: string) {
             data-time={new Date(a.date).getTime()}
           >
             <div class="row-date">
-              <span class="row-day">{new Date(a.date).getDate()}</span>
-              <span class="row-month">{new Date(a.date).toLocaleDateString('nb-NO', { month: 'short' })}</span>
-              <span class="row-year">{new Date(a.date).getFullYear()}</span>
+              <span class="row-day">{formatDay(a.date)}</span>
+              <span class="row-month">{formatMonth(a.date)}</span>
+              <span class="row-year">{formatYear(a.date)}</span>
             </div>
             <div class="row-body">
               <p class="row-meta">
