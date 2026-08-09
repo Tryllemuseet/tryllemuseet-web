@@ -1186,9 +1186,6 @@ export async function getRessurserPage(): Promise<RessurserPage> {
 
 
 // ── Typer: Utstillingen (side) ────────────────────────────────────
-// gullalderSeksjon/fremhevedeSlugs fantes tidligere her, men Gullalderen
-// har fått sin egen samleside (/utstillingen/gullalderen, se
-// getGullalderenPanels()) — feltene er ikke lenger i bruk på nettsiden.
 export interface UtstillingPage {
   hero: { eraLabel: string; heading: string; ingress: string }
   kommerSnartSeksjon: { label: string; heading: string }

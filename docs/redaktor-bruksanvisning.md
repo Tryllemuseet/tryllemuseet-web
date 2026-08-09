@@ -28,7 +28,9 @@ Denne bruksanvisningen dekker de oppgavene en redaktør utfører til daglig.
 11. [Partnere og sponsorer](#11-partnere-og-sponsorer)
 12. [Infoskjerm](#12-infoskjerm)
 13. [Sideinnhold](#13-sideinnhold)
+    - [13a. Forsiden — seksjon for seksjon](#13a-forsiden--seksjon-for-seksjon)
     - [13b. Navigasjon (header/meny)](#13b-navigasjon-headermeny)
+    - [13c. Utstillingen — innledning og seksjonskort](#13c-utstillingen--innledning-og-seksjonskort)
 14. [Skjule innhold uten å slette](#14-skjule-innhold-uten-å-slette)
 15. [Vanlige oppgaver — steg for steg](#15-vanlige-oppgaver--steg-for-steg)
 16. [Tryllequiz](#16-tryllequiz)
@@ -808,7 +810,7 @@ Disse dokumentene styrer innholdet på de faste sidene. De finnes som singletons
 | Tryllehistorie | tryllemuseet.no/tryllehistorie |
 | Ressurser | tryllemuseet.no/ressurser |
 | Arrangement | tryllemuseet.no/arrangementer (innledning) |
-| Utstilling | tryllemuseet.no/utstillingen (innledning) |
+| Utstilling | tryllemuseet.no/utstillingen (innledning) — se detaljert oversikt i [13c](#13c-utstillingen--innledning-og-seksjonskort) |
 | Personvern | tryllemuseet.no/personvern |
 
 Åpne riktig dokument, rediger tekst og bilder, og publiser. Siden disse er statisk genererte sider vil noen endringer (f.eks. forsideinnhold) kreve ny deploy av Trond.
@@ -894,6 +896,34 @@ Hvert **underområde** (nedtrekksmeny-punkt) har:
 | Lenke | Relativ sti, f.eks. `/utstillingen/artefakter` |
 | Synlig | Av: skjuler underpunktet uten å slette det |
 | Koblet til funksjonsbryter | Kun for Tryllequiz og Det trettende kabinett — punktet vises da bare når **både** dette er «Synlig» **og** hovedbryteren i quizConfig/gameConfig er aktiv (se [16. Tryllequiz](#16-tryllequiz) og [21. Det trettende kabinett](#21-det-trettende-kabinett-spillet)) |
+
+---
+
+## 13c. Utstillingen — innledning og seksjonskort
+
+**Meny:** Utstillingen (finnes kun ett dokument — åpne det, ikke opprett nytt)
+
+Dette dokumentet styrer kun toppen og bunnen av `/utstillingen`. Selve
+innholdet midt på siden — temakort og "Aktuell utstilling" — kommer ikke
+herfra, men fra **Tema**-dokumenter (§5b) og **Fordypning**-dokumenter med
+stasjoner (§5). Dette dokumentet trenger du sjelden å røre.
+
+| Seksjon | Felt | Merknad |
+|---|---|---|
+| **Hero** | Era-label, Overskrift, Ingress | Toppen av siden. Era-label er valgfri tekst over overskriften, f.eks. «1874–1926» |
+| **«I utstillingen»-seksjon** | Label, Overskrift | Overskriften rett over seksjonskortene nederst på siden |
+| **Seksjonskort** | Emoji-ikon, Label, Tittel, Beskrivelse, URL-slug, Tilgjengelig | Kortene i «I utstillingen»-seksjonen — se under |
+
+**Om «Tilgjengelig»-bryteren:** hvert seksjonskort har en av/på-bryter kalt
+**Tilgjengelig (vis lenke)**. Den styrer om kortet er en klikkbar lenke til
+`/utstillingen/{URL-slug}`, eller vises grået ut med teksten "Kommer snart"
+og ingen lenke. Studio viser ✅/🔒 foran tittelen i dokumentlisten så du kan
+se status på et øyeblikk uten å åpne kortet. Bruk denne til å forhåndsvarsle
+noe som er på vei, uten at det er en fungerende side ennå — slå den på den
+dagen siden faktisk er klar.
+
+> **Krever ny deploy:** Siden er statisk generert, som Forsiden (§13a) —
+> endringer vises ikke på tryllemuseet.no før neste bygging.
 
 ---
 

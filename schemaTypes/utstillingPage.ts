@@ -19,27 +19,6 @@ export const utstillingPage = defineType({
       ],
     }),
 
-    // ─── GULLALDER-SEKSJON ────────────────────────────────────────
-    defineField({
-      name: 'gullalderSeksjon',
-      title: 'Tryllingens gullalder',
-      type: 'object',
-      fields: [
-        defineField({ name: 'label',   title: 'Label',      type: 'string' }),
-        defineField({ name: 'heading', title: 'Overskrift', type: 'string' }),
-        defineField({ name: 'ingress', title: 'Ingress',    type: 'text', rows: 3 }),
-      ],
-    }),
-
-    // ─── FREMHEVEDE MAGIKERE ──────────────────────────────────────
-    defineField({
-      name: 'fremhevedeSlugs',
-      title: 'Fremhevede magikere (slug-liste)',
-      type: 'array',
-      of: [{ type: 'string' }],
-      description: 'Skriv inn URL-slugen til magikerne som skal vises fremhevet øverst, i ønsket rekkefølge. F.eks. «robert-houdin», «houdini».',
-    }),
-
     // ─── KOMMENDE SEKSJONER ───────────────────────────────────────
     defineField({
       name: 'kommerSnartSeksjon',
