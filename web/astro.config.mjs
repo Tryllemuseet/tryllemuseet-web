@@ -17,5 +17,7 @@ export default defineConfig({
     '/bibliotek':                   '/ressurser/bibliotek',
     // Info screen lives as a static file in public/
     '/skjerm':                      '/skjerm.html',
+    // Norwegian spelling with "ø" — page route itself uses the ASCII slug
+    '/besøk':                       '/besok',
   },
 });
