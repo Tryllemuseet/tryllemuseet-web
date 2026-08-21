@@ -34,6 +34,14 @@ const presse   = {
   ],
   nedlastingsNotat: pressePartial.nedlastingsNotat ?? 'Filer leveres på forespørsel via e-post',
 }
+const frivilligPartial = p?.frivillig ?? {}
+const frivillig = {
+  label:      frivilligPartial.label      ?? 'Frivillig',
+  heading:    frivilligPartial.heading    ?? 'Hjelp oss holde museet åpent',
+  tekst:      frivilligPartial.tekst      ?? 'Vi trenger frivillige som kan ta museumsvakter, hjelpe til på arrangementer og bidra med registrering og kuratering av samlingen.',
+  knappLabel: frivilligPartial.knappLabel ?? 'Jeg vil bidra →',
+  knappHref:  frivilligPartial.knappHref  ?? '/kontakt',
+}
 const partnere = p?.partnere   ?? { heading: 'Samarbeidspartnere', liste: [] }
 
 const historieHtml = portableTextToHtml(om.historieTekst)
@@ -177,13 +185,13 @@ const historieHtml = portableTextToHtml(om.historieTekst)
     <div class="container frivillig-inner">
       <AnimateIn direction="left">
         <div class="frivillig-tekst">
-          <span class="etikett">Frivillig</span>
-          <h2>Hjelp oss holde museet åpent</h2>
-          <p>Vi trenger frivillige som kan ta museumsvakter, hjelpe til på arrangementer og bidra med registrering og kuratering av samlingen.</p>
+          <span class="etikett">{frivillig.label}</span>
+          <h2>{frivillig.heading}</h2>
+          <p>{frivillig.tekst}</p>
         </div>
       </AnimateIn>
       <AnimateIn direction="right">
-        <Button variant="secondary" href="/kontakt">Jeg vil bidra →</Button>
+        <Button variant="secondary" href={frivillig.knappHref}>{frivillig.knappLabel}</Button>
       </AnimateIn>
     </div>
   </section>

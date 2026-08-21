@@ -143,6 +143,21 @@ export const omOssPage = defineType({
       ],
     }),
 
+    // ─── FRIVILLIG ──────────────────────────────────────────────
+    defineField({
+      name: 'frivillig',
+      title: 'Frivillig-seksjon',
+      description: 'Enkel inngang for besøkende som vil bidra praktisk (museumsvakter, arrangementer, kuratering), ikke bare økonomisk.',
+      type: 'object',
+      fields: [
+        defineField({ name: 'label',      title: 'Label',          type: 'string' }),
+        defineField({ name: 'heading',    title: 'Overskrift',     type: 'string' }),
+        defineField({ name: 'tekst',      title: 'Brødtekst',      type: 'text', rows: 3 }),
+        defineField({ name: 'knappLabel', title: 'Knapp — tekst',  type: 'string' }),
+        defineField({ name: 'knappHref',  title: 'Knapp — URL',    type: 'string' }),
+      ],
+    }),
+
     // ─── PRESSE ─────────────────────────────────────────────────
     defineField({
       name: 'presse',

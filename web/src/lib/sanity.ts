@@ -467,6 +467,12 @@ export interface OppleveKort {
 }
 
 export interface Homepage {
+  heroIdentitet?: {
+    heading:    string
+    sted:       string
+    knappLabel: string
+    knappHref:  string
+  }
   heroBannere?: HeroBanner[]
   oppleveKort?: OppleveKort[]
   hero: {
@@ -559,6 +565,7 @@ export function featuredItemHref(item: FeaturedItem): string {
 export async function getHomepage(): Promise<Homepage | null> {
   return sanityClient.fetch(`
     *[_type == "homepage"][0] {
+      heroIdentitet { heading, sted, knappLabel, knappHref },
       heroBannere[] {
         tekstLinje1, tekstLinje2, knappLabel, href,
         bilde { asset->{ _ref, url }, hotspot, alt },
@@ -683,6 +690,9 @@ export interface OmOssPage {
     nedlastingsNotat: string
   }
   partnere: { heading: string; liste: { navn: string; beskrivelse: string; url?: string }[] }
+  frivillig?: {
+    label: string; heading: string; tekst: string; knappLabel: string; knappHref: string
+  }
 }
 
 export async function getBarnPage(): Promise<BarnPage | null> {
@@ -895,7 +905,8 @@ export async function getOmOssPage(): Promise<OmOssPage | null> {
         vippsInfo
       },
       presse { label, heading, tekst, knappLabel, knappHref, nedlastinger[] { emoji, tittel, beskrivelse }, nedlastingsNotat },
-      partnere { heading, liste[] { navn, beskrivelse, url } }
+      partnere { heading, liste[] { navn, beskrivelse, url } },
+      frivillig { label, heading, tekst, knappLabel, knappHref }
     }
   `)
 }
@@ -968,6 +979,12 @@ export interface BesokPage {
   forestillingerSeksjon: { heading: string; tekst: string }
   sporsmalSeksjon: { tekst: string }
   transport: { badge: string; farge: 'rod' | 'blaa'; tekst: string }[]
+  familieSeksjon: {
+    heading:    string
+    tekst:      string
+    knappLabel: string
+    knappHref:  string
+  }
 }
 
 export async function getBesokPage(): Promise<BesokPage> {
@@ -979,6 +996,7 @@ export async function getBesokPage(): Promise<BesokPage> {
       priser { rader[] { kategori, pris, gratis }, merknad },
       medlemskapSeksjon { label, heading, tekst },
       forestillingerSeksjon { heading, tekst },
+      familieSeksjon { heading, tekst, knappLabel, knappHref },
       sporsmalSeksjon { tekst },
       transport[] { badge, farge, tekst }
     }
@@ -1017,6 +1035,12 @@ export async function getBesokPage(): Promise<BesokPage> {
     forestillingerSeksjon: {
       heading: d?.forestillingerSeksjon?.heading ?? 'Trylleforestillinger',
       tekst:   d?.forestillingerSeksjon?.tekst   ?? 'Vi arrangerer tre trylleforestillinger hvert halvår — for familier, barn og alle som elsker magi. Forestillingene holdes på Årvoll gård og er åpne for alle.',
+    },
+    familieSeksjon: {
+      heading:    d?.familieSeksjon?.heading    ?? 'Kommer du med barn?',
+      tekst:      d?.familieSeksjon?.tekst      ?? 'Se hva dere kan prøve, utforske og gjøre på museet.',
+      knappLabel: d?.familieSeksjon?.knappLabel ?? 'Se barnesiden →',
+      knappHref:  d?.familieSeksjon?.knappHref  ?? '/barn',
     },
     sporsmalSeksjon: {
       tekst: d?.sporsmalSeksjon?.tekst ?? 'Lurer du på noe om besøket, vil booke for en gruppe eller skole, eller ønsker mer informasjon?',

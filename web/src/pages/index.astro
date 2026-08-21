@@ -46,6 +46,12 @@ const fremhevet = (hp?.fremhevetInnhold?.elementer?.length ?? 0) > 0
     : null
 
 // ── Fallback-verdier ─────────────────────────────────────────────
+const heroIdentitet = hp?.heroIdentitet ?? {
+  heading:    'Tryllemuseet',
+  sted:       'på Årvoll gård i Oslo',
+  knappLabel: 'Besøk oss →',
+  knappHref:  '/besok',
+}
 const kurs = hp?.kursSeksjon ?? {
   heading:    'Tryllekurs for barn',
   ingress:    'Du lærer triks som er enkle å utføre, men som virker meget imponerende. Kursene går over tre ettermiddager annenhver uke.',
@@ -260,9 +266,9 @@ const archiveCards = archiveCandidates.filter(c => c.title).slice(0, 4)
   <section class="hero-identity" aria-label="Om museet">
     <div class="container hero-identity-inner">
       <h1 class="hero-identity-heading">
-        Tryllemuseet <span>på Årvoll gård i Oslo</span>
+        {heroIdentitet.heading} <span>{heroIdentitet.sted}</span>
       </h1>
-      <a href="/besok" class="hero-identity-cta">Besøk oss →</a>
+      <a href={heroIdentitet.knappHref} class="hero-identity-cta">{heroIdentitet.knappLabel}</a>
     </div>
   </section>
 

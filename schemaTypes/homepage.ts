@@ -8,6 +8,20 @@ export const homepage = defineType({
   __experimental_actions: ['update', 'publish'],
   fields: [
 
+    // ─── HERO-IDENTITET (fast linje over karusellen) ─────────────
+    defineField({
+      name: 'heroIdentitet',
+      title: 'Hero-identitet (fast linje over karusellen)',
+      description: 'Alltid synlig linje øverst på forsiden, uavhengig av hvilken karusell-slide som vises — skal umiddelbart gjøre klart at Tryllemuseet er et fysisk museum man kan besøke.',
+      type: 'object',
+      fields: [
+        defineField({ name: 'heading', title: 'Museumsnavn', type: 'string' }),
+        defineField({ name: 'sted', title: 'Stedsbeskrivelse', type: 'string', description: 'F.eks. «på Årvoll gård i Oslo»' }),
+        defineField({ name: 'knappLabel', title: 'Knapp — tekst', type: 'string' }),
+        defineField({ name: 'knappHref', title: 'Knapp — URL', type: 'string' }),
+      ],
+    }),
+
     // ─── HERO-BANNERE (karusell i toppen) ───────────────────────
     defineField({
       name: 'heroBannere',
