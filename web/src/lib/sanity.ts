@@ -456,8 +456,19 @@ export interface HeroBanner {
   videoUrl?:   string
 }
 
+export interface OppleveKort {
+  icon?:        string
+  bilde?:       { asset: { _ref: string; url: string }; hotspot?: any; alt?: string }
+  label?:       string
+  title:        string
+  description:  string
+  href:         string
+  knappTekst?:  string
+}
+
 export interface Homepage {
   heroBannere?: HeroBanner[]
+  oppleveKort?: OppleveKort[]
   hero: {
     heading:    string
     headingEm:  string
@@ -552,6 +563,10 @@ export async function getHomepage(): Promise<Homepage | null> {
         tekstLinje1, tekstLinje2, knappLabel, href,
         bilde { asset->{ _ref, url }, hotspot, alt },
         "videoUrl": video.asset->url
+      },
+      oppleveKort[] {
+        icon, label, title, description, href, knappTekst,
+        bilde { asset->{ _ref, url }, hotspot, alt }
       },
       hero {
         heading, headingEm, ingress,

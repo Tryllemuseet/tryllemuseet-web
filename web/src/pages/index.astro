@@ -121,8 +121,9 @@ const heroBanners: HeroBannerSlide[] = hp?.heroBannere?.length
     }))
   : fallbackBanners
 
-// ── «Dette kan du oppleve» — fast utvalg av fire hovedseksjoner ────
-const opplevKort = [
+// ── «Dette kan du oppleve» — redaktørstyrt via hp.oppleveKort, med et
+// innebygd fast utvalg av fire kort som fallback så lenge feltet er tomt ──
+const fallbackOpplevKort = [
   {
     icon: '🎩',
     imageUrl: houdiniPanel?.mainImage?.asset?.url,
@@ -157,6 +158,20 @@ const opplevKort = [
     ctaText: 'Utforsk historien →',
   },
 ]
+
+const opplevKort = hp?.oppleveKort?.length
+  ? hp.oppleveKort.map((k) => ({
+      icon: k.icon,
+      imageUrl: k.bilde?.asset?._ref
+        ? urlFor(k.bilde).width(700).height(500).fit('crop').format('webp').url()
+        : (k.bilde?.asset?.url ?? undefined),
+      label: k.label,
+      title: k.title,
+      description: k.description,
+      href: k.href,
+      ctaText: k.knappTekst ? `${k.knappTekst} →` : undefined,
+    }))
+  : fallbackOpplevKort
 
 // ── «Historie og aktuelt» — samlet fra flere innholdstyper ─────────
 type ArchiveCard = {
