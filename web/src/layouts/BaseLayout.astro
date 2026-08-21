@@ -7,10 +7,20 @@ import Analytics from '@vercel/analytics/astro'
 export interface Props {
   title?: string;
   description?: string;
+  /** Sett true for sider som ikke skal indekseres selv i produksjon
+   *  (f.eks. en «kommer snart»-tilstand bak en feature-flagg). */
+  noindex?: boolean;
+  /** Delingsbilde for og:image/twitter:image. Full URL eller absolutt sti (f.eks. "/mitt-bilde.jpg").
+   *  Faller tilbake til museets standard delingsbilde når ikke satt. */
+  ogImage?: string;
+  ogType?: 'website' | 'article';
 }
 const {
   title = 'Tryllemuseet',
   description,
+  noindex = false,
+  ogImage,
+  ogType = 'website',
 } = Astro.props;
 
 const [site, quizConfig, gameConfig, navigation] = await Promise.all([
@@ -20,6 +30,8 @@ const metaDescription = description ?? site.seoDescription
 
 // "production" i Vercel prod-miljø; alt annet (test, preview, lokalt) skal ikke indekseres
 const isProdEnv = import.meta.env.PUBLIC_VERCEL_ENV === 'production'
+const canonicalUrl = new URL(Astro.url.pathname, 'https://tryllemuseet.no').toString()
+const shareImage = new URL(ogImage ?? '/Logosirkel_m_tekst.jpg', 'https://tryllemuseet.no').toString()
 const quizActive = quizConfig?.isActive === true
 const gameActive = gameConfig?.isActive === true
 
@@ -46,8 +58,15 @@ const isAreaActive = (area: NavMainArea) =>
 const dropdownId = (area: NavMainArea) =>
   'dd-' + area.link.replace(/[^a-z0-9]+/gi, '-').replace(/^-+|-+$/g, '')
 
-// Flat liste for footer
-const allNavLinks = mainAreas.map(a => ({ href: a.link, label: a.label }))
+// Flat liste for footer — hovedområdene, pluss kontakt- og støttelenker som
+// ikke selv er egne toppnivå-nav-punkter (se seksjon 17 i lanseringsnotatet)
+const allNavLinks: { href: string; label: string; external?: boolean }[] = [
+  ...mainAreas.map(a => ({ href: a.link, label: a.label })),
+  { href: '/kontakt', label: 'Kontakt' },
+  { href: site.membershipUrl, label: 'Bli medlem', external: true },
+  { href: site.donationUrl || '/om-oss#gi-en-gave', label: 'Støtt museet', external: !!site.donationUrl },
+  { href: '/om-oss#frivillig', label: 'Frivillig / Hjelp til' },
+]
 ---
 <!DOCTYPE html>
 <html lang="nb">
@@ -55,8 +74,23 @@ const allNavLinks = mainAreas.map(a => ({ href: a.link, label: a.label }))
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="description" content={metaDescription} />
-  {!isProdEnv && <meta name="robots" content="noindex, nofollow" />}
+  {(!isProdEnv || noindex) && <meta name="robots" content="noindex, nofollow" />}
   <title>{title}</title>
+  <link rel="canonical" href={canonicalUrl} />
+
+  <!-- Open Graph / delingsmetadata -->
+  <meta property="og:site_name" content={site.siteName} />
+  <meta property="og:type" content={ogType} />
+  <meta property="og:title" content={title} />
+  <meta property="og:description" content={metaDescription} />
+  <meta property="og:url" content={canonicalUrl} />
+  <meta property="og:image" content={shareImage} />
+  <meta property="og:locale" content="nb_NO" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content={title} />
+  <meta name="twitter:description" content={metaDescription} />
+  <meta name="twitter:image" content={shareImage} />
+
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Lora:ital,wght@0,400;0,600;1,400&family=Source+Sans+3:wght@300;400;600&display=swap" rel="stylesheet" />
@@ -193,7 +227,11 @@ const allNavLinks = mainAreas.map(a => ({ href: a.link, label: a.label }))
         <h3>Utforsk</h3>
         <ul>
           {allNavLinks.map(link => (
-            <li><a href={link.href}>{link.label}</a></li>
+            <li>
+              <a href={link.href} target={link.external ? '_blank' : undefined} rel={link.external ? 'noopener noreferrer' : undefined}>
+                {link.label}
+              </a>
+            </li>
           ))}
         </ul>
       </div>

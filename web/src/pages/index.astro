@@ -256,9 +256,18 @@ const archiveCards = archiveCandidates.filter(c => c.title).slice(0, 4)
 
 <BaseLayout title="Tryllemuseet — Norges mest magiske museum">
 
+  <!-- ══ IDENTITET — permanent, uavhengig av karusellslide ════════ -->
+  <section class="hero-identity" aria-label="Om museet">
+    <div class="container hero-identity-inner">
+      <h1 class="hero-identity-heading">
+        Tryllemuseet <span>på Årvoll gård i Oslo</span>
+      </h1>
+      <a href="/besok" class="hero-identity-cta">Besøk oss →</a>
+    </div>
+  </section>
+
   <!-- ══ HERO — bannerkarusell ═══════════════════════════════════ -->
   <section class="hero-banner" aria-label="Utvalgt innhold">
-    <h1 class="sr-only">Tryllemuseet — {config.siteTagline}</h1>
 
     <div class="banner-track">
       {heroBanners.map((b, i) => (
@@ -410,19 +419,28 @@ const archiveCards = archiveCandidates.filter(c => c.title).slice(0, 4)
     </>
   )}
 
-  <!-- ══ BLI MEDLEM (kort) ═══════════════════════════════════════ -->
-  <section class="section member-strip-section" aria-labelledby="member-heading">
-    <div class="container member-strip-inner">
-      <AnimateIn direction="left">
-        <div class="member-strip-text">
-          <p class="section-label">Støtt museet</p>
-          <h2 class="display-title" id="member-heading">{medlem.heading}</h2>
-          <p>{medlem.tekst}</p>
-        </div>
+  <!-- ══ STØTT MUSEET — medlemskap og donasjon, to atskilte valg ═══ -->
+  <section class="section support-section" aria-labelledby="member-heading">
+    <div class="container">
+      <AnimateIn direction="up">
+        <p class="section-label support-label">Støtt museet</p>
       </AnimateIn>
-      <AnimateIn direction="right">
-        <Button variant="membership" href={config.membershipUrl}>{medlem.knappLabel}</Button>
-      </AnimateIn>
+      <div class="support-grid">
+        <AnimateIn direction="left">
+          <div class="support-card">
+            <h2 class="display-title" id="member-heading">{medlem.heading}</h2>
+            <p>{medlem.tekst}</p>
+            <Button variant="membership" href={config.membershipUrl}>{medlem.knappLabel}</Button>
+          </div>
+        </AnimateIn>
+        <AnimateIn direction="right">
+          <div class="support-card">
+            <h2 class="display-title">Gi en gave</h2>
+            <p>{config.donationText}</p>
+            <Button variant="outline" class="support-donate-btn" href={config.donationUrl || '/om-oss#gi-en-gave'}>{config.donationLabel}</Button>
+          </div>
+        </AnimateIn>
+      </div>
     </div>
   </section>
 
@@ -604,7 +622,17 @@ const archiveCards = archiveCandidates.filter(c => c.title).slice(0, 4)
 </script>
 
 <style>
-  .sr-only { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
+  /* ── IDENTITET — permanent lag over hero-karusellen ──────────────── */
+  .hero-identity { background:var(--burgundy-dk); border-bottom:1px solid rgba(212,168,67,0.25); }
+  .hero-identity-inner { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:0.5rem 1.25rem; padding-top:0.6rem; padding-bottom:0.6rem; }
+  .hero-identity-heading { font-family:var(--font-display); font-weight:700; font-size:clamp(0.95rem, 2.4vw, 1.15rem); letter-spacing:0.03em; color:#fff; line-height:1.3; margin:0; }
+  .hero-identity-heading span { color:var(--gold-light); font-weight:400; }
+  .hero-identity-cta { flex-shrink:0; font-family:var(--font-ui); font-size:0.8rem; font-weight:700; letter-spacing:0.05em; text-transform:uppercase; background:var(--gold); color:var(--burgundy-dk); padding:0.5rem 1.1rem; border-radius:2px; transition:background 180ms; white-space:nowrap; }
+  .hero-identity-cta:hover { background:var(--gold-light); }
+  @media (max-width:600px) {
+    .hero-identity-inner { justify-content:center; text-align:center; }
+    .hero-identity-heading { width:100%; text-align:center; }
+  }
 
   /* ── HERO — bannerkarusell ─────────────────────────────────────── */
   .hero-banner { position:relative; height:clamp(260px, 32vw, 420px); background:var(--burgundy-dk); overflow:hidden; }
@@ -665,12 +693,23 @@ const archiveCards = archiveCandidates.filter(c => c.title).slice(0, 4)
   .archive-section { background:var(--cream); }
   .archive-grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(240px, 1fr)); gap:1.5rem; }
 
-  /* ── BLI MEDLEM (kort) ────────────────────────────────────────── */
-  .member-strip-section { background:var(--burgundy-dk); }
-  .member-strip-inner { display:flex; align-items:center; justify-content:space-between; gap:2rem; flex-wrap:wrap; }
-  .member-strip-text .section-label { color:var(--gold-light); opacity:0.7; }
-  .member-strip-text h2 { color:var(--cream); font-size:var(--text-xl); margin:0.4rem 0 0.4rem; }
-  .member-strip-text p { font-family:var(--font-ui); font-size:var(--text-sm); color:var(--cream); opacity:0.8; line-height:1.6; max-width:440px; }
+  /* ── STØTT MUSEET (medlemskap / donasjon) ─────────────────────── */
+  .support-section { background:var(--burgundy-dk); }
+  .support-label { color:var(--gold-light); opacity:0.7; text-align:center; display:block; margin-bottom:1.5rem; }
+  .support-grid { display:grid; grid-template-columns:1fr 1fr; gap:2rem; }
+  @media (max-width:700px) { .support-grid { grid-template-columns:1fr; } }
+  .support-card {
+    background:rgba(255,255,255,0.04);
+    border:1px solid rgba(212,168,67,0.2);
+    border-radius:8px;
+    padding:2rem;
+    display:flex; flex-direction:column; align-items:flex-start; gap:0.75rem;
+    height:100%;
+  }
+  .support-card h2 { color:var(--cream); font-size:var(--text-xl); margin:0; }
+  .support-card p { font-family:var(--font-ui); font-size:var(--text-sm); color:var(--cream); opacity:0.8; line-height:1.6; flex:1; margin-bottom:0.25rem; }
+  :global(.support-donate-btn.btn--outline) { border-color:var(--gold); color:var(--gold-light); }
+  :global(.support-donate-btn.btn--outline:hover) { background:rgba(212,168,67,0.1); color:var(--gold-light); }
 
   /* ── SPONSORER ─────────────────────────────────────────────────── */
   .sponsors-section { background:var(--burgundy-dk); padding:3rem 0; border-top:1px solid rgba(212,168,67,0.15); }

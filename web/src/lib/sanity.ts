@@ -1249,6 +1249,9 @@ export interface SiteConfig {
   openingHoursNote:  string
   membershipUrl:     string
   vippsNumber:       string
+  donationUrl?:      string
+  donationLabel:     string
+  donationText:      string
   facebook:          string
   instagram:         string
   youtube?:          string
@@ -1266,12 +1269,12 @@ export async function getSiteConfig(): Promise<SiteConfig> {
       siteName, siteTagline, email, phone,
       address, addressShort, mapUrl, mapEmbedUrl,
       openingHoursShort, openingHoursNote,
-      membershipUrl, vippsNumber,
+      membershipUrl, vippsNumber, donationUrl, donationLabel, donationText,
       facebook, instagram, youtube,
       seoDescription
     }
   `)
-  return config ?? {
+  const base = config ?? {
     siteName:          'Tryllemuseet',
     siteTagline:       'Norges minste, merkeligste og mest magiske museum',
     email:             'post@tryllemuseet.no',
@@ -1285,6 +1288,13 @@ export async function getSiteConfig(): Promise<SiteConfig> {
     facebook:          'https://www.facebook.com/tryllemuseet',
     instagram:         'https://www.instagram.com/tryllemuseet',
     seoDescription:    'Norges minste, merkeligste og mest magiske museum. Besøk oss på Årvoll gård i Oslo — søndager 12–15. Gratis inngang.',
+  }
+  // donationLabel/donationText er nye felter (2026-08) — dekk eksisterende
+  // siteConfig-dokumenter som ennå ikke har fylt dem inn i Studio.
+  return {
+    ...base,
+    donationLabel: config?.donationLabel ?? 'Gi en gave →',
+    donationText:  config?.donationText  ?? 'Museet drives i stor grad av frivillige. En gave bidrar til å bevare samlingen, utvikle utstillingene og holde museet gratis og tilgjengelig for alle.',
   }
 }
 
@@ -1324,7 +1334,7 @@ const DEFAULT_MAIN_AREAS: NavMainArea[] = [
     ],
   },
   {
-    label: 'Aktiviteter', link: '/aktiviteter',
+    label: 'Hva skjer', link: '/aktiviteter',
     matchPaths: ['/aktiviteter', '/arrangementer', '/barn', '/tryllequiz', '/det-trettende-kabinett'],
     column: 'left', isVisible: true,
     subAreas: [
@@ -1336,16 +1346,6 @@ const DEFAULT_MAIN_AREAS: NavMainArea[] = [
     ],
   },
   {
-    label: 'Opptredener', link: '/tryllehistorie/got-talent',
-    matchPaths: ['/tryllehistorie/got-talent', '/tryllehistorie/fool-us', '/tryllehistorie/historiske-opptak'],
-    column: 'left', isVisible: true,
-    subAreas: [
-      { label: 'Got Talent',                    link: '/tryllehistorie/got-talent',        isVisible: true },
-      { label: 'Penn & Teller: Fool Us',        link: '/tryllehistorie/fool-us',           isVisible: true },
-      { label: 'Historiske opptak',             link: '/tryllehistorie/historiske-opptak', isVisible: true },
-    ],
-  },
-  {
     label: 'Arkivet', link: '/tryllehistorie',
     matchPaths: ['/tryllehistorie', '/ressurser'],
     column: 'right', isVisible: true,
@@ -1354,6 +1354,9 @@ const DEFAULT_MAIN_AREAS: NavMainArea[] = [
       { label: 'Fordypninger',          link: '/tryllehistorie/fordypninger',         isVisible: true },
       { label: 'Hvem skulle trodd?',    link: '/tryllehistorie/hvem-skulle-trodd',    isVisible: true },
       { label: 'Historiske artikler',   link: '/tryllehistorie/historiske-artikler',  isVisible: true },
+      { label: 'Historiske opptak',     link: '/tryllehistorie/historiske-opptak',    isVisible: true },
+      { label: 'Got Talent',            link: '/tryllehistorie/got-talent',           isVisible: true },
+      { label: 'Penn & Teller: Fool Us', link: '/tryllehistorie/fool-us',             isVisible: true },
       { label: 'Verdens mest…',         link: '/tryllehistorie/verdens-mest',         isVisible: true },
       { label: 'Norden i FISM',         link: '/tryllehistorie/norden-i-fism',        isVisible: true },
       { label: 'Bibliotek',             link: '/ressurser/bibliotek',                 isVisible: true },

@@ -799,6 +799,7 @@ const payloadJson = JSON.stringify(payload).replace(/</g, '\\u003c')
 <BaseLayout
   title={`${gameTitle} — Tryllemuseet`}
   description="Et tryllemuseum som bare finnes om natten. Løs gåtene, samle kortstokken og bli Direktørens lærling — Tryllemuseets historiespill."
+  noindex={!isActive}
 >
 
   <section class="hero" id="game-hero">
