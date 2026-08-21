@@ -829,20 +829,41 @@ Forsiden er bygget opp av flere uavhengige seksjoner i samme dokument. Du
 trenger bare åpne dette ene dokumentet, rulle ned til riktig seksjon, endre
 og publisere.
 
+Feltene er merket ⚠️ i Studio når de ikke lenger har noen synlig effekt på
+nettsiden — se merknaden etter tabellen.
+
 | Seksjon | Felt | Merknad |
 |---|---|---|
-| **Hero** | Overskrift, Kursiv del av overskrift | De to delene av hovedoverskriften — «kursiv del» vises fremhevet/skrå |
-| | Ingress | Teksten under overskriften |
-| | Knapp 1 / Knapp 2 — tekst og URL | De to knappene i heroen, f.eks. «Planlegg besøket» → `/besok` |
-| | Bakgrunnsbilde | Bildet bak heroen |
-| **Info-badges** | Tekst (maks 3) | De tre korte faktaboksene rett under heroen, f.eks. «7 utstillingsfelt» |
-| **Fremhevet innhold** | Tidsperiode-label, Overskrift | F.eks. «Gullalderen 1845–1930». Tidsperiode-label er valgfri — la stå tom hvis det du fremhever ikke er tidsbundet |
-| | Håndplukket innhold (maks 5) | Se under |
-| **Barn & unge-seksjon** | Overskrift, Ingress, Aktiviteter/features, Sitater | Fritekst-liste og sitater med emoji og kilde |
+| **Hero-bannere (karusell i toppen)** | Tekstlinje 1/2, Knapp — tekst, Lenke, Bilde, Video | Det faktiske hero-banneret øverst på forsiden. Maks 6 kan legges inn, men i dag vises kun det **første** banneret i lista (ikke en roterende karusell ennå) |
+| **Dette kan du oppleve (4 kort)** | Ikon, Bilde, Kicker-tekst, Tittel, Beskrivelse, Lenke, Knappetekst | De fire kortene rett under arrangement-kalenderen. Maks 4. Se merknad under |
+| ⚠️ **Hero** | Overskrift, Kursiv del, Ingress, Knapp 1/2, Bakgrunnsbilde | Vises ikke — erstattet av Hero-bannere over |
+| ⚠️ **Info-badges** | Tekst (maks 3) | Vises ikke — hørte til det gamle Hero-oppsettet |
+| **Fremhevet innhold** | ⚠️ Tidsperiode-label, ⚠️ Overskrift | Vises ikke — seksjonsoverskriften «Historie og aktuelt» er fast i koden |
+| | Håndplukket innhold (maks 5) | Fungerer som normalt — se under |
+| **Barn & unge-seksjon** | Overskrift, Ingress | Brukes som tittel/beskrivelse på «Barn & unge»-kortet i «Dette kan du oppleve», når det kortet ikke er overstyrt der |
+| | ⚠️ Aktiviteter/features, ⚠️ Sitater | Vises ikke |
 | **Medlemskap-seksjon** | Overskrift, Tekst, Knapp — tekst | Knappens URL hentes alltid fra **Globale innstillinger** → Bli medlem-lenke, ikke herfra |
-| **Om museet-seksjon** | Overskrift, Tekst, Sitat, Sitatets kilde | |
-| **Kurs-seksjon** | Overskrift, Ingress, Detaljer (kulepunkter), Pris, Prislabel, Fondsbadge, Knapp — tekst og URL | |
-| **Kurssitat** | Sitatekst, Kilde | Eget sitat knyttet til kurs-seksjonen |
+| ⚠️ **Om museet-seksjon** | Overskrift, Tekst, Sitat, Sitatets kilde | Vises ikke — forsiden har ingen egen «Om museet»-seksjon i dagens design |
+| **Kurs-seksjon** | Overskrift, Ingress, Knapp — tekst og URL | Brukes som tittel/beskrivelse/lenke på «Kurs»-kortet i «Dette kan du oppleve», når det kortet ikke er overstyrt der |
+| | ⚠️ Detaljer, ⚠️ Pris, ⚠️ Prislabel, ⚠️ Fondsbadge | Vises ikke |
+| ⚠️ **Kurssitat** | Sitatekst, Kilde | Vises ikke |
+
+> **«Dette kan du oppleve» — nytt felt (2026-08):** De fire kortene var
+> tidligere fast kodet og ikke redigerbare i det hele tatt. Nå kan du legge
+> inn egne kort her (opptil 4 — ikon **eller** bilde, kicker-tekst, tittel,
+> beskrivelse, lenke og knappetekst; pilen «→» legges til automatisk bak
+> knappeteksten). **La feltet stå helt tomt** for å bruke det innebygde
+> standardutvalget (Houdini/utstillingen, Barn & unge, Kurs, Magiens
+> historie) — fyller du inn ett eller flere kort, overstyrer det **hele**
+> seksjonen, ikke bare de kortene du la til.
+
+> **Om de ⚠️-merkede feltene:** Forsiden har vært gjennom en redesign, og
+> flere felt fra den forrige versjonen henger fortsatt igjen i skjemaet uten
+> å bli lest av den ferdig bygde siden lenger. De er beholdt (ikke slettet)
+> i tilfelle innholdet skal gjenbrukes, men ikke bruk tid på å redigere dem
+> — de har ingen synlig effekt akkurat nå. Studio-tittelen på hvert felt
+> starter med ⚠️ og feltbeskrivelsen sier «vises ikke på nettsiden» slik at
+> dette er tydelig direkte i redigeringsgrensesnittet, ikke bare her.
 
 > **Oppdatert 2026-07 — «Håndplukket innhold» er ikke lenger låst til
 > Gullalderen:** Feltet lar deg nå velge fritt blant **Fordypninger**
@@ -859,13 +880,6 @@ og publisere.
 > publiserer i Sanity vises ikke på tryllemuseet.no før neste bygging (enten
 > den daglige kl. 05:30, eller en manuell «Daily rebuild» trigget av Trond via
 > GitHub Actions). Det er normalt — ikke et tegn på at noe gikk galt.
-
-> **Om «Hero»-feltet og «Info-badges»:** Skjemaet har fortsatt et eget «Hero»-objekt
-> (Overskrift, Kursiv del, Ingress, Knapp 1/2, Bakgrunnsbilde) og «Info-badges»
-> fra en tidligere forsideversjon. Disse leses ikke lenger av forsiden — den
-> bruker i dag **Hero-bannere (karusell i toppen)** i stedet, se tabellen over.
-> Ikke bruk tid på å redigere «Hero»/«Info-badges»; de har ingen synlig effekt
-> akkurat nå.
 
 ---
 
