@@ -104,6 +104,11 @@ const socialHandle = (url: string) => url.replace(/^https?:\/\/(www\.)?/, '').re
         <Button variant="outline" href="/aktiviteter">Se kommende forestillinger →</Button>
       </InfoCard>
 
+      <InfoCard icon="🐕" title={page.familieSeksjon.heading}>
+        <p class="info-text">{page.familieSeksjon.tekst}</p>
+        <Button variant="outline" href={page.familieSeksjon.knappHref}>{page.familieSeksjon.knappLabel}</Button>
+      </InfoCard>
+
       <InfoCard icon="📱" title="Følg oss">
         <div class="social-links">
           {site.facebook && (

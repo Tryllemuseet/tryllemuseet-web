@@ -34,6 +34,14 @@ const presse   = {
   ],
   nedlastingsNotat: pressePartial.nedlastingsNotat ?? 'Filer leveres på forespørsel via e-post',
 }
+const frivilligPartial = p?.frivillig ?? {}
+const frivillig = {
+  label:      frivilligPartial.label      ?? 'Frivillig',
+  heading:    frivilligPartial.heading    ?? 'Hjelp oss holde museet åpent',
+  tekst:      frivilligPartial.tekst      ?? 'Vi trenger frivillige som kan ta museumsvakter, hjelpe til på arrangementer og bidra med registrering og kuratering av samlingen.',
+  knappLabel: frivilligPartial.knappLabel ?? 'Jeg vil bidra →',
+  knappHref:  frivilligPartial.knappHref  ?? '/kontakt',
+}
 const partnere = p?.partnere   ?? { heading: 'Samarbeidspartnere', liste: [] }
 
 const historieHtml = portableTextToHtml(om.historieTekst)
@@ -148,6 +156,43 @@ const historieHtml = portableTextToHtml(om.historieTekst)
           {medlem.vippsInfo && <p class="vipps-info">{medlem.vippsInfo}</p>}
         </div>
       )}
+    </div>
+  </section>
+
+  <!-- ── GI EN GAVE (donasjon — atskilt fra medlemskap) ──────────── -->
+  <section class="donasjon-seksjon section-pad bg-cream" id="gi-en-gave">
+    <div class="container donasjon-inner">
+      <AnimateIn direction="up">
+        <div class="donasjon-tekst">
+          <span class="etikett">Engangsstøtte</span>
+          <h2>Gi en gave</h2>
+          <p>{site.donationText}</p>
+          {!site.donationUrl && site.vippsNumber && (
+            <p class="donasjon-vipps">Vipps beløpet til <strong>{site.vippsNumber}</strong> — ingen medlemskapsforpliktelse.</p>
+          )}
+        </div>
+      </AnimateIn>
+      <AnimateIn direction="up">
+        {site.donationUrl && (
+          <Button variant="outline" href={site.donationUrl}>{site.donationLabel}</Button>
+        )}
+      </AnimateIn>
+    </div>
+  </section>
+
+  <!-- ── FRIVILLIG ────────────────────────────────────────────── -->
+  <section class="frivillig-seksjon section-pad" id="frivillig">
+    <div class="container frivillig-inner">
+      <AnimateIn direction="left">
+        <div class="frivillig-tekst">
+          <span class="etikett">{frivillig.label}</span>
+          <h2>{frivillig.heading}</h2>
+          <p>{frivillig.tekst}</p>
+        </div>
+      </AnimateIn>
+      <AnimateIn direction="right">
+        <Button variant="secondary" href={frivillig.knappHref}>{frivillig.knappLabel}</Button>
+      </AnimateIn>
     </div>
   </section>
 
@@ -340,6 +385,22 @@ const historieHtml = portableTextToHtml(om.historieTekst)
   .vipps-label { font-family: var(--font-ui); font-size: 0.7rem; letter-spacing: 0.15em; text-transform: uppercase; color: #888; }
   .vipps-tall { font-family: var(--font-display); font-size: 2rem; color: var(--burgundy); letter-spacing: 0.1em; }
   .vipps-info { font-family: var(--font-ui); font-size: 0.8rem; color: #888; margin: 0; }
+
+  /* ── Gi en gave (donasjon) ── */
+  .donasjon-inner { display:flex; align-items:center; justify-content:space-between; gap:2.5rem; flex-wrap:wrap; max-width:900px; margin:0 auto; }
+  .donasjon-tekst { flex:1; min-width:260px; }
+  .donasjon-tekst h2 { font-family:var(--font-display); font-size:1.4rem; color:var(--burgundy); margin:0.3rem 0 0.75rem; }
+  .donasjon-tekst p { font-family:var(--font-body); font-size:1rem; color:#444; line-height:1.7; margin-bottom:0.5rem; }
+  .donasjon-vipps { font-family:var(--font-ui); font-size:0.9rem; color:#666; }
+  .donasjon-vipps strong { color:var(--burgundy); }
+
+  /* ── Frivillig ── */
+  .frivillig-seksjon { background:var(--burgundy); }
+  .frivillig-inner { display:flex; align-items:center; justify-content:space-between; gap:2rem; flex-wrap:wrap; }
+  .frivillig-tekst { max-width:520px; }
+  .frivillig-tekst .etikett { color:var(--gold-light); border-color:var(--gold-light); }
+  .frivillig-tekst h2 { font-family:var(--font-display); font-size:1.4rem; color:var(--cream); margin:0.3rem 0 0.6rem; }
+  .frivillig-tekst p { font-family:var(--font-body); font-size:1rem; color:var(--cream); opacity:0.85; line-height:1.7; margin:0; }
 
   /* ── Presse ── */
   .presse-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; align-items: start; }

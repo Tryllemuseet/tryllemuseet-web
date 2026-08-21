@@ -96,6 +96,30 @@ export const siteConfig = defineType({
       initialValue: '95626',
     }),
 
+    // ─── DONASJON ───────────────────────────────────────────────
+    // Egen støtteform ved siden av medlemskap — se
+    // docs/tryllemuseet_lanseringsforbedringer_ai.md seksjon 6–7.
+    // «Bli medlem» og «Gi en gave» skal aldri pekes til samme lenke.
+    defineField({
+      name: 'donationUrl',
+      title: 'Gi en gave — URL',
+      type: 'url',
+      description: 'Lenke til museets betalings-/donasjonsløsning (f.eks. en dedikert Vipps-lenke). La stå tom for å vise Vipps-nummeret over i stedet.',
+    }),
+    defineField({
+      name: 'donationLabel',
+      title: 'Gi en gave — knappetekst',
+      type: 'string',
+      initialValue: 'Gi en gave →',
+    }),
+    defineField({
+      name: 'donationText',
+      title: 'Gi en gave — tekst',
+      type: 'text',
+      rows: 3,
+      initialValue: 'Museet drives i stor grad av frivillige. En gave bidrar til å bevare samlingen, utvikle utstillingene og holde museet gratis og tilgjengelig for alle.',
+    }),
+
     // ─── SOSIALE MEDIER ─────────────────────────────────────────
     defineField({
       name: 'facebook',

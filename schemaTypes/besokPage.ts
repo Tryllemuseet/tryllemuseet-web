@@ -125,6 +125,20 @@ export const besokPage = defineType({
       ],
     }),
 
+    // ─── FAMILIE-SEKSJON («Kommer du med barn?») ───────────────────
+    defineField({
+      name: 'familieSeksjon',
+      title: 'Familie-seksjon («Kommer du med barn?»)',
+      description: 'Tydelig inngang for familier/barn på Besøk oss-siden, med lenke videre til barnesiden.',
+      type: 'object',
+      fields: [
+        defineField({ name: 'heading',    title: 'Overskrift', type: 'string' }),
+        defineField({ name: 'tekst',      title: 'Brødtekst',  type: 'text', rows: 2 }),
+        defineField({ name: 'knappLabel', title: 'Knapp — tekst', type: 'string' }),
+        defineField({ name: 'knappHref',  title: 'Knapp — URL',   type: 'string' }),
+      ],
+    }),
+
     // ─── SPØRSMÅL-SEKSJON ─────────────────────────────────────────
     defineField({
       name: 'sporsmalSeksjon',
