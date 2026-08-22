@@ -27,6 +27,7 @@ export const structure: StructureResolver = (S) =>
             .items([
               S.documentTypeListItem('homepage').title('Forside'),
               S.documentTypeListItem('besokPage').title('Besøk oss'),
+              S.documentTypeListItem('kursPage').title('Tryllekurs'),
               S.documentTypeListItem('utstillingPage').title('Utstilling (innledning)'),
               S.documentTypeListItem('tryllebutikkenPage').title('Tryllebutikken'),
               S.documentTypeListItem('barnPage').title('Barnesiden'),
