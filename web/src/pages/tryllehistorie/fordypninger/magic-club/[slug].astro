@@ -1,6 +1,7 @@
 ---
 // src/pages/tryllehistorie/fordypninger/magic-club/[slug].astro
 import BaseLayout from '../../../../layouts/BaseLayout.astro'
+import AnimateIn from '../../../../components/AnimateIn.astro'
 import { getMagicClubEditionBySlug, getMagicClubEditionPaths } from '../../../../lib/sanity'
 import type { MagicClubEdition } from '../../../../lib/sanity'
 
@@ -46,14 +47,17 @@ const dateStr = new Date(ed.date).toLocaleDateString('nb-NO', { day: 'numeric', 
     <div class="edition-main">
 
       {ed.poster?.asset?.url && (
+        <AnimateIn>
         <img
           src={ed.poster.asset.url}
           alt={ed.poster.alt ?? `Plakat, Magic Club ${dateStr}`}
           class="poster-img"
         />
+        </AnimateIn>
       )}
 
       {ed.guestStars && ed.guestStars.length > 0 && (
+        <AnimateIn>
         <section class="block">
           <h2>Gjestestjerner</h2>
           <ul class="plain-list">
@@ -62,9 +66,11 @@ const dateStr = new Date(ed.date).toLocaleDateString('nb-NO', { day: 'numeric', 
             ))}
           </ul>
         </section>
+        </AnimateIn>
       )}
 
       {ed.lineup && ed.lineup.length > 0 && (
+        <AnimateIn>
         <section class="block">
           <h2>Norsk lineup</h2>
           <ul class="plain-list">
@@ -77,9 +83,11 @@ const dateStr = new Date(ed.date).toLocaleDateString('nb-NO', { day: 'numeric', 
             ))}
           </ul>
         </section>
+        </AnimateIn>
       )}
 
       {ed.otherActs && ed.otherActs.length > 0 && (
+        <AnimateIn>
         <section class="block">
           <h2>Øvrige innslag</h2>
           <ul class="plain-list">
@@ -88,13 +96,16 @@ const dateStr = new Date(ed.date).toLocaleDateString('nb-NO', { day: 'numeric', 
             ))}
           </ul>
         </section>
+        </AnimateIn>
       )}
 
       {ed.notes && (
+        <AnimateIn>
         <section class="block">
           <h2>Om denne kvelden</h2>
           <p>{ed.notes}</p>
         </section>
+        </AnimateIn>
       )}
 
       {ed.sourceUrl && (

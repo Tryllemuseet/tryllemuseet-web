@@ -10,21 +10,36 @@
 // Kortene her er bevisst enkle (kun tittel/lenke) — ingen ikon/beskrivelse
 // er ment; det får håndkurerte kort i stedet.
 import ContentCard from './ContentCard.astro'
+import AnimateIn from './AnimateIn.astro'
 
 export interface Props {
   heading: string
   items:   { label: string; link: string }[]
+  /** Set false to opt out of the scroll-build reveal (dev/design use only —
+   * not exposed as a Sanity field). Default true. */
+  animate?: boolean
 }
 
-const { heading, items } = Astro.props
+const { heading, items, animate = true } = Astro.props
+const STAGGER_MS = 80
+const STAGGER_CAP_MS = 320
 ---
 
 {items.length > 0 && (
   <section class="hub-subnav-grid" aria-labelledby="hub-subnav-heading">
-    <h2 class="hub-subnav-heading" id="hub-subnav-heading">{heading}</h2>
+    {animate
+      ? <AnimateIn><h2 class="hub-subnav-heading" id="hub-subnav-heading">{heading}</h2></AnimateIn>
+      : <h2 class="hub-subnav-heading" id="hub-subnav-heading">{heading}</h2>
+    }
     <div class="hub-subnav-cards">
-      {items.map(item => (
-        <ContentCard variant="compact" title={item.label} href={item.link} ctaText="Utforsk →" />
+      {items.map((item, i) => (
+        animate ? (
+          <AnimateIn delay={Math.min(i * STAGGER_MS, STAGGER_CAP_MS)}>
+            <ContentCard variant="compact" title={item.label} href={item.link} ctaText="Utforsk →" />
+          </AnimateIn>
+        ) : (
+          <ContentCard variant="compact" title={item.label} href={item.link} ctaText="Utforsk →" />
+        )
       ))}
     </div>
   </section>

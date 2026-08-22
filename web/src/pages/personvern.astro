@@ -1,6 +1,7 @@
 ---
 // src/pages/personvern.astro
 import BaseLayout from '../layouts/BaseLayout.astro'
+import AnimateIn from '../components/AnimateIn.astro'
 import { getPersonvernPage, portableTextToHtml, getSiteContactInfo } from '../lib/sanity'
 
 const [page, config] = await Promise.all([
@@ -30,6 +31,7 @@ function formatDate(d?: string) {
   </section>
 
   <div class="container page-body">
+    <AnimateIn>
 
     {!page && (
       <p class="no-content">Personvernerklæringen er ikke publisert ennå. Kom tilbake snart.</p>
@@ -62,6 +64,7 @@ function formatDate(d?: string) {
       </p>
     </div>
 
+    </AnimateIn>
   </div>
 
 </BaseLayout>

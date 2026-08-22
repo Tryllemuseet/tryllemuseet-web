@@ -82,11 +82,14 @@ const broadcasterLabels: Record<string, string> = {
   </div>
 
   <main class="container appearances-grid" id="clips-grid">
-    {clips.map((c: any) => (
+    {clips.map((c: any, i: number) => (
       <article
         class="appearance-card"
         data-broadcaster={c.broadcaster ?? ''}
         data-magician={c.magician?.artistName ?? c.magician?.name ?? ''}
+        data-animate
+        data-direction="up"
+        style={`transition-delay:${Math.min(i * 80, 320)}ms`}
       >
         <a href={`/tryllehistorie/historiske-opptak/${c.slug}`} class="card-link">
           <div class="card-img">

@@ -2,6 +2,7 @@
 // src/pages/barn/historier/[slug].astro
 import BaseLayout from '../../../layouts/BaseLayout.astro'
 import NarrateButton from '../../../components/NarrateButton.astro'
+import AnimateIn from '../../../components/AnimateIn.astro'
 import { getComicStoryBySlug, getComicStoryPaths, getSiteConfig, urlFor, portableTextToHtml, portableTextToPlainText } from '../../../lib/sanity'
 import type { ComicImage, ComicScene } from '../../../lib/sanity'
 
@@ -99,7 +100,7 @@ const metaDescription =
     </section>
 
     {story.scenes.map(scene => (
-      <section id={scene._key} class="comic-scene" data-scene>
+      <section id={scene._key} class="comic-scene" data-scene data-animate data-direction="up">
         <div class="scene-head">
           <div>
             <div class="scene-year">{scene.year ?? '—'}</div>
@@ -169,11 +170,14 @@ const metaDescription =
       </section>
     ))}
 
+    <AnimateIn>
     <footer class="comic-footer">
       {story.creditsNote && <div class="prose" set:html={portableTextToHtml(story.creditsNote)} />}
     </footer>
+    </AnimateIn>
 
     {relatedLinks.length > 0 && (
+      <AnimateIn>
       <aside class="related-links" aria-label="Se også">
         <p class="related-links-label">Se også</p>
         <ul>
@@ -182,6 +186,7 @@ const metaDescription =
           ))}
         </ul>
       </aside>
+      </AnimateIn>
     )}
 
     <div class="page-nav">

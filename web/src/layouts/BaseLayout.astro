@@ -332,7 +332,7 @@ const allNavLinks: { href: string; label: string; external?: boolean }[] = [
           }
         })
       },
-      { threshold: 0.15 }
+      { threshold: 0.15, rootMargin: '0px 0px -5% 0px' }
     )
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
@@ -826,15 +826,23 @@ const allNavLinks: { href: string; label: string; external?: boolean }[] = [
   .gallery-seksjon img { cursor: zoom-in; }
 
   /* ── SCROLL ANIMATIONS ────────────────────────────────────── */
+  /* Distances/duration per the site's scroll-build standard — diskret,
+     elegant, museumsaktig. Never applied to heroes or above-the-fold
+     critical content (those are simply never wrapped in AnimateIn). */
   .js-animate [data-animate] {
     opacity: 0;
     transition: opacity 0.6s ease, transform 0.6s ease;
   }
-  .js-animate [data-animate][data-direction="left"]  { transform: translateX(-40px); }
-  .js-animate [data-animate][data-direction="right"] { transform: translateX(40px); }
-  .js-animate [data-animate][data-direction="up"]    { transform: translateY(40px); }
+  .js-animate [data-animate][data-direction="left"]  { transform: translateX(-24px); }
+  .js-animate [data-animate][data-direction="right"] { transform: translateX(24px); }
+  .js-animate [data-animate][data-direction="up"]    { transform: translateY(24px); }
   .js-animate [data-animate].visible {
     opacity: 1;
     transform: none;
+  }
+  @media (max-width: 640px) {
+    .js-animate [data-animate][data-direction="left"]  { transform: translateX(-16px); }
+    .js-animate [data-animate][data-direction="right"] { transform: translateX(16px); }
+    .js-animate [data-animate][data-direction="up"]    { transform: translateY(16px); }
   }
 </style>

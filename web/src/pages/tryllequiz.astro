@@ -1,6 +1,7 @@
 ---
 // src/pages/tryllequiz.astro
 import BaseLayout from '../layouts/BaseLayout.astro'
+import AnimateIn from '../components/AnimateIn.astro'
 import { getQuizConfig, getAllQuizThemes, getAllQuizQuestions, urlFor } from '../lib/sanity'
 import type { QuizResultLevel } from '../lib/sanity'
 
@@ -92,6 +93,7 @@ const difficulties = [
     <main class="container quiz-main">
 
       <!-- ── STARTSKJERM ─────────────────────────────────────────── -->
+      <AnimateIn>
       <section class="quiz-panel" id="quiz-setup" aria-labelledby="setup-heading">
         <h2 id="setup-heading" class="panel-heading">Velg din quiz</h2>
 
@@ -128,6 +130,7 @@ const difficulties = [
           <button class="btn-gold btn-start" id="btn-start">Start quizen 🪄</button>
         </div>
       </section>
+      </AnimateIn>
 
       <!-- ── SPILLSKJERM ─────────────────────────────────────────── -->
       <section class="quiz-panel" id="quiz-play" hidden aria-labelledby="play-progress">
