@@ -234,14 +234,14 @@ Update TypeScript interfaces in sanity.ts when schema changes.
 
 ### Deploy hooks (web)
 
-The web frontend is **not** auto-deployed on push to `main`. Deploys are triggered via Vercel deploy hooks called from GitHub Actions:
-
 | Environment | URL | Hook secret | Workflow |
 |---|---|---|---|
 | Test | `test.tryllemuseet.no` | `VERCEL_DEPLOY_HOOK_TEST` | `.github/workflows/daily-rebuild.yml` |
 | Production | `tryllemuseet.no` | `VERCEL_DEPLOY_HOOK_PROD` | same |
 
-The `daily-rebuild.yml` workflow runs automatically at 05:30 UTC every day and can also be triggered manually via **Actions → Daily rebuild → Run workflow** on GitHub. Both hooks rebuild their branch with fresh Sanity content — they never ship new code; code reaches production only when the `prod` branch itself is updated. Both steps fail loudly if their hook secret is empty (this silently broke the test rebuild June 28 – July 1).
+The `daily-rebuild.yml` workflow runs automatically at 05:30 UTC every day and can also be triggered manually via **Actions → Daily rebuild → Run workflow** on GitHub — this refreshes both sites with the latest Sanity content on a schedule, independent of any code push.
+
+**Correction (2026-08, verified against live Vercel deployment history):** contrary to what this section previously said, the `tryllemuseet-prod` Vercel project's production deploy hook (`Prod-hook-git`) is bound to the `main` branch, and Vercel's git integration deploys `main` straight to `tryllemuseet.no` on every push (confirmed via the project's `-git-main-` domain alias and a run of `target: "production"` deployments tracking `main` commits directly, including same-day production deploys of merged PRs). So **pushing/merging to `main` does ship new code to production** — there is no separate promotion step required. The repo still has a `prod` git branch, but it does not appear to be wired to any live deployment; treat it as vestigial unless someone confirms otherwise. If you're planning a change that should NOT go live immediately, hold it in a PR rather than merging to `main`.
 
 ## Visibility / Unpublish Convention
 
