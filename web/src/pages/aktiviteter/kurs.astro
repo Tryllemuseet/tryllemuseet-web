@@ -1,0 +1,94 @@
+---
+// src/pages/aktiviteter/kurs.astro
+import BaseLayout from '../../layouts/BaseLayout.astro'
+import AnimateIn from '../../components/AnimateIn.astro'
+import PageHero from '../../components/PageHero.astro'
+import InfoCard from '../../components/InfoCard.astro'
+import Button from '../../components/Button.astro'
+import NarrateButton from '../../components/NarrateButton.astro'
+import { getKursPage } from '../../lib/sanity'
+
+const page = await getKursPage()
+---
+
+<BaseLayout
+  title="Tryllekurs — Tryllemuseet"
+  description={page.hero.ingress}
+>
+
+  <PageHero label={page.hero.label} title={page.hero.heading} intro={page.hero.ingress} theme="dark" />
+
+  <div class="container kurs-grid">
+    <AnimateIn direction="left">
+    <div class="kurs-main">
+
+      <InfoCard icon="🎩" title={page.omKurset.heading}>
+        <div class="section-head">
+          <NarrateButton text={page.omKurset.tekst} label="Les om tryllekurset høyt" />
+        </div>
+        <p class="info-text">{page.omKurset.tekst}</p>
+      </InfoCard>
+
+      {page.sitat.tekst && (
+        <blockquote class="kurs-sitat">
+          <p>{page.sitat.tekst}</p>
+          <cite>— {page.sitat.kilde}</cite>
+        </blockquote>
+      )}
+
+    </div>
+    </AnimateIn>
+
+    <AnimateIn direction="right">
+    <div class="kurs-side">
+
+      <InfoCard icon="📋" title="Praktisk informasjon">
+        <ul class="kurs-detaljer">
+          {page.detaljer.map(d => <li>{d}</li>)}
+        </ul>
+        <div class="kurs-pris">
+          <span class="kurs-pris-belop">{page.pris.belop}</span>
+          <span class="kurs-pris-label">{page.pris.label}</span>
+        </div>
+        {page.fondsBadge && <p class="kurs-fonds-badge">{page.fondsBadge}</p>}
+        <Button variant="primary" href={page.pamelding.knappHref}>{page.pamelding.knappLabel} →</Button>
+      </InfoCard>
+
+    </div>
+    </AnimateIn>
+  </div>
+
+</BaseLayout>
+
+<style>
+  .kurs-grid { display: grid; grid-template-columns: 1.4fr 1fr; gap: 1.5rem; padding-top: 2.5rem; padding-bottom: 5rem; align-items: start; }
+  .kurs-main > :global(*), .kurs-side > :global(*) { margin-bottom: 1.25rem; }
+  .kurs-main > :global(*:last-child), .kurs-side > :global(*:last-child) { margin-bottom: 0; }
+
+  .section-head { display: flex; justify-content: flex-end; margin-bottom: -0.5rem; }
+  .info-text { font-family: var(--font-ui); font-size: var(--text-sm); color: var(--ink-mid); line-height: 1.7; white-space: pre-line; }
+
+  .kurs-sitat {
+    background: var(--cream);
+    border-left: 3px solid var(--gold-dark);
+    border-radius: var(--radius-md);
+    padding: 1.25rem 1.5rem;
+    margin: 0;
+  }
+  .kurs-sitat p { font-family: var(--font-display); font-style: italic; font-size: var(--text-md); color: var(--ink); margin: 0 0 0.5rem; }
+  .kurs-sitat cite { font-family: var(--font-ui); font-size: var(--text-xs); color: var(--grey); font-style: normal; }
+
+  .kurs-detaljer { list-style: none; margin: 0 0 1rem; padding: 0; font-family: var(--font-ui); font-size: var(--text-sm); color: var(--ink-mid); }
+  .kurs-detaljer li { padding: 0.4rem 0; border-bottom: 1px solid var(--cream-dark); }
+  .kurs-detaljer li:last-child { border-bottom: none; }
+
+  .kurs-pris { display: flex; align-items: baseline; gap: 0.4rem; margin-bottom: 0.5rem; }
+  .kurs-pris-belop { font-family: var(--font-display); font-size: var(--text-xl); color: var(--burgundy); }
+  .kurs-pris-label { font-family: var(--font-ui); font-size: var(--text-xs); color: var(--grey); }
+
+  .kurs-fonds-badge { font-family: var(--font-ui); font-size: var(--text-xs); color: var(--grey); margin-bottom: 1rem; }
+
+  @media (max-width: 800px) {
+    .kurs-grid { grid-template-columns: 1fr; }
+  }
+</style>

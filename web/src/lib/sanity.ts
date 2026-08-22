@@ -1052,6 +1052,60 @@ export async function getBesokPage(): Promise<BesokPage> {
   }
 }
 
+// ── Typer: Tryllekurs ────────────────────────────────────────────
+export interface KursPage {
+  hero:       { label: string; heading: string; ingress: string }
+  omKurset:   { heading: string; tekst: string }
+  detaljer:   string[]
+  pris:       { belop: string; label: string }
+  fondsBadge?: string
+  sitat:      { tekst: string; kilde: string }
+  pamelding:  { knappLabel: string; knappHref: string }
+}
+
+export async function getKursPage(): Promise<KursPage> {
+  const d = await sanityClient.fetch(`
+    *[_type == "kursPage"][0] {
+      hero { label, heading, ingress },
+      omKurset { heading, tekst },
+      detaljer,
+      pris { belop, label },
+      fondsBadge,
+      sitat { tekst, kilde },
+      pamelding { knappLabel, knappHref }
+    }
+  `)
+  return {
+    hero: {
+      label:   d?.hero?.label   ?? 'Hva skjer',
+      heading: d?.hero?.heading ?? 'Tryllekurs for barn',
+      ingress: d?.hero?.ingress ?? 'Du lærer triks som er enkle å utføre, men som virker meget imponerende. Kursene går over tre ettermiddager annenhver uke.',
+    },
+    omKurset: {
+      heading: d?.omKurset?.heading ?? 'Om kurset',
+      tekst:   d?.omKurset?.tekst   ?? 'Du lærer triks som er enkle å utføre, men som virker meget imponerende. Kursene går over tre ettermiddager annenhver uke.',
+    },
+    detaljer: d?.detaljer ?? [
+      'Aldersgrupper: 6–8 år (kl. 17) · 9–12 år (kl. 18.30) · 13+ år (kl. 20)',
+      'Kun 14 plasser per kurs — «først til mølla»',
+      'Inkluderer kursmateriell og tryllerekvisitter',
+    ],
+    pris: {
+      belop: d?.pris?.belop ?? '50,-',
+      label: d?.pris?.label ?? 'pr kurs',
+    },
+    fondsBadge: d?.fondsBadge ?? 'Støttet av Sparebankstiftelsen DNB',
+    sitat: {
+      tekst: d?.sitat?.tekst ?? '«Vil bare takke for et utrolig gøyalt tryllekurs — han koste seg!»',
+      kilde: d?.sitat?.kilde ?? 'Mor til kursdeltaker, 8 år · Februar 2026',
+    },
+    pamelding: {
+      knappLabel: d?.pamelding?.knappLabel ?? 'Se kommende kurs',
+      knappHref:  d?.pamelding?.knappHref  ?? 'https://kurs.tryllemuseet.no',
+    },
+  }
+}
+
 // ── Typer: Kontakt ───────────────────────────────────────────────
 export interface KontaktPage {
   hero:      { label: string; heading: string; ingress: string }
@@ -1364,6 +1418,7 @@ const DEFAULT_MAIN_AREAS: NavMainArea[] = [
     subAreas: [
       { label: 'Oversikt',                 link: '/aktiviteter',                    isVisible: true },
       { label: 'Barn & unge',              link: '/barn',                           isVisible: true },
+      { label: 'Tryllekurs',               link: '/aktiviteter/kurs',               isVisible: true },
       { label: 'Tryllequiz',               link: '/tryllequiz',                     isVisible: true, featureFlag: 'quiz' },
       { label: 'Det trettende kabinett',   link: '/det-trettende-kabinett',          isVisible: true, featureFlag: 'game' },
       { label: 'Bestill tryllekunstner',   link: '/aktiviteter/tryllekunstnere',     isVisible: true },

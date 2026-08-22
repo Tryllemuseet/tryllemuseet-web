@@ -23,6 +23,7 @@ import { ressurserPage }      from './ressurserPage'
 import { utstillingPage }    from './utstillingPage'
 import { personvernPage } from './personvernPage'
 import { tryllebutikkenPage } from './tryllebutikkenPage'
+import { kursPage }           from './kursPage'
 import { godeRadConfig }      from './godeRadConfig'
 import { partner }        from './partner'
 import artifact           from './artifact'
@@ -57,6 +58,7 @@ export const schemaTypes = [
   omOssPage,
   kontaktPage,
   personvernPage,
+  kursPage,
 
   // Dokumenttyper — Utstillingen
   tema,
