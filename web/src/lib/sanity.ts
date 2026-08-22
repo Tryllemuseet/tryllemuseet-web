@@ -1470,6 +1470,31 @@ export async function getSiteNavigation(): Promise<SiteNavigation> {
   }
 }
 
+export interface UncoveredSubArea {
+  label: string
+  link:  string
+}
+
+// Hub-sider skal ikke være avhengige av at dropdown-menyen er eneste vei inn
+// i et underområde (se tryllemuseet_sanity_hubs_automatisk_levende_innhold.md
+// § 5–6). Denne henter siteNavigation (samme sannhetskilde som selve menyen)
+// og returnerer underområdene til `mainAreaLink` som IKKE allerede er dekket
+// av `coveredHrefs` — typisk lenkene en side allerede viser eksplisitte kort
+// for. Bruk denne som et sikkerhetsnett etter en håndkuratert kortliste, ikke
+// som erstatning for den: den fyller hull, den fjerner ikke redaktørens eget
+// utvalg. Funksjonsbryttede underområder (quiz/spill) utelates helt her — vi
+// vet ikke uten en ekstra spørring om de er aktive, og et låst kort er verre
+// enn intet kort.
+export async function getUncoveredSubAreas(mainAreaLink: string, coveredHrefs: string[]): Promise<UncoveredSubArea[]> {
+  const nav = await getSiteNavigation()
+  const area = nav.mainAreas.find(a => a.link === mainAreaLink)
+  if (!area) return []
+  const covered = new Set(coveredHrefs)
+  return area.subAreas
+    .filter(s => s.isVisible !== false && (!s.featureFlag || s.featureFlag === 'none') && !covered.has(s.link))
+    .map(s => ({ label: s.label, link: s.link }))
+}
+
 // ── Legg til på slutten av src/lib/sanity.ts ────────────────────
 
 // ── Typer: TV-opptreden ──────────────────────────────────────────
@@ -1980,6 +2005,68 @@ export async function getMonthlyBiographyPick(): Promise<MonthlyBiographyPick | 
   `)
   if (items.length === 0) return null
   return items[new Date().getMonth() % items.length]
+}
+
+// ── Deterministisk ukentlig rotasjon («auto content») ────────────
+//
+// Generell mekanisme for innhold som skal bytte automatisk uke for uke uten
+// Math.random() (ustabilt mellom bygg) og uten en egen historikk-database.
+// Frøet er år+ISO-uke, så resultatet er stabilt innenfor samme uke og endrer
+// seg ved ukeskiftet via den daglige rebyggingen (samme mekanisme som de
+// månedlige plukkene over). Se docs/architecture.md § Feature Flags-naboen
+// «Auto content»/tryllemuseet_sanity_hubs_automatisk_levende_innhold.md.
+
+// year*100 + ISO-ukenummer, f.eks. 202634 for uke 34 i 2026.
+export function getIsoWeekSeed(date: Date = new Date()): number {
+  const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()))
+  const dayNum = (d.getUTCDay() + 6) % 7 // mandag = 0 … søndag = 6
+  d.setUTCDate(d.getUTCDate() - dayNum + 3) // torsdag i inneværende uke
+  const isoYear = d.getUTCFullYear()
+  const firstThursday = new Date(Date.UTC(isoYear, 0, 4))
+  const firstThursdayDayNum = (firstThursday.getUTCDay() + 6) % 7
+  firstThursday.setUTCDate(firstThursday.getUTCDate() - firstThursdayDayNum + 3)
+  const isoWeek = 1 + Math.round((d.getTime() - firstThursday.getTime()) / (7 * 86400000))
+  return isoYear * 100 + isoWeek
+}
+
+function positiveMod(n: number, m: number): number {
+  return ((n % m) + m) % m
+}
+
+// Deterministisk plukk fra en liste, gitt et frø (f.eks. getIsoWeekSeed()).
+// avoidWindow > 0: hopper videre (fortsatt deterministisk) forbi indekser som
+// de siste `avoidWindow` frøene ville plukket, så lenge poolen er stor nok
+// til at det finnes et alternativ — «unngå nylig vist» uten historikk-lagring
+// (matematisk løsning, se seksjon 10 i kildedokumentet).
+export function pickBySeed<T>(items: T[], seed: number, avoidWindow = 0): T | null {
+  if (items.length === 0) return null
+  if (avoidWindow <= 0 || items.length <= avoidWindow) {
+    return items[positiveMod(seed, items.length)]
+  }
+  const recentlyShown = new Set<number>()
+  for (let i = 1; i <= avoidWindow; i++) recentlyShown.add(positiveMod(seed - i, items.length))
+  let index = positiveMod(seed, items.length)
+  let attempts = 0
+  while (recentlyShown.has(index) && attempts < items.length) {
+    index = positiveMod(index + 1, items.length)
+    attempts++
+  }
+  return items[index]
+}
+
+// «Ukens tryllekunstner» — samme utvalgskriterier som getMonthlyBiographyPick,
+// men roterer ukentlig og unngår de 8 siste ukenes plukk (der poolen er stor
+// nok til det).
+export async function getWeeklyBiographyPick(): Promise<MonthlyBiographyPick | null> {
+  const items: MonthlyBiographyPick[] = await sanityClient.fetch(`
+    *[_type == "biography" && isVisible != false && defined(mainImage) && defined(shortBio)]
+      | order(slug.current asc) {
+      _id, name, artistName, years, shortBio,
+      "slug": slug.current,
+      mainImage { asset->{ _ref, url }, alt, caption }
+    }
+  `)
+  return pickBySeed(items, getIsoWeekSeed(), 8)
 }
 
 // ── Spørringer: Legend ───────────────────────────────────────────
