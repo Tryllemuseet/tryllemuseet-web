@@ -9,7 +9,7 @@
 // Sideeget innhold (hero, «Bøker»-seksjon på utstillingen) settes via
 // <slot name="extra" /> — plassert mellom stasjoner og «Hvem er hvem»-lenken,
 // samme sted «Bøker» ligger i dag.
-import { portableTextToHtml, portableTextToPlainText, urlFor } from '../lib/sanity'
+import { portableTextToHtml, portableTextToPlainText, urlFor, getSiteConfig } from '../lib/sanity'
 import type { Legend, LegendStation } from '../lib/sanity'
 import NarrateButton from './NarrateButton.astro'
 
@@ -22,6 +22,14 @@ interface Props {
 }
 
 const { entry } = Astro.props
+
+// «Lær et triks» er ikke lansert i produksjon ennå (se siteConfig.laerEtTriksActive)
+// — «Se også»-lenker dit skal ikke synes før funksjonen er skrudd på, selv om
+// redaktørinnholdet allerede peker dit.
+const siteConfig = await getSiteConfig()
+const relatedLinks = (entry.relatedLinks ?? []).filter(l =>
+  siteConfig.laerEtTriksActive || !l.path.startsWith('/barn/laer-et-triks')
+)
 
 const wallHtml    = portableTextToHtml(entry.wallText)
 const contentHtml = portableTextToHtml(entry.content)
@@ -211,11 +219,11 @@ const videoTypeLabel: Record<string, string> = {
   )}
 
   <!-- 8. SE OGSÅ ──────────────────────────────────────────────── -->
-  {entry.relatedLinks && entry.relatedLinks.length > 0 && (
+  {relatedLinks.length > 0 && (
     <aside class="related-links" aria-label="Se også">
       <p class="related-links-label">Se også</p>
       <ul>
-        {entry.relatedLinks.map(l => (
+        {relatedLinks.map(l => (
           <li><a href={l.path}>{l.label} →</a></li>
         ))}
       </ul>

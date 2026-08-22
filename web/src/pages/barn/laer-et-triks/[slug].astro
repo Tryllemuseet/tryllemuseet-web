@@ -3,14 +3,14 @@
 import BaseLayout from '../../../layouts/BaseLayout.astro'
 import TriksGodeRad from '../../../components/TriksGodeRad.astro'
 import NarrateButton from '../../../components/NarrateButton.astro'
-import { getTrickBySlug, getTrickPaths, portableTextToHtml, portableTextToPlainText } from '../../../lib/sanity'
+import { getTrickBySlug, getTrickPaths, getSiteConfig, portableTextToHtml, portableTextToPlainText } from '../../../lib/sanity'
 
 export async function getStaticPaths() {
   return getTrickPaths()
 }
 
 const { slug } = Astro.params
-const t = await getTrickBySlug(slug!)
+const [t, config] = await Promise.all([getTrickBySlug(slug!), getSiteConfig()])
 
 if (!t) return Astro.redirect('/barn/laer-et-triks')
 
@@ -31,6 +31,7 @@ const embedUrl = youtubeEmbedUrl(t.videoUrl)
 <BaseLayout
   title={`${t.title} — Tryllemuseet`}
   description={t.shortDescription}
+  noindex={!config.laerEtTriksActive}
 >
 
   <nav class="breadcrumb container">

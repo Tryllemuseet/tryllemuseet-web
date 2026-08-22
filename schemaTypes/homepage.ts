@@ -31,6 +31,12 @@ export const homepage = defineType({
       of: [{
         type: 'object',
         fields: [
+          defineField({
+            name: 'etikett',
+            title: 'Kicker-tekst (valgfri)',
+            type: 'string',
+            description: 'Liten tekst over tekstlinje 1, f.eks. «Høstens hovedutstilling». Bruk sparsomt — kun for banneret som skal fremheves.',
+          }),
           defineField({ name: 'tekstLinje1', title: 'Tekstlinje 1 (stor)', type: 'string', validation: (R) => R.required() }),
           defineField({ name: 'tekstLinje2', title: 'Tekstlinje 2', type: 'string' }),
           defineField({ name: 'knappLabel', title: 'Knapp — tekst', type: 'string' }),

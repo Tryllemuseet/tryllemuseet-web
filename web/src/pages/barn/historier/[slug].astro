@@ -2,7 +2,7 @@
 // src/pages/barn/historier/[slug].astro
 import BaseLayout from '../../../layouts/BaseLayout.astro'
 import NarrateButton from '../../../components/NarrateButton.astro'
-import { getComicStoryBySlug, getComicStoryPaths, urlFor, portableTextToHtml, portableTextToPlainText } from '../../../lib/sanity'
+import { getComicStoryBySlug, getComicStoryPaths, getSiteConfig, urlFor, portableTextToHtml, portableTextToPlainText } from '../../../lib/sanity'
 import type { ComicImage, ComicScene } from '../../../lib/sanity'
 
 export async function getStaticPaths() {
@@ -10,9 +10,16 @@ export async function getStaticPaths() {
 }
 
 const { slug } = Astro.params
-const story = await getComicStoryBySlug(slug!)
+const [story, siteConfig] = await Promise.all([getComicStoryBySlug(slug!), getSiteConfig()])
 
 if (!story) return Astro.redirect('/barn/historier')
+
+// «Lær et triks» er ikke lansert i produksjon ennå (se siteConfig.laerEtTriksActive)
+// — «Se også»-lenker dit skal ikke synes før funksjonen er skrudd på, selv om
+// redaktørinnholdet allerede peker dit.
+const relatedLinks = (story.relatedLinks ?? []).filter(l =>
+  siteConfig.laerEtTriksActive || !l.path.startsWith('/barn/laer-et-triks')
+)
 
 function imgSrc(img: ComicImage | undefined, width: number): string | null {
   return img?.asset?.url ? urlFor(img).width(width).format('webp').url() : null
@@ -166,11 +173,11 @@ const metaDescription =
       {story.creditsNote && <div class="prose" set:html={portableTextToHtml(story.creditsNote)} />}
     </footer>
 
-    {story.relatedLinks && story.relatedLinks.length > 0 && (
+    {relatedLinks.length > 0 && (
       <aside class="related-links" aria-label="Se også">
         <p class="related-links-label">Se også</p>
         <ul>
-          {story.relatedLinks.map(l => (
+          {relatedLinks.map(l => (
             <li><a href={l.path}>{l.label} →</a></li>
           ))}
         </ul>

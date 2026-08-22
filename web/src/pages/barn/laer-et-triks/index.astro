@@ -2,9 +2,9 @@
 // src/pages/barn/laer-et-triks/index.astro
 import BaseLayout from '../../../layouts/BaseLayout.astro'
 import AnimateIn from '../../../components/AnimateIn.astro'
-import { getAllTricks, getBarnPage } from '../../../lib/sanity'
+import { getAllTricks, getBarnPage, getSiteConfig } from '../../../lib/sanity'
 
-const [tricks, bp] = await Promise.all([getAllTricks(), getBarnPage()])
+const [tricks, bp, config] = await Promise.all([getAllTricks(), getBarnPage(), getSiteConfig()])
 
 const hero = bp?.laerEtTriksHero ?? {
   label: 'For barn og unge',
@@ -23,6 +23,7 @@ const DIFFICULTY_LABELS: Record<string, string> = {
 <BaseLayout
   title="Lær et triks — Tryllemuseet"
   description="Lær enkle trylletriks du kan vise fram til familie og venner."
+  noindex={!config.laerEtTriksActive}
 >
 
   <nav class="breadcrumb container">
