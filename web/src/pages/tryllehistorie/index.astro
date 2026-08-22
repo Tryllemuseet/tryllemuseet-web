@@ -4,9 +4,28 @@ import BaseLayout from '../../layouts/BaseLayout.astro'
 import PageHero from '../../components/PageHero.astro'
 import Button from '../../components/Button.astro'
 import ContentCard from '../../components/ContentCard.astro'
-import { getTryllehistoriePage } from '../../lib/sanity'
+import HubSubnavGrid from '../../components/HubSubnavGrid.astro'
+import AutoContentGrid from '../../components/AutoContentGrid.astro'
+import { getTryllehistoriePage, getUncoveredSubAreas, getWeeklyBiographyPick } from '../../lib/sanity'
 
-const page = await getTryllehistoriePage()
+const [page, weeklyBiography] = await Promise.all([
+  getTryllehistoriePage(),
+  getWeeklyBiographyPick(),
+])
+
+// Sikkerhetsnett: underområder av «Arkivet» som ikke allerede har et
+// håndkurert kort i page.seksjoner over — se HubSubnavGrid.astro.
+const coveredHrefs = page.seksjoner.map(s => s.href)
+const uncoveredSubAreas = await getUncoveredSubAreas('/tryllehistorie', coveredHrefs)
+
+const weeklyBiographyItem = weeklyBiography && {
+  imageUrl: weeklyBiography.mainImage?.asset?.url,
+  icon: weeklyBiography.mainImage?.asset?.url ? undefined : '🎩',
+  label: 'Ukens tryllekunstner',
+  title: weeklyBiography.artistName ?? weeklyBiography.name,
+  description: weeklyBiography.shortBio,
+  href: `/tryllehistorie/magiens-hvem-er-hvem/${weeklyBiography.slug}`,
+}
 ---
 
 <BaseLayout
@@ -116,6 +135,9 @@ const page = await getTryllehistoriePage()
       ))}
     </div>
 
+    <!-- FLERE OMRÅDER I ARKIVET (sikkerhetsnett fra siteNavigation) ── -->
+    <HubSubnavGrid heading="Flere områder i arkivet" items={uncoveredSubAreas} />
+
     <!-- TIDSLINJE-TEASER ────────────────────────────────────────── -->
     <aside class="timeline-teaser">
       <h2 class="display-title timeline-title">{page.tidslinjeHeading}</h2>
@@ -128,6 +150,13 @@ const page = await getTryllehistoriePage()
         ))}
       </div>
     </aside>
+
+    <!-- UKENS TRYLLEKUNSTNER (auto content, roterer ukentlig) ─────── -->
+    <AutoContentGrid
+      heading="Ukens tryllekunstner"
+      intro="Et nytt ansikt fra Magiens hvem er hvem, hver uke."
+      items={weeklyBiographyItem ? [weeklyBiographyItem] : []}
+    />
 
   </main>
 

@@ -1,0 +1,59 @@
+---
+// src/components/AutoContentGrid.astro
+//
+// Generisk seksjon for «auto content» (deterministisk, ukentlig roterende
+// innhold — se getIsoWeekSeed()/pickBySeed() i lib/sanity.ts og
+// tryllemuseet_sanity_hubs_automatisk_levende_innhold.md § 4.8/12). Tar imot
+// allerede oppløste kort (ikke referanser) og gjenbruker ContentCard, samme
+// mønster som resten av siden. Viser ingenting hvis poolen er tom — ingen
+// tomme seksjoner, se kildedokumentets § 14/29.
+import SectionHeader from './SectionHeader.astro'
+import ContentCard from './ContentCard.astro'
+
+export interface AutoContentItem {
+  imageUrl?:    string
+  icon?:        string
+  label?:       string
+  title:        string
+  description?: string
+  href:         string
+  ctaText?:     string
+}
+
+export interface Props {
+  heading: string
+  intro?:  string
+  items:   AutoContentItem[]
+}
+
+const { heading, intro, items } = Astro.props
+---
+
+{items.length > 0 && (
+  <section class="auto-content-grid" aria-labelledby="auto-content-heading">
+    <SectionHeader id="auto-content-heading" label="Denne uken" title={heading} intro={intro} />
+    <div class="auto-content-cards">
+      {items.map(item => (
+        <ContentCard
+          imageUrl={item.imageUrl}
+          icon={item.icon}
+          label={item.label}
+          title={item.title}
+          description={item.description}
+          href={item.href}
+          ctaText={item.ctaText ?? 'Les mer →'}
+        />
+      ))}
+    </div>
+  </section>
+)}
+
+<style>
+  .auto-content-grid { margin-top: 3rem; }
+  .auto-content-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 1.25rem;
+    margin-top: 1.5rem;
+  }
+</style>
