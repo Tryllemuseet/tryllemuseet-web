@@ -87,6 +87,7 @@ const om = hp?.omMuseet ?? {
 // is a full-bleed image/video with a short two-part text and a button.
 type HeroBannerSlide = {
   href:      string
+  etikett?:  string
   line1:     string
   line2?:    string
   button?:   string
@@ -99,9 +100,10 @@ const houdiniPanel = gullalderenPanels.find(p => p.slug === 'houdini')
 const fallbackBanners: HeroBannerSlide[] = [
   {
     href: '/utstillingen/houdini',
+    etikett: 'Høstens hovedutstilling',
     line1: 'Houdini',
     line2: 'Mannen ingen lenker kunne holde',
-    button: 'Se utstillingen',
+    button: 'Opplev Houdini',
     imgUrl: houdiniPanel?.mainImage?.asset?._ref
       ? urlFor(houdiniPanel.mainImage.asset).width(1600).height(640).fit('crop').format('webp').url()
       : (houdiniPanel?.mainImage?.asset?.url ?? null),
@@ -116,6 +118,7 @@ const fallbackBanners: HeroBannerSlide[] = [
 const heroBanners: HeroBannerSlide[] = hp?.heroBannere?.length
   ? hp.heroBannere.map((b): HeroBannerSlide => ({
       href:   b.href,
+      etikett: b.etikett,
       line1:  b.tekstLinje1,
       line2:  b.tekstLinje2,
       button: b.knappLabel,
@@ -293,6 +296,7 @@ const archiveCards = archiveCandidates.filter(c => c.title).slice(0, 4)
             <div class="banner-scrim"></div>
           </div>
           <div class="banner-content">
+            {b.etikett && <p class="banner-etikett">{b.etikett}</p>}
             <p class="banner-line1">{b.line1}</p>
             {b.line2 && <p class="banner-line2">{b.line2}</p>}
             {b.button && <span class="banner-btn">{b.button}</span>}
@@ -652,6 +656,7 @@ const archiveCards = archiveCandidates.filter(c => c.title).slice(0, 4)
   .banner-scrim { position:absolute; inset:0; background:rgba(20,4,8,0.42); }
 
   .banner-content { position:relative; z-index:2; display:flex; flex-direction:column; align-items:center; gap:0.5rem; text-align:center; padding:1rem 4.5rem; max-width:820px; }
+  .banner-etikett { font-family:var(--font-ui); font-size:clamp(0.7rem, 1.2vw, 0.8rem); font-weight:700; letter-spacing:0.18em; text-transform:uppercase; color:var(--gold-light); text-shadow:0 2px 10px rgba(0,0,0,0.6); margin-bottom:-0.15rem; }
   .banner-line1 { font-family:var(--font-display); font-weight:700; font-size:clamp(1.5rem, 3.6vw, 2.7rem); line-height:1.15; letter-spacing:0.06em; text-transform:uppercase; color:#fff; text-shadow:0 2px 18px rgba(0,0,0,0.65); }
   .banner-line2 { font-family:var(--font-display); font-size:clamp(0.95rem, 2vw, 1.45rem); line-height:1.3; letter-spacing:0.05em; color:#fff; text-shadow:0 2px 14px rgba(0,0,0,0.65); }
   .banner-btn { display:inline-block; margin-top:0.75rem; font-family:var(--font-ui); font-size:clamp(0.8rem, 1.4vw, 0.95rem); font-weight:700; letter-spacing:0.08em; text-transform:uppercase; background:var(--gold); color:var(--burgundy-dk); padding:0.6rem 1.6rem; border-radius:2px; transition:background 180ms, transform 180ms; }

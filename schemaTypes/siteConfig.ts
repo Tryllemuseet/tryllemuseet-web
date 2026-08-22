@@ -147,6 +147,16 @@ export const siteConfig = defineType({
       rows: 2,
       initialValue: 'Norges minste, merkeligste og mest magiske museum. Besøk oss på Årvoll i Oslo — søndager 12–16. Gratis inngang.',
     }),
+
+    // ─── FEATURE-FLAGG ────────────────────────────────────────────
+    defineField({
+      name:         'laerEtTriksActive',
+      title:        '«Lær et triks» er aktiv',
+      type:         'boolean',
+      initialValue: false,
+      description:
+        'Hovedbryteren for «Lær et triks» (/barn/laer-et-triks). Av: teaseren på /barn er skjult og siden får noindex, men innholdet er fortsatt tilgjengelig for testing på den fulle URL-en. På: teaseren vises og siden indekseres normalt. Speiler mønsteret til gameConfig.isActive/quizConfig.isActive.',
+    }),
   ],
 
   preview: {

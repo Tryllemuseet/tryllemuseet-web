@@ -4,9 +4,17 @@ import BaseLayout from '../layouts/BaseLayout.astro'
 import AnimateIn from '../components/AnimateIn.astro'
 import PageHero from '../components/PageHero.astro'
 import Button from '../components/Button.astro'
-import { getBarnPage } from '../lib/sanity'
+import { getBarnPage, getSiteConfig, getComicStoryPaths } from '../lib/sanity'
 
-const bp = await getBarnPage()
+const [bp, config, storyPaths] = await Promise.all([
+  getBarnPage(),
+  getSiteConfig(),
+  getComicStoryPaths(),
+])
+// Houdini er høstens hovedutstilling og har den eneste ferdige interaktive
+// historien akkurat nå — teaseren under peker rett dit så lenge den finnes,
+// og faller tilbake til den generelle historier-oversikten ellers.
+const hasHoudiniStory = storyPaths.some((p: { params: { slug: string } }) => p.params.slug === 'harry-houdini')
 
 const hero = bp?.hero ?? {
   label: 'For barn og unge',
@@ -32,6 +40,11 @@ const kurs = bp?.kursBanner ?? {
   knappLabel: 'Se alle arrangementer',
   knappHref: '/aktiviteter',
 }
+
+// «Lær et triks» er ikke lansert i produksjon ennå (se siteConfig.laerEtTriksActive)
+// — redaktørinnholdet i hero.cta2 peker dit i dag, så skjul den knappen mens
+// funksjonen er av i stedet for å la den peke til en uannonsert side.
+const showCta2 = hero.cta2Href && (config.laerEtTriksActive || !hero.cta2Href.startsWith('/barn/laer-et-triks'))
 ---
 
 <BaseLayout
@@ -42,24 +55,26 @@ const kurs = bp?.kursBanner ?? {
   <!-- ── HERO ─────────────────────────────────────────────────── -->
   <PageHero label={hero.label} title={`${hero.heading} ${hero.headingEm}`} intro={hero.ingress} theme="dark">
     <Button variant="secondary" href={hero.cta1Href}>{hero.cta1Label}</Button>
-    <Button variant="outline" href={hero.cta2Href} class="hero-btn-outline">{hero.cta2Label}</Button>
+    {showCta2 && <Button variant="outline" href={hero.cta2Href} class="hero-btn-outline">{hero.cta2Label}</Button>}
   </PageHero>
 
   <!-- ── LÆR ET TRIKS (teaser) ────────────────────────────────── -->
-  <section class="triks-teaser section-pad">
-    <div class="container triks-teaser-inner">
-      <AnimateIn direction="left">
-        <div>
-          <span class="etikett">Prøv selv</span>
-          <h2>Lær et triks</h2>
-          <p>Noen enkle trylletriks du kan øve på hjemme og vise fram til familie og venner.</p>
-        </div>
-      </AnimateIn>
-      <AnimateIn direction="right">
-        <Button variant="primary" href="/barn/laer-et-triks">Se triksene</Button>
-      </AnimateIn>
-    </div>
-  </section>
+  {config.laerEtTriksActive && (
+    <section class="triks-teaser section-pad">
+      <div class="container triks-teaser-inner">
+        <AnimateIn direction="left">
+          <div>
+            <span class="etikett">Prøv selv</span>
+            <h2>Lær et triks</h2>
+            <p>Noen enkle trylletriks du kan øve på hjemme og vise fram til familie og venner.</p>
+          </div>
+        </AnimateIn>
+        <AnimateIn direction="right">
+          <Button variant="primary" href="/barn/laer-et-triks">Se triksene</Button>
+        </AnimateIn>
+      </div>
+    </section>
+  )}
 
   <!-- ── INTERAKTIVE HISTORIER (teaser) ──────────────────────────── -->
   <section class="triks-teaser section-pad">
@@ -67,12 +82,18 @@ const kurs = bp?.kursBanner ?? {
       <AnimateIn direction="left">
         <div>
           <span class="etikett">Bla, lytt og oppdag</span>
-          <h2>Interaktive historier</h2>
-          <p>Opplev magihistorien scene for scene, med opplesning, tidslinje og klikkbare gjenstander.</p>
+          <h2>{hasHoudiniStory ? 'Møt Houdini' : 'Interaktive historier'}</h2>
+          <p>
+            {hasHoudiniStory
+              ? 'Opplev historien om verdens mest berømte utbryterkonge – scene for scene, med bilder, opplesning og interaktive elementer.'
+              : 'Opplev magihistorien scene for scene, med opplesning, tidslinje og klikkbare gjenstander.'}
+          </p>
         </div>
       </AnimateIn>
       <AnimateIn direction="right">
-        <Button variant="primary" href="/barn/historier">Se historiene</Button>
+        <Button variant="primary" href={hasHoudiniStory ? '/barn/historier/harry-houdini' : '/barn/historier'}>
+          {hasHoudiniStory ? 'Opplev Houdinis historie →' : 'Se historiene'}
+        </Button>
       </AnimateIn>
     </div>
   </section>
@@ -135,9 +156,11 @@ const kurs = bp?.kursBanner ?? {
       </AnimateIn>
       <AnimateIn direction="right">
       <div class="skolebesok-bilde">
-        <div class="bilde-placeholder">
-          <span>🎩</span>
-          <p>Skolebesøk på Tryllemuseet</p>
+        <div class="skole-medaljong" aria-hidden="true">
+          <div class="skole-medaljong-ring">
+            <span class="skole-medaljong-ikon">🎩</span>
+          </div>
+          <p class="skole-medaljong-tekst">Pedagogisk opplegg<br />for klasser og barnehager</p>
         </div>
       </div>
       </AnimateIn>
@@ -283,19 +306,43 @@ const kurs = bp?.kursBanner ?? {
     font-size: 0.7rem;
     top: 0.55em;
   }
-  .bilde-placeholder {
+  .skole-medaljong {
     aspect-ratio: 4/3;
-    background: linear-gradient(135deg, var(--burgundy) 0%, #3d050e 100%);
+    position: relative;
     border-radius: 4px;
+    overflow: hidden;
+    background:
+      radial-gradient(circle at 20% 15%, rgba(212,168,67,0.16), transparent 45%),
+      radial-gradient(circle at 80% 85%, rgba(212,168,67,0.12), transparent 45%),
+      radial-gradient(rgba(212,168,67,0.35) 1px, transparent 1.5px) 0 0/28px 28px,
+      linear-gradient(135deg, var(--burgundy) 0%, #3d050e 100%);
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 1rem;
-    color: rgba(251,247,239,0.5);
+    gap: 1.25rem;
   }
-  .bilde-placeholder span { font-size: 4rem; opacity: 0.4; }
-  .bilde-placeholder p { font-family: var(--font-ui); font-size: 0.85rem; letter-spacing: 0.1em; }
+  .skole-medaljong-ring {
+    width: 6rem;
+    height: 6rem;
+    border-radius: 50%;
+    border: 2px solid var(--gold);
+    box-shadow: 0 0 0 6px rgba(212,168,67,0.18), 0 8px 24px rgba(0,0,0,0.35);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(212,168,67,0.08);
+  }
+  .skole-medaljong-ikon { font-size: 2.75rem; }
+  .skole-medaljong-tekst {
+    font-family: var(--font-display);
+    font-style: italic;
+    font-size: 1rem;
+    line-height: 1.5;
+    text-align: center;
+    color: var(--gold-light, var(--cream));
+    max-width: 14rem;
+  }
 
   /* ── Kursbanner ── */
   .kurs-banner { background: var(--burgundy); padding-block: 3.5rem; }

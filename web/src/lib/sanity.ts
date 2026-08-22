@@ -448,6 +448,7 @@ export async function getBooksByUtstillingSlug(slug: string): Promise<Book[]> {
 
 // ── Typer: Forside ───────────────────────────────────────────────
 export interface HeroBanner {
+  etikett?: string
   tekstLinje1: string
   tekstLinje2?: string
   knappLabel?: string
@@ -567,7 +568,7 @@ export async function getHomepage(): Promise<Homepage | null> {
     *[_type == "homepage"][0] {
       heroIdentitet { heading, sted, knappLabel, knappHref },
       heroBannere[] {
-        tekstLinje1, tekstLinje2, knappLabel, href,
+        etikett, tekstLinje1, tekstLinje2, knappLabel, href,
         bilde { asset->{ _ref, url }, hotspot, alt },
         "videoUrl": video.asset->url
       },
@@ -1334,6 +1335,7 @@ export interface SiteConfig {
   instagram:         string
   youtube?:          string
   seoDescription:    string
+  laerEtTriksActive: boolean
 }
 
 // Kun e-post og adresse — til personvernsiden
@@ -1349,7 +1351,7 @@ export async function getSiteConfig(): Promise<SiteConfig> {
       openingHoursShort, openingHoursNote,
       membershipUrl, vippsNumber, donationUrl, donationLabel, donationText,
       facebook, instagram, youtube,
-      seoDescription
+      seoDescription, laerEtTriksActive
     }
   `)
   const base = config ?? {
@@ -1366,6 +1368,7 @@ export async function getSiteConfig(): Promise<SiteConfig> {
     facebook:          'https://www.facebook.com/tryllemuseet',
     instagram:         'https://www.instagram.com/tryllemuseet',
     seoDescription:    'Norges minste, merkeligste og mest magiske museum. Besøk oss på Årvoll gård i Oslo — søndager 12–15. Gratis inngang.',
+    laerEtTriksActive: false,
   }
   // donationLabel/donationText er nye felter (2026-08) — dekk eksisterende
   // siteConfig-dokumenter som ennå ikke har fylt dem inn i Studio.
@@ -1373,6 +1376,7 @@ export async function getSiteConfig(): Promise<SiteConfig> {
     ...base,
     donationLabel: config?.donationLabel ?? 'Gi en gave →',
     donationText:  config?.donationText  ?? 'Museet drives i stor grad av frivillige. En gave bidrar til å bevare samlingen, utvikle utstillingene og holde museet gratis og tilgjengelig for alle.',
+    laerEtTriksActive: config?.laerEtTriksActive === true,
   }
 }
 
