@@ -103,6 +103,7 @@ Dette er ett enkelt dokument som styrer informasjon som går igjen på hele nett
 | Vipps-nummer | Vises i Tryllebutikken og i Bli medlem-seksjonen på Om oss |
 | Facebook / Instagram / YouTube | Lenker i footer |
 | Standard meta-beskrivelse | Google-beskrivelse for alle sider som ikke har egen |
+| «Lær et triks» er aktiv | Av/på-bryter (standard: av). Se [4b. Triks — Lær et triks](#4b-triks--lær-et-triks) |
 
 **Etter endring:** Publiser dokumentet. Nettsiden er statisk generert og bygges på nytt automatisk hver natt — endringene vises derfor på nettsiden senest neste morgen. Haster det, kan Trond (eller den som har GitHub-tilgang) kjøre **Daily rebuild** manuelt i GitHub Actions, så er endringen ute på noen minutter. Infoskjermen er unntaket: den henter innhold direkte og oppdaterer seg selv innen 5 minutter.
 
@@ -145,6 +146,15 @@ Passerte arrangementer vises ikke automatisk, men de blir liggende i lista. Du k
 **Meny:** Triks (Lær et triks) — under Aktiviteter
 
 Enkle trylletriks barn kan øve på hjemme. Vises på `/barn/laer-et-triks` (oversikt) og som egen side per triks.
+
+> **Ikke lansert ennå (2026-08):** Funksjonen styres av bryteren **«Lær et
+> triks» er aktiv** i **Globale innstillinger** (standard: av). Så lenge den
+> er av, er teaseren på `/barn` skjult og oversikts-/triks-sidene får
+> `noindex` (fortsatt tilgjengelige på egen URL, bare ikke markedsført eller
+> søkbare). Innhold og «Se også»-lenker til triks-sider fra andre
+> dokumenter (f.eks. utstillingssiden om Houdini) vises heller ikke før
+> bryteren skrus på. Slå den på når funksjonen er klar for lansering —
+> ingen kodeendring trengs, bare en ny bygging.
 
 | Felt | Påkrevd | Merknad |
 |---|---|---|
@@ -834,7 +844,7 @@ nettsiden — se merknaden etter tabellen.
 
 | Seksjon | Felt | Merknad |
 |---|---|---|
-| **Hero-bannere (karusell i toppen)** | Tekstlinje 1/2, Knapp — tekst, Lenke, Bilde, Video | Det faktiske hero-banneret øverst på forsiden. Maks 6 kan legges inn, men i dag vises kun det **første** banneret i lista (ikke en roterende karusell ennå) |
+| **Hero-bannere (karusell i toppen)** | Kicker-tekst, Tekstlinje 1/2, Knapp — tekst, Lenke, Bilde, Video | Den roterende karusellen øverst på forsiden (bytter banner hvert 7. sekund, med piler/prikker for manuell navigering). Maks 6 kan legges inn. **Kicker-tekst** er valgfri — en liten linje over tekstlinje 1, f.eks. «Høstens hovedutstilling»; bruk sparsomt, kun på banneret som skal fremheves ekstra |
 | **Dette kan du oppleve (4 kort)** | Ikon, Bilde, Kicker-tekst, Tittel, Beskrivelse, Lenke, Knappetekst | De fire kortene rett under arrangement-kalenderen. Maks 4. Se merknad under |
 | ⚠️ **Hero** | Overskrift, Kursiv del, Ingress, Knapp 1/2, Bakgrunnsbilde | Vises ikke — erstattet av Hero-bannere over |
 | ⚠️ **Info-badges** | Tekst (maks 3) | Vises ikke — hørte til det gamle Hero-oppsettet |
@@ -951,6 +961,21 @@ Slå av «Vis på nettsted» for å fjerne dokumentet fra nettsiden uten å slet
 - Et arrangement er avlyst, men du vil beholde informasjonen.
 - En biografi er midlertidig under revisjon.
 - En partner-avtale er satt på pause.
+
+### Skjule en hel funksjon (feature-flagg)
+
+Noen få større, ferdigbygde funksjoner har en egen av/på-bryter i stedet for
+å styres dokument for dokument — brukes når hele funksjonen (ikke bare ett
+dokument) skal holdes utenfor produksjon til den er klar for lansering:
+
+| Bryter | Ligger i | Styrer |
+|---|---|---|
+| «Lær et triks» er aktiv | Globale innstillinger | Se [4b](#4b-triks--lær-et-triks) |
+| Spillet er aktivt | Kabinettet: Innstillinger | Se [21. Det trettende kabinett](#21-det-trettende-kabinett-spillet) |
+| Quiz er aktiv | Quiz: Innstillinger | Se [16. Tryllequiz](#16-tryllequiz) |
+
+Innhold, sider og skjema ligger urørt bak bryteren — å skru den på krever
+ingen kodeendring, bare en ny bygging av nettsiden.
 
 ---
 

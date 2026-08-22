@@ -27,7 +27,7 @@ The schema defines 35 registered content types in `/schemaTypes` (see `schemaTyp
 - `arrangementPage.ts` — Events page hero and info strip
 - `utstillingPage.ts` — Exhibition landing page
 - `personvernPage.ts` — Privacy policy content
-- `siteConfig.ts` — Global settings (email, address, contact info)
+- `siteConfig.ts` — Global settings (email, address, contact info); also holds the `laerEtTriksActive` feature flag (see below)
 
 **Document Types** (queryable collections):
 - `tema.ts` (Studio label: "Tema", added 2026-08) — Optional collection hub sitting *above* the other content types: a Tema references any mix of `legend`, `comicStory`, `quizTheme`, `artifact` and `magicOrganization` docs that belong to the same museum experience (e.g. Houdini: the station-based `legend` exhibition + the `comicStory` for kids + the `quizTheme`). Renders as a hub page at `/utstillingen/{tema-slug}` (see `TemaHub.astro`) that `web/src/pages/utstillingen/[slug].astro` serves in place of a plain `legend` entry when the slug matches a Tema. Most Fordypninger (simple portrait articles with no physical placement, comic or quiz) don't need a Tema at all — it's opt-in for content that genuinely has more than one "leg". **Important:** give a Tema a slug distinct from any `legend` doc it wraps — if they share a slug, the Tema hub's own "Fordypning" card links back to itself (see the comment in `scripts/create-houdini-tema.mjs`, which deliberately uses `harry-houdini` for the Tema since the legend already owns `houdini`).
@@ -65,7 +65,7 @@ The schema defines 35 registered content types in `/schemaTypes` (see `schemaTyp
 
 **Page Structure** (`/web/src/pages`):
 - `index.astro` — Homepage: fetches magicians, events, homepage config, partners in parallel
-- `barn.astro`, `besok.astro`, `arrangementer.astro`, `om-oss.astro`, `kontakt.astro`, `personvern.astro` — Main pages
+- `barn.astro`, `besok.astro`, `arrangementer.astro`, `om-oss.astro`, `kontakt.astro`, `personvern.astro` — Main pages. `barn.astro`'s "Lær et triks" teaser and second hero CTA are gated by `siteConfig.laerEtTriksActive` (default `false`) — same launch-scoping pattern as `quizConfig`/`gameConfig` below, except there's no single page to show a "coming soon" state for since it hides entry points into an otherwise-normal sub-section (`/barn/laer-et-triks/*`, which stays reachable but gets `noindex` while the flag is off)
 - `tryllequiz.astro` — Interactive quiz; renders a "coming soon" teaser until `quizConfig.isActive` is on (the nav link in `BaseLayout.astro` follows the same flag)
 - `det-trettende-kabinett.astro` — Story game "Det trettende kabinett" (Act I); same `isActive`/coming-soon/nav pattern via `gameConfig` (see `docs/det-trettende-kabinett-concept.md`)
 - `om-oss/i-media/` — Museum press coverage
@@ -206,6 +206,20 @@ import { portableTextToPlainText } from '../lib/sanity'
 import { urlFor } from '../lib/sanity'
 urlFor(image).width(800).format('webp').url()
 ```
+
+### Feature Flags
+
+A built, content-complete feature that isn't ready for public launch gets a boolean singleton flag (`quizConfig.isActive`, `gameConfig.isActive`, `siteConfig.laerEtTriksActive`) rather than being deleted or commented out — content, schema, and routes stay fully intact, and turning it on later needs no code change, just a rebuild. See `docs/architecture.md` § Feature Flags for the full list and behavior.
+
+When editor content (`relatedLinks` on `legend`/`comicStory`, `barnPage.hero`) already links into a flagged-off feature, filter those links out at render time rather than asking editors to avoid linking there early:
+
+```typescript
+const relatedLinks = (entry.relatedLinks ?? []).filter(l =>
+  siteConfig.laerEtTriksActive || !l.path.startsWith('/barn/laer-et-triks')
+)
+```
+
+This keeps the flag as the single source of truth — editors can write cross-links whenever they want, and the flag alone decides what's actually visible.
 
 ## Important Queries & Types
 
