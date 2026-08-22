@@ -1,6 +1,7 @@
 ---
 // src/pages/tryllehistorie/fordypninger/index.astro
 import BaseLayout from '../../../layouts/BaseLayout.astro'
+import AnimateIn from '../../../components/AnimateIn.astro'
 import { getAllLegends, formatLifespan, featuredItemHref } from '../../../lib/sanity'
 import type { Legend } from '../../../lib/sanity'
 
@@ -91,7 +92,7 @@ function nationalityBucket(nat?: string): '' | 'norsk' | 'internasjonal' {
 
   <!-- KORTLISTE ──────────────────────────────────────────────────── -->
   <main class="container legend-grid" id="legend-grid">
-    {legends.map((leg: Legend) => {
+    {legends.map((leg: Legend, i: number) => {
       const bio = leg.biographyRef
       const img = leg.mainImage ?? bio?.mainImage
       const navn = bio?.name ?? leg.title
@@ -111,6 +112,9 @@ function nationalityBucket(nat?: string): '' | 'norsk' | 'internasjonal' {
           data-title={leg.title.toLowerCase()}
           data-tags={tags.join(' ').toLowerCase()}
           data-nationality={nationalityBucket(bio?.nationality)}
+          data-animate
+          data-direction="up"
+          style={`transition-delay:${Math.min(i * 80, 320)}ms`}
         >
           <a href={href} class="legend-link">
 

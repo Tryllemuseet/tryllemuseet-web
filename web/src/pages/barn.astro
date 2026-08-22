@@ -61,41 +61,37 @@ const showCta2 = hero.cta2Href && (config.laerEtTriksActive || !hero.cta2Href.st
   <!-- ── LÆR ET TRIKS (teaser) ────────────────────────────────── -->
   {config.laerEtTriksActive && (
     <section class="triks-teaser section-pad">
+      <AnimateIn>
       <div class="container triks-teaser-inner">
-        <AnimateIn direction="left">
-          <div>
-            <span class="etikett">Prøv selv</span>
-            <h2>Lær et triks</h2>
-            <p>Noen enkle trylletriks du kan øve på hjemme og vise fram til familie og venner.</p>
-          </div>
-        </AnimateIn>
-        <AnimateIn direction="right">
-          <Button variant="primary" href="/barn/laer-et-triks">Se triksene</Button>
-        </AnimateIn>
+        <div>
+          <span class="etikett">Prøv selv</span>
+          <h2>Lær et triks</h2>
+          <p>Noen enkle trylletriks du kan øve på hjemme og vise fram til familie og venner.</p>
+        </div>
+        <Button variant="primary" href="/barn/laer-et-triks">Se triksene</Button>
       </div>
+      </AnimateIn>
     </section>
   )}
 
   <!-- ── INTERAKTIVE HISTORIER (teaser) ──────────────────────────── -->
   <section class="triks-teaser section-pad">
+    <AnimateIn>
     <div class="container triks-teaser-inner">
-      <AnimateIn direction="left">
-        <div>
-          <span class="etikett">Bla, lytt og oppdag</span>
-          <h2>{hasHoudiniStory ? 'Møt Houdini' : 'Interaktive historier'}</h2>
-          <p>
-            {hasHoudiniStory
-              ? 'Opplev historien om verdens mest berømte utbryterkonge – scene for scene, med bilder, opplesning og interaktive elementer.'
-              : 'Opplev magihistorien scene for scene, med opplesning, tidslinje og klikkbare gjenstander.'}
-          </p>
-        </div>
-      </AnimateIn>
-      <AnimateIn direction="right">
-        <Button variant="primary" href={hasHoudiniStory ? '/barn/historier/harry-houdini' : '/barn/historier'}>
-          {hasHoudiniStory ? 'Opplev Houdinis historie →' : 'Se historiene'}
-        </Button>
-      </AnimateIn>
+      <div>
+        <span class="etikett">Bla, lytt og oppdag</span>
+        <h2>{hasHoudiniStory ? 'Møt Houdini' : 'Interaktive historier'}</h2>
+        <p>
+          {hasHoudiniStory
+            ? 'Opplev historien om verdens mest berømte utbryterkonge – scene for scene, med bilder, opplesning og interaktive elementer.'
+            : 'Opplev magihistorien scene for scene, med opplesning, tidslinje og klikkbare gjenstander.'}
+        </p>
+      </div>
+      <Button variant="primary" href={hasHoudiniStory ? '/barn/historier/harry-houdini' : '/barn/historier'}>
+        {hasHoudiniStory ? 'Opplev Houdinis historie →' : 'Se historiene'}
+      </Button>
     </div>
+    </AnimateIn>
   </section>
 
   <!-- ── ALDERSGRUPPER ────────────────────────────────────────── -->
@@ -169,17 +165,15 @@ const showCta2 = hero.cta2Href && (config.laerEtTriksActive || !hero.cta2Href.st
 
   <!-- ── KURSBANNER ───────────────────────────────────────────── -->
   <section class="kurs-banner">
+    <AnimateIn>
     <div class="container kurs-banner-inner">
-      <AnimateIn direction="left">
-        <div>
-          <h2>{kurs.heading}</h2>
-          <p>{kurs.tekst}</p>
-        </div>
-      </AnimateIn>
-      <AnimateIn direction="right">
-        <Button variant="secondary" href={kurs.knappHref}>{kurs.knappLabel}</Button>
-      </AnimateIn>
+      <div>
+        <h2>{kurs.heading}</h2>
+        <p>{kurs.tekst}</p>
+      </div>
+      <Button variant="secondary" href={kurs.knappHref}>{kurs.knappLabel}</Button>
     </div>
+    </AnimateIn>
   </section>
 
 </BaseLayout>

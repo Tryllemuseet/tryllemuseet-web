@@ -78,7 +78,7 @@ const notFooled = appearances.filter((a: any) => a.result === 'not_fooled').leng
   </div>
 
   <main class="container appearances-grid" id="appearances-grid">
-    {appearances.map((a: any) => (
+    {appearances.map((a: any, i: number) => (
       <article
         class="appearance-card"
         data-country={a.magician?.nationality ?? ''}
@@ -87,6 +87,9 @@ const notFooled = appearances.filter((a: any) => a.result === 'not_fooled').leng
         data-season={a.season ?? 0}
         data-episode={a.episode ?? 0}
         data-name={(a.magician?.artistName ?? a.magician?.name ?? '').toLowerCase()}
+        data-animate
+        data-direction="up"
+        style={`transition-delay:${Math.min(i * 80, 320)}ms`}
       >
         <a href={`/tryllehistorie/fool-us/${a.slug}`} class="card-link">
           <div class="card-img">

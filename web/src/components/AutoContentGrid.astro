@@ -9,6 +9,7 @@
 // tomme seksjoner, se kildedokumentets § 14/29.
 import SectionHeader from './SectionHeader.astro'
 import ContentCard from './ContentCard.astro'
+import AnimateIn from './AnimateIn.astro'
 
 export interface AutoContentItem {
   imageUrl?:    string
@@ -24,26 +25,39 @@ export interface Props {
   heading: string
   intro?:  string
   items:   AutoContentItem[]
+  /** Set false to opt out of the scroll-build reveal (dev/design use only —
+   * not exposed as a Sanity field). Default true. */
+  animate?: boolean
 }
 
-const { heading, intro, items } = Astro.props
+const { heading, intro, items, animate = true } = Astro.props
+const STAGGER_MS = 80
+const STAGGER_CAP_MS = 320
 ---
 
 {items.length > 0 && (
   <section class="auto-content-grid" aria-labelledby="auto-content-heading">
-    <SectionHeader id="auto-content-heading" label="Denne uken" title={heading} intro={intro} />
+    {animate
+      ? <AnimateIn><SectionHeader id="auto-content-heading" label="Denne uken" title={heading} intro={intro} /></AnimateIn>
+      : <SectionHeader id="auto-content-heading" label="Denne uken" title={heading} intro={intro} />
+    }
     <div class="auto-content-cards">
-      {items.map(item => (
-        <ContentCard
-          imageUrl={item.imageUrl}
-          icon={item.icon}
-          label={item.label}
-          title={item.title}
-          description={item.description}
-          href={item.href}
-          ctaText={item.ctaText ?? 'Les mer →'}
-        />
-      ))}
+      {items.map((item, i) => {
+        const card = (
+          <ContentCard
+            imageUrl={item.imageUrl}
+            icon={item.icon}
+            label={item.label}
+            title={item.title}
+            description={item.description}
+            href={item.href}
+            ctaText={item.ctaText ?? 'Les mer →'}
+          />
+        )
+        return animate
+          ? <AnimateIn delay={Math.min(i * STAGGER_MS, STAGGER_CAP_MS)}>{card}</AnimateIn>
+          : card
+      })}
     </div>
   </section>
 )}

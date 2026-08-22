@@ -69,8 +69,8 @@ function formatDate(dateStr?: string): string {
 
   <!-- ── Cards grid ────────────────────────────────────────────── -->
   <div class="container media-grid" id="media-grid">
-    {appearances.map((a: MediaAppearance) => (
-      <article class="media-card" data-type={a.type}>
+    {appearances.map((a: MediaAppearance, i: number) => (
+      <article class="media-card" data-type={a.type} data-animate data-direction="up" style={`transition-delay:${Math.min(i * 80, 320)}ms`}>
 
         <div class="card-media">
           {a.videoId ? (
