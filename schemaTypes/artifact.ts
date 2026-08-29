@@ -1,5 +1,6 @@
 // sanity-web/schemaTypes/artifact.ts
 import { defineField, defineType } from 'sanity'
+import { richBlockContent } from './richBlockContent'
 
 export default defineType({
   name: 'artifact',
@@ -199,10 +200,25 @@ export default defineType({
     // ── Redaksjonelt ──────────────────────────────────────────────
     defineField({
       name: 'notes',
-      title: 'Utfyllende tekst',
+      title: 'Utfyllende tekst (voksne)',
       type: 'array',
       of: [{ type: 'block' }],
-      description: 'Lengre redaksjonell tekst om gjenstanden.',
+      description: 'Lengre redaksjonell tekst om gjenstanden, for voksne.',
+    }),
+    defineField({
+      name: 'childText',
+      title: '⭐ Barnetekst (kort)',
+      type: 'text',
+      rows: 4,
+      description: 'Enkel, kort tekst for barn. Maks 300 tegn.',
+      validation: Rule => Rule.max(300),
+    }),
+    defineField({
+      name: 'childContent',
+      title: '⭐ Barnetekst (utdypende)',
+      type: 'array',
+      of: richBlockContent(),
+      description: 'Valgfri, lengre tekst for barn, hvis den korte barneteksten over ikke er nok.',
     }),
     defineField({
       name: 'tags',

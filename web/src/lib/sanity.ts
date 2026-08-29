@@ -70,6 +70,8 @@ export interface Artifact {
   gallery?:         { asset: { _ref: string; url: string }; alt?: string; caption?: string }[]
   tags?:            string[]
   notes?:           any[]
+  childText?:       string
+  childContent?:    any[]
 }
 
 // ── Spørringer ───────────────────────────────────────────────────
@@ -339,7 +341,7 @@ export async function getArtifactBySlug(slug: string): Promise<Artifact | null> 
       category, material, dimensions, condition,
       provenance, displayLocation,
       ownerType, lenderName, loanFrom, loanTo, loanReference,
-      featured, order, tags, notes,
+      featured, order, tags, notes, childText, childContent,
       mainImage { asset->{ _ref, url }, alt },
       gallery[] { asset->{ _ref, url }, alt, caption }
     }
