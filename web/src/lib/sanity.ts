@@ -478,48 +478,21 @@ export interface Homepage {
   }
   heroBannere?: HeroBanner[]
   oppleveKort?: OppleveKort[]
-  hero: {
-    heading:    string
-    headingEm:  string
-    ingress:    string
-    cta1Label:  string
-    cta1Href:   string
-    cta2Label:  string
-    cta2Href:   string
-    bgImage?:   { asset: { _ref: string; url: string }; hotspot: any }
-  }
-  infoBadges:       { label: string }[]
-  fremhevetInnhold: { eraLabel?: string; heading: string; elementer?: FeaturedItem[] }
+  fremhevetInnhold: { elementer?: FeaturedItem[] }
   barnSeksjon: {
-    heading:   string
-    ingress:   string
-    features:  string[]
-    sitater:   { emoji: string; tekst: string; kilde: string }[]
+    heading: string
+    ingress: string
   }
   medlemSeksjon: {
     heading:    string
     tekst:      string
     knappLabel: string
   }
-  omMuseet: {
-    heading:     string
-    tekst:       string
-    sitat:       string
-    sitatKilde:  string
-  }
   kursSeksjon?: {
     heading:    string
     ingress:    string
-    detaljer:   string[]
-    pris:       string
-    prisLabel:  string
-    fondsBadge: string
     knappLabel: string
     knappHref:  string
-  }
-  kursSitat?: {
-    tekst: string
-    kilde: string
   }
 }
 
@@ -578,14 +551,7 @@ export async function getHomepage(): Promise<Homepage | null> {
         icon, label, title, description, href, knappTekst,
         bilde { asset->{ _ref, url }, hotspot, alt }
       },
-      hero {
-        heading, headingEm, ingress,
-        cta1Label, cta1Href, cta2Label, cta2Href,
-        bgImage { asset->{ _ref, url }, hotspot }
-      },
-      infoBadges[] { label },
       fremhevetInnhold {
-        eraLabel, heading,
         elementer[]-> {
           _type,
           _type == "legend" => {
@@ -600,14 +566,9 @@ export async function getHomepage(): Promise<Homepage | null> {
           }
         }
       },
-      barnSeksjon {
-        heading, ingress, features,
-        sitater[] { emoji, tekst, kilde }
-      },
+      barnSeksjon { heading, ingress },
       medlemSeksjon { heading, tekst, knappLabel },
-      omMuseet { heading, tekst, sitat, sitatKilde },
-      kursSeksjon { heading, ingress, detaljer, pris, prisLabel, fondsBadge, knappLabel, knappHref },
-      kursSitat { tekst, kilde }
+      kursSeksjon { heading, ingress, knappLabel, knappHref }
     }
   `, { publicDomainCutoff: publicDomainCutoffIso() })
 }
