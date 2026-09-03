@@ -71,6 +71,22 @@ Sanity skiller mellom *utkast* og *publisert innhold*:
 
 > **Viktig:** Det er kun publiserte dokumenter som vises på nettsiden. Husk å trykke «Publiser» når du er ferdig.
 
+> ⚠️ **Fallgruve — et gammelt, glemt utkast kan se ut som om innholdet er
+> borte (opplevd 2026-09):** Studio viser deg **utkastet** når du åpner et
+> dokument, ikke den publiserte versjonen, hvis det finnes et upublisert
+> utkast liggende — selv om den publiserte siden fortsatt viser innhold på
+> nettsiden. Ligger det et gammelt, forlatt utkast (f.eks. fra en økt som
+> aldri ble fullført eller publisert), kan det se **helt tomt** ut selv om
+> det egentlig er fullt av innhold ute på nettsiden. Fyller du da inn nytt
+> innhold og trykker **Publiser**, overskriver du hele den gode publiserte
+> versjonen med det (tomme) utkastet pluss det du nettopp la til.
+>
+> **Ser et dokument tomt ut der du vet det pleier å ha innhold** — ikke
+> begynn å fylle inn på nytt. Se øverst i dokumentet om det står at det er
+> ulagrede/upubliserte endringer, og trykk **«Forkast endringer»** først for
+> å gå tilbake til sist publiserte versjon. Fyll heller inn de nye
+> endringene dine i den versjonen, og publiser derfra.
+
 ### Slette et dokument
 
 Åpne dokumentet → klikk de tre prikkene (…) øverst til høyre → velg «Delete». Bruk sletting med omhu — se [Skjule innhold](#14-skjule-innhold-uten-å-slette) for et reversibelt alternativ.
