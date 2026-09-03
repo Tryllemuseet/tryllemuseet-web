@@ -839,41 +839,44 @@ Forsiden er bygget opp av flere uavhengige seksjoner i samme dokument. Du
 trenger bare åpne dette ene dokumentet, rulle ned til riktig seksjon, endre
 og publisere.
 
-Feltene er merket ⚠️ i Studio når de ikke lenger har noen synlig effekt på
-nettsiden — se merknaden etter tabellen.
-
 | Seksjon | Felt | Merknad |
 |---|---|---|
+| **Hero-identitet (fast linje over karusellen)** | Museumsnavn, Stedsbeskrivelse, Knapp — tekst, Knapp — URL | Alltid synlig, smal linje øverst på forsiden — uavhengig av hvilken karusell-slide som vises. Skal umiddelbart gjøre klart at Tryllemuseet er et fysisk museum man kan besøke |
 | **Hero-bannere (karusell i toppen)** | Kicker-tekst, Tekstlinje 1/2, Knapp — tekst, Lenke, Bilde, Video | Den roterende karusellen øverst på forsiden (bytter banner hvert 7. sekund, med piler/prikker for manuell navigering). Maks 6 kan legges inn. **Kicker-tekst** er valgfri — en liten linje over tekstlinje 1, f.eks. «Høstens hovedutstilling»; bruk sparsomt, kun på banneret som skal fremheves ekstra |
 | **Dette kan du oppleve (4 kort)** | Ikon, Bilde, Kicker-tekst, Tittel, Beskrivelse, Lenke, Knappetekst | De fire kortene rett under arrangement-kalenderen. Maks 4. Se merknad under |
-| ⚠️ **Hero** | Overskrift, Kursiv del, Ingress, Knapp 1/2, Bakgrunnsbilde | Vises ikke — erstattet av Hero-bannere over |
-| ⚠️ **Info-badges** | Tekst (maks 3) | Vises ikke — hørte til det gamle Hero-oppsettet |
-| **Fremhevet innhold** | ⚠️ Tidsperiode-label, ⚠️ Overskrift | Vises ikke — seksjonsoverskriften «Historie og aktuelt» er fast i koden |
-| | Håndplukket innhold (maks 5) | Fungerer som normalt — se under |
-| **Barn & unge-seksjon** | Overskrift, Ingress | Brukes som tittel/beskrivelse på «Barn & unge»-kortet i «Dette kan du oppleve», når det kortet ikke er overstyrt der |
-| | ⚠️ Aktiviteter/features, ⚠️ Sitater | Vises ikke |
+| **Fremhevet innhold** | Håndplukket innhold (maks 5) | Se merknad under |
+| **Barn & unge-seksjon** | Overskrift, Ingress | Brukes som tittel/beskrivelse på «Barn & unge»-kortet i «Dette kan du oppleve», når det kortet ikke er overstyrt der (dvs. når «Dette kan du oppleve» er tomt og standardutvalget vises) |
 | **Medlemskap-seksjon** | Overskrift, Tekst, Knapp — tekst | Knappens URL hentes alltid fra **Globale innstillinger** → Bli medlem-lenke, ikke herfra |
-| ⚠️ **Om museet-seksjon** | Overskrift, Tekst, Sitat, Sitatets kilde | Vises ikke — forsiden har ingen egen «Om museet»-seksjon i dagens design |
 | **Kurs-seksjon** | Overskrift, Ingress, Knapp — tekst og URL | Brukes som tittel/beskrivelse/lenke på «Kurs»-kortet i «Dette kan du oppleve», når det kortet ikke er overstyrt der |
-| | ⚠️ Detaljer, ⚠️ Pris, ⚠️ Prislabel, ⚠️ Fondsbadge | Vises ikke |
-| ⚠️ **Kurssitat** | Sitatekst, Kilde | Vises ikke |
 
-> **«Dette kan du oppleve» — nytt felt (2026-08):** De fire kortene var
-> tidligere fast kodet og ikke redigerbare i det hele tatt. Nå kan du legge
-> inn egne kort her (opptil 4 — ikon **eller** bilde, kicker-tekst, tittel,
-> beskrivelse, lenke og knappetekst; pilen «→» legges til automatisk bak
-> knappeteksten). **La feltet stå helt tomt** for å bruke det innebygde
-> standardutvalget (Houdini/utstillingen, Barn & unge, Kurs, Magiens
-> historie) — fyller du inn ett eller flere kort, overstyrer det **hele**
-> seksjonen, ikke bare de kortene du la til.
+> **«Dette kan du oppleve» styrer alt-eller-ingenting:** De fire kortene var
+> tidligere fast kodet og ikke redigerbare i det hele tatt (2026-08: gjort
+> redigerbart). Legg inn egne kort her (opptil 4 — ikon **eller** bilde,
+> kicker-tekst, tittel, beskrivelse, lenke og knappetekst; pilen «→» legges
+> til automatisk bak knappeteksten). **La feltet stå helt tomt** for å bruke
+> det innebygde standardutvalget på 4 kort (Houdini/utstillingen, Barn &
+> unge, Kurs, Magiens historie) — fyller du inn ett eller flere kort,
+> overstyrer det **hele** seksjonen, ikke bare de kortene du la til. Vil du
+> f.eks. fjerne kun Barn & unge-kortet uten å endre de andre tre, må du
+> altså legge inn alle tre du vil beholde her, ikke bare la stå tomt.
+>
+> **Per 2026-09** er feltet fylt ut med nettopp disse tre kortene
+> (Houdini/utstillingen, Aktuelt nå/Kurs, Magiens historie) — Barn &
+> unge-kortet er bevisst utelatt. Skal Barn & unge-kortet tilbake, legg det
+> til som et fjerde element her (bruk gjerne teksten fra Barn &
+> unge-seksjonen over som utgangspunkt); tøm hele feltet igjen for å gå
+> tilbake til det innebygde 4-korts-standardutvalget.
 
-> **Om de ⚠️-merkede feltene:** Forsiden har vært gjennom en redesign, og
-> flere felt fra den forrige versjonen henger fortsatt igjen i skjemaet uten
-> å bli lest av den ferdig bygde siden lenger. De er beholdt (ikke slettet)
-> i tilfelle innholdet skal gjenbrukes, men ikke bruk tid på å redigere dem
-> — de har ingen synlig effekt akkurat nå. Studio-tittelen på hvert felt
-> starter med ⚠️ og feltbeskrivelsen sier «vises ikke på nettsiden» slik at
-> dette er tydelig direkte i redigeringsgrensesnittet, ikke bare her.
+> **Ryddet opp (2026-09):** Forsiden gikk gjennom en redesign en stund
+> tilbake, og flere felt fra den forrige versjonen (bl.a. et gammelt
+> «Hero»-oppsett, info-badges, en «Om museet»-seksjon og et kurssitat) lå
+> igjen i skjemaet lenge etter at den ferdig bygde siden sluttet å lese dem
+> — merket med ⚠️ og «vises ikke på nettsiden» i Studio. Disse er nå fjernet
+> både fra skjemaet og fra det publiserte Forside-dokumentet. Skulle du
+> likevel en dag se en advarsel i Studio om «Unknown fields found» — f.eks.
+> etter en fremtidig skjemaopprydning — er det ufarlig: det betyr bare at
+> dokumentet har gamle feltverdier liggende som ikke lenger er en del av
+> skjemaet; de vises ikke på nettsiden og gjør ingen skade.
 
 > **Oppdatert 2026-07 — «Håndplukket innhold» er ikke lenger låst til
 > Gullalderen:** Feltet lar deg nå velge fritt blant **Fordypninger**
