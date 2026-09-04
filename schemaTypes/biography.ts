@@ -1,4 +1,5 @@
 import { defineType, defineField } from 'sanity'
+import { richBlockContent } from './richBlockContent'
 
 export const biography = defineType({
   name: 'biography',
@@ -155,7 +156,7 @@ export const biography = defineType({
       name: 'fullBio',
       title: 'Fullstendig biografi',
       type: 'array',
-      of: [{ type: 'block' }],
+      of: richBlockContent(),
       description: 'Full tekst med avsnitt. Vises på detaljsiden.',
     }),
 

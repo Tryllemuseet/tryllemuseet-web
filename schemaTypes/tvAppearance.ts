@@ -1,5 +1,6 @@
 // schemaTypes/tvAppearance.ts
 import { defineType, defineField } from 'sanity'
+import { richBlockContent } from './richBlockContent'
 
 export const tvAppearance = defineType({
   name: 'tvAppearance',
@@ -121,7 +122,7 @@ export const tvAppearance = defineType({
       name: 'description',
       title: 'Beskrivelse av opptredenen',
       type: 'array',
-      of: [{ type: 'block' }],
+      of: richBlockContent(),
       description: 'Hva magikeren gjorde på scenen. Ingen avsløring av metoder.',
     }),
 

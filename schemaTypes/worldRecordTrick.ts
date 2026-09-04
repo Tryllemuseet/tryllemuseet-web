@@ -1,5 +1,6 @@
 // schemaTypes/worldRecordTrick.ts
 import { defineType, defineField } from 'sanity'
+import { richBlockContent } from './richBlockContent'
 
 export const worldRecordTrick = defineType({
   name: 'worldRecordTrick',
@@ -56,7 +57,7 @@ export const worldRecordTrick = defineType({
       name: 'fullStory',
       title: 'Full historie',
       type: 'array',
-      of: [{ type: 'block' }],
+      of: richBlockContent(),
       validation: R => R.required(),
     }),
 

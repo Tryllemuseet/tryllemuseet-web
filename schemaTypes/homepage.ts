@@ -1,5 +1,6 @@
 // schemaTypes/homepage.ts
 import { defineField, defineType } from 'sanity'
+import { richBlockContent } from './richBlockContent'
 
 export const homepage = defineType({
   name: 'homepage',
@@ -167,7 +168,7 @@ export const homepage = defineType({
       type: 'object',
       fields: [
         defineField({ name: 'heading', title: 'Overskrift', type: 'string' }),
-        defineField({ name: 'tekst', title: 'Tekst', type: 'text', rows: 3 }),
+        defineField({ name: 'tekst', title: 'Tekst', type: 'array', of: richBlockContent() }),
         defineField({ name: 'knappLabel', title: 'Knapp — tekst', type: 'string' }),
         // Button URL comes from siteConfig.membershipUrl — one source for all
         // «Bli medlem» links across the site.
