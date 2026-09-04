@@ -19,6 +19,8 @@ if (!a) return Astro.redirect('/utstillingen/artefakter', 301)
 
 const notesHtml = portableTextToHtml(a.notes)
 const notesPlain = portableTextToPlainText(a.notes)
+const provenanceHtml = portableTextToHtml(a.provenance)
+const provenancePlain = portableTextToPlainText(a.provenance)
 const childContentHtml = portableTextToHtml(a.childContent)
 const childPlain = [a.childText, portableTextToPlainText(a.childContent)].filter(Boolean).join(' ')
 
@@ -163,14 +165,14 @@ const mainImgUrl = a.mainImage?.asset
     )}
 
     <!-- 2. PROVENIENS ───────────────────────────────────────── -->
-    {a.provenance && (
+    {provenanceHtml && (
       <AnimateIn>
       <section class="prose-section" aria-label="Proveniens">
         <div class="section-head">
           <h2 class="section-heading">Proveniens / historikk</h2>
-          <NarrateButton text={a.provenance} label="Les proveniensen høyt" />
+          <NarrateButton text={provenancePlain} label="Les proveniensen høyt" />
         </div>
-        <p class="prose-text">{a.provenance}</p>
+        <div class="prose-text" set:html={provenanceHtml} />
       </section>
       </AnimateIn>
     )}

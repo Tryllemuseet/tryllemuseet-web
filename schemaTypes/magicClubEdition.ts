@@ -1,5 +1,6 @@
 // schemaTypes/magicClubEdition.ts
 import { defineType, defineField } from 'sanity'
+import { richBlockContent } from './richBlockContent'
 
 // Én kveld i «Magic Club» — Davidos faste magikerkveld i Oslo (2015–).
 // Samleartikkelen om selve konseptet er et vanlig `legend`-dokument
@@ -131,8 +132,8 @@ export const magicClubEdition = defineType({
     defineField({
       name: 'notes',
       title: 'Notater',
-      type: 'text',
-      rows: 4,
+      type: 'array',
+      of: richBlockContent(),
       description: 'Hva gjorde akkurat denne kvelden spesiell, hvis kjent.',
     }),
 

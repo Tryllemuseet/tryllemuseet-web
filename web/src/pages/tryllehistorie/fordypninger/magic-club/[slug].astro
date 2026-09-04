@@ -2,7 +2,7 @@
 // src/pages/tryllehistorie/fordypninger/magic-club/[slug].astro
 import BaseLayout from '../../../../layouts/BaseLayout.astro'
 import AnimateIn from '../../../../components/AnimateIn.astro'
-import { getMagicClubEditionBySlug, getMagicClubEditionPaths } from '../../../../lib/sanity'
+import { getMagicClubEditionBySlug, getMagicClubEditionPaths, portableTextToHtml } from '../../../../lib/sanity'
 import type { MagicClubEdition } from '../../../../lib/sanity'
 
 export async function getStaticPaths() {
@@ -15,6 +15,7 @@ const ed = await getMagicClubEditionBySlug(slug!) as MagicClubEdition | null
 if (!ed) return Astro.redirect('/tryllehistorie/fordypninger/magic-club')
 
 const dateStr = new Date(ed.date).toLocaleDateString('nb-NO', { day: 'numeric', month: 'long', year: 'numeric' })
+const notesHtml = portableTextToHtml(ed.notes)
 ---
 
 <BaseLayout
@@ -99,11 +100,11 @@ const dateStr = new Date(ed.date).toLocaleDateString('nb-NO', { day: 'numeric', 
         </AnimateIn>
       )}
 
-      {ed.notes && (
+      {notesHtml && (
         <AnimateIn>
         <section class="block">
           <h2>Om denne kvelden</h2>
-          <p>{ed.notes}</p>
+          <div set:html={notesHtml} />
         </section>
         </AnimateIn>
       )}

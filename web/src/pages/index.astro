@@ -6,7 +6,7 @@ import SectionHeader from '../components/SectionHeader.astro'
 import Button from '../components/Button.astro'
 import ContentCard from '../components/ContentCard.astro'
 import EventCard from '../components/EventCard.astro'
-import { getGullalderenPanels, getUpcomingEvents, getHomepage, getSiteConfig, getAllPartners, getLatestHistoriskKlipp, getLatestStory, getFeaturedMediaAppearance, getFrontpageWhoKnew, getMonthlyLegendPick, getMonthlyBiographyPick, getMonthlyArtifactPick, getOnThisDayClippings, featuredItemHref, urlFor } from '../lib/sanity'
+import { getGullalderenPanels, getUpcomingEvents, getHomepage, getSiteConfig, getAllPartners, getLatestHistoriskKlipp, getLatestStory, getFeaturedMediaAppearance, getFrontpageWhoKnew, getMonthlyLegendPick, getMonthlyBiographyPick, getMonthlyArtifactPick, getOnThisDayClippings, featuredItemHref, urlFor, portableTextToHtml, ptParagraph } from '../lib/sanity'
 
 const today = new Date().toISOString().split('T')[0]
 
@@ -73,7 +73,7 @@ const barn = hp?.barnSeksjon ?? {
 }
 const medlem = hp?.medlemSeksjon ?? {
   heading:    'Bli medlem!',
-  tekst:      'Som medlem støtter du Tryllemuseet og bidrar til å holde magien levende for kommende generasjoner.',
+  tekst:      [ptParagraph('Som medlem støtter du Tryllemuseet og bidrar til å holde magien levende for kommende generasjoner.', 'medlem-fallback')],
   knappLabel: 'Bli medlem nå →',
 }
 // ── Hero: bannerkarusell (appetittvekkere) ───────────────────────
@@ -434,14 +434,14 @@ const archiveCards = archiveCandidates.filter(c => c.title).slice(0, 4)
         <AnimateIn direction="left">
           <div class="support-card">
             <h2 class="display-title" id="member-heading">{medlem.heading}</h2>
-            <p>{medlem.tekst}</p>
+            <Fragment set:html={portableTextToHtml(medlem.tekst)} />
             <Button variant="membership" href={config.membershipUrl}>{medlem.knappLabel}</Button>
           </div>
         </AnimateIn>
         <AnimateIn direction="right">
           <div class="support-card">
             <h2 class="display-title">Gi en gave</h2>
-            <p>{config.donationText}</p>
+            <Fragment set:html={portableTextToHtml(config.donationText)} />
             <Button variant="outline" class="support-donate-btn" href={config.donationUrl || '/om-oss#gi-en-gave'}>{config.donationLabel}</Button>
           </div>
         </AnimateIn>

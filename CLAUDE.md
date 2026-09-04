@@ -57,14 +57,14 @@ The schema defines 35 registered content types in `/schemaTypes` (see `schemaTyp
 
 `/web/src/lib/sanity.ts` provides:
 - **Client setup**: Uses Sanity API v2024-01-01, CDN in production, preview mode with token locally
-- **Type definitions**: TypeScript interfaces for Magician, Event, Artifact, Biography, Legend, Book, etc.
-- **GROQ queries**: Exported async functions like getAllMagicians(), getMagicianBySlug(), getUpcomingEvents(), getBooksByMagician(), getHomepage(), getSiteConfig(), getAllPartners(), etc.
+- **Type definitions**: TypeScript interfaces for Legend, Event, Artifact, Biography, Book, etc.
+- **GROQ queries**: Exported async functions like getAllLegends(), getLegendBySlug(), getUpcomingEvents(), getBooksByUtstillingSlug(), getHomepage(), getSiteConfig(), getAllPartners(), etc.
 - **Image URL builder**: urlFor() function for Sanity image optimization (width, format, etc.)
 
 ### Web Frontend (Astro)
 
 **Page Structure** (`/web/src/pages`):
-- `index.astro` — Homepage: fetches magicians, events, homepage config, partners in parallel
+- `index.astro` — Homepage: fetches Gullalderen panels, events, homepage config, partners in parallel
 - `barn.astro`, `besok.astro`, `arrangementer.astro`, `om-oss.astro`, `kontakt.astro`, `personvern.astro` — Main pages. `barn.astro`'s "Lær et triks" teaser and second hero CTA are gated by `siteConfig.laerEtTriksActive` (default `false`) — same launch-scoping pattern as `quizConfig`/`gameConfig` below, except there's no single page to show a "coming soon" state for since it hides entry points into an otherwise-normal sub-section (`/barn/laer-et-triks/*`, which stays reachable but gets `noindex` while the flag is off)
 - `tryllequiz.astro` — Interactive quiz; renders a "coming soon" teaser until `quizConfig.isActive` is on (the nav link in `BaseLayout.astro` follows the same flag)
 - `det-trettende-kabinett.astro` — Story game "Det trettende kabinett" (Act I); same `isActive`/coming-soon/nav pattern via `gameConfig` (see `docs/det-trettende-kabinett-concept.md`)
@@ -144,8 +144,8 @@ All queries in `sanity.ts` are server-side (Astro pages):
 
 ```typescript
 // In index.astro
-const [magicians, events, hp, config, partners] = await Promise.all([
-  getAllMagicians(),
+const [gullalderenPanels, events, hp, config, partners] = await Promise.all([
+  getGullalderenPanels(),
   getUpcomingEvents(3),
   getHomepage(),
   getSiteConfig(),
@@ -154,7 +154,7 @@ const [magicians, events, hp, config, partners] = await Promise.all([
 ```
 
 Queries use GROQ (Sanity Query Language):
-- `*[_type == "magician"]` — Query by type
+- `*[_type == "legend"]` — Query by type
 - `| order(order asc)` — Sort
 - `{ _id, title, "slug": slug.current, ... }` — Project fields
 - `[0]` — Get first doc
@@ -229,8 +229,7 @@ Key GROQ functions in `sanity.ts`:
 - `getGullalderenPanels()` / `getUtstillingDeepDives()` / `getUtstillingEntryBySlug(slug)` / `getUtstillingPaths()` — `legend` docs for `/utstillingen` (physical wall panels and/or `stations`). `getUtstillingDeepDives()` excludes any `legend` already referenced by a `tema` doc, so a wrapped exhibition doesn't also show as its own raw card.
 - `getAllTemaer()` / `getTemaBySlug(slug)` / `getTemaPaths()` — `tema` hub docs for `/utstillingen/{slug}`; each item in `Tema.content` carries a pre-computed `cardHref`/`cardImage`/`cardExcerpt` so the hub page can render `legend`/`comicStory`/`quizTheme`/`artifact`/`magicOrganization` cards uniformly without branching per type.
 - `getAllLegends()` / `getLegendBySlug(slug)` / `getLegendPaths()` — `legend` docs for `/tryllehistorie/fordypninger` (everything else)
-- `getBooksByUtstillingSlug(slug)` — Books linked to a Gullalderen/utstilling entry (looks up the legacy `magician` doc by slug, since `book.ts` still references `magician`, not `legend`)
-- `getAllMagicians()` / `getMagicianBySlug(slug)` — **Legacy**, still used by the homepage carousel (`index.astro`) and `hp.utstillingsFokus.felt`; do not use for new `/utstillingen` or `/tryllehistorie` work
+- `getBooksByUtstillingSlug(slug)` — Books linked to a Gullalderen/utstilling entry, via the `legend`'s `biographyRef` matched against `book.authors[].personRef`
 - `getHomepage()` — Hero, exhibition focus, sections
 - `getUpcomingEvents(limit)` — Upcoming courses/events
 - `getAllPartners()` — Sponsors grouped by category
@@ -259,7 +258,7 @@ The `daily-rebuild.yml` workflow runs automatically at 05:30 UTC every day and c
 
 ## Visibility / Unpublish Convention
 
-All content document types (`magician`, `biography`, `legend`, `event`, `tvAppearance`, `historicalClip`, `book`, `artifact`, `partner`, `quizTheme`, `quizQuestion`) have a boolean field `isVisible` with `initialValue: true`.
+All content document types (`biography`, `legend`, `event`, `tvAppearance`, `historicalClip`, `book`, `artifact`, `partner`, `quizTheme`, `quizQuestion`, `tema`, `trick`, `comicStory`, `story`, `whoKnew`, `worldRecordTrick`, `competitionResult`, `historiskeKlippNb`, `magicOrganization`, `magicClubEdition`, `mediaAppearance`, `gameChapter`) have a boolean field `isVisible` with `initialValue: true`. Config/settings singletons (`siteConfig`, `godeRadConfig`, `signageConfig`, `quizConfig`, `gameConfig`) use `isActive` instead — same semantics, different name since they're not "content" per se. `siteNavigation` models visibility per nested `navMainArea`/`navSubArea` item rather than on the document itself.
 
 **Rules:**
 - Default is always `true` — new documents are visible automatically

@@ -56,7 +56,7 @@ export interface Artifact {
   material?:        string
   dimensions?:      string
   condition?:       string
-  provenance?:      string
+  provenance?:      any[]
   displayLocation?: string
   ownerType?:       'museum' | 'loan'
   lenderName?:      string
@@ -188,7 +188,17 @@ export async function getUtstillingEntryBySlug(slug: string): Promise<Utstilling
       detailIntro, sections[] { heading, body },
       mainImage { asset->{ _ref, url }, alt },
       gallery[] { asset->{ _ref, url }, alt, caption },
-      stations[] { title, order, year, image { asset->{ _ref, url }, alt }, textKids, textAdults, activityPrompt },
+      stations[] {
+        title, order, year, image { asset->{ _ref, url }, alt }, textKids,
+        textAdults[]{
+          ...,
+          markDefs[]{
+            ...,
+            "reference": reference->{ "slug": slug.current }
+          }
+        },
+        activityPrompt
+      },
       sources[] { label, url, sourceRef-> { title, author, type, year, url } },
       relatedLinks[] { label, path },
       "biographyRef": biographyRef->{ name, "slug": slug.current, isVisible }
@@ -310,7 +320,14 @@ export async function getAllEvents(): Promise<Event[]> {
   return sanityClient.fetch(`
     *[_type == "event" && isVisible != false] | order(date asc) {
       _id, title, "slug": slug.current,
-      date, ageGroup, price, excerpt, description, featured,
+      date, ageGroup, price, excerpt, featured,
+      description[]{
+        ...,
+        markDefs[]{
+          ...,
+          "reference": reference->{ "slug": slug.current }
+        }
+      },
       image { asset->{ _ref, url }, alt },
       bookingUrl, infoUrl
     }
@@ -339,9 +356,30 @@ export async function getArtifactBySlug(slug: string): Promise<Artifact | null> 
       _id, title, "slug": slug.current,
       description, year, yearNote, origin,
       category, material, dimensions, condition,
-      provenance, displayLocation,
+      provenance[]{
+        ...,
+        markDefs[]{
+          ...,
+          "reference": reference->{ "slug": slug.current }
+        }
+      },
+      displayLocation,
       ownerType, lenderName, loanFrom, loanTo, loanReference,
-      featured, order, tags, notes, childText, childContent,
+      featured, order, tags, childText,
+      notes[]{
+        ...,
+        markDefs[]{
+          ...,
+          "reference": reference->{ "slug": slug.current }
+        }
+      },
+      childContent[]{
+        ...,
+        markDefs[]{
+          ...,
+          "reference": reference->{ "slug": slug.current }
+        }
+      },
       mainImage { asset->{ _ref, url }, alt },
       gallery[] { asset->{ _ref, url }, alt, caption }
     }
@@ -426,7 +464,13 @@ export async function getAllBooks(): Promise<Book[]> {
         "slug": personRef->slug.current,
         "hasProfile": defined(personRef)
       },
-      description
+      description[]{
+        ...,
+        markDefs[]{
+          ...,
+          "reference": reference->{ "slug": slug.current }
+        }
+      }
     }
   `)
 }
@@ -485,7 +529,7 @@ export interface Homepage {
   }
   medlemSeksjon: {
     heading:    string
-    tekst:      string
+    tekst:      any[]
     knappLabel: string
   }
   kursSeksjon?: {
@@ -567,7 +611,17 @@ export async function getHomepage(): Promise<Homepage | null> {
         }
       },
       barnSeksjon { heading, ingress },
-      medlemSeksjon { heading, tekst, knappLabel },
+      medlemSeksjon {
+        heading,
+        tekst[]{
+          ...,
+          markDefs[]{
+            ...,
+            "reference": reference->{ "slug": slug.current }
+          }
+        },
+        knappLabel
+      },
       kursSeksjon { heading, ingress, knappLabel, knappHref }
     }
   `, { publicDomainCutoff: publicDomainCutoffIso() })
@@ -627,7 +681,7 @@ export interface BarnPage {
   aldersgrupper: { alder: string; ikon: string; tekst: string }[]
   aktiviteter:   { tittel: string; beskrivelse: string; ikon: string }[]
   skolebesok: {
-    label: string; heading: string; tekst: string
+    label: string; heading: string; tekst: any[]
     detaljer: string[]; knappLabel: string; knappHref: string
   }
   kursBanner: { heading: string; tekst: string; knappLabel: string; knappHref: string }
@@ -637,25 +691,25 @@ export interface BarnPage {
 // ── Typer: Om oss ────────────────────────────────────────────────
 export interface OmOssPage {
   hero: { label: string; heading: string; headingEm: string; ingress: string }
-  omMuseet: { historieHeading: string; historieTekst: any[]; formalHeading: string; formalTekst: string }
+  omMuseet: { historieHeading: string; historieTekst: any[]; formalHeading: string; formalTekst: any[] }
   faktaboks: { stiftet: string; organisasjonsform: string; tilknytning: string; adresse: string; orgnr: string }
   styret: {
     heading: string; ingress: string
     medlemmer: { navn: string; rolle: string }[]
   }
   medlemskap: {
-    heading: string; ingress: string; motivasjonsTekst: string
+    heading: string; ingress: string; motivasjonsTekst: any[]
     nivaaer: { type: string; pris: string; anbefalt: boolean; fordeler: string[]; knappLabel: string; knappUrl: string }[]
     vippsInfo: string
   }
   presse: {
-    label: string; heading: string; tekst: string; knappLabel: string; knappHref: string
+    label: string; heading: string; tekst: any[]; knappLabel: string; knappHref: string
     nedlastinger: { emoji: string; tittel: string; beskrivelse: string }[]
     nedlastingsNotat: string
   }
   partnere: { heading: string; liste: { navn: string; beskrivelse: string; url?: string }[] }
   frivillig?: {
-    label: string; heading: string; tekst: string; knappLabel: string; knappHref: string
+    label: string; heading: string; tekst: any[]; knappLabel: string; knappHref: string
   }
 }
 
@@ -665,7 +719,17 @@ export async function getBarnPage(): Promise<BarnPage | null> {
       hero { label, heading, headingEm, ingress, cta1Label, cta1Href, cta2Label, cta2Href },
       aldersgrupper[] { alder, ikon, tekst },
       aktiviteter[] { tittel, beskrivelse, ikon },
-      skolebesok { label, heading, tekst, detaljer, knappLabel, knappHref },
+      skolebesok {
+        label, heading,
+        tekst[]{
+          ...,
+          markDefs[]{
+            ...,
+            "reference": reference->{ "slug": slug.current }
+          }
+        },
+        detaljer, knappLabel, knappHref
+      },
       kursBanner { heading, tekst, knappLabel, knappHref },
       laerEtTriksHero { label, heading, ingress }
     }
@@ -836,7 +900,14 @@ export async function getGodeRadConfig(): Promise<GodeRadConfig> {
 export async function getAllWorldRecordTricks(): Promise<WorldRecordTrick[]> {
   return sanityClient.fetch(`
     *[_type == "worldRecordTrick" && isVisible != false] | order(category asc, coalesce(order, 9999) asc) {
-      _id, category, title, teaserText, fullStory,
+      _id, category, title, teaserText,
+      fullStory[]{
+        ...,
+        markDefs[]{
+          ...,
+          "reference": reference->{ "slug": slug.current }
+        }
+      },
       "relatedPerson": relatedPerson-> { "slug": slug.current, name },
       sources, needsVerification, order
     }
@@ -860,17 +931,61 @@ export async function getOmOssPage(): Promise<OmOssPage | null> {
   return sanityClient.fetch(`
     *[_type == "omOssPage"][0] {
       hero { label, heading, headingEm, ingress },
-      omMuseet { historieHeading, historieTekst, formalHeading, formalTekst },
+      omMuseet {
+        historieHeading,
+        historieTekst[]{
+          ...,
+          markDefs[]{
+            ...,
+            "reference": reference->{ "slug": slug.current }
+          }
+        },
+        formalHeading,
+        formalTekst[]{
+          ...,
+          markDefs[]{
+            ...,
+            "reference": reference->{ "slug": slug.current }
+          }
+        }
+      },
       faktaboks { stiftet, organisasjonsform, tilknytning, adresse, orgnr },
       styret { heading, ingress, medlemmer[] { navn, rolle } },
       medlemskap {
-        heading, ingress, motivasjonsTekst,
+        heading, ingress,
+        motivasjonsTekst[]{
+          ...,
+          markDefs[]{
+            ...,
+            "reference": reference->{ "slug": slug.current }
+          }
+        },
         nivaaer[] { type, pris, anbefalt, fordeler, knappLabel, knappUrl },
         vippsInfo
       },
-      presse { label, heading, tekst, knappLabel, knappHref, nedlastinger[] { emoji, tittel, beskrivelse }, nedlastingsNotat },
+      presse {
+        label, heading,
+        tekst[]{
+          ...,
+          markDefs[]{
+            ...,
+            "reference": reference->{ "slug": slug.current }
+          }
+        },
+        knappLabel, knappHref, nedlastinger[] { emoji, tittel, beskrivelse }, nedlastingsNotat
+      },
       partnere { heading, liste[] { navn, beskrivelse, url } },
-      frivillig { label, heading, tekst, knappLabel, knappHref }
+      frivillig {
+        label, heading,
+        tekst[]{
+          ...,
+          markDefs[]{
+            ...,
+            "reference": reference->{ "slug": slug.current }
+          }
+        },
+        knappLabel, knappHref
+      }
     }
   `)
 }
@@ -939,8 +1054,8 @@ export interface BesokPage {
     rader: { kategori: string; pris: string; gratis: boolean }[]
     merknad: string
   }
-  medlemskapSeksjon: { label: string; heading: string; tekst: string }
-  forestillingerSeksjon: { heading: string; tekst: string }
+  medlemskapSeksjon: { label: string; heading: string; tekst: any[] }
+  forestillingerSeksjon: { heading: string; tekst: any[] }
   sporsmalSeksjon: { tekst: string }
   transport: { badge: string; farge: 'rod' | 'blaa'; tekst: string }[]
   familieSeksjon: {
@@ -958,8 +1073,26 @@ export async function getBesokPage(): Promise<BesokPage> {
       hurtiginfo { inngangTekst, forestillingerTekst },
       apningstider { rader[] { dag, tid, aapen }, merknad },
       priser { rader[] { kategori, pris, gratis }, merknad },
-      medlemskapSeksjon { label, heading, tekst },
-      forestillingerSeksjon { heading, tekst },
+      medlemskapSeksjon {
+        label, heading,
+        tekst[]{
+          ...,
+          markDefs[]{
+            ...,
+            "reference": reference->{ "slug": slug.current }
+          }
+        }
+      },
+      forestillingerSeksjon {
+        heading,
+        tekst[]{
+          ...,
+          markDefs[]{
+            ...,
+            "reference": reference->{ "slug": slug.current }
+          }
+        }
+      },
       familieSeksjon { heading, tekst, knappLabel, knappHref },
       sporsmalSeksjon { tekst },
       transport[] { badge, farge, tekst }
@@ -994,11 +1127,11 @@ export async function getBesokPage(): Promise<BesokPage> {
     medlemskapSeksjon: {
       label:   d?.medlemskapSeksjon?.label   ?? 'Støtt museet',
       heading: d?.medlemskapSeksjon?.heading ?? 'Bli medlem!',
-      tekst:   d?.medlemskapSeksjon?.tekst   ?? 'Som medlem støtter du Tryllemuseet og bidrar til å holde magien levende for kommende generasjoner. Medlemskapet er enkelt å tegne.',
+      tekst:   d?.medlemskapSeksjon?.tekst?.length ? d.medlemskapSeksjon.tekst : [ptParagraph('Som medlem støtter du Tryllemuseet og bidrar til å holde magien levende for kommende generasjoner. Medlemskapet er enkelt å tegne.', 'medlemskap-fallback')],
     },
     forestillingerSeksjon: {
       heading: d?.forestillingerSeksjon?.heading ?? 'Trylleforestillinger',
-      tekst:   d?.forestillingerSeksjon?.tekst   ?? 'Vi arrangerer tre trylleforestillinger hvert halvår — for familier, barn og alle som elsker magi. Forestillingene holdes på Årvoll gård og er åpne for alle.',
+      tekst:   d?.forestillingerSeksjon?.tekst?.length ? d.forestillingerSeksjon.tekst : [ptParagraph('Vi arrangerer tre trylleforestillinger hvert halvår — for familier, barn og alle som elsker magi. Forestillingene holdes på Årvoll gård og er åpne for alle.', 'forestillinger-fallback')],
     },
     familieSeksjon: {
       heading:    d?.familieSeksjon?.heading    ?? 'Kommer du med barn?',
@@ -1019,7 +1152,7 @@ export async function getBesokPage(): Promise<BesokPage> {
 // ── Typer: Tryllekurs ────────────────────────────────────────────
 export interface KursPage {
   hero:       { label: string; heading: string; ingress: string }
-  omKurset:   { heading: string; tekst: string }
+  omKurset:   { heading: string; tekst: any[] }
   detaljer:   string[]
   pris:       { belop: string; label: string }
   fondsBadge?: string
@@ -1031,7 +1164,16 @@ export async function getKursPage(): Promise<KursPage> {
   const d = await sanityClient.fetch(`
     *[_type == "kursPage"][0] {
       hero { label, heading, ingress },
-      omKurset { heading, tekst },
+      omKurset {
+        heading,
+        tekst[]{
+          ...,
+          markDefs[]{
+            ...,
+            "reference": reference->{ "slug": slug.current }
+          }
+        }
+      },
       detaljer,
       pris { belop, label },
       fondsBadge,
@@ -1047,7 +1189,7 @@ export async function getKursPage(): Promise<KursPage> {
     },
     omKurset: {
       heading: d?.omKurset?.heading ?? 'Om kurset',
-      tekst:   d?.omKurset?.tekst   ?? 'Du lærer triks som er enkle å utføre, men som virker meget imponerende. Kursene går over tre ettermiddager annenhver uke.',
+      tekst:   d?.omKurset?.tekst?.length ? d.omKurset.tekst : [ptParagraph('Du lærer triks som er enkle å utføre, men som virker meget imponerende. Kursene går over tre ettermiddager annenhver uke.', 'omkurset-fallback')],
     },
     detaljer: d?.detaljer ?? [
       'Aldersgrupper: 6–8 år (kl. 17) · 9–12 år (kl. 18.30) · 13+ år (kl. 20)',
@@ -1074,7 +1216,7 @@ export async function getKursPage(): Promise<KursPage> {
 export interface KontaktPage {
   hero:      { label: string; heading: string; ingress: string }
   skjemaUrl: string
-  faq:       { sporsmal: string; svar: string }[]
+  faq:       { sporsmal: string; svar: any[] }[]
 }
 
 export async function getKontaktPage(): Promise<KontaktPage> {
@@ -1082,7 +1224,16 @@ export async function getKontaktPage(): Promise<KontaktPage> {
     *[_type == "kontaktPage"][0] {
       hero { label, heading, ingress },
       skjemaUrl,
-      faq[] { sporsmal, svar }
+      faq[] {
+        sporsmal,
+        svar[]{
+          ...,
+          markDefs[]{
+            ...,
+            "reference": reference->{ "slug": slug.current }
+          }
+        }
+      }
     }
   `)
   return {
@@ -1093,10 +1244,10 @@ export async function getKontaktPage(): Promise<KontaktPage> {
     },
     skjemaUrl: d?.skjemaUrl ?? 'https://forms.cloud.microsoft/Pages/ResponsePage.aspx?id=ntTGX9tmLEuCq9W0nbG7xw-QkId2PUtCgZXNTCF6McdUNjhIWjhENjhaWTA2U1ZCTjBKRjZIUjdSMy4u&embed=true',
     faq: d?.faq ?? [
-      { sporsmal: 'Kan vi booke besøk for en skole eller gruppe?',   svar: 'Ja! Vi tar imot grupper og skoleklasser etter avtale. Send oss en melding med antall deltakere og ønsket dato.' },
-      { sporsmal: 'Er museet tilgjengelig for rullestol?',           svar: 'Ta kontakt med oss på forhånd, så sørger vi for at besøket blir best mulig.' },
-      { sporsmal: 'Holdes det bursdagsarrangementer?',               svar: 'Ta kontakt med oss for å høre om mulighetene — vi finner gjerne en magisk løsning!' },
-      { sporsmal: 'Kan vi kjøpe tryllerekvisitter?',                 svar: 'Vi har et lite utvalg i museumsbutikken. Større utvalg finner du hos spesialforretninger som Egelos Crazy Shop.' },
+      { sporsmal: 'Kan vi booke besøk for en skole eller gruppe?',   svar: [ptParagraph('Ja! Vi tar imot grupper og skoleklasser etter avtale. Send oss en melding med antall deltakere og ønsket dato.', 'faq1')] },
+      { sporsmal: 'Er museet tilgjengelig for rullestol?',           svar: [ptParagraph('Ta kontakt med oss på forhånd, så sørger vi for at besøket blir best mulig.', 'faq2')] },
+      { sporsmal: 'Holdes det bursdagsarrangementer?',               svar: [ptParagraph('Ta kontakt med oss for å høre om mulighetene — vi finner gjerne en magisk løsning!', 'faq3')] },
+      { sporsmal: 'Kan vi kjøpe tryllerekvisitter?',                 svar: [ptParagraph('Vi har et lite utvalg i museumsbutikken. Større utvalg finner du hos spesialforretninger som Egelos Crazy Shop.', 'faq4')] },
     ],
   }
 }
@@ -1126,10 +1277,11 @@ export interface TryllehistoriePage {
   tidslinje:          { aar: string; hendelse: string; siste: boolean }[]
 }
 
-// Enkel Portable Text-blokk med ett avsnitt — brukt kun til å bygge
-// hardkodede fallback-verdier for rike tekstfelt (se historieSeksjoner
-// under) uten å måtte skrive ut hele blokkstrukturen for hånd hvert sted.
-function ptParagraph(text: string, key: string): PortableTextBlock {
+// Enkel Portable Text-blokk med ett avsnitt — brukt til å bygge hardkodede
+// fallback-verdier for rike tekstfelt (både her og i sidenes egne
+// fallback-objekter, f.eks. om-oss.astro/besok.astro/kurs.astro) uten å
+// måtte skrive ut hele blokkstrukturen for hånd hvert sted.
+export function ptParagraph(text: string, key: string): PortableTextBlock {
   return {
     _type: 'block',
     _key: key,
@@ -1378,7 +1530,7 @@ export interface SiteConfig {
   vippsNumber:       string
   donationUrl?:      string
   donationLabel:     string
-  donationText:      string
+  donationText:      PortableTextBlock[]
   facebook:          string
   instagram:         string
   youtube?:          string
@@ -1397,7 +1549,14 @@ export async function getSiteConfig(): Promise<SiteConfig> {
       siteName, siteTagline, email, phone,
       address, addressShort, mapUrl, mapEmbedUrl,
       openingHoursShort, openingHoursNote,
-      membershipUrl, vippsNumber, donationUrl, donationLabel, donationText,
+      membershipUrl, vippsNumber, donationUrl, donationLabel,
+      donationText[]{
+        ...,
+        markDefs[]{
+          ...,
+          "reference": reference->{ "slug": slug.current }
+        }
+      },
       facebook, instagram, youtube,
       seoDescription, laerEtTriksActive
     }
@@ -1423,7 +1582,7 @@ export async function getSiteConfig(): Promise<SiteConfig> {
   return {
     ...base,
     donationLabel: config?.donationLabel ?? 'Gi en gave →',
-    donationText:  config?.donationText  ?? 'Museet drives i stor grad av frivillige. En gave bidrar til å bevare samlingen, utvikle utstillingene og holde museet gratis og tilgjengelig for alle.',
+    donationText:  config?.donationText?.length ? config.donationText : [ptParagraph('Museet drives i stor grad av frivillige. En gave bidrar til å bevare samlingen, utvikle utstillingene og holde museet gratis og tilgjengelig for alle.', 'donation-fallback')],
     laerEtTriksActive: config?.laerEtTriksActive === true,
   }
 }
@@ -1661,7 +1820,15 @@ export async function getFoolUsAppearanceBySlug(slug: string): Promise<TvAppeara
     *[_type == "tvAppearance" && show == "fool-us" && slug.current == $slug && isVisible != false][0] {
       _id, "slug": slug.current,
       show, year, season, episode, episodeTitle,
-      result, description, videoUrl,
+      result,
+      description[]{
+        ...,
+        markDefs[]{
+          ...,
+          "reference": reference->{ "slug": slug.current }
+        }
+      },
+      videoUrl,
       featuredImage { asset->{ url }, alt, caption },
       magician-> {
         _id, name, "slug": slug.current,
@@ -1679,7 +1846,15 @@ export async function getGotTalentAppearanceBySlug(slug: string): Promise<TvAppe
     *[_type == "tvAppearance" && show in $shows && slug.current == $slug && isVisible != false][0] {
       _id, "slug": slug.current,
       show, year, season, episode, episodeTitle,
-      result, description, videoUrl,
+      result,
+      description[]{
+        ...,
+        markDefs[]{
+          ...,
+          "reference": reference->{ "slug": slug.current }
+        }
+      },
+      videoUrl,
       featuredImage { asset->{ url }, alt, caption },
       magician-> {
         _id, name, "slug": slug.current,
@@ -1964,7 +2139,7 @@ export interface LegendStation {
   year?:           string
   image?:          { asset: { _ref: string; url: string }; alt?: string }
   textKids?:       string
-  textAdults?:     string
+  textAdults?:     any[]
   activityPrompt?: string
 }
 
@@ -1981,7 +2156,14 @@ export async function getBiographyBySlug(slug: string): Promise<Biography | null
       featured, tags,
       mainImage { asset->{ _ref, url }, alt, caption },
       gallery[] { asset->{ _ref, url }, alt, caption },
-      shortBio, fullBio,
+      shortBio,
+      fullBio[]{
+        ...,
+        markDefs[]{
+          ...,
+          "reference": reference->{ "slug": slug.current }
+        }
+      },
       videos[] { title, url, type, year },
       links[] {
         label, type, url,
@@ -2158,7 +2340,17 @@ export async function getLegendBySlug(slug: string): Promise<Legend | null> {
       gallery[] { asset->{ _ref, url }, alt, caption },
       content,
       videos[] { title, url, type, year },
-      stations[] { title, order, year, image { asset->{ _ref, url }, alt }, textKids, textAdults, activityPrompt },
+      stations[] {
+        title, order, year, image { asset->{ _ref, url }, alt }, textKids,
+        textAdults[]{
+          ...,
+          markDefs[]{
+            ...,
+            "reference": reference->{ "slug": slug.current }
+          }
+        },
+        activityPrompt
+      },
       sources[] { label, url, sourceRef-> { title, author, type, year, url } },
       relatedLinks[] { label, path },
       biographyRef-> {
@@ -2226,7 +2418,7 @@ export interface MagicClubEdition {
   guestStars?: MagicClubGuestStar[]
   lineup?:     MagicClubLineupEntry[]
   otherActs?:  MagicClubOtherAct[]
-  notes?:      string
+  notes?:      PortableTextBlock[]
   sourceUrl?:  string
   seriesRef?:  { _id: string; title: string; "slug": string }
 }
@@ -2239,7 +2431,14 @@ const magicClubEditionProjection = `
   guestStars[] { name, description },
   lineup[] { name, bioRef-> { _id, name, "slug": slug.current } },
   otherActs[] { category, names },
-  notes, sourceUrl,
+  notes[]{
+    ...,
+    markDefs[]{
+      ...,
+      "reference": reference->{ "slug": slug.current }
+    }
+  },
+  sourceUrl,
   seriesRef-> { _id, title, "slug": slug.current }
 `
 
@@ -2326,7 +2525,13 @@ export async function getWhoKnewBySlug(slug: string): Promise<WhoKnew | null> {
   return sanityClient.fetch(`
     *[_type == "whoKnew" && slug.current == $slug && isVisible != false][0] {
       ${whoKnewCardProjection},
-      body,
+      body[]{
+        ...,
+        markDefs[]{
+          ...,
+          "reference": reference->{ "slug": slug.current }
+        }
+      },
       sources[] { label, url, sourceRef-> { title, author, type, year, url } }
     }
   `, { slug })
@@ -2403,7 +2608,14 @@ export async function getHistoricalClipBySlug(slug: string): Promise<HistoricalC
     *[_type == "historicalClip" && slug.current == $slug && isVisible != false][0] {
       _id, "slug": slug.current,
       title, year, broadcaster, show, category,
-      description, videoUrl, videoUrlAlt, source,
+      description[]{
+        ...,
+        markDefs[]{
+          ...,
+          "reference": reference->{ "slug": slug.current }
+        }
+      },
+      videoUrl, videoUrlAlt, source,
       featuredImage { asset->{ url }, alt, caption },
       magician-> {
         _id, name, "slug": slug.current,
@@ -2451,7 +2663,7 @@ export interface HistoriskKlippNb {
   copyrightOverride?: 'auto' | 'show' | 'hide'
   images?:      { asset: { _ref: string; url: string }; alt?: string; caption?: string }[]
   teaser:       string
-  rewrittenText?: string
+  rewrittenText?: PortableTextBlock[]
   commentary?:  string
   someText?:    string
   category?:    string
@@ -2488,7 +2700,15 @@ const historiskKlippProjection = `
     originalDate < $publicDomainCutoff => images[]{ asset->{ _ref, url }, alt, caption },
     []
   ),
-  teaser, rewrittenText, commentary, category,
+  teaser,
+  rewrittenText[]{
+    ...,
+    markDefs[]{
+      ...,
+      "reference": reference->{ "slug": slug.current }
+    }
+  },
+  commentary, category,
   mentionedMagicians[]-> { _id, name, "slug": slug.current, artistName }
 `
 
@@ -2685,7 +2905,16 @@ export async function getPersonvernPage(): Promise<PersonvernPage | null> {
   return sanityClient.fetch(`
     *[_type == "personvernPage"][0] {
       lastUpdated, intro,
-      sections[] { _key, heading, body }
+      sections[] {
+        _key, heading,
+        body[]{
+          ...,
+          markDefs[]{
+            ...,
+            "reference": reference->{ "slug": slug.current }
+          }
+        }
+      }
     }
   `)
 }

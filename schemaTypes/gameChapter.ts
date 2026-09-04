@@ -1,5 +1,6 @@
 // schemaTypes/gameChapter.ts
 import { defineType, defineField } from 'sanity'
+import { richBlockContent } from './richBlockContent'
 
 // Rooms in "Det trettende kabinett". The puzzle logic for each room lives in
 // the frontend code; these documents let editors override the visible copy
@@ -36,7 +37,10 @@ const ROOM_KEYS = [
 ]
 
 // Rich text for room intros: paragraphs with links, plus inline images.
-// Editors can use this instead of the plain intro field.
+// Editors can use this instead of the plain intro field. Reuses the shared
+// richBlockContent() block config (so links/internal links work the same as
+// everywhere else) but keeps its own image field set, since room images need
+// a bilingual altEn field that the shared inline-image config doesn't have.
 const richText = (name: string, title: string, description: string, fieldset?: string) =>
   defineField({
     name,
@@ -45,7 +49,7 @@ const richText = (name: string, title: string, description: string, fieldset?: s
     description,
     ...(fieldset ? { fieldset } : {}),
     of: [
-      { type: 'block' },
+      richBlockContent()[0],
       {
         type: 'image',
         options: { hotspot: true },

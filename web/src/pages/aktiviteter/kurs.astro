@@ -6,9 +6,11 @@ import PageHero from '../../components/PageHero.astro'
 import InfoCard from '../../components/InfoCard.astro'
 import Button from '../../components/Button.astro'
 import NarrateButton from '../../components/NarrateButton.astro'
-import { getKursPage } from '../../lib/sanity'
+import { getKursPage, portableTextToHtml, portableTextToPlainText } from '../../lib/sanity'
 
 const page = await getKursPage()
+const omKursetHtml = portableTextToHtml(page.omKurset.tekst)
+const omKursetPlain = portableTextToPlainText(page.omKurset.tekst)
 ---
 
 <BaseLayout
@@ -24,9 +26,9 @@ const page = await getKursPage()
 
       <InfoCard icon="🎩" title={page.omKurset.heading}>
         <div class="section-head">
-          <NarrateButton text={page.omKurset.tekst} label="Les om tryllekurset høyt" />
+          <NarrateButton text={omKursetPlain} label="Les om tryllekurset høyt" />
         </div>
-        <p class="info-text">{page.omKurset.tekst}</p>
+        <div class="info-text" set:html={omKursetHtml} />
       </InfoCard>
 
       {page.sitat.tekst && (

@@ -57,6 +57,16 @@ export const structure: StructureResolver = (S) =>
         ),
 
       S.listItem()
+        .title('Magic Club')
+        .child(
+          S.list()
+            .title('Magic Club')
+            .items([
+              S.documentTypeListItem('magicClubEdition').title('Magic Club — kveld'),
+            ]),
+        ),
+
+      S.listItem()
         .title('Aktiviteter')
         .child(
           S.list()

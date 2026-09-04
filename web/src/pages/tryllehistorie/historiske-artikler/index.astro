@@ -1,7 +1,7 @@
 ---
 // src/pages/tryllehistorie/historiske-artikler/index.astro
 import BaseLayout from '../../../layouts/BaseLayout.astro'
-import { getHistoriskKlippArchive } from '../../../lib/sanity'
+import { getHistoriskKlippArchive, portableTextToHtml } from '../../../lib/sanity'
 import MentionedMagicians from '../../../components/MentionedMagicians.astro'
 import type { HistoriskKlippNb } from '../../../lib/sanity'
 
@@ -57,7 +57,7 @@ const modalDataRaw = clippings.map((c: HistoriskKlippNb) => ({
       caption: img.caption ?? null,
     })),
   teaser:      c.teaser,
-  rewrittenText: c.rewrittenText ?? null,
+  rewrittenTextHtml: c.rewrittenText?.length ? portableTextToHtml(c.rewrittenText) : null,
   commentary:  c.commentary ?? null,
   category:    c.category ?? null,
   magicians:   (c.mentionedMagicians ?? []).map(m => ({
@@ -312,7 +312,7 @@ const escapedJson = JSON.stringify(modalDataRaw)
     sourceUrl: string
     images: ModalImage[]
     teaser: string
-    rewrittenText: string | null
+    rewrittenTextHtml: string | null
     commentary: string | null
     category: string | null
     magicians: { name: string; slug: string }[]
@@ -480,20 +480,13 @@ const escapedJson = JSON.stringify(modalDataRaw)
     // Teaser
     elTeaser.textContent = c.teaser
 
-    // Rewritten article text (editorial retelling — paragraph per blank line)
-    elBodyText.innerHTML = ''
-    if (c.rewrittenText) {
-      c.rewrittenText
-        .split(/\n\s*\n/)
-        .map(p => p.trim())
-        .filter(Boolean)
-        .forEach(paragraph => {
-          const p = document.createElement('p')
-          p.textContent = paragraph
-          elBodyText.appendChild(p)
-        })
+    // Rewritten article text (editorial retelling — pre-rendered to HTML
+    // server-side from Portable Text via portableTextToHtml())
+    if (c.rewrittenTextHtml) {
+      elBodyText.innerHTML = c.rewrittenTextHtml
       elBodyText.removeAttribute('hidden')
     } else {
+      elBodyText.innerHTML = ''
       elBodyText.hidden = true
     }
 

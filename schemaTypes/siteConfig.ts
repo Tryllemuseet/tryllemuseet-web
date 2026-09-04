@@ -1,5 +1,6 @@
 // schemaTypes/siteConfig.ts
 import { defineType, defineField } from 'sanity'
+import { richBlockContent } from './richBlockContent'
 
 export const siteConfig = defineType({
   name: 'siteConfig',
@@ -115,9 +116,8 @@ export const siteConfig = defineType({
     defineField({
       name: 'donationText',
       title: 'Gi en gave — tekst',
-      type: 'text',
-      rows: 3,
-      initialValue: 'Museet drives i stor grad av frivillige. En gave bidrar til å bevare samlingen, utvikle utstillingene og holde museet gratis og tilgjengelig for alle.',
+      type: 'array',
+      of: richBlockContent(),
     }),
 
     // ─── SOSIALE MEDIER ─────────────────────────────────────────

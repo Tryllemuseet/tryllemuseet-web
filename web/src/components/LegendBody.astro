@@ -53,7 +53,7 @@ const wallPlain    = portableTextToPlainText(entry.wallText)
 const contentPlain = portableTextToPlainText(entry.content)
 const detailPlain  = [entry.detailIntro, ...sectionsHtml.map(s => s.plain)].filter(Boolean).join(' ')
 function stationPlain(s: LegendStation): string {
-  return [s.textKids, s.textAdults, s.activityPrompt].filter(Boolean).join(' ')
+  return [s.textKids, portableTextToPlainText(s.textAdults), s.activityPrompt].filter(Boolean).join(' ')
 }
 
 const videoTypeLabel: Record<string, string> = {
@@ -163,7 +163,7 @@ const videoTypeLabel: Record<string, string> = {
                   <p class="child-text">{s.textKids}</p>
                 </div>
               )}
-              {s.textAdults && <p class="station-adults">{s.textAdults}</p>}
+              {s.textAdults && <div class="station-adults" set:html={portableTextToHtml(s.textAdults)} />}
               {s.activityPrompt && (
                 <div class="station-activity">
                   <span aria-hidden="true">★</span>
@@ -182,7 +182,7 @@ const videoTypeLabel: Record<string, string> = {
     <section class="gallery-section" aria-label="Bildegalleri">
       <AnimateIn><h2 class="section-heading">Bilder</h2></AnimateIn>
       <div class="gallery-grid">
-        {gallery.map((img: any, i: number) => (
+        {gallery.filter((img: any) => img?.asset).map((img: any, i: number) => (
           <AnimateIn delay={staggerDelay(i)}>
           <figure class="gallery-fig">
             <img

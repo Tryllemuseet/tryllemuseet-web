@@ -1,4 +1,5 @@
 import { defineField, defineType } from 'sanity'
+import { richBlockContent } from './richBlockContent'
 
 export const kursPage = defineType({
   name: 'kursPage',
@@ -26,7 +27,7 @@ export const kursPage = defineType({
       type: 'object',
       fields: [
         defineField({ name: 'heading', title: 'Overskrift', type: 'string' }),
-        defineField({ name: 'tekst',   title: 'Brødtekst',  type: 'text', rows: 5 }),
+        defineField({ name: 'tekst',   title: 'Brødtekst',  type: 'array', of: richBlockContent() }),
       ],
     }),
 

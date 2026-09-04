@@ -4,7 +4,7 @@ import BaseLayout from '../layouts/BaseLayout.astro'
 import AnimateIn from '../components/AnimateIn.astro'
 import PageHero from '../components/PageHero.astro'
 import Button from '../components/Button.astro'
-import { getBarnPage, getSiteConfig, getComicStoryPaths } from '../lib/sanity'
+import { getBarnPage, getSiteConfig, getComicStoryPaths, portableTextToHtml } from '../lib/sanity'
 
 const [bp, config, storyPaths] = await Promise.all([
   getBarnPage(),
@@ -29,11 +29,12 @@ const aktiviteter   = bp?.aktiviteter   ?? []
 const skole         = bp?.skolebesok    ?? {
   label: 'For skoler og barnehager',
   heading: 'Pedagogisk opplegg for klasser',
-  tekst: '',
+  tekst: [],
   detaljer: [],
   knappLabel: 'Ta kontakt for booking',
   knappHref: '/kontakt',
 }
+const skoleHtml = portableTextToHtml(skole.tekst)
 const kurs = bp?.kursBanner ?? {
   heading: 'Tryllekurs for barn',
   tekst: '',
@@ -141,7 +142,7 @@ const showCta2 = hero.cta2Href && (config.laerEtTriksActive || !hero.cta2Href.st
       <div class="skolebesok-tekst">
         <span class="etikett">{skole.label}</span>
         <h2>{skole.heading}</h2>
-        <p>{skole.tekst}</p>
+        <Fragment set:html={skoleHtml} />
         {skole.detaljer.length > 0 && (
           <ul class="sjekkliste">
             {skole.detaljer.map(d => <li>{d}</li>)}
