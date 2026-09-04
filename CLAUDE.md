@@ -24,7 +24,7 @@ The schema defines 35 registered content types in `/schemaTypes` (see `schemaTyp
 - `kontaktPage.ts` — Contact page (form URL, FAQ)
 - `tryllehistoriePage.ts` — Magic history landing page (sections, timeline)
 - `ressurserPage.ts` — Resources landing page
-- `arrangementPage.ts` — Events page hero and info strip
+- `aktiviteterPage.ts` — "Hva skjer" hub page (`/aktiviteter`) hero and curated section cards to sub-areas (Tryllekurs, Bestill tryllekunstner); the event calendar itself is not Sanity-backed here — see `event.ts` and `getAllEvents()`
 - `utstillingPage.ts` — Exhibition landing page
 - `personvernPage.ts` — Privacy policy content
 - `siteConfig.ts` — Global settings (email, address, contact info); also holds the `laerEtTriksActive` feature flag (see below)

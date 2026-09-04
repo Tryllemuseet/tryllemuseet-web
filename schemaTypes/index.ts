@@ -15,6 +15,7 @@ import { whoKnew }        from './whoKnew'
 import { book }           from './book'
 import { homepage }       from './homepage'
 import { barnPage }       from './barnPage'
+import { aktiviteterPage } from './aktiviteterPage'
 import { omOssPage }      from './omOssPage'
 import { besokPage }           from './besokPage'
 import { kontaktPage }        from './kontaktPage'
@@ -53,6 +54,7 @@ export const schemaTypes = [
   utstillingPage,
   tryllebutikkenPage,
   barnPage,
+  aktiviteterPage,
   tryllehistoriePage,
   ressurserPage,
   omOssPage,

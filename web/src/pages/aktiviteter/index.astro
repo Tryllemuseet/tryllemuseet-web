@@ -3,7 +3,9 @@
 import BaseLayout from '../../layouts/BaseLayout.astro'
 import AnimateIn from '../../components/AnimateIn.astro'
 import PageHero from '../../components/PageHero.astro'
-import { getAllEvents, getSiteConfig, portableTextToHtml } from '../../lib/sanity'
+import ContentCard from '../../components/ContentCard.astro'
+import HubSubnavGrid from '../../components/HubSubnavGrid.astro'
+import { getAllEvents, getSiteConfig, getAktiviteterPage, getUncoveredSubAreas, portableTextToHtml } from '../../lib/sanity'
 import { getMagiskeCirkelEvents } from '../../lib/icalendar'
 import type { PortableTextBlock } from '@portabletext/types'
 
@@ -22,11 +24,18 @@ interface Activity {
   featured?:  boolean
 }
 
-const [tmEvents, mcEvents, site] = await Promise.all([
+const [tmEvents, mcEvents, site, page] = await Promise.all([
   getAllEvents(),
   getMagiskeCirkelEvents(),
   getSiteConfig(),
+  getAktiviteterPage(),
 ])
+
+// Sikkerhetsnett: underområder av «Hva skjer» som ikke allerede har et
+// håndkurert kort i page.seksjoner over — se HubSubnavGrid.astro. «/aktiviteter»
+// selv (nav-punktet «Oversikt») skal aldri vises som et kort på sin egen side.
+const coveredHrefs = [...page.seksjoner.map(s => s.href), '/aktiviteter']
+const uncoveredSubAreas = await getUncoveredSubAreas('/aktiviteter', coveredHrefs)
 
 const activities: Activity[] = [
   ...tmEvents.map((e): Activity => ({
@@ -64,6 +73,10 @@ const sourceLabels: Record<string, string> = {
 // uavhengig av hvilken tidssone build-serveren kjører i (statisk generert).
 const TZ = 'Europe/Oslo'
 
+const STAGGER_MS = 80
+const STAGGER_CAP_MS = 320
+const staggerDelay = (i: number) => Math.min(i * STAGGER_MS, STAGGER_CAP_MS)
+
 function formatDate(d: string) {
   return new Date(d).toLocaleDateString('nb-NO', {
     weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', timeZone: TZ,
@@ -90,15 +103,30 @@ function formatYear(d: string) {
 
 <BaseLayout
   title="Hva skjer — Tryllemuseet"
-  description="Kurs, forestillinger og andre magiske opplevelser for barn og voksne – på Tryllemuseet og i tryllemiljøet."
+  description={page.hero.ingress}
 >
 
-  <PageHero
-    label="Tryllemuseet"
-    title="Hva skjer"
-    intro="Kurs, forestillinger og andre magiske opplevelser for barn og voksne – på Tryllemuseet og i tryllemiljøet."
-    theme="dark"
-  />
+  <PageHero label={page.hero.label} title={page.hero.heading} intro={page.hero.ingress} theme="dark" />
+
+  <!-- SEKSJONER (kuraterte kort + sikkerhetsnett) ───────────────────── -->
+  <div class="container aktiviteter-hub">
+    <div class="aktiviteter-grid">
+      {page.seksjoner.map((s, i) => (
+        <AnimateIn delay={Math.min(i * 80, 320)}>
+        <ContentCard
+          icon={s.emoji}
+          label={s.sub}
+          title={s.title}
+          description={s.desc}
+          href={s.soon ? undefined : s.href}
+          ctaText={s.soon ? undefined : 'Utforsk →'}
+          status={s.soon ? (s.badge || 'Kommer snart') : undefined}
+        />
+        </AnimateIn>
+      ))}
+    </div>
+    <HubSubnavGrid heading="Flere måter å oppleve magien på" items={uncoveredSubAreas} />
+  </div>
 
   <!-- FILTER ─────────────────────────────────────────────────────── -->
   <div class="filter-bar-wrap">
@@ -126,15 +154,17 @@ function formatYear(d: string) {
   <main class="container activity-main">
 
     <div class="activity-list" id="activity-list">
-      {activities.map((a) => {
+      {activities.map((a, i) => {
         const time = formatTime(a.date)
         const isPast = new Date(a.date).getTime() < now
         return (
           <article
             class:list={['activity-row', { 'activity-row--featured': a.featured, 'activity-row--expandable': a.description && a.description.length > 0 }]}
-            style={isPast ? 'display:none' : ''}
+            style={`${isPast ? 'display:none;' : ''}transition-delay:${staggerDelay(i)}ms`}
             data-source={a.source}
             data-time={new Date(a.date).getTime()}
+            data-animate
+            data-direction="up"
           >
             <div class="row-date">
               <span class="row-day">{formatDay(a.date)}</span>
@@ -281,6 +311,14 @@ function formatYear(d: string) {
 </script>
 
 <style>
+  /* ── SEKSJONER (hub-kort) ──────────────────────────────────────── */
+  .aktiviteter-hub { padding-top: 2.5rem; }
+  .aktiviteter-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.25rem;
+  }
+
   /* ── FILTER ────────────────────────────────────────────────────── */
   .filter-bar-wrap { position: sticky; top: var(--header-h); z-index: 50; background: white; border-bottom: 1px solid var(--cream-dark); box-shadow: 0 2px 12px rgba(26,18,8,0.06); }
   .filter-bar-inner { display: flex; flex-wrap: wrap; gap: 0.75rem; align-items: flex-end; padding: 0.75rem 1.5rem; }

@@ -1112,11 +1112,31 @@ export interface TryllehistorieSeksjon {
   soon:   boolean
 }
 
+export interface TryllehistorieSeksjonMedTekst {
+  heading: string
+  body:    PortableTextBlock[]
+}
+
 export interface TryllehistoriePage {
-  hero:              { label: string; heading: string; ingress: string }
-  seksjoner:         TryllehistorieSeksjon[]
-  tidslinjeHeading:  string
-  tidslinje:         { aar: string; hendelse: string; siste: boolean }[]
+  hero:               { label: string; heading: string; ingress: string }
+  historieIntro:      string
+  historieSeksjoner:  TryllehistorieSeksjonMedTekst[]
+  seksjoner:          TryllehistorieSeksjon[]
+  tidslinjeHeading:   string
+  tidslinje:          { aar: string; hendelse: string; siste: boolean }[]
+}
+
+// Enkel Portable Text-blokk med ett avsnitt — brukt kun til å bygge
+// hardkodede fallback-verdier for rike tekstfelt (se historieSeksjoner
+// under) uten å måtte skrive ut hele blokkstrukturen for hånd hvert sted.
+function ptParagraph(text: string, key: string): PortableTextBlock {
+  return {
+    _type: 'block',
+    _key: key,
+    style: 'normal',
+    markDefs: [],
+    children: [{ _type: 'span', _key: `${key}-s`, text, marks: [] }],
+  } as PortableTextBlock
 }
 
 export async function getTryllehistoriePage(): Promise<TryllehistoriePage> {
@@ -1124,6 +1144,8 @@ export async function getTryllehistoriePage(): Promise<TryllehistoriePage> {
     sanityClient.fetch(`
     *[_type == "tryllehistoriePage"][0] {
       hero { label, heading, ingress },
+      historieIntro,
+      historieSeksjoner[] { heading, body },
       seksjoner[] { href, emoji, title, sub, desc, badge, soon },
       tidslinjeHeading,
       tidslinje[] { aar, hendelse, siste }
@@ -1168,6 +1190,33 @@ export async function getTryllehistoriePage(): Promise<TryllehistoriePage> {
       heading: d?.hero?.heading ?? 'Tryllehistorie',
       ingress: d?.hero?.ingress ?? 'Fra begerspillet i Egypt for 4000 år siden til gullalderens store scenemagikere og norske tryllekunstnere i dag — magiens lange historie.',
     },
+    historieIntro: d?.historieIntro ?? 'Tryllekunst er kanskje verdens eldste form for underholdning: kunsten å få andre mennesker til å undres. Fortellingen strekker seg fra faraoenes hoff til dagens talentshow — og hele veien er det den samme gnisten som driver den.',
+    historieSeksjoner: d?.historieSeksjoner ?? [
+      {
+        heading: 'De første undrene',
+        body: [ptParagraph('Lenge før det fantes teatre og TV, samlet folk seg rundt gjøglere som fikk små kuler til å forsvinne under begre. Begerspillet — verdens eldste kjente trylletriks — ble avbildet i Egypt for rundt fire tusen år siden, og en gammel nedtegnelse forteller om magikeren Dedi, som skal ha opptrådt for selveste farao Khufu. Trangen til å bli forundret er med andre ord like gammel som sivilisasjonen selv.', 'hs1')],
+      },
+      {
+        heading: 'Gjøglere i farlige tider',
+        body: [ptParagraph('I middelalderens Europa levde tryllekunsten på markedsplassene, blant gjøglere og omreisende artister. Men kunsten kunne være livsfarlig: Den som var for flink med hendene, risikerte å bli anklaget for trolldom. Da engelskmannen Reginald Scot i 1584 ga ut «The Discoverie of Witchcraft», var det nettopp for å vise at taskenspillernes triks var fingerferdighet — ikke djevelskap. Boken ble samtidig den første trykte forklaringen på hvordan triksene gjøres.', 'hs2')],
+      },
+      {
+        heading: 'Fra markedsbod til teatersal',
+        body: [ptParagraph('Utover 1700- og 1800-tallet flyttet magien innendørs. Den franske urmakeren Jean-Eugène Robert-Houdin åpnet sitt eget teater i Paris i 1845 og kledde tryllekunsten i kjole og hvitt: eleganse, mekaniske underverker og vitenskapens språk i stedet for gjøglerens kappe. Den moderne scenetryllingen var født — og en ung amerikaner valgte senere kunstnernavnet Houdini til ære for ham.', 'hs3')],
+      },
+      {
+        heading: 'Gullalderen',
+        body: [ptParagraph('Tiårene fra midten av 1800-tallet til rundt 1930 kalles gjerne magiens gullalder. Herrmann, Kellar, Thurston og Houdini fylte de største scenene i verden, reiste på turné med tonnevis av illusjoner og kjempet om publikums gunst med praktfulle litografiske plakater. Også i Norge lot man seg fortrylle — en ung Henrik Ibsen holdt sine egne trylleforestillinger hjemme i Skien, og verdensstjernene fant veien til norske scener.', 'hs4')],
+      },
+      {
+        heading: 'Nedgang — og nytt liv',
+        body: [ptParagraph('Så kom filmen, radioen og etter hvert fjernsynet, og de store illusjonsshowene mistet publikum. Men magien døde ikke — den tilpasset seg. Tryllekunstnerne samlet seg i foreninger som Magiske Cirkel Norge, stiftet i Oslo i 1928, kunsten fant nye hjem i TV-studioer og klubblokaler, og på 1990-tallet førte gatemagien trolldommen helt ut på fortauet igjen — tett på publikum, akkurat som ved markedsbodene tusen år tidligere.', 'hs5')],
+      },
+      {
+        heading: 'Historien fortsetter',
+        body: [ptParagraph('I dag lever tryllekunsten i beste velgående — på teaterscener og i talentshow, i bursdagsselskaper og på skjermen. Og på Årvoll gård i Oslo tar Tryllemuseet vare på hele denne fortellingen: gjenstandene, plakatene, bøkene og menneskene som har viet livet til det umulige. Resten av historien finner du i arkivene nedenfor.', 'hs6')],
+      },
+    ],
     seksjoner: withAutoBadges(d?.seksjoner ?? [
       { href: '/tryllehistorie/magiens-hvem-er-hvem',        emoji: '📖', title: 'Magiens Hvem er Hvem',               sub: 'Norske tryllekunstnere',      desc: 'Biografier over norske tryllekunstnere fra Terje Nordheims standardverk. Søk på navn, kunstnernavn og spesialitet.',                                                                    badge: 'Biografier',  soon: false },
       { href: '/utstillingen',                                emoji: '🎩', title: 'Gullalderen 1845–1930',              sub: 'Internasjonal tryllehistorie', desc: 'Robert-Houdin, Herrmann, Kellar, Thurston og Houdini — magikerne som forandret verden og skapte scenetryllingens gylne epoke.',                                                          badge: '7 utstillingsfelt', soon: false },
@@ -1198,6 +1247,42 @@ export async function getTryllehistoriePage(): Promise<TryllehistoriePage> {
       { aar: '1947',           hendelse: 'Den Magiske Ring stiftes i Oslo — ti unge tryllekunstnere rundt et rundt bord',                    siste: false },
       { aar: '1997',           hendelse: 'David Blaines «Street Magic» — vendepunktet for gatemagien på TV',                                 siste: false },
       { aar: 'I dag',          hendelse: 'Tryllemuseet på Årvoll holder historien levende',                                                  siste: true  },
+    ],
+  }
+}
+
+// ── Typer: Aktiviteter (Hva skjer) ────────────────────────────────
+export interface AktiviteterSeksjon {
+  href:  string
+  emoji: string
+  title: string
+  sub:   string
+  desc:  string
+  badge: string
+  soon:  boolean
+}
+
+export interface AktiviteterPage {
+  hero:      { label: string; heading: string; ingress: string }
+  seksjoner: AktiviteterSeksjon[]
+}
+
+export async function getAktiviteterPage(): Promise<AktiviteterPage> {
+  const d = await sanityClient.fetch(`
+    *[_type == "aktiviteterPage"][0] {
+      hero { label, heading, ingress },
+      seksjoner[] { href, emoji, title, sub, desc, badge, soon }
+    }
+  `)
+  return {
+    hero: {
+      label:   d?.hero?.label   ?? 'Tryllemuseet',
+      heading: d?.hero?.heading ?? 'Hva skjer',
+      ingress: d?.hero?.ingress ?? 'Kurs, forestillinger og andre magiske opplevelser for barn og voksne – på Tryllemuseet og i tryllemiljøet.',
+    },
+    seksjoner: d?.seksjoner ?? [
+      { href: '/aktiviteter/kurs',           emoji: '🎓', title: 'Tryllekurs',             sub: 'For barn',        desc: 'Lær triks som er enkle å utføre, men som virker meget imponerende — kurs over tre ettermiddager annenhver uke.', badge: 'Kurs',    soon: false },
+      { href: '/aktiviteter/tryllekunstnere', emoji: '🎩', title: 'Bestill tryllekunstner', sub: 'Til arrangement', desc: 'Book en tryllekunstner fra Magiske Cirkel Norges tryllekatalog til ditt neste arrangement eller selskap.',        badge: 'Booking', soon: false },
     ],
   }
 }
@@ -1246,7 +1331,7 @@ export async function getRessurserPage(): Promise<RessurserPage> {
 export interface UtstillingPage {
   hero: { eraLabel: string; heading: string; ingress: string }
   kommerSnartSeksjon: { label: string; heading: string }
-  seksjoner: { icon: string; label: string; title: string; description: string; slug: string; ready: boolean }[]
+  seksjoner: { icon: string; label: string; title: string; description: string; slug: string; ready: boolean; showAsComingSoon: boolean }[]
 }
 
 export async function getUtstillingPage(): Promise<UtstillingPage> {
@@ -1254,7 +1339,7 @@ export async function getUtstillingPage(): Promise<UtstillingPage> {
     *[_type == "utstillingPage"][0] {
       hero { eraLabel, heading, ingress },
       kommerSnartSeksjon { label, heading },
-      seksjoner[] { icon, label, title, description, slug, ready }
+      seksjoner[] { icon, label, title, description, slug, ready, showAsComingSoon }
     }
   `)
   return {
@@ -1268,11 +1353,11 @@ export async function getUtstillingPage(): Promise<UtstillingPage> {
       heading: d?.kommerSnartSeksjon?.heading ?? 'I utstillingen',
     },
     seksjoner: d?.seksjoner ?? [
-      { icon: '🔮',   label: 'Fast utstilling',      title: 'Tryllekunstens gullalder', description: 'Robert-Houdin, Herrmann, Kellar, Thurston og Houdini — veggpanelene i Gullalder-salen.', slug: 'gullalderen',        ready: true  },
-      { icon: '⭐',   label: 'Portretter',          title: 'Fordypninger',       description: 'Fra Arnardo til Finn Jon — tryllekunstnerne som satte spor.',                                slug: 'fordypninger',       ready: false },
-      { icon: '🎩',   label: 'Samlingen',           title: 'Artefakter',         description: 'Sjeldne rekvisitter, historiske gjenstander og mysterier fra museets samling.',              slug: 'artefakter',         ready: true  },
-      { icon: '♣',    label: 'Organisasjonene',     title: 'Trylleforeningene',  description: 'Magiske Cirkel Norge og Den magiske ring — fellesskapet bak kunsten.',                      slug: 'trylleforeningene',  ready: true  },
-      { icon: '🛍',   label: 'Butikken',             title: 'Tryllebutikken',     description: 'Bøker, rekvisitter og kuriositeter for den nysgjerrige.',                                   slug: 'tryllebutikken',     ready: true  },
+      { icon: '🔮',   label: 'Fast utstilling',      title: 'Tryllekunstens gullalder', description: 'Robert-Houdin, Herrmann, Kellar, Thurston og Houdini — veggpanelene i Gullalder-salen.', slug: 'gullalderen',        ready: true,  showAsComingSoon: false },
+      { icon: '⭐',   label: 'Portretter',          title: 'Fordypninger',       description: 'Fra Arnardo til Finn Jon — tryllekunstnerne som satte spor.',                                slug: 'fordypninger',       ready: false, showAsComingSoon: false },
+      { icon: '🎩',   label: 'Samlingen',           title: 'Artefakter',         description: 'Sjeldne rekvisitter, historiske gjenstander og mysterier fra museets samling.',              slug: 'artefakter',         ready: true,  showAsComingSoon: false },
+      { icon: '♣',    label: 'Organisasjonene',     title: 'Trylleforeningene',  description: 'Magiske Cirkel Norge og Den magiske ring — fellesskapet bak kunsten.',                      slug: 'trylleforeningene',  ready: true,  showAsComingSoon: false },
+      { icon: '🛍',   label: 'Butikken',             title: 'Tryllebutikken',     description: 'Bøker, rekvisitter og kuriositeter for den nysgjerrige.',                                   slug: 'tryllebutikken',     ready: true,  showAsComingSoon: false },
     ],
   }
 }

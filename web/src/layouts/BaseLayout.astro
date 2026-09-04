@@ -58,6 +58,9 @@ const isAreaActive = (area: NavMainArea) =>
 const dropdownId = (area: NavMainArea) =>
   'dd-' + area.link.replace(/[^a-z0-9]+/gi, '-').replace(/^-+|-+$/g, '')
 
+const mobileDropdownId = (area: NavMainArea) =>
+  'mdd-' + area.link.replace(/[^a-z0-9]+/gi, '-').replace(/^-+|-+$/g, '')
+
 // Flat liste for footer — hovedområdene, pluss kontakt- og støttelenker som
 // ikke selv er egne toppnivå-nav-punkter (se seksjon 17 i lanseringsnotatet)
 const allNavLinks: { href: string; label: string; external?: boolean }[] = [
@@ -190,8 +193,17 @@ const allNavLinks: { href: string; label: string; external?: boolean }[] = [
           const subs = visibleSubAreas(area)
           return subs.length > 0 ? (
             <li class="mobile-section">
-              <a href={area.link} class:list={['mobile-nav-link', { active: isAreaActive(area) }]}>{area.label}</a>
-              <ul class="mobile-sub">
+              <div class="mobile-section-row">
+                <a href={area.link} class:list={['mobile-nav-link', { active: isAreaActive(area) }]}>{area.label}</a>
+                <button
+                  type="button"
+                  class="mobile-subtoggle"
+                  aria-expanded="false"
+                  aria-controls={mobileDropdownId(area)}
+                  aria-label={`Vis underpunkter for ${area.label}`}
+                >▾</button>
+              </div>
+              <ul class="mobile-sub" id={mobileDropdownId(area)} hidden>
                 {subs.map(s => <li><a href={s.link} class="mobile-sub-link">{s.label}</a></li>)}
               </ul>
             </li>
@@ -380,6 +392,27 @@ const allNavLinks: { href: string; label: string; external?: boolean }[] = [
   );
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape' && menu?.classList.contains('open')) closeMobileMenu(true);
+  });
+
+  // Mobilmeny — underområder er sammenleggbare (samme aria-mønster som
+  // desktopens dropdown-toggle-knapp). I motsetning til desktop kan flere
+  // seksjoner stå åpne samtidig — mobilmenyen er uansett én lang, vertikal
+  // liste, ikke flere dropdowns som kan overlappe visuelt.
+  document.querySelectorAll<HTMLElement>('.mobile-section').forEach(section => {
+    const toggleEl = section.querySelector('.mobile-subtoggle') as HTMLButtonElement | null;
+    const sub      = section.querySelector('.mobile-sub') as HTMLElement | null;
+    if (!toggleEl || !sub) return;
+
+    const setOpen = (open: boolean) => {
+      sub.hidden = !open;
+      toggleEl.setAttribute('aria-expanded', String(open));
+      toggleEl.classList.toggle('open', open);
+    };
+
+    // Aktiv seksjon (siden man akkurat nå er inne på) starter åpen
+    if (section.querySelector('.mobile-nav-link.active')) setOpen(true);
+
+    toggleEl.addEventListener('click', () => setOpen(sub.hidden));
   });
 
   // Desktop dropdowns — åpnes ved hover via CSS for mus,
@@ -707,12 +740,34 @@ const allNavLinks: { href: string; label: string; external?: boolean }[] = [
   .mobile-menu.open { display: block; }
   .mobile-menu > ul { max-width: var(--max-w); margin: 0 auto; padding: 0.3rem 1.5rem 0.4rem; display: flex; flex-direction: column; gap: 0; }
 
-  .mobile-nav-link { display: flex; align-items: center; min-height: 36px; font-family: var(--font-ui); font-size: 1rem; font-weight: 600; line-height: 1.15; color: var(--cream); padding: 0.05rem 0.75rem; border-radius: var(--radius); transition: color var(--transition), background var(--transition); letter-spacing: 0.03em; }
+  .mobile-nav-link { display: flex; align-items: center; min-height: 36px; font-family: var(--font-ui); font-size: 1rem; font-weight: 600; line-height: 1.15; color: var(--cream); padding: 0.05rem 0.75rem; border-radius: var(--radius); transition: color var(--transition), background var(--transition); letter-spacing: 0.03em; flex: 1; }
   .mobile-nav-link:hover, .mobile-nav-link.active { color: var(--gold); background: rgba(212,168,67,0.1); }
   .mobile-nav-cta { color: var(--gold); border: 1px solid var(--gold-dark); margin-top: 0.2rem; }
   .mobile-nav-cta:hover { background: var(--gold); color: var(--burgundy-dk); }
 
+  /* Rad med hovedlenke + egen sammenleggbar-knapp for underområder — samme
+     idé som desktopens .has-dropdown/.dropdown-toggle, tilpasset mobil. */
+  .mobile-section-row { display: flex; align-items: center; }
+  .mobile-subtoggle {
+    font-size: 0.7rem;
+    color: var(--cream);
+    opacity: 0.7;
+    min-width: 44px;
+    min-height: 44px;
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+    border-radius: var(--radius);
+    transition: opacity var(--transition), color var(--transition), background var(--transition), transform var(--transition);
+  }
+  .mobile-subtoggle:hover,
+  .mobile-subtoggle.open { opacity: 1; color: var(--gold); background: rgba(212,168,67,0.1); }
+  .mobile-subtoggle.open { transform: rotate(180deg); }
+
   .mobile-sub { padding: 0 0 0.15rem 1.25rem; display: flex; flex-direction: column; gap: 0; }
+  .mobile-sub[hidden] { display: none; }
   .mobile-sub-link { display: flex; align-items: center; min-height: 32px; font-family: var(--font-ui); font-size: 0.875rem; line-height: 1.15; color: var(--cream); opacity: 0.7; padding: 0 0.75rem; border-radius: var(--radius); transition: opacity var(--transition), color var(--transition); }
   .mobile-sub-link:hover { opacity: 1; color: var(--gold-light); }
   .mobile-sub-link--soon { opacity: 0.35; pointer-events: none; }
