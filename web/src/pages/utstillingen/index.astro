@@ -15,6 +15,13 @@ const [temaer, exhibitions, page] = await Promise.all([
   getUtstillingDeepDives(),
   getUtstillingPage(),
 ])
+
+// Uferdig innhold («Kommer snart») er som hovedregel skjult i produksjon —
+// forhåndsvisning/staging viser fortsatt alt, til redaksjonell kontroll.
+// Et konkret kommende område kan likevel annonseres i produksjon ved å
+// eksplisitt slå på showAsComingSoon i Sanity.
+const isProdEnv = import.meta.env.PUBLIC_VERCEL_ENV === 'production'
+const visibleSeksjoner = page.seksjoner.filter(s => !isProdEnv || s.ready || s.showAsComingSoon)
 ---
 
 <BaseLayout
@@ -86,6 +93,7 @@ const [temaer, exhibitions, page] = await Promise.all([
   <div class="container"><hr class="gold-rule section-rule" /></div>
 
   <!-- ── KOMMENDE SEKSJONER ────────────────────────────────────────── -->
+  {visibleSeksjoner.length > 0 && (
   <section class="container coming-section">
     <AnimateIn>
       <p class="section-label">{page.kommerSnartSeksjon.label}</p>
@@ -93,7 +101,7 @@ const [temaer, exhibitions, page] = await Promise.all([
     </AnimateIn>
 
     <div class="card-grid">
-      {page.seksjoner.map((s, i) => (
+      {visibleSeksjoner.map((s, i) => (
         <AnimateIn delay={staggerDelay(i)}>
         <ContentCard
           variant="compact"
@@ -109,6 +117,7 @@ const [temaer, exhibitions, page] = await Promise.all([
       ))}
     </div>
   </section>
+  )}
 
   <div class="section-bottom-pad" />
 
