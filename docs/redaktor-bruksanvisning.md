@@ -39,6 +39,7 @@ Denne bruksanvisningen dekker de oppgavene en redaktør utfører til daglig.
 19. [Tryllemuseet i media](#19-tryllemuseet-i-media)
 20. [Trylleforeninger](#20-trylleforeninger)
 21. [Det trettende kabinett (spillet)](#21-det-trettende-kabinett-spillet)
+22. [Automatiske jobber — hva kjører når](#22-automatiske-jobber--hva-kjører-når)
 
 > **Veiledning til kapittel 12 (Infoskjerm):** Seksjonene 12a–12c dekker de tre dokumenttypene som styrer skjermen. Start med 12a hvis du er ny, og legg til videoer via 12c.
 
@@ -117,6 +118,9 @@ Dette er ett enkelt dokument som styrer informasjon som går igjen på hele nett
 | Åpningstider (tillegg) | Tekst etter kortteksten, f.eks. «og etter avtale» |
 | Bli medlem — URL | Alle «Bli medlem»-knapper på hele nettsiden |
 | Vipps-nummer | Vises i Tryllebutikken og i Bli medlem-seksjonen på Om oss |
+| Gi en gave — URL | Lenke til museets betalings-/donasjonsløsning. Stå tom for å vise Vipps-nummeret i stedet |
+| Gi en gave — knappetekst | Teksten på donasjonsknappen på forsiden og Om oss |
+| Gi en gave — tekst | Rik tekst. Vises på forsiden og Om oss, over donasjonsknappen |
 | Facebook / Instagram / YouTube | Lenker i footer |
 | Standard meta-beskrivelse | Google-beskrivelse for alle sider som ikke har egen |
 | «Lær et triks» er aktiv | Av/på-bryter (standard: av). Se [4b. Triks — Lær et triks](#4b-triks--lær-et-triks) |
@@ -401,7 +405,7 @@ Korte «visste du at»-portretter av kjente personer med et overraskende forhold
 | URL-slug | Ja | Genereres fra navnet |
 | Kategori | Ja | Vitenskap / Politikk & samfunn / Sport / Kultur & underholdning |
 | Krok (korttekst) | Ja | Kort «visste du at»-tekst til spotlight-kortet, 2–3 setninger |
-| Brødtekst | Nei | Valgfri, lengre artikkeltekst til egen side. Kan stå tom hvis «Koblet til» peker på en side som allerede har historien |
+| Brødtekst | Nei | Rik tekst. Valgfri, lengre artikkeltekst til egen side. Kan stå tom hvis «Koblet til» peker på en side som allerede har historien |
 | Bilde | Nei | |
 | Koblet til | Nei | Valgfri kobling til en Fordypning eller en biografi (Hvem er hvem) — lenkes til fra egen side som «Les hele historien» |
 | Kilder | Nei | |
@@ -517,7 +521,7 @@ inndelt artikkel.
 
 ## 7b. Magic Club — kvelder
 
-**Meny:** Magic Club — kveld ⚠️ *se merknad om menyplassering nedenfor*
+**Meny:** Magic Club — kveld (egen seksjon «Magic Club» i venstremenyen)
 
 Dokumenterer enkeltkvelder av **Magic Club**, Davidos faste magikerkveld i Oslo (2015–). Vises på `/tryllehistorie/fordypninger/magic-club` (oversikt) og som egen side per kveld. Selve samleartikkelen om konseptet er et vanlig **Fordypning**-dokument (se [7. Fordypninger](#7-fordypninger)) — «Magic Club — kveld» brukes kun til de enkelte kveldene.
 
@@ -531,10 +535,8 @@ Dokumenterer enkeltkvelder av **Magic Club**, Davidos faste magikerkveld i Oslo 
 | Gjestestjerner | Nei | Internasjonale eller spesielle gjester denne kvelden — navn + kort beskrivelse, f.eks. «Livin' Legend» |
 | Norsk lineup | Nei | Navn, med valgfri kobling til personens biografi hvis den finnes i Hvem er hvem |
 | Øvrige innslag | Nei | F.eks. dansere eller musikalske innslag — kategori + navn |
-| Notater | Nei | Hva gjorde akkurat denne kvelden spesiell, hvis kjent |
+| Notater | Nei | Rik tekst — hva gjorde akkurat denne kvelden spesiell, hvis kjent |
 | Kilde-URL | Nei | F.eks. lenke til Facebook-posten informasjonen er hentet fra |
-
-> ⚠️ **Manglende menypunkt:** Denne dokumenttypen finnes i Studio, men er (ennå) ikke lagt inn i venstremenyens mappestruktur — trykk **Ctrl+K** (Cmd+K på Mac) og søk etter «Magic Club», eller bruk **+ Nytt dokument** øverst i Studio, for å opprette eller finne en kveld. Si fra til Trond hvis du vil ha den lagt til som egen menylenke under Fordypninger.
 
 ---
 
@@ -560,7 +562,7 @@ Dokumenterer norske magikeres opptredener på Got Talent, Fool Us og lignende pr
 |---|---|
 | Sesong / Episode | Nummer |
 | Episodetittel | F.eks. for Fool Us-episoder |
-| Beskrivelse | Hva magikeren gjorde på scenen. Ingen avsløring av metoder |
+| Beskrivelse | Rik tekst. Hva magikeren gjorde på scenen. Ingen avsløring av metoder |
 | Bilde | Last opp stillbilde fra opptredenen |
 | Videolenke | Direktelenke til YouTube eller NRK |
 | Redaksjonell merknad | Intern merknad — vises ikke på nettsiden |
@@ -583,7 +585,7 @@ Bibliotekskatalogen over bøker om tryllekunst. Vises på `/ressurser/bibliotek`
 | Undertittel | Valgfri |
 | Utgivelsesår | Tall. Bruk «Årsnotat» for komplekse årstall |
 | Forfattere | Legg til én og én. Koble til person i HEH-registeret hvis mulig |
-| Beskrivelse | Norsk, kuratert beskrivelse. Legg gjerne til språknotat til slutt |
+| Beskrivelse | Rik tekst. Norsk, kuratert beskrivelse. Legg gjerne til språknotat til slutt. *(Vises foreløpig ikke på nettsiden — kun i Studio)* |
 | Språk | Boken er skrevet på dette språket |
 | Emneord | Velg fra listen |
 | Boktype | Norsk / Internasjonal / Public domain |
@@ -683,9 +685,9 @@ Velg mellom **Museets egen samling** og **Lån fra privatperson / institusjon**.
 | Materiale | F.eks. «Tre, silke, metall» |
 | Dimensjoner | F.eks. «30 × 20 × 15 cm» |
 | Tilstand | Utmerket / God / Middels / Dårlig / Restaurert |
-| Proveniens / historikk | Hvem eide gjenstanden, dokumentasjon |
+| Proveniens / historikk | Rik tekst — hvem eide gjenstanden, dokumentasjon |
 | Plassering i museet | F.eks. «Sal 2, monter A» |
-| Utfyllende tekst | Lengre redaksjonell tekst |
+| Utfyllende tekst | Rik tekst — lengre redaksjonell tekst, med lenker og bilder ved behov |
 | Fremhevet | Vis på portalsiden og forsiden |
 
 ---
@@ -862,7 +864,7 @@ og publisere.
 | **Dette kan du oppleve (4 kort)** | Ikon, Bilde, Kicker-tekst, Tittel, Beskrivelse, Lenke, Knappetekst | De fire kortene rett under arrangement-kalenderen. Maks 4. Se merknad under |
 | **Fremhevet innhold** | Håndplukket innhold (maks 5) | Se merknad under |
 | **Barn & unge-seksjon** | Overskrift, Ingress | Brukes som tittel/beskrivelse på «Barn & unge»-kortet i «Dette kan du oppleve», når det kortet ikke er overstyrt der (dvs. når «Dette kan du oppleve» er tomt og standardutvalget vises) |
-| **Medlemskap-seksjon** | Overskrift, Tekst, Knapp — tekst | Knappens URL hentes alltid fra **Globale innstillinger** → Bli medlem-lenke, ikke herfra |
+| **Medlemskap-seksjon** | Overskrift, Tekst (rik tekst), Knapp — tekst | Knappens URL hentes alltid fra **Globale innstillinger** → Bli medlem-lenke, ikke herfra |
 | **Kurs-seksjon** | Overskrift, Ingress, Knapp — tekst og URL | Brukes som tittel/beskrivelse/lenke på «Kurs»-kortet i «Dette kan du oppleve», når det kortet ikke er overstyrt der |
 
 > **«Dette kan du oppleve» styrer alt-eller-ingenting:** De fire kortene var
@@ -1216,7 +1218,7 @@ Dokumentet er delt i faner. Jobb i denne rekkefølgen:
 | Tittel (redaksjonell) | Påkrevd. Deres egen tittel — kan avvike fra originalen |
 | URL-slug | Genereres fra tittelen |
 | Ingress / teaser | Påkrevd. Maks ~200 tegn, vises i kortlisten |
-| Omskrevet artikkeltekst | **Deres egen frie gjengivelse i egne ord.** Dette — ikke originalteksten — er det besøkende leser |
+| Omskrevet artikkeltekst | Rik tekst. **Deres egen frie gjengivelse i egne ord.** Dette — ikke originalteksten — er det besøkende leser |
 | Museets kommentar | Kort kontekst som vises i arkivet |
 | Omtalte tryllekunstnere | Koble til personer i Hvem er hvem — lenkes automatisk til profilen |
 
@@ -1412,6 +1414,31 @@ Rett teksten i disse to dokumentene (bytt til «begerspillet»), eller slå av
 
 Slå på **Vis engelsk språkvalg i spillet** samme sted når det engelske
 innholdet er klart for besøkende.
+
+---
+
+## 22. Automatiske jobber — hva kjører når
+
+Nettsiden er statisk generert (Astro) — den bygges på nytt fra Sanity-
+innholdet med jevne mellomrom, ikke ved hvert besøk. Det er derfor enkelte
+endringer (en fremtidig publiseringsdato, et sluttresultat av 70-årsregelen,
+et nytt YouTube-klipp) ikke dukker opp *momentant*, men ved neste bygging.
+Dette gjøres automatisk av seks jobber i GitHub Actions — ingen av dem
+krever at en redaktør gjør noe manuelt, men det er nyttig å vite når de
+kjører og hva de faktisk gjør.
+
+| Jobb | Når | Hva den gjør |
+|---|---|---|
+| **Daily rebuild** | Hver natt kl. 05:30 UTC (07:30 norsk sommertid / 06:30 vintertid) | Bygger nettsiden på nytt og publiserer til både test- og produksjonsmiljøet. Dette er jobben som får fremtidsdaterte avisartikler (§17), 70-årsregelen for faksimiler, og «Vis på nettsted»-endringer til faktisk å slå inn på tryllemuseet.no. |
+| **Sync YouTube clips** | Hver natt kl. 06:00 UTC (08:00 sommertid / 07:00 vintertid) — 30 minutter etter Daily rebuild | Henter nye videoer fra YouTube-kanalene registrert under **YouTube-kilde (synk)** (§18) og oppretter/oppdaterer «Historisk TV-opptak»-dokumenter automatisk. Kjører *etter* Daily rebuild, så nye klipp fra denne natten vises først i nettsiden fra påfølgende natts bygging. |
+| **Deploy Sanity Studio** | Automatisk, hver gang en endring i skjemaet (`schemaTypes/`) havner på `main` | Publiserer nytt skjema til `sanity.studio` — dette er grunnen til at en ny felttype eller et nytt dokument dukker opp i Studio-grensesnittet uten at noen logger seg inn og trykker «Deploy» manuelt. |
+| **Schema conventions** *(kun for utviklere)* | Ved hver pull request som endrer `schemaTypes/` | Sjekker at nye dokumenttyper har «Vis på nettsted» og at lange tekstfelt støtter riktekst, før koden i det hele tatt kan slås sammen. Berører ikke redaktørarbeid direkte, men er grunnen til at disse to konvensjonene ikke lenger glipper stille. |
+| **Seed hero banners** / **Seed stories** *(engangsjobber)* | Kun hvis noen endrer selve seed-skriptet i koden | Fylte inn innhold automatisk ved lansering (forsidens karusell og de tre første «Liten historie»-artiklene). Skriver aldri over noe som er redigert i Studio siden — i praksis dormant nå. |
+
+**Trenger du en oppdatering *nå*, uten å vente til neste natt?** En
+teknisk ansvarlig kan trigge **Daily rebuild** manuelt fra GitHub → Actions
+→ Daily rebuild → Run workflow. Det er den samme jobben som kjører hver
+natt, bare på forespørsel.
 
 ---
 
