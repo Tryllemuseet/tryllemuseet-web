@@ -218,14 +218,18 @@ function extractSeasonAppearances(sectionHtml, season) {
 
   $items.each((_, el) => {
     if (el.tagName === 'tr') {
-      const $tds = $sec(el).children('td')
+      // Wikipedia's "plainrowheaders" tables render the row-header column(s)
+      // (typically No.overall/No. inseason) as <th scope="row">, not <td> —
+      // so cells must be gathered as td+th to keep column indices (computed
+      // from the all-<th> header row) aligned with each data row.
+      const $tds = $sec(el).children('td, th')
       if ($tds.length < 3) return // the guest-list row itself (one colspanned <td>), not episode metadata
 
       const episodeText = episodeCol != null ? $tds.eq(episodeCol).text() : ''
       const airDateText = airDateCol != null ? $tds.eq(airDateCol).text() : ''
       const titleText   = titleCol != null ? $tds.eq(titleCol).text().trim().replace(/^"|"$/g, '') : undefined
       current = {
-        episode: episodeText.match(/^\s*(\d+)\s*$/) ? Number(RegExp.$1) : undefined,
+        episode: episodeText.match(/(\d+)/) ? Number(RegExp.$1) : undefined,
         year: parseYearFromAirDate(airDateText),
         episodeTitle: titleText || undefined,
       }
@@ -237,7 +241,7 @@ function extractSeasonAppearances(sectionHtml, season) {
     if (!found) return
     entries.push({ ...found, season, ...current })
     if (DEBUG) {
-      console.log(`   [debug] S${season}E${current.episode ?? '?'} → ${found.name} (${found.country}, ${found.result})`)
+      console.log(`   [debug] S${season}E${current.episode ?? '?'} (${current.year ?? '?'}) "${current.episodeTitle ?? ''}" → ${found.name} (${found.country}, ${found.result})`)
     }
   })
 
