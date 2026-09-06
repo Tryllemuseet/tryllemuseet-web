@@ -16,9 +16,16 @@
  * Matching (to stay idempotent across weekly runs, mirrors the youtubeId
  * pattern in importYouTubeClips.mjs):
  *   - biography: matched by name/artistName/aliases (case-insensitive),
- *     not by _id — so a hand-created biography is found and reused.
- *   - tvAppearance: matched by (magician, season, episode) or, if either
- *     side lacks season/episode, by (magician, year) — not by _id.
+ *     not by _id — so a hand-created biography is found and reused. Also
+ *     matched by an order-independent token set, since this site's
+ *     biography.name convention is "Lastname, Firstname" while Wikipedia
+ *     gives "Firstname Lastname" (exact-set equality only — a duo act's
+ *     name is deliberately NOT matched against one member's biography;
+ *     that's an editorial identity question, not a formatting mismatch).
+ *   - tvAppearance: matched by (magician, season, episode), falling back to
+ *     (magician, year) — tried in that order regardless of which fields
+ *     the *existing* doc happens to have set, so a curated doc with only a
+ *     season/year (no episode number) still gets found — not by _id.
  *
  * Auto-created documents are flagged for editorial review rather than
  * silently trusted: biography stubs get needsUpdate: true + an editorNote
@@ -271,6 +278,23 @@ function normalizeName(name) {
   return name.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim()
 }
 
+// Order-independent name key: this site's biography.name convention is
+// "Lastname, Firstname" (see the field's own description) while Wikipedia
+// gives "Firstname Lastname" — same tokens, different order/punctuation, so
+// an exact-string match misses it. Deliberately exact-set equality, not a
+// subset check: a duo act's name ("Brynolf & Ljung") is NOT the same person
+// as one member's biography ("Brynolf, Peter (Brynolf & Ljung)") even
+// though its tokens are a subset — that's a real content-identity question
+// for an editor, not a formatting difference to paper over automatically.
+function nameTokenKey(name) {
+  return normalizeName(name)
+    .replace(/[(),&]/g, ' ')
+    .split(/\s+/)
+    .filter(Boolean)
+    .sort()
+    .join(' ')
+}
+
 function tvAppearanceSlug(magicianName, year) {
   return slugify(`${magicianName}-fool-us-${year ?? ''}`)
 }
@@ -280,11 +304,15 @@ function tvAppearanceSlug(magicianName, year) {
 async function loadExistingBiographies() {
   const docs = await client.fetch(`*[_type == "biography"]{ _id, name, artistName, aliases }`)
   const byName = new Map()
+  const byTokenKey = new Map()
   for (const doc of docs) {
     const candidates = [doc.name, doc.artistName, ...(doc.aliases ?? [])].filter(Boolean)
-    for (const c of candidates) byName.set(normalizeName(c), doc._id)
+    for (const c of candidates) {
+      byName.set(normalizeName(c), doc._id)
+      byTokenKey.set(nameTokenKey(c), doc._id)
+    }
   }
-  return byName
+  return { byName, byTokenKey }
 }
 
 async function loadExistingAppearances() {
@@ -293,21 +321,23 @@ async function loadExistingAppearances() {
       _id, season, episode, year, result, "magicianId": magician._ref
     }
   `)
+  // Indexed under every key an entry might look itself up by (not just the
+  // one its own season/episode/year would produce) — an existing curated
+  // doc missing an episode number, but present under season+year, must
+  // still be found by a newly-scraped entry that has an episode number.
   const byKey = new Map()
   for (const doc of docs) {
-    const key = doc.season != null && doc.episode != null
-      ? `${doc.magicianId}-s${doc.season}e${doc.episode}`
-      : `${doc.magicianId}-y${doc.year}`
-    byKey.set(key, doc)
+    if (doc.season != null && doc.episode != null) byKey.set(`${doc.magicianId}-s${doc.season}e${doc.episode}`, doc)
+    if (doc.year != null) byKey.set(`${doc.magicianId}-y${doc.year}`, doc)
   }
   return byKey
 }
 
 // ── Sync logic ────────────────────────────────────────────────────────────────
 
-async function ensureBiography(entry, existingBioByName) {
+async function ensureBiography(entry, existingBio) {
   const key = normalizeName(entry.name)
-  const existingId = existingBioByName.get(key)
+  const existingId = existingBio.byName.get(key) ?? existingBio.byTokenKey.get(nameTokenKey(entry.name))
   if (existingId) return { id: existingId, created: false }
 
   const country = NORDIC_COUNTRIES[entry.country]
@@ -327,15 +357,17 @@ async function ensureBiography(entry, existingBioByName) {
 
   console.log(`  +bio  ${entry.name} (${country.nationality})`)
   if (!DRY_RUN) await client.createOrReplace(doc)
-  existingBioByName.set(key, doc._id)
+  existingBio.byName.set(key, doc._id)
+  existingBio.byTokenKey.set(nameTokenKey(entry.name), doc._id)
   return { id: doc._id, created: true }
 }
 
 async function ensureAppearance(entry, magicianId, existingAppearanceByKey) {
-  const key = entry.season != null && entry.episode != null
-    ? `${magicianId}-s${entry.season}e${entry.episode}`
-    : `${magicianId}-y${entry.year}`
-  const existing = existingAppearanceByKey.get(key)
+  // Try the season+episode key first (most specific), then fall back to
+  // magician+year — an existing curated doc may only have year set.
+  const existing =
+    (entry.season != null && entry.episode != null ? existingAppearanceByKey.get(`${magicianId}-s${entry.season}e${entry.episode}`) : undefined) ??
+    (entry.year != null ? existingAppearanceByKey.get(`${magicianId}-y${entry.year}`) : undefined)
 
   if (existing) {
     // Only fill in fields the editor hasn't already touched — never override
