@@ -131,13 +131,21 @@ function parseYearFromAirDate(text) {
 }
 
 // Splits the full article HTML into one HTML fragment per "Season N" section
-// (that heading plus every sibling element up to the next h2/h3/h4).
+// (that heading plus every sibling element up to the next heading). Modern
+// MediaWiki output wraps each heading in a <div class="mw-heading …"> — the
+// heading's own next sibling is then just an edit-section link, not the
+// section's content, so sibling-walking has to start from that wrapper div
+// when present (falls back to the heading itself for older-style markup).
+const HEADING_STOP_SELECTOR = 'h2, h3, h4, div[class*="mw-heading"]'
+
 function seasonSections($) {
   const sections = []
   $('h2, h3, h4').each((_, h) => {
     const season = parseSeasonFromHeading($(h).text())
     if (season == null) return
-    const html = $(h).nextUntil('h2, h3, h4').toArray().map(el => $.html(el)).join('\n')
+    const $parent = $(h).parent()
+    const $anchor = $parent.is('div[class*="mw-heading"]') ? $parent : $(h)
+    const html = $anchor.nextUntil(HEADING_STOP_SELECTOR).toArray().map(el => $.html(el)).join('\n')
     sections.push({ season, html })
   })
   return sections
