@@ -192,7 +192,23 @@ function extractSeasonAppearances(sectionHtml, season) {
   let current = { episode: undefined, year: undefined, episodeTitle: undefined }
   const entries = []
 
-  $root.find('tr, li').each((_, el) => {
+  const $items = $root.find('tr, li')
+  if (DEBUG) {
+    const trCount = $items.toArray().filter(el => el.tagName === 'tr').length
+    const liCount = $items.toArray().filter(el => el.tagName === 'li').length
+    const flagsSeen = new Set()
+    $items.toArray().filter(el => el.tagName === 'li').forEach(li => {
+      const $li = $sec(li).clone()
+      $li.find('ul, ol').remove()
+      for (const el2 of [...$li.find('a').toArray(), ...$li.find('img').toArray()]) {
+        const v = $sec(el2).attr('title') || $sec(el2).attr('alt')
+        if (v) flagsSeen.add(v)
+      }
+    })
+    console.log(`   [debug] S${season}: table=${$table.length ? 'ja' : 'nei'} tr=${trCount} li=${liCount} flagg-titler sett: ${JSON.stringify([...flagsSeen].slice(0, 15))}`)
+  }
+
+  $items.each((_, el) => {
     if (el.tagName === 'tr') {
       const $tds = $sec(el).children('td')
       if ($tds.length < 3) return // the guest-list row itself (one colspanned <td>), not episode metadata
