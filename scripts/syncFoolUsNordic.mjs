@@ -118,7 +118,7 @@ async function fetchEpisodeHtml() {
 
 function hasEpisodeTable(html) {
   const $ = cheerio.load(html)
-  return $('table.wikitable').toArray().some(t => findColumnIndex($, $(t)) !== null)
+  return $('table.wikitable').toArray().some(t => magicianColumnIndex($, $(t)) !== null)
 }
 
 function findColumnIndex($, $table, matcher) {
