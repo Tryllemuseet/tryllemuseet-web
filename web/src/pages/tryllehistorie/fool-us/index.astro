@@ -30,6 +30,11 @@ const notFooled = appearances.filter((a: any) => a.result === 'not_fooled').leng
       <p class="hero-sub">
         {total} nordiske opptredener i den prestisjetunge fagduellen fra Las Vegas. {fooled} klarte å lure Penn &amp; Teller fullstendig.
       </p>
+      <p class="source-note">
+        Oversikten hentes automatisk hver uke fra
+        <a href="https://en.wikipedia.org/wiki/Penn_%26_Teller:_Fool_Us" target="_blank" rel="noopener noreferrer">Wikipedia-artikkelen om Penn &amp; Teller: Fool Us</a>,
+        og kan derfor inneholde feil eller mangle de aller ferskeste opptredenene.
+      </p>
     </div>
     <div class="hero-stats">
       <div class="container hero-stats-inner">
@@ -200,7 +205,10 @@ const notFooled = appearances.filter((a: any) => a.result === 'not_fooled').leng
   .breadcrumb-link { color: var(--gold); text-decoration: none; font-size: 0.7rem; font-weight: 600; letter-spacing: 0.2em; text-transform: uppercase; }
   .breadcrumb-link:hover { color: var(--gold-light); }
   .hero-title { font-size: clamp(1.8rem, 5vw, 3rem); color: var(--cream); margin: 0.5rem 0 0.75rem; }
-  .hero-sub   { font-family: var(--font-ui); font-size: 1rem; opacity: 0.8; max-width: 600px; padding-bottom: 2rem; }
+  .hero-sub   { font-family: var(--font-ui); font-size: 1rem; opacity: 0.8; max-width: 600px; }
+  .source-note { font-family: var(--font-ui); font-size: 0.75rem; opacity: 0.65; max-width: 600px; padding-bottom: 2rem; }
+  .source-note a { color: var(--gold-light); text-decoration: underline; text-underline-offset: 2px; }
+  .source-note a:hover { color: var(--gold); }
 
   .hero-stats { background: rgba(0,0,0,0.25); border-top: 1px solid rgba(212,168,67,0.25); padding: 1rem 0; }
   .hero-stats-inner { display: flex; gap: 2.5rem; }
