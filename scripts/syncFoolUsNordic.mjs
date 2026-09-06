@@ -1,12 +1,17 @@
 /**
  * syncFoolUsNordic.mjs
  *
- * Weekly job: reads the Wikipedia episode tables for "Penn & Teller: Fool Us",
+ * Weekly job: reads the Wikipedia article for "Penn & Teller: Fool Us",
  * finds every performer marked with a Nordic flag icon (Norway, Sweden,
- * Denmark, Finland, Iceland, Faroe Islands, Greenland) next to their name,
- * and makes sure each one has a tvAppearance (show: "fool-us") in Sanity,
- * creating a minimal biography stub first if the performer isn't in the
- * "Hvem er hvem" register yet.
+ * Denmark, Finland, Iceland, Faroe Islands, Greenland) in a season's guest
+ * list, and makes sure each one has a tvAppearance (show: "fool-us") in
+ * Sanity, creating a minimal biography stub first if the performer isn't in
+ * the "Hvem er hvem" register yet.
+ *
+ * The article's per-season tables only hold episode metadata (No./Title/air
+ * date) — performers are named in a bullet list following each episode's
+ * row, one <li> per act with a flag icon, bolded when that act fooled Penn
+ * & Teller and plain text otherwise. See extractSeasonAppearances() below.
  *
  * Matching (to stay idempotent across weekly runs, mirrors the youtubeId
  * pattern in importYouTubeClips.mjs):
@@ -16,14 +21,10 @@
  *     side lacks season/episode, by (magician, year) — not by _id.
  *
  * Auto-created documents are flagged for editorial review rather than
- * silently trusted:
- *   - biography stubs get needsUpdate: true + an editorNote explaining
- *     what still needs a human (aliases, birth info, sources, images).
- *   - tvAppearance docs whose "fooled / not fooled" outcome couldn't be
- *     read off the Wikipedia table default to result: "participant" with
- *     an editorNote asking for the real outcome to be filled in.
- * Existing documents are only ever extended (missing fields filled in),
- * never overwritten on fields an editor may have already touched
+ * silently trusted: biography stubs get needsUpdate: true + an editorNote
+ * explaining what still needs a human (aliases, birth info, sources,
+ * images). Existing documents are only ever extended (missing fields filled
+ * in), never overwritten on fields an editor may have already touched
  * (result, description, featuredImage, videoUrl, videoRef, editorNote).
  *
  * Required env vars:
@@ -51,12 +52,8 @@ const SANITY_DATASET = process.env.SANITY_DATASET ?? 'staging'
 const DRY_RUN = process.env.DRY_RUN === 'true'
 const DEBUG   = process.env.DEBUG === 'true'
 
-// Wikipedia article to read. If it turns out the episode tables live on a
-// separate "List of ... episodes" page instead of inline here, WIKI_FALLBACK
-// is tried next (see fetchEpisodeHtml()).
-const WIKI_PAGE          = 'Penn & Teller: Fool Us'
-const WIKI_FALLBACK_PAGE = 'List of Penn & Teller: Fool Us episodes'
-const WIKI_USER_AGENT    = 'TryllemuseetFoolUsSync/1.0 (+https://tryllemuseet.no)'
+const WIKI_PAGE       = 'Penn & Teller: Fool Us'
+const WIKI_USER_AGENT = 'TryllemuseetFoolUsSync/1.0 (+https://tryllemuseet.no)'
 
 // Country name (as it appears in Wikipedia flag-icon link titles) → Norwegian
 // nationality label used on `biography.nationality`, plus the matching
@@ -93,6 +90,18 @@ const client = createClient({
 })
 
 // ── Wikipedia fetch + parse ─────────────────────────────────────────────────────
+//
+// The show's episode tables (one per season, columns "No.overall" / "No.
+// inseason" / "Title" / "Original release date" / "Prod.code") do NOT list
+// performers — Wikipedia instead follows each episode's table row with a
+// bullet list naming that episode's magicians, one <li> per act, each
+// prefixed with a flag icon. Acts that fooled Penn & Teller are rendered in
+// bold; acts that didn't are plain text. So extraction works per season
+// section (heading + everything until the next heading), walking <tr> and
+// <li> elements in document order: a <tr> with several <td>s updates "the
+// current episode"; any <li> found after it (however deeply nested, e.g.
+// under a "website exclusives" sub-list) is one performer belonging to that
+// episode.
 
 async function fetchParsedHtml(page) {
   const url =
@@ -105,70 +114,10 @@ async function fetchParsedHtml(page) {
   return data.parse.text
 }
 
-// Returns HTML containing at least one table with a "magician" column header,
-// trying the main article first and a dedicated episode-list article second.
-async function fetchEpisodeHtml() {
-  const primary = await fetchParsedHtml(WIKI_PAGE)
-  if (hasEpisodeTable(primary)) return { html: primary, page: WIKI_PAGE }
-
-  console.log(`   "${WIKI_PAGE}" har ingen tabell med magiker-kolonne — prøver "${WIKI_FALLBACK_PAGE}"…`)
-  const fallback = await fetchParsedHtml(WIKI_FALLBACK_PAGE)
-  return { html: fallback, page: WIKI_FALLBACK_PAGE }
-}
-
-function hasEpisodeTable(html) {
-  const $ = cheerio.load(html)
-  return $('table.wikitable').toArray().some(t => magicianColumnIndex($, $(t)) !== null)
-}
-
 function findColumnIndex($, $table, matcher) {
   const headerCells = $table.find('tr').first().find('th').toArray()
   const idx = headerCells.findIndex(th => matcher.test($(th).text()))
   return idx === -1 ? null : idx
-}
-
-function magicianColumnIndex($, $table) {
-  return findColumnIndex($, $table, /magician/i)
-}
-
-// Splits a "Magician(s)" cell into one segment per performer, since a single
-// episode can feature several acts in one row (comma- or "and"-separated).
-function splitPerformerSegments($cell) {
-  const html = $cell.html() ?? ''
-  return html
-    .split(/<br\s*\/?>|,\s*(?=<span)|(?:^|\s)and\s(?=<span)/i)
-    .map(s => s.trim())
-    .filter(Boolean)
-}
-
-// Given one performer segment's HTML, returns { country, name } if it carries
-// a Nordic flag icon, or null otherwise. Wikipedia's flagicon template isn't
-// rendered identically everywhere, so this checks every plausible carrier of
-// the country name: an <a title="…">, an <img alt="…">, or an <img title="…">.
-function extractNordicPerformer($, segmentHtml) {
-  const $seg = cheerio.load(`<div>${segmentHtml}</div>`)('div')
-
-  let country = null
-  const candidates = [
-    ...$seg.find('a').toArray().map(el => $seg.find(el).attr('title')),
-    ...$seg.find('img').toArray().map(el => $seg.find(el).attr('alt')),
-    ...$seg.find('img').toArray().map(el => $seg.find(el).attr('title')),
-  ]
-  for (const c of candidates) {
-    if (c && NORDIC_COUNTRIES[c]) { country = c; break }
-  }
-  if (!country) return null
-
-  // The performer's own name is whatever text/link remains once the flag
-  // icon's own anchor (which has no visible text, just the flag image) is
-  // removed — take the last non-empty link text, falling back to the
-  // segment's stripped plain text.
-  const nameLinks = $seg.find('a').toArray()
-    .map(a => $seg.find(a).text().trim())
-    .filter(t => t && !NORDIC_COUNTRIES[t])
-  const name = nameLinks.length ? nameLinks[nameLinks.length - 1] : $seg.text().trim()
-
-  return name ? { country, name } : null
 }
 
 function parseSeasonFromHeading(text) {
@@ -181,70 +130,129 @@ function parseYearFromAirDate(text) {
   return m ? Number(m[1]) : undefined
 }
 
-function detectResultColumn($, $table) {
-  return findColumnIndex($, $table, /fool/i)
+// Splits the full article HTML into one HTML fragment per "Season N" section
+// (that heading plus every sibling element up to the next heading). Modern
+// MediaWiki output wraps each heading in a <div class="mw-heading …"> — the
+// heading's own next sibling is then just an edit-section link, not the
+// section's content, so sibling-walking has to start from that wrapper div
+// when present (falls back to the heading itself for older-style markup).
+const HEADING_STOP_SELECTOR = 'h2, h3, h4, div[class*="mw-heading"]'
+
+function seasonSections($) {
+  const sections = []
+  $('h2, h3, h4').each((_, h) => {
+    const season = parseSeasonFromHeading($(h).text())
+    if (season == null) return
+    const $parent = $(h).parent()
+    const $anchor = $parent.is('div[class*="mw-heading"]') ? $parent : $(h)
+    const html = $anchor.nextUntil(HEADING_STOP_SELECTOR).toArray().map(el => $.html(el)).join('\n')
+    sections.push({ season, html })
+  })
+  return sections
 }
 
-function parseResultCell(text) {
-  const t = text.trim().toLowerCase()
-  if (/^(yes|✓|✔|y)$/.test(t)) return 'fooled'
-  if (/^(no|✗|✘|n)$/.test(t)) return 'not_fooled'
-  return null
+// A <li> for a performer carries a flag icon (as an <a title="…">, an
+// <img alt="…"> or an <img title="…"> — Wikipedia's flagicon template isn't
+// rendered identically everywhere) directly in its own content. Nested
+// sub-lists (e.g. "Website exclusives") are stripped first so their flags
+// aren't misattributed to the wrapping <li>.
+function analyzeListItem($sec, li) {
+  const $li = $sec(li).clone()
+  $li.find('ul, ol').remove()
+
+  let country = null
+  const candidates = [
+    ...$li.find('a').toArray().map(a => $sec(a).attr('title')),
+    ...$li.find('img').toArray().map(img => $sec(img).attr('alt')),
+    ...$li.find('img').toArray().map(img => $sec(img).attr('title')),
+  ]
+  for (const c of candidates) {
+    if (c && NORDIC_COUNTRIES[c]) { country = c; break }
+  }
+  if (!country) return null
+
+  // Name = text before the first comma (Wikipedia's convention is
+  // "Name, short act description"); falls back to the full remaining text.
+  const text = $li.text().trim().replace(/\s+/g, ' ')
+  const name = (text.split(',')[0] || text).trim()
+  if (!name) return null
+
+  // Wikipedia bolds an act's whole entry when it fooled Penn & Teller, and
+  // leaves it plain otherwise — so this is a reliable signal both ways.
+  const boldText = $li.find('b').text().trim().replace(/\s+/g, ' ')
+  const result = boldText && boldText === text ? 'fooled' : 'not_fooled'
+
+  return { country, name, result }
 }
 
-// Walks every wikitable, extracting one entry per Nordic performer found.
-function extractNordicAppearances(html) {
-  const $ = cheerio.load(html)
+// Walks one season's HTML fragment, tracking "the current episode" from
+// table rows and attaching every performer <li> found after it (in document
+// order) to that episode.
+function extractSeasonAppearances(sectionHtml, season) {
+  const $sec = cheerio.load(`<div>${sectionHtml}</div>`)
+  const $root = $sec('div').first()
+  const $table = $root.find('table.wikitable').first()
+
+  const episodeCol = $table.length ? findColumnIndex($sec, $table, /no\.\s*in\s*season/i) : null
+  const airDateCol = $table.length ? findColumnIndex($sec, $table, /release date|air date/i) : null
+  const titleCol   = $table.length ? findColumnIndex($sec, $table, /title/i) : null
+
+  let current = { episode: undefined, year: undefined, episodeTitle: undefined }
   const entries = []
 
-  $('table.wikitable').each((_, table) => {
-    const $table = $(table)
-    const magicianCol = magicianColumnIndex($, $table)
-    if (magicianCol === null) return
-
-    const airDateCol   = findColumnIndex($, $table, /air date/i)
-    const episodeCol   = findColumnIndex($, $table, /no\.\s*in\s*season|episode/i)
-    const titleCol     = findColumnIndex($, $table, /title/i)
-    const resultCol    = detectResultColumn($, $table)
-
-    // Season number: look at the nearest preceding heading in the document.
-    const heading = $table.prevAll('h2, h3, h4').first().text()
-    const season = parseSeasonFromHeading(heading)
-
-    $table.find('tr').each((__, tr) => {
-      const $tds = $(tr).find('td')
-      if (!$tds.length) return // header row
-
-      const $magicianCell = $tds.eq(magicianCol)
-      const segments = splitPerformerSegments($magicianCell)
-
-      for (const seg of segments) {
-        const found = extractNordicPerformer($, seg)
-        if (!found) continue
-
-        const airDateText = airDateCol !== null ? $tds.eq(airDateCol).text() : ''
-        const episodeText = episodeCol !== null ? $tds.eq(episodeCol).text() : ''
-        const titleText   = titleCol !== null ? $tds.eq(titleCol).text().trim().replace(/^"|"$/g, '') : undefined
-        const resultText  = resultCol !== null ? $tds.eq(resultCol).text() : ''
-
-        entries.push({
-          name:     found.name,
-          country:  found.country,
-          season,
-          episode:  episodeText ? Number(episodeText.match(/\d+/)?.[0]) : undefined,
-          year:     parseYearFromAirDate(airDateText),
-          episodeTitle: titleText || undefined,
-          result:   parseResultCell(resultText),
-        })
-
-        if (DEBUG) {
-          console.log(`   [debug] rad: season=${season} episode=${episodeText} → ${found.name} (${found.country})`)
-        }
+  const $items = $root.find('tr, li')
+  if (DEBUG) {
+    const trCount = $items.toArray().filter(el => el.tagName === 'tr').length
+    const liCount = $items.toArray().filter(el => el.tagName === 'li').length
+    const flagsSeen = new Set()
+    $items.toArray().filter(el => el.tagName === 'li').forEach(li => {
+      const $li = $sec(li).clone()
+      $li.find('ul, ol').remove()
+      for (const el2 of [...$li.find('a').toArray(), ...$li.find('img').toArray()]) {
+        const v = $sec(el2).attr('title') || $sec(el2).attr('alt')
+        if (v) flagsSeen.add(v)
       }
     })
+    console.log(`   [debug] S${season}: table=${$table.length ? 'ja' : 'nei'} tr=${trCount} li=${liCount} flagg-titler sett: ${JSON.stringify([...flagsSeen].slice(0, 15))}`)
+  }
+
+  $items.each((_, el) => {
+    if (el.tagName === 'tr') {
+      // Wikipedia's "plainrowheaders" tables render the row-header column(s)
+      // (typically No.overall/No. inseason) as <th scope="row">, not <td> —
+      // so cells must be gathered as td+th to keep column indices (computed
+      // from the all-<th> header row) aligned with each data row.
+      const $tds = $sec(el).children('td, th')
+      if ($tds.length < 3) return // the guest-list row itself (one colspanned <td>), not episode metadata
+
+      const episodeText = episodeCol != null ? $tds.eq(episodeCol).text() : ''
+      const airDateText = airDateCol != null ? $tds.eq(airDateCol).text() : ''
+      const titleText   = titleCol != null ? $tds.eq(titleCol).text().trim().replace(/^"|"$/g, '') : undefined
+      current = {
+        episode: episodeText.match(/(\d+)/) ? Number(RegExp.$1) : undefined,
+        year: parseYearFromAirDate(airDateText),
+        episodeTitle: titleText || undefined,
+      }
+      return
+    }
+
+    // <li>
+    const found = analyzeListItem($sec, el)
+    if (!found) return
+    entries.push({ ...found, season, ...current })
+    if (DEBUG) {
+      console.log(`   [debug] S${season}E${current.episode ?? '?'} (${current.year ?? '?'}) "${current.episodeTitle ?? ''}" → ${found.name} (${found.country}, ${found.result})`)
+    }
   })
 
   return entries
+}
+
+function extractNordicAppearances(html) {
+  const $ = cheerio.load(html)
+  const sections = seasonSections($)
+  if (DEBUG) console.log(`   [debug] ${sections.length} sesong-seksjon(er) funnet`)
+  return sections.flatMap(({ season, html: sectionHtml }) => extractSeasonAppearances(sectionHtml, season))
 }
 
 // ── Utilities ─────────────────────────────────────────────────────────────────
@@ -343,7 +351,6 @@ async function ensureAppearance(entry, magicianId, existingAppearanceByKey) {
     return { created: false, updated: true }
   }
 
-  const outcomeKnown = entry.result != null
   const doc = {
     _id: `tvappearance-foolus-${slugify(entry.name)}-${entry.season != null ? `s${entry.season}e${entry.episode ?? 0}` : `y${entry.year ?? 0}`}`,
     _type: 'tvAppearance',
@@ -355,23 +362,20 @@ async function ensureAppearance(entry, magicianId, existingAppearanceByKey) {
     season: entry.season,
     episode: entry.episode,
     episodeTitle: entry.episodeTitle,
-    result: outcomeKnown ? entry.result : 'participant',
-    editorNote: outcomeKnown
-      ? undefined
-      : 'Resultat (fooled/not fooled) kunne ikke leses pålitelig ut av Wikipedia-tabellen — sjekk og rett "Resultat".',
+    result: entry.result,
   }
   for (const k of Object.keys(doc)) if (doc[k] === undefined) delete doc[k]
 
-  console.log(`  +tv   ${entry.name} S${entry.season ?? '?'}E${entry.episode ?? '?'} → ${doc.result}${outcomeKnown ? '' : ' (uverifisert)'}`)
+  console.log(`  +tv   ${entry.name} S${entry.season ?? '?'}E${entry.episode ?? '?'} → ${doc.result}`)
   if (!DRY_RUN) await client.createOrReplace(doc)
   return { created: true, updated: false }
 }
 
 // ── Main ──────────────────────────────────────────────────────────────────────
 
-console.log('1/3  Henter episodetabeller fra Wikipedia…')
-const { html, page } = await fetchEpisodeHtml()
-console.log(`     Kilde: "${page}"\n`)
+console.log('1/3  Henter artikkelen fra Wikipedia…')
+const html = await fetchParsedHtml(WIKI_PAGE)
+console.log(`     Kilde: "${WIKI_PAGE}"\n`)
 
 console.log('2/3  Finner nordiske opptredener…')
 const entries = extractNordicAppearances(html)
