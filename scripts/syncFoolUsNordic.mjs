@@ -94,6 +94,8 @@ const client = createClient({
 
 // ── Wikipedia fetch + parse ─────────────────────────────────────────────────────
 
+// Returns parsed HTML, or null if the page doesn't exist (rather than throwing),
+// so callers can try a fallback page instead of crashing.
 async function fetchParsedHtml(page) {
   const url =
     `https://en.wikipedia.org/w/api.php?action=parse&page=${encodeURIComponent(page)}` +
@@ -101,18 +103,42 @@ async function fetchParsedHtml(page) {
   const res = await fetch(url, { headers: { 'User-Agent': WIKI_USER_AGENT } })
   if (!res.ok) throw new Error(`Wikipedia API svarte ${res.status} for "${page}"`)
   const data = await res.json()
-  if (data.error) throw new Error(`Wikipedia API-feil for "${page}": ${data.error.info ?? data.error.code}`)
+  if (data.error) {
+    if (data.error.code === 'missingtitle') return null
+    throw new Error(`Wikipedia API-feil for "${page}": ${data.error.info ?? data.error.code}`)
+  }
   return data.parse.text
 }
 
+// DEBUG-only: dumps every wikitable's header row so a real run's log reveals
+// the page's actual column names when the expected "magician" column isn't found.
+function debugDumpTableHeaders(html, page) {
+  if (!DEBUG) return
+  const $ = cheerio.load(html)
+  const tables = $('table.wikitable').toArray()
+  console.log(`   [debug] "${page}": ${tables.length} table(s) med class="wikitable"`)
+  tables.forEach((t, i) => {
+    const headers = $(t).find('tr').first().find('th').toArray().map(th => $(th).text().trim())
+    console.log(`   [debug]   tabell ${i}: ${JSON.stringify(headers)}`)
+  })
+}
+
 // Returns HTML containing at least one table with a "magician" column header,
-// trying the main article first and a dedicated episode-list article second.
+// trying the main article first and a dedicated episode-list article second
+// (which may not exist — Wikipedia doesn't guarantee a separate list page).
 async function fetchEpisodeHtml() {
   const primary = await fetchParsedHtml(WIKI_PAGE)
+  if (primary === null) throw new Error(`Fant ikke Wikipedia-siden "${WIKI_PAGE}"`)
   if (hasEpisodeTable(primary)) return { html: primary, page: WIKI_PAGE }
 
+  debugDumpTableHeaders(primary, WIKI_PAGE)
   console.log(`   "${WIKI_PAGE}" har ingen tabell med magiker-kolonne — prøver "${WIKI_FALLBACK_PAGE}"…`)
   const fallback = await fetchParsedHtml(WIKI_FALLBACK_PAGE)
+  if (fallback === null) {
+    console.log(`   "${WIKI_FALLBACK_PAGE}" finnes ikke heller — fortsetter med "${WIKI_PAGE}" (0 treff forventet).`)
+    return { html: primary, page: WIKI_PAGE }
+  }
+  debugDumpTableHeaders(fallback, WIKI_FALLBACK_PAGE)
   return { html: fallback, page: WIKI_FALLBACK_PAGE }
 }
 
