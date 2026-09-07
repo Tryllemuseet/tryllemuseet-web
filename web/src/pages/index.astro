@@ -713,7 +713,7 @@ const archiveCards = archiveCandidates.filter(c => c.title).slice(0, 4)
     height:100%;
   }
   .support-card h2 { color:var(--cream); font-size:var(--text-xl); margin:0; }
-  .support-card p { font-family:var(--font-ui); font-size:var(--text-sm); color:var(--cream); opacity:0.8; line-height:1.6; flex:1; margin-bottom:0.25rem; }
+  .support-card :global(p) { font-family:var(--font-ui); font-size:var(--text-sm); color:var(--cream); opacity:0.8; line-height:1.6; flex:1; margin-bottom:0.25rem; }
   :global(.support-donate-btn.btn--outline) { border-color:var(--gold); color:var(--gold-light); }
   :global(.support-donate-btn.btn--outline:hover) { background:rgba(212,168,67,0.1); color:var(--gold-light); }
 
