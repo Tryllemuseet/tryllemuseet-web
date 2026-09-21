@@ -2214,12 +2214,40 @@ export async function getBiographyDirectory(): Promise<Biography[]> {
 // ── Typer og spørring: Magiens Hvem er Hvem (sideinnledning) ──────
 export interface HvemErHvemPage {
   hero: { label: string; heading: string; ingress: string }
+  kildeNotice: any[]
 }
+
+// Fallback som gjenskaper kilde-notisen (fet/kursiv/lenke) slik den sto
+// hardkodet i siden før dette feltet ble redigerbart — se ptParagraph()
+// for det tilsvarende enkle-avsnitt-mønsteret.
+const kildeNoticeFallback = [{
+  _type: 'block',
+  _key: 'kilde-fallback-0',
+  style: 'normal',
+  markDefs: [
+    { _type: 'link', _key: 'kilde-fallback-link', href: '/kontakt' },
+  ],
+  children: [
+    { _type: 'span', _key: 'k0', text: 'Om kilden: ', marks: ['strong'] },
+    { _type: 'span', _key: 'k1', text: 'Denne oversikten er basert på ', marks: [] },
+    { _type: 'span', _key: 'k2', text: '«Magiens Hvem er Hvem»', marks: ['em'] },
+    { _type: 'span', _key: 'k3', text: ' av Terje Nordheim (2005), og dekker norske tryllekunstnere frem til ca. år 2000 — altså over 25 år gammelt. Oppdateringsarbeid er påbegynt. Kjenner du noen av disse — eller mangler du en person? ', marks: [] },
+    { _type: 'span', _key: 'k4', text: 'Ta kontakt med oss', marks: ['kilde-fallback-link'] },
+    { _type: 'span', _key: 'k5', text: '.', marks: [] },
+  ],
+}]
 
 export async function getHvemErHvemPage(): Promise<HvemErHvemPage> {
   const d = await sanityClient.fetch(`
     *[_type == "hvemErHvemPage"][0] {
-      hero { label, heading, ingress }
+      hero { label, heading, ingress },
+      kildeNotice[]{
+        ...,
+        markDefs[]{
+          ...,
+          "reference": reference->{ "slug": slug.current }
+        }
+      }
     }
   `)
   return {
@@ -2228,6 +2256,7 @@ export async function getHvemErHvemPage(): Promise<HvemErHvemPage> {
       heading: d?.hero?.heading ?? 'Magiens Hvem er Hvem',
       ingress: d?.hero?.ingress ?? 'Biografisk oversikt over {{antall}} norske tryllekunstnere.',
     },
+    kildeNotice: d?.kildeNotice?.length ? d.kildeNotice : kildeNoticeFallback,
   }
 }
 
