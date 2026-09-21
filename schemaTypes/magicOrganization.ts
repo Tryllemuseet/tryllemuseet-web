@@ -60,7 +60,15 @@ export default defineType({
       name: 'dissolutionYear',
       title: 'Oppløst (år)',
       type: 'number',
-      description: 'Fyll kun inn hvis foreningen er nedlagt.',
+      description:
+        'Fyll kun inn hvis foreningen er nedlagt, eller året den ble innlemmet i en annen forening (se «Innlemmet i»).',
+    }),
+    defineField({
+      name: 'mergedInto',
+      title: 'Innlemmet i',
+      type: 'reference',
+      to: [{ type: 'magicOrganization' }],
+      description: 'Organisasjonen denne ble en del av, om aktuelt (f.eks. MJC → MCN).',
     }),
     defineField({
       name: 'website',
