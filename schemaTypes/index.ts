@@ -46,6 +46,8 @@ import { trick }           from './trick'
 import { comicStory }      from './comicStory'
 import { worldRecordTrick } from './worldRecordTrick'
 import { competitionResult } from './competitionResult'
+import { organizationRole } from './organizationRole'
+import { historicalSection } from './historicalSection'
 import { story }           from './story'
 
 export const schemaTypes = [
@@ -97,6 +99,8 @@ export const schemaTypes = [
   historiskeKlippNb,
   worldRecordTrick,
   competitionResult,
+  organizationRole,
+  historicalSection,
   book,
   source,
 
