@@ -20,6 +20,7 @@ import { omOssPage }      from './omOssPage'
 import { besokPage }           from './besokPage'
 import { kontaktPage }        from './kontaktPage'
 import { tryllehistoriePage } from './tryllehistoriePage'
+import { hvemErHvemPage } from './hvemErHvemPage'
 import { ressurserPage }      from './ressurserPage'
 import { utstillingPage }    from './utstillingPage'
 import { personvernPage } from './personvernPage'
@@ -56,6 +57,7 @@ export const schemaTypes = [
   barnPage,
   aktiviteterPage,
   tryllehistoriePage,
+  hvemErHvemPage,
   ressurserPage,
   omOssPage,
   kontaktPage,

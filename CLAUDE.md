@@ -23,6 +23,7 @@ The schema defines 35 registered content types in `/schemaTypes` (see `schemaTyp
 - `besokPage.ts` — Visit page (opening hours, prices, transport)
 - `kontaktPage.ts` — Contact page (form URL, FAQ)
 - `tryllehistoriePage.ts` — Magic history landing page (sections, timeline)
+- `hvemErHvemPage.ts` — Hero (label/heading/ingress) for `/tryllehistorie/magiens-hvem-er-hvem`. `ingress` supports a `{{antall}}` token, substituted at render time with the live biography count (see `getHvemErHvemPage()`)
 - `ressurserPage.ts` — Resources landing page
 - `aktiviteterPage.ts` — "Hva skjer" hub page (`/aktiviteter`) hero and curated section cards to sub-areas (Tryllekurs, Bestill tryllekunstner); the event calendar itself is not Sanity-backed here — see `event.ts` and `getAllEvents()`
 - `utstillingPage.ts` — Exhibition landing page

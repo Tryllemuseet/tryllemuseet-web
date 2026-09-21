@@ -69,6 +69,7 @@ const NO_ISVISIBLE_ALLOWLIST = {
   barnPage: 'page singleton',
   aktiviteterPage: 'page singleton',
   tryllehistoriePage: 'page singleton',
+  hvemErHvemPage: 'page singleton',
   ressurserPage: 'page singleton',
   omOssPage: 'page singleton',
   kontaktPage: 'page singleton',
