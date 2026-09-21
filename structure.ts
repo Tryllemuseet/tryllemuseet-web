@@ -33,6 +33,7 @@ export const structure: StructureResolver = (S) =>
               S.documentTypeListItem('barnPage').title('Barnesiden'),
               S.documentTypeListItem('aktiviteterPage').title('Aktiviteter (Hva skjer)'),
               S.documentTypeListItem('tryllehistoriePage').title('Tryllehistorie'),
+              S.documentTypeListItem('hvemErHvemPage').title('Magiens Hvem er Hvem'),
               S.documentTypeListItem('ressurserPage').title('Ressurser'),
               S.documentTypeListItem('omOssPage').title('Om oss'),
               S.documentTypeListItem('kontaktPage').title('Kontakt'),

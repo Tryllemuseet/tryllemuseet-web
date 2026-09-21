@@ -1,9 +1,9 @@
 ---
 // src/pages/tryllehistorie/magiens-hvem-er-hvem.astro
 import BaseLayout from '../../layouts/BaseLayout.astro'
-import { getBiographyDirectory, formatLifespan } from '../../lib/sanity'
+import { getBiographyDirectory, getHvemErHvemPage, formatLifespan } from '../../lib/sanity'
 
-const biographies = await getBiographyDirectory()
+const [biographies, page] = await Promise.all([getBiographyDirectory(), getHvemErHvemPage()])
 
 // Grupper alfabetisk
 const grouped: Record<string, typeof biographies> = {}
@@ -14,6 +14,7 @@ for (const bio of biographies) {
 }
 const letters = Object.keys(grouped).sort()
 const total = biographies.length
+const heroIngress = page.hero.ingress.replace('{{antall}}', String(total))
 ---
 
 <BaseLayout
@@ -24,10 +25,10 @@ const total = biographies.length
   <!-- HERO ──────────────────────────────────────────────────────── -->
   <section class="bio-hero">
     <div class="container">
-      <p class="section-label">Tryllehistorie</p>
-      <h1 class="display-title bio-title">Magiens Hvem er Hvem</h1>
+      <p class="section-label">{page.hero.label}</p>
+      <h1 class="display-title bio-title">{page.hero.heading}</h1>
       <p class="bio-sub">
-        Biografisk oversikt over {total} norske tryllekunstnere.
+        {heroIngress}
       </p>
     </div>
   </section>

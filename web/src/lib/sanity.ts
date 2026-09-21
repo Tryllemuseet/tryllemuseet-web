@@ -2211,6 +2211,26 @@ export async function getBiographyDirectory(): Promise<Biography[]> {
   `)
 }
 
+// ── Typer og spørring: Magiens Hvem er Hvem (sideinnledning) ──────
+export interface HvemErHvemPage {
+  hero: { label: string; heading: string; ingress: string }
+}
+
+export async function getHvemErHvemPage(): Promise<HvemErHvemPage> {
+  const d = await sanityClient.fetch(`
+    *[_type == "hvemErHvemPage"][0] {
+      hero { label, heading, ingress }
+    }
+  `)
+  return {
+    hero: {
+      label:   d?.hero?.label   ?? 'Tryllehistorie',
+      heading: d?.hero?.heading ?? 'Magiens Hvem er Hvem',
+      ingress: d?.hero?.ingress ?? 'Biografisk oversikt over {{antall}} norske tryllekunstnere.',
+    },
+  }
+}
+
 export interface MonthlyBiographyPick {
   _id:         string
   name:        string
