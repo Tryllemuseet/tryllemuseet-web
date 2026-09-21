@@ -1,7 +1,7 @@
 ---
 // src/pages/tryllehistorie/magiens-hvem-er-hvem.astro
 import BaseLayout from '../../layouts/BaseLayout.astro'
-import { getBiographyDirectory, getHvemErHvemPage, formatLifespan } from '../../lib/sanity'
+import { getBiographyDirectory, getHvemErHvemPage, formatLifespan, portableTextToHtml } from '../../lib/sanity'
 
 const [biographies, page] = await Promise.all([getBiographyDirectory(), getHvemErHvemPage()])
 
@@ -15,6 +15,7 @@ for (const bio of biographies) {
 const letters = Object.keys(grouped).sort()
 const total = biographies.length
 const heroIngress = page.hero.ingress.replace('{{antall}}', String(total))
+const kildeNoticeHtml = portableTextToHtml(page.kildeNotice)
 ---
 
 <BaseLayout
@@ -66,13 +67,7 @@ const heroIngress = page.hero.ingress.replace('{{antall}}', String(total))
   <div class="container">
     <aside class="source-notice">
       <div class="notice-icon" aria-hidden="true">ℹ</div>
-      <div>
-        <strong>Om kilden:</strong> Denne oversikten er basert på
-        <em>«Magiens Hvem er Hvem»</em> av Terje Nordheim (2005),
-        og dekker norske tryllekunstnere frem til ca. år 2000 — altså over 25 år gammelt.
-        Oppdateringsarbeid er påbegynt. Kjenner du noen av disse — eller mangler du en person?
-        <a href="/kontakt">Ta kontakt med oss</a>.
-      </div>
+      <div set:html={kildeNoticeHtml} />
     </aside>
   </div>
 

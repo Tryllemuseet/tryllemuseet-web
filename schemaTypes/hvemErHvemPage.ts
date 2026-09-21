@@ -1,4 +1,5 @@
 import { defineField, defineType } from 'sanity'
+import { richBlockContent } from './richBlockContent'
 
 export const hvemErHvemPage = defineType({
   name: 'hvemErHvemPage',
@@ -23,6 +24,15 @@ export const hvemErHvemPage = defineType({
           description: 'Bruk «{{antall}}» der antallet registrerte tryllekunstnere skal settes inn automatisk.',
         }),
       ],
+    }),
+
+    // ─── KILDE-NOTICE (infoboks under søkefeltet) ──────────────────
+    defineField({
+      name: 'kildeNotice',
+      title: 'Om kilden (infoboks under søkefeltet)',
+      type: 'array',
+      of: richBlockContent(),
+      description: 'Vises i den gule infoboksen rett under søkefeltet. Merk ordet/teksten du vil skal lenke videre (f.eks. «Ta kontakt med oss») og bruk «Ekstern lenke» for å sette eller endre lenkemålet — f.eks. /kontakt.',
     }),
 
   ],
