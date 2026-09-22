@@ -907,10 +907,11 @@ og publisere.
 > For en avisartikkel lenker kortet direkte inn i lese-modalen på
 > `/tryllehistorie/historiske-artikler` — ingen egen side trengs for det.
 
-> **Krever ny deploy:** Forsiden er en statisk generert side. Endringer du
-> publiserer i Sanity vises ikke på tryllemuseet.no før neste bygging (enten
-> den daglige kl. 05:30, eller en manuell «Daily rebuild» trigget av Trond via
-> GitHub Actions). Det er normalt — ikke et tegn på at noe gikk galt.
+> **Krever ny deploy — kun i produksjon:** Forsiden er en statisk generert
+> side. Endringer du publiserer i Sanity vises nesten momentant på
+> test.tryllemuseet.no, men ikke på tryllemuseet.no før neste nattlige
+> bygging (kl. 05:30) eller en manuell trigger via GitHub Actions. Det er
+> normalt — ikke et tegn på at noe gikk galt. Se §22 for detaljer.
 
 ---
 
@@ -1420,25 +1421,31 @@ innholdet er klart for besøkende.
 ## 22. Automatiske jobber — hva kjører når
 
 Nettsiden er statisk generert (Astro) — den bygges på nytt fra Sanity-
-innholdet med jevne mellomrom, ikke ved hvert besøk. Det er derfor enkelte
-endringer (en fremtidig publiseringsdato, et sluttresultat av 70-årsregelen,
-et nytt YouTube-klipp) ikke dukker opp *momentant*, men ved neste bygging.
-Dette gjøres automatisk av seks jobber i GitHub Actions — ingen av dem
-krever at en redaktør gjør noe manuelt, men det er nyttig å vite når de
-kjører og hva de faktisk gjør.
+innholdet, ikke ved hvert besøk. **Test og produksjon oppfører seg nå
+bevisst ulikt (fra september 2026):**
+
+- **test.tryllemuseet.no** oppdaterer seg **så godt som momentant** — både
+  når en redaktør publiserer noe i Sanity, og når en kodeendring merges.
+  Bruk test-miljøet hvis du vil se resultatet av en publisering med en
+  gang.
+- **tryllemuseet.no (produksjon)** oppdaterer seg **kun ved den nattlige
+  byggingen**, uansett om det er en Sanity-publisering eller en
+  kodeendring som venter. Dette er bevisst — produksjon skal ikke endre
+  seg midt på dagen uten et bevisst valg om det.
 
 | Jobb | Når | Hva den gjør |
 |---|---|---|
-| **Daily rebuild** | Hver natt kl. 05:30 UTC (07:30 norsk sommertid / 06:30 vintertid) | Bygger nettsiden på nytt og publiserer til både test- og produksjonsmiljøet. Dette er jobben som får fremtidsdaterte avisartikler (§17), 70-årsregelen for faksimiler, og «Vis på nettsted»-endringer til faktisk å slå inn på tryllemuseet.no. |
-| **Sync YouTube clips** | Hver natt kl. 06:00 UTC (08:00 sommertid / 07:00 vintertid) — 30 minutter etter Daily rebuild | Henter nye videoer fra YouTube-kanalene registrert under **YouTube-kilde (synk)** (§18) og oppretter/oppdaterer «Historisk TV-opptak»-dokumenter automatisk. Kjører *etter* Daily rebuild, så nye klipp fra denne natten vises først i nettsiden fra påfølgende natts bygging. |
+| **Nightly production rebuild** | Hver natt kl. 05:30 UTC (07:30 norsk sommertid / 06:30 vintertid) | Bygger nettsiden på nytt og publiserer **kun til produksjon** (tryllemuseet.no). Dette er jobben som får fremtidsdaterte avisartikler (§17), 70-årsregelen for faksimiler, og «Vis på nettsted»-endringer til faktisk å slå inn i produksjon — og den eneste måten kodeendringer eller Sanity-innhold når tryllemuseet.no på. |
+| **Sync YouTube clips** | Hver natt kl. 06:00 UTC (08:00 sommertid / 07:00 vintertid) — 30 minutter etter Nightly production rebuild | Henter nye videoer fra YouTube-kanalene registrert under **YouTube-kilde (synk)** (§18) og oppretter/oppdaterer «Historisk TV-opptak»-dokumenter automatisk. Disse dukker opp på test.tryllemuseet.no nesten momentant (se over), men på tryllemuseet.no først ved *påfølgende* natts bygging, siden denne jobben kjører etter produksjonsbyggingen. |
 | **Deploy Sanity Studio** | Automatisk, hver gang en endring i skjemaet (`schemaTypes/`) havner på `main` | Publiserer nytt skjema til `sanity.studio` — dette er grunnen til at en ny felttype eller et nytt dokument dukker opp i Studio-grensesnittet uten at noen logger seg inn og trykker «Deploy» manuelt. |
 | **Schema conventions** *(kun for utviklere)* | Ved hver pull request som endrer `schemaTypes/` | Sjekker at nye dokumenttyper har «Vis på nettsted» og at lange tekstfelt støtter riktekst, før koden i det hele tatt kan slås sammen. Berører ikke redaktørarbeid direkte, men er grunnen til at disse to konvensjonene ikke lenger glipper stille. |
 | **Seed hero banners** / **Seed stories** *(engangsjobber)* | Kun hvis noen endrer selve seed-skriptet i koden | Fylte inn innhold automatisk ved lansering (forsidens karusell og de tre første «Liten historie»-artiklene). Skriver aldri over noe som er redigert i Studio siden — i praksis dormant nå. |
 
-**Trenger du en oppdatering *nå*, uten å vente til neste natt?** En
-teknisk ansvarlig kan trigge **Daily rebuild** manuelt fra GitHub → Actions
-→ Daily rebuild → Run workflow. Det er den samme jobben som kjører hver
-natt, bare på forespørsel.
+**Trenger du en produksjons-oppdatering *nå*, uten å vente til neste
+natt?** En teknisk ansvarlig kan trigge **Nightly production rebuild**
+manuelt fra GitHub → Actions → Nightly production rebuild → Run workflow.
+Det er den samme jobben som kjører hver natt, bare på forespørsel. (Test
+trenger aldri dette — den er alltid oppdatert i praksis.)
 
 ---
 

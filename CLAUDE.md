@@ -248,14 +248,24 @@ Update TypeScript interfaces in sanity.ts when schema changes.
 
 ### Deploy hooks (web)
 
-| Environment | URL | Hook secret | Workflow |
+**Correction (2026-09, replaces the 2026-08 correction below — verified directly against live Vercel project settings, Sanity webhook config/logs, and Vercel deployment history):** test and production intentionally behave differently now, by design (previously they didn't — see the superseded note underneath):
+
+| Environment | Vercel project | Updates on code push (`main`) | Updates on Sanity content change |
 |---|---|---|---|
-| Test | `test.tryllemuseet.no` | `VERCEL_DEPLOY_HOOK_TEST` | `.github/workflows/daily-rebuild.yml` |
-| Production | `tryllemuseet.no` | `VERCEL_DEPLOY_HOOK_PROD` | same |
+| Test — `test.tryllemuseet.no` | `tryllemuseet-web` | Immediately — normal Vercel git auto-deploy, untouched | Immediately — two Sanity webhooks ("Vercel Rebuild", dataset `*`, and "Deploy test", dataset `production"`) call `tryllemuseet-web`'s deploy hook directly on every document mutation. Confirmed firing successfully (HTTP 201) via `sanity hooks logs`, including on Studio publishes and the YouTube-sync script's writes. The two are redundant (same target hook); harmless but could be trimmed to one. |
+| Production — `tryllemuseet.no` | `tryllemuseet-prod` | **Disabled on purpose.** Repo-root `vercel.json` (`git.deploymentEnabled: false`) turns off Vercel's git auto-deploy for this project only — it has `rootDirectory: null` (repo root), so it's the only project that reads this file; `tryllemuseet-web`'s root directory is `web/`, so it looks for (and doesn't find) its own `web/vercel.json` and keeps auto-deploying as normal. | Never directly — no Sanity webhook targets prod's deploy hook. Only `.github/workflows/daily-rebuild.yml` does, once nightly at 05:30 UTC (or on-demand via **Actions → Nightly production rebuild → Run workflow**), via the `VERCEL_DEPLOY_HOOK_PROD` secret. Deploy hooks are a separate trigger path from git push and are unaffected by `git.deploymentEnabled`, so the nightly/manual rebuild still works with git auto-deploy off. |
 
-The `daily-rebuild.yml` workflow runs automatically at 05:30 UTC every day and can also be triggered manually via **Actions → Daily rebuild → Run workflow** on GitHub — this refreshes both sites with the latest Sanity content on a schedule, independent of any code push.
+So: a merged PR is live on test within seconds, same as a Sanity publish. Production only picks up **either** kind of change — code or content — at the next nightly rebuild (or a manual workflow run). If you need a fix live in production sooner than the next 05:30 UTC run, trigger `daily-rebuild.yml` manually.
 
-**Correction (2026-08, verified against live Vercel deployment history):** contrary to what this section previously said, the `tryllemuseet-prod` Vercel project's production deploy hook (`Prod-hook-git`) is bound to the `main` branch, and Vercel's git integration deploys `main` straight to `tryllemuseet.no` on every push (confirmed via the project's `-git-main-` domain alias and a run of `target: "production"` deployments tracking `main` commits directly, including same-day production deploys of merged PRs). So **pushing/merging to `main` does ship new code to production** — there is no separate promotion step required. The repo still has a `prod` git branch, but it does not appear to be wired to any live deployment; treat it as vestigial unless someone confirms otherwise. If you're planning a change that should NOT go live immediately, hold it in a PR rather than merging to `main`.
+**Open items, not yet resolved — flagged rather than guessed at:**
+- `tryllemuseet.no` is not attached as a domain to either Vercel project (`list_project_domains` shows neither has it); it *is* a registered/verified domain+zone in the Vercel team account, but its nameservers point at the registrar (`hyp.net`), not Vercel's. The user confirmed it's handled via DNS, but the exact routing to `tryllemuseet-prod` wasn't verified end-to-end (this sandbox's network access is restricted, so `curl`/`dig` against the live domain aren't reliable here). Verify in a browser or the Vercel dashboard if in doubt.
+- A third Vercel project, `tryllemuseet-deploy-debouncer`, exists in the team account with no deployments beyond its initial one and isn't referenced by any known webhook or workflow. Purpose unconfirmed — possibly an abandoned attempt to coalesce the two redundant Sanity webhooks above into one debounced call. Left untouched.
+
+<details>
+<summary>Superseded 2026-08 correction (kept for history — no longer accurate as of 2026-09, see above)</summary>
+
+Contrary to what this section previously said, the `tryllemuseet-prod` Vercel project's production deploy hook (`Prod-hook-git`) is bound to the `main` branch, and Vercel's git integration deploys `main` straight to `tryllemuseet.no` on every push (confirmed via the project's `-git-main-` domain alias and a run of `target: "production"` deployments tracking `main` commits directly, including same-day production deploys of merged PRs). So pushing/merging to `main` does ship new code to production — there is no separate promotion step required.
+</details>
 
 ## Visibility / Unpublish Convention
 
