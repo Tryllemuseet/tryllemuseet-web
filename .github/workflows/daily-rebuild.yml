@@ -1,28 +1,30 @@
-name: Daily rebuild (publish scheduled content)
+name: Nightly production rebuild
+
+# Production (tryllemuseet.no) intentionally does NOT auto-deploy on push —
+# see vercel.json (git.deploymentEnabled: false, scoped to the
+# tryllemuseet-prod project via its root-directory Vercel config). This
+# workflow is production's only update path: it rebuilds once nightly,
+# picking up whatever is on `main` plus any Sanity content published since
+# the last run.
+#
+# test.tryllemuseet.no is NOT triggered here — it already updates
+# immediately on its own, via Vercel's normal git-push auto-deploy (code)
+# and two Sanity webhooks that hit its deploy hook directly on every
+# content publish (see CLAUDE.md § Deploy hooks for details/webhook names).
 
 on:
   schedule:
-    # Daily at 05:30 UTC — before the YouTube sync job (06:00 UTC)
+    # Daily at 05:30 UTC
     - cron: '30 5 * * *'
   workflow_dispatch:
 
 jobs:
   rebuild:
-    name: Trigger Vercel deploy
+    name: Trigger Vercel production deploy
     runs-on: ubuntu-latest
     timeout-minutes: 5
 
     steps:
-      - name: Trigger test deploy hook
-        run: |
-          if [ -z "$VERCEL_DEPLOY_HOOK_TEST" ]; then
-            echo "::error::VERCEL_DEPLOY_HOOK_TEST secret is empty or unset"
-            exit 1
-          fi
-          curl --fail -sS -X POST "$VERCEL_DEPLOY_HOOK_TEST"
-        env:
-          VERCEL_DEPLOY_HOOK_TEST: ${{ secrets.VERCEL_DEPLOY_HOOK_TEST }}
-
       - name: Trigger production deploy hook
         run: |
           if [ -z "$VERCEL_DEPLOY_HOOK_PROD" ]; then
