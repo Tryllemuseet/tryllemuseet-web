@@ -42,6 +42,13 @@ export const utstillingPage = defineType({
           defineField({ name: 'description', title: 'Beskrivelse',   type: 'text', rows: 2 }),
           defineField({ name: 'slug',        title: 'URL-slug',      type: 'string', description: 'F.eks. «norske-legender» → /utstillingen/norske-legender' }),
           defineField({ name: 'ready',       title: 'Tilgjengelig (vis lenke)', type: 'boolean', initialValue: false }),
+          defineField({
+            name: 'showAsComingSoon',
+            title: 'Vis som «Kommer snart» i produksjon',
+            type: 'boolean',
+            initialValue: false,
+            description: 'Uferdig innhold (ready = av) vises som hovedregel ikke på tryllemuseet.no i det hele tatt, kun i forhåndsvisning/staging. Slå på denne for å likevel annonsere akkurat dette kortet i produksjon, med «Kommer snart»-merket og uten lenke.',
+          }),
         ],
         preview: {
           select: { title: 'title', subtitle: 'description', ready: 'ready' },

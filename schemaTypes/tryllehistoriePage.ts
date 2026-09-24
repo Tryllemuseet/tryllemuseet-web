@@ -19,6 +19,22 @@ export const tryllehistoriePage = defineType({
       ],
     }),
 
+    // ─── HISTORISK FORTELLING ("Magiens historie — kort fortalt") ──
+    defineField({
+      name: 'historieIntro',
+      title: 'Historisk fortelling — ingress',
+      type: 'text',
+      rows: 3,
+      description: 'Kursiv ingress øverst i «Magiens historie — kort fortalt»-seksjonen, rett under hero.',
+    }),
+    defineField({
+      name: 'historieSeksjoner',
+      title: 'Historisk fortelling — seksjoner',
+      type: 'array',
+      description: 'Underoverskrifter og avsnitt i den historiske fortellingen, i rekkefølgen her.',
+      of: [{ type: 'contentSection' }],
+    }),
+
     // ─── SEKSJONER ────────────────────────────────────────────────
     defineField({
       name: 'seksjoner',

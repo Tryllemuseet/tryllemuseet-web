@@ -58,6 +58,7 @@ export const competitionResult = defineType({
         list: [
           { title: 'FISM (VM)', value: 'fism' },
           { title: 'Nordisk mesterskap', value: 'nordisk' },
+          { title: 'Nordisk kongress', value: 'nordiskKongress' },
           { title: 'Norgesmesterskap (NM)', value: 'nm' },
           { title: 'Annet', value: 'annet' },
         ],

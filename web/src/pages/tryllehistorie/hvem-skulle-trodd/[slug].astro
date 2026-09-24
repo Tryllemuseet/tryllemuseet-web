@@ -2,6 +2,7 @@
 // src/pages/tryllehistorie/hvem-skulle-trodd/[slug].astro
 import BaseLayout from '../../../layouts/BaseLayout.astro'
 import NarrateButton from '../../../components/NarrateButton.astro'
+import AnimateIn from '../../../components/AnimateIn.astro'
 import { getWhoKnewBySlug, getWhoKnewPaths, whoKnewRelatedHref, portableTextToHtml, portableTextToPlainText } from '../../../lib/sanity'
 import type { WhoKnew } from '../../../lib/sanity'
 
@@ -53,6 +54,7 @@ const categoryLabels: Record<string, string> = {
     <!-- ARTIKKELTEKST ──────────────────────────────────────────── -->
     <main class="article-main">
 
+      <AnimateIn>
       <div class="narrate-row">
         <NarrateButton text={contentPlain} label="Les artikkelen høyt" />
       </div>
@@ -67,10 +69,12 @@ const categoryLabels: Record<string, string> = {
           Les hele historien om {w.relatedRef.title} →
         </a>
       )}
+      </AnimateIn>
 
     </main>
 
     <!-- SIDEBAR ────────────────────────────────────────────────── -->
+    <AnimateIn direction="right">
     <aside class="article-sidebar">
 
       {w.image?.asset?.url && (
@@ -100,6 +104,7 @@ const categoryLabels: Record<string, string> = {
       )}
 
     </aside>
+    </AnimateIn>
   </div>
 
   <!-- NAVIGASJON ─────────────────────────────────────────────────── -->

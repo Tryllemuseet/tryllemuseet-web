@@ -2,7 +2,7 @@
 // src/pages/kontakt.astro
 import BaseLayout from '../layouts/BaseLayout.astro'
 import AnimateIn from '../components/AnimateIn.astro'
-import { getSiteConfig, getKontaktPage } from '../lib/sanity'
+import { getSiteConfig, getKontaktPage, portableTextToHtml } from '../lib/sanity'
 
 const [site, page] = await Promise.all([getSiteConfig(), getKontaktPage()])
 ---
@@ -103,7 +103,7 @@ const [site, page] = await Promise.all([getSiteConfig(), getKontaktPage()])
             {page.faq.map(item => (
               <details class="faq-item">
                 <summary>{item.sporsmal}</summary>
-                <p>{item.svar}</p>
+                <div set:html={portableTextToHtml(item.svar)} />
               </details>
             ))}
           </div>

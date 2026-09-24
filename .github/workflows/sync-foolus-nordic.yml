@@ -1,0 +1,48 @@
+name: Sync Fool Us Nordic performers
+
+on:
+  schedule:
+    # Weekly, Monday 07:00 UTC (after the daily rebuild + YouTube sync jobs)
+    - cron: '0 7 * * 1'
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Dry run (log only, no Sanity writes)'
+        required: true
+        default: true
+        type: boolean
+      debug:
+        description: 'Verbose per-row debug logging'
+        required: true
+        default: false
+        type: boolean
+
+jobs:
+  sync:
+    name: Wikipedia (Fool Us) → Sanity
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run sync script
+        env:
+          SANITY_TOKEN: ${{ secrets.SANITY_TOKEN }}
+          # Alltid production (gratisplan har kun ett datasett)
+          SANITY_DATASET: production
+          # Scheduled runs always write for real; manual runs default to a
+          # dry run unless explicitly turned off in the workflow_dispatch form.
+          DRY_RUN: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run || 'false' }}
+          DEBUG: ${{ github.event_name == 'workflow_dispatch' && inputs.debug || 'false' }}
+        run: node scripts/syncFoolUsNordic.mjs

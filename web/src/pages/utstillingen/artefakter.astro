@@ -1,6 +1,7 @@
 ---
 // src/pages/utstillingen/artefakter.astro
 import BaseLayout from '../../layouts/BaseLayout.astro'
+import AnimateIn from '../../components/AnimateIn.astro'
 import { getAllArtifacts, urlFor } from '../../lib/sanity'
 
 const artifacts = await getAllArtifacts()
@@ -37,7 +38,7 @@ const categoryLabels: Record<string, string> = {
       <p class="empty">Ingen artefakter er lagt inn ennå.</p>
     ) : (
       <div class="artifacts-grid">
-        {artifacts.map((a) => {
+        {artifacts.map((a, i) => {
           const imgUrl = a.mainImage?.asset
             ? urlFor(a.mainImage).width(600).height(600).format('webp').fit('crop').url()
             : null
@@ -49,6 +50,7 @@ const categoryLabels: Record<string, string> = {
           ].filter(Boolean).join(' · ')
 
           return (
+            <AnimateIn delay={Math.min(i * 80, 320)}>
             <a href={`/utstillingen/artefakter/${a.slug}`} class="artifact-card">
               <div class="card-img-wrap">
                 {imgUrl ? (
@@ -73,6 +75,7 @@ const categoryLabels: Record<string, string> = {
                 {meta && <p class="card-meta">{meta}</p>}
               </div>
             </a>
+            </AnimateIn>
           )
         })}
       </div>

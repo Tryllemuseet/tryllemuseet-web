@@ -1,9 +1,9 @@
 ---
 // src/pages/tryllehistorie/magiens-hvem-er-hvem.astro
 import BaseLayout from '../../layouts/BaseLayout.astro'
-import { getBiographyDirectory, formatLifespan } from '../../lib/sanity'
+import { getBiographyDirectory, getHvemErHvemPage, formatLifespan, portableTextToHtml } from '../../lib/sanity'
 
-const biographies = await getBiographyDirectory()
+const [biographies, page] = await Promise.all([getBiographyDirectory(), getHvemErHvemPage()])
 
 // Grupper alfabetisk
 const grouped: Record<string, typeof biographies> = {}
@@ -14,6 +14,8 @@ for (const bio of biographies) {
 }
 const letters = Object.keys(grouped).sort()
 const total = biographies.length
+const heroIngress = page.hero.ingress.replace('{{antall}}', String(total))
+const kildeNoticeHtml = portableTextToHtml(page.kildeNotice)
 ---
 
 <BaseLayout
@@ -24,10 +26,10 @@ const total = biographies.length
   <!-- HERO ──────────────────────────────────────────────────────── -->
   <section class="bio-hero">
     <div class="container">
-      <p class="section-label">Tryllehistorie</p>
-      <h1 class="display-title bio-title">Magiens Hvem er Hvem</h1>
+      <p class="section-label">{page.hero.label}</p>
+      <h1 class="display-title bio-title">{page.hero.heading}</h1>
       <p class="bio-sub">
-        Biografisk oversikt over {total} norske tryllekunstnere.
+        {heroIngress}
       </p>
     </div>
   </section>
@@ -65,13 +67,7 @@ const total = biographies.length
   <div class="container">
     <aside class="source-notice">
       <div class="notice-icon" aria-hidden="true">ℹ</div>
-      <div>
-        <strong>Om kilden:</strong> Denne oversikten er basert på
-        <em>«Magiens Hvem er Hvem»</em> av Terje Nordheim (2005),
-        og dekker norske tryllekunstnere frem til ca. år 2000 — altså over 25 år gammelt.
-        Oppdateringsarbeid er påbegynt. Kjenner du noen av disse — eller mangler du en person?
-        <a href="/kontakt">Ta kontakt med oss</a>.
-      </div>
+      <div set:html={kildeNoticeHtml} />
     </aside>
   </div>
 

@@ -1,5 +1,6 @@
 // schemaTypes/omOssPage.ts
 import { defineField, defineType } from 'sanity'
+import { richBlockContent } from './richBlockContent'
 
 export const omOssPage = defineType({
   name: 'omOssPage',
@@ -36,7 +37,7 @@ export const omOssPage = defineType({
           name: 'historieTekst',
           title: 'Historietekst',
           type: 'array',
-          of: [{ type: 'block' }],
+          of: richBlockContent(),
         }),
         defineField({
           name: 'formalHeading',
@@ -46,8 +47,8 @@ export const omOssPage = defineType({
         defineField({
           name: 'formalTekst',
           title: 'Formål-tekst',
-          type: 'text',
-          rows: 4,
+          type: 'array',
+          of: richBlockContent(),
         }),
       ],
     }),
@@ -115,7 +116,7 @@ export const omOssPage = defineType({
       fields: [
         defineField({ name: 'heading', title: 'Overskrift', type: 'string' }),
         defineField({ name: 'ingress', title: 'Ingress', type: 'text', rows: 2 }),
-        defineField({ name: 'motivasjonsTekst', title: 'Motivasjonstekst', type: 'text', rows: 6 }),
+        defineField({ name: 'motivasjonsTekst', title: 'Motivasjonstekst', type: 'array', of: richBlockContent() }),
         defineField({
           name: 'nivaaer',
           title: 'Medlemskapsnivåer',
@@ -152,7 +153,7 @@ export const omOssPage = defineType({
       fields: [
         defineField({ name: 'label',      title: 'Label',          type: 'string' }),
         defineField({ name: 'heading',    title: 'Overskrift',     type: 'string' }),
-        defineField({ name: 'tekst',      title: 'Brødtekst',      type: 'text', rows: 3 }),
+        defineField({ name: 'tekst',      title: 'Brødtekst',      type: 'array', of: richBlockContent() }),
         defineField({ name: 'knappLabel', title: 'Knapp — tekst',  type: 'string' }),
         defineField({ name: 'knappHref',  title: 'Knapp — URL',    type: 'string' }),
       ],
@@ -166,7 +167,7 @@ export const omOssPage = defineType({
       fields: [
         defineField({ name: 'label', title: 'Label', type: 'string' }),
         defineField({ name: 'heading', title: 'Overskrift', type: 'string' }),
-        defineField({ name: 'tekst', title: 'Tekst', type: 'text', rows: 4 }),
+        defineField({ name: 'tekst', title: 'Tekst', type: 'array', of: richBlockContent() }),
         defineField({ name: 'knappLabel', title: 'Knapp — tekst', type: 'string' }),
         defineField({ name: 'knappHref', title: 'Knapp — URL', type: 'string' }),
         defineField({

@@ -1,5 +1,6 @@
 // schemaTypes/siteConfig.ts
 import { defineType, defineField } from 'sanity'
+import { richBlockContent } from './richBlockContent'
 
 export const siteConfig = defineType({
   name: 'siteConfig',
@@ -115,9 +116,8 @@ export const siteConfig = defineType({
     defineField({
       name: 'donationText',
       title: 'Gi en gave — tekst',
-      type: 'text',
-      rows: 3,
-      initialValue: 'Museet drives i stor grad av frivillige. En gave bidrar til å bevare samlingen, utvikle utstillingene og holde museet gratis og tilgjengelig for alle.',
+      type: 'array',
+      of: richBlockContent(),
     }),
 
     // ─── SOSIALE MEDIER ─────────────────────────────────────────
@@ -146,6 +146,16 @@ export const siteConfig = defineType({
       type: 'text',
       rows: 2,
       initialValue: 'Norges minste, merkeligste og mest magiske museum. Besøk oss på Årvoll i Oslo — søndager 12–16. Gratis inngang.',
+    }),
+
+    // ─── FEATURE-FLAGG ────────────────────────────────────────────
+    defineField({
+      name:         'laerEtTriksActive',
+      title:        '«Lær et triks» er aktiv',
+      type:         'boolean',
+      initialValue: false,
+      description:
+        'Hovedbryteren for «Lær et triks» (/barn/laer-et-triks). Av: teaseren på /barn er skjult og siden får noindex, men innholdet er fortsatt tilgjengelig for testing på den fulle URL-en. På: teaseren vises og siden indekseres normalt. Speiler mønsteret til gameConfig.isActive/quizConfig.isActive.',
     }),
   ],
 

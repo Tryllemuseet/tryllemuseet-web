@@ -9,9 +9,14 @@
 // Sideeget innhold (hero, «Bøker»-seksjon på utstillingen) settes via
 // <slot name="extra" /> — plassert mellom stasjoner og «Hvem er hvem»-lenken,
 // samme sted «Bøker» ligger i dag.
-import { portableTextToHtml, portableTextToPlainText, urlFor } from '../lib/sanity'
+import { portableTextToHtml, portableTextToPlainText, urlFor, getSiteConfig } from '../lib/sanity'
 import type { Legend, LegendStation } from '../lib/sanity'
 import NarrateButton from './NarrateButton.astro'
+import AnimateIn from './AnimateIn.astro'
+
+const STAGGER_MS = 80
+const STAGGER_CAP_MS = 320
+const staggerDelay = (i: number) => Math.min(i * STAGGER_MS, STAGGER_CAP_MS)
 
 interface Props {
   entry: Pick<Legend,
@@ -22,6 +27,14 @@ interface Props {
 }
 
 const { entry } = Astro.props
+
+// «Lær et triks» er ikke lansert i produksjon ennå (se siteConfig.laerEtTriksActive)
+// — «Se også»-lenker dit skal ikke synes før funksjonen er skrudd på, selv om
+// redaktørinnholdet allerede peker dit.
+const siteConfig = await getSiteConfig()
+const relatedLinks = (entry.relatedLinks ?? []).filter(l =>
+  siteConfig.laerEtTriksActive || !l.path.startsWith('/barn/laer-et-triks')
+)
 
 const wallHtml    = portableTextToHtml(entry.wallText)
 const contentHtml = portableTextToHtml(entry.content)
@@ -40,7 +53,7 @@ const wallPlain    = portableTextToPlainText(entry.wallText)
 const contentPlain = portableTextToPlainText(entry.content)
 const detailPlain  = [entry.detailIntro, ...sectionsHtml.map(s => s.plain)].filter(Boolean).join(' ')
 function stationPlain(s: LegendStation): string {
-  return [s.textKids, s.textAdults, s.activityPrompt].filter(Boolean).join(' ')
+  return [s.textKids, portableTextToPlainText(s.textAdults), s.activityPrompt].filter(Boolean).join(' ')
 }
 
 const videoTypeLabel: Record<string, string> = {
@@ -52,6 +65,7 @@ const videoTypeLabel: Record<string, string> = {
 
   <!-- 1. BARNETEKST ──────────────────────────────────────────── -->
   {entry.childText && (
+    <AnimateIn>
     <section class="child-panel" aria-label="For barn">
       <div class="section-head">
         <p class="child-label">⭐ For barn</p>
@@ -65,10 +79,12 @@ const videoTypeLabel: Record<string, string> = {
         </div>
       )}
     </section>
+    </AnimateIn>
   )}
 
   <!-- 2. VOKSENTEKST ─────────────────────────────────────────── -->
   {wallHtml && (
+    <AnimateIn>
     <section class="adult-section" aria-label={`Om ${entry.title}`}>
       <div class="section-head">
         <h2 class="section-heading">Om {entry.title}</h2>
@@ -76,20 +92,24 @@ const videoTypeLabel: Record<string, string> = {
       </div>
       <div class="prose" set:html={wallHtml} />
     </section>
+    </AnimateIn>
   )}
 
   <!-- 2b. BRØDTEKST (fri-form artikkeltekst, uten seksjonsinndeling) ── -->
   {contentHtml && (
+    <AnimateIn>
     <section class="content-body" aria-label={`Artikkel om ${entry.title}`}>
       <div class="section-head section-head--end">
         <NarrateButton text={contentPlain} label="Les artikkelen høyt" />
       </div>
       <div class="prose" set:html={contentHtml} />
     </section>
+    </AnimateIn>
   )}
 
   <!-- 3. DETALJERT TEKST ──────────────────────────────────────── -->
   {(entry.detailIntro || sectionsHtml.length > 0) && (
+    <AnimateIn>
     <section class="detail-section" id="detaljer" aria-label="Utdypende innhold">
       <div class="section-head">
         <h2 class="section-heading">Les mer</h2>
@@ -105,15 +125,16 @@ const videoTypeLabel: Record<string, string> = {
         </div>
       ))}
     </section>
+    </AnimateIn>
   )}
 
   <!-- 4. STASJONER ───────────────────────────────────────────── -->
   {stations.length > 0 && (
     <section class="stations-section" aria-label="Stasjonene">
-      <h2 class="section-heading">Stasjonene</h2>
+      <AnimateIn><h2 class="section-heading">Stasjonene</h2></AnimateIn>
       <ol class="stations-list">
         {stations.map((s, i) => (
-          <li class="station">
+          <li class="station" data-animate data-direction="up" style={`transition-delay:${staggerDelay(i)}ms`}>
             <div class="station-marker" aria-hidden="true">
               <span class="station-number">{i + 1}</span>
               <span class="station-line" />
@@ -142,7 +163,7 @@ const videoTypeLabel: Record<string, string> = {
                   <p class="child-text">{s.textKids}</p>
                 </div>
               )}
-              {s.textAdults && <p class="station-adults">{s.textAdults}</p>}
+              {s.textAdults && <div class="station-adults" set:html={portableTextToHtml(s.textAdults)} />}
               {s.activityPrompt && (
                 <div class="station-activity">
                   <span aria-hidden="true">★</span>
@@ -159,9 +180,10 @@ const videoTypeLabel: Record<string, string> = {
   <!-- 5. GALLERI ─────────────────────────────────────────────── -->
   {gallery.length > 0 && (
     <section class="gallery-section" aria-label="Bildegalleri">
-      <h2 class="section-heading">Bilder</h2>
+      <AnimateIn><h2 class="section-heading">Bilder</h2></AnimateIn>
       <div class="gallery-grid">
-        {gallery.map((img: any) => (
+        {gallery.filter((img: any) => img?.asset).map((img: any, i: number) => (
+          <AnimateIn delay={staggerDelay(i)}>
           <figure class="gallery-fig">
             <img
               src={urlFor(img).width(600).format('webp').url()}
@@ -170,6 +192,7 @@ const videoTypeLabel: Record<string, string> = {
             />
             {img.caption && <figcaption>{img.caption}</figcaption>}
           </figure>
+          </AnimateIn>
         ))}
       </div>
     </section>
@@ -178,10 +201,10 @@ const videoTypeLabel: Record<string, string> = {
   <!-- 6. VIDEOER ─────────────────────────────────────────────── -->
   {videos.length > 0 && (
     <section class="video-section" aria-label="Videoer">
-      <h2 class="section-heading">Videoer</h2>
+      <AnimateIn><h2 class="section-heading">Videoer</h2></AnimateIn>
       <ul class="video-list">
-        {videos.map((v: any) => (
-          <li class="video-row">
+        {videos.map((v: any, i: number) => (
+          <li class="video-row" data-animate data-direction="up" style={`transition-delay:${staggerDelay(i)}ms`}>
             <span class="video-type">{videoTypeLabel[v.type ?? 'annet'] ?? '🔗'}</span>
             <div class="video-info">
               <a href={v.url} target="_blank" rel="noopener noreferrer" class="video-title">
@@ -200,6 +223,7 @@ const videoTypeLabel: Record<string, string> = {
 
   <!-- 7. HVEM ER HVEM ────────────────────────────────────────── -->
   {entry.biographyRef && entry.biographyRef.isVisible !== false && entry.biographyRef.slug && (
+    <AnimateIn>
     <aside class="related-magician">
       <p>
         Vil du vite mer?
@@ -208,22 +232,26 @@ const videoTypeLabel: Record<string, string> = {
         </a>
       </p>
     </aside>
+    </AnimateIn>
   )}
 
   <!-- 8. SE OGSÅ ──────────────────────────────────────────────── -->
-  {entry.relatedLinks && entry.relatedLinks.length > 0 && (
+  {relatedLinks.length > 0 && (
+    <AnimateIn>
     <aside class="related-links" aria-label="Se også">
       <p class="related-links-label">Se også</p>
       <ul>
-        {entry.relatedLinks.map(l => (
+        {relatedLinks.map(l => (
           <li><a href={l.path}>{l.label} →</a></li>
         ))}
       </ul>
     </aside>
+    </AnimateIn>
   )}
 
   <!-- 9. KILDER ──────────────────────────────────────────────── -->
   {entry.sources && entry.sources.length > 0 && (
+    <AnimateIn>
     <section class="sources-section" aria-label="Kilder">
       <h2 class="section-heading">Kilder</h2>
       <ul class="sources-list">
@@ -248,6 +276,7 @@ const videoTypeLabel: Record<string, string> = {
         })}
       </ul>
     </section>
+    </AnimateIn>
   )}
 
   <slot />

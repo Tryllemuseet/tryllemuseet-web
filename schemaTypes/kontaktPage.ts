@@ -1,4 +1,5 @@
 import { defineField, defineType } from 'sanity'
+import { richBlockContent } from './richBlockContent'
 
 export const kontaktPage = defineType({
   name: 'kontaktPage',
@@ -44,8 +45,8 @@ export const kontaktPage = defineType({
           defineField({
             name: 'svar',
             title: 'Svar',
-            type: 'text',
-            rows: 3,
+            type: 'array',
+            of: richBlockContent(),
             validation: R => R.required(),
           }),
         ],

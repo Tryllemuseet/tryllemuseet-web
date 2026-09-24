@@ -11,6 +11,10 @@ import { getGullalderenPanels, urlFor } from '../../lib/sanity'
 
 const panels = await getGullalderenPanels()
 
+const STAGGER_MS = 80
+const STAGGER_CAP_MS = 320
+const staggerDelay = (i: number) => Math.min(i * STAGGER_MS, STAGGER_CAP_MS)
+
 function posterUrl(image: any, width: number) {
   if (!image?.asset) return null
   return urlFor(image).width(width).height(Math.round(width * 4 / 3)).format('webp').fit('crop').url()
@@ -41,10 +45,16 @@ function posterUrl(image: any, width: number) {
       <p class="empty-notice">Ingen veggpaneler er registrert ennå.</p>
     )}
 
-    {panels.map((m) => {
+    {panels.map((m, i) => {
       const imgUrl = posterUrl(m.mainImage, 500)
       return (
-        <a href={`/utstillingen/${m.slug}`} class="panel-card">
+        <a
+          href={`/utstillingen/${m.slug}`}
+          class="panel-card"
+          data-animate
+          data-direction="up"
+          style={`transition-delay:${staggerDelay(i)}ms`}
+        >
           {imgUrl ? (
             <div class="panel-img">
               <img

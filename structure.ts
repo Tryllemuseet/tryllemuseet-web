@@ -27,10 +27,13 @@ export const structure: StructureResolver = (S) =>
             .items([
               S.documentTypeListItem('homepage').title('Forside'),
               S.documentTypeListItem('besokPage').title('Besøk oss'),
+              S.documentTypeListItem('kursPage').title('Tryllekurs'),
               S.documentTypeListItem('utstillingPage').title('Utstilling (innledning)'),
               S.documentTypeListItem('tryllebutikkenPage').title('Tryllebutikken'),
               S.documentTypeListItem('barnPage').title('Barnesiden'),
+              S.documentTypeListItem('aktiviteterPage').title('Aktiviteter (Hva skjer)'),
               S.documentTypeListItem('tryllehistoriePage').title('Tryllehistorie'),
+              S.documentTypeListItem('hvemErHvemPage').title('Magiens Hvem er Hvem'),
               S.documentTypeListItem('ressurserPage').title('Ressurser'),
               S.documentTypeListItem('omOssPage').title('Om oss'),
               S.documentTypeListItem('kontaktPage').title('Kontakt'),
@@ -51,6 +54,16 @@ export const structure: StructureResolver = (S) =>
               S.documentTypeListItem('artifact').title('Artefakt'),
               S.documentTypeListItem('magicOrganization').title('Trylleforening'),
               S.documentTypeListItem('qrCode').title('QR-kode'),
+            ]),
+        ),
+
+      S.listItem()
+        .title('Magic Club')
+        .child(
+          S.list()
+            .title('Magic Club')
+            .items([
+              S.documentTypeListItem('magicClubEdition').title('Magic Club — kveld'),
             ]),
         ),
 

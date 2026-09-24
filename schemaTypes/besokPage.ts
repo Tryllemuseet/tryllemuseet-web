@@ -1,4 +1,5 @@
 import { defineField, defineType } from 'sanity'
+import { richBlockContent } from './richBlockContent'
 
 export const besokPage = defineType({
   name: 'besokPage',
@@ -110,7 +111,7 @@ export const besokPage = defineType({
       fields: [
         defineField({ name: 'label',   title: 'Label',       type: 'string' }),
         defineField({ name: 'heading', title: 'Overskrift',  type: 'string' }),
-        defineField({ name: 'tekst',   title: 'Brødtekst',   type: 'text', rows: 3 }),
+        defineField({ name: 'tekst',   title: 'Brødtekst',   type: 'array', of: richBlockContent() }),
       ],
     }),
 
@@ -121,7 +122,7 @@ export const besokPage = defineType({
       type: 'object',
       fields: [
         defineField({ name: 'heading', title: 'Overskrift', type: 'string' }),
-        defineField({ name: 'tekst',   title: 'Brødtekst',  type: 'text', rows: 3 }),
+        defineField({ name: 'tekst',   title: 'Brødtekst',  type: 'array', of: richBlockContent() }),
       ],
     }),
 

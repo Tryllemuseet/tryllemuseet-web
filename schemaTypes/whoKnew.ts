@@ -1,5 +1,6 @@
 // schemaTypes/whoKnew.ts
 import { defineType, defineField } from 'sanity'
+import { richBlockContent } from './richBlockContent'
 
 export const whoKnew = defineType({
   name:  'whoKnew',
@@ -80,7 +81,7 @@ export const whoKnew = defineType({
       name:  'body',
       title: 'Brødtekst',
       type:  'array',
-      of:    [{ type: 'block' }],
+      of:    richBlockContent(),
       description: 'Valgfri, lengre artikkeltekst til egen side. Kan stå tom dersom «Koblet til» peker på en side som allerede har historien.',
     }),
 

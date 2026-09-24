@@ -3,14 +3,15 @@
 import BaseLayout from '../../../layouts/BaseLayout.astro'
 import TriksGodeRad from '../../../components/TriksGodeRad.astro'
 import NarrateButton from '../../../components/NarrateButton.astro'
-import { getTrickBySlug, getTrickPaths, portableTextToHtml, portableTextToPlainText } from '../../../lib/sanity'
+import AnimateIn from '../../../components/AnimateIn.astro'
+import { getTrickBySlug, getTrickPaths, getSiteConfig, portableTextToHtml, portableTextToPlainText } from '../../../lib/sanity'
 
 export async function getStaticPaths() {
   return getTrickPaths()
 }
 
 const { slug } = Astro.params
-const t = await getTrickBySlug(slug!)
+const [t, config] = await Promise.all([getTrickBySlug(slug!), getSiteConfig()])
 
 if (!t) return Astro.redirect('/barn/laer-et-triks')
 
@@ -31,6 +32,7 @@ const embedUrl = youtubeEmbedUrl(t.videoUrl)
 <BaseLayout
   title={`${t.title} — Tryllemuseet`}
   description={t.shortDescription}
+  noindex={!config.laerEtTriksActive}
 >
 
   <nav class="breadcrumb container">
@@ -63,6 +65,7 @@ const embedUrl = youtubeEmbedUrl(t.videoUrl)
   <section class="triks-innhold section-pad">
     <div class="container triks-innhold-grid">
 
+      <AnimateIn>
       <div class="triks-hovedinnhold">
         {embedUrl && (
           <div class="triks-video-wrap">
@@ -126,14 +129,17 @@ const embedUrl = youtubeEmbedUrl(t.videoUrl)
           </aside>
         )}
       </div>
+      </AnimateIn>
 
       {t.materials && t.materials.length > 0 && (
+        <AnimateIn direction="right">
         <aside class="triks-materialer">
           <span class="materialer-label">Du trenger</span>
           <ul>
             {t.materials.map(m => <li>{m}</li>)}
           </ul>
         </aside>
+        </AnimateIn>
       )}
 
     </div>

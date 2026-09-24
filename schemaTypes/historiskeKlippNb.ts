@@ -1,5 +1,6 @@
 import { defineType, defineField } from 'sanity'
 import { NbUrlInput } from './components/NbUrlInput'
+import { richBlockContent } from './richBlockContent'
 
 export const historiskeKlippNb = defineType({
   name: 'historiskeKlippNb',
@@ -187,8 +188,8 @@ export const historiskeKlippNb = defineType({
     defineField({
       name: 'rewrittenText',
       title: 'Omskrevet artikkeltekst (vises på siden)',
-      type: 'text',
-      rows: 12,
+      type: 'array',
+      of: richBlockContent(),
       description: '📝 Deres egen frie gjengivelse av innholdet, i egne ord. Dette — ikke originalteksten — er det besøkende leser i modalen.',
       group: 'content',
     }),

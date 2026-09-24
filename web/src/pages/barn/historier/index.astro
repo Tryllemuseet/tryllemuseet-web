@@ -39,10 +39,10 @@ const stories = await getAllComicStories()
       )}
 
       <div class="historier-grid">
-        {stories.map(s => {
+        {stories.map((s, i) => {
           const thumb = s.scenes[0]?.image
           return (
-            <AnimateIn direction="up">
+            <AnimateIn direction="up" delay={Math.min(i * 80, 320)}>
               <a href={`/barn/historier/${s.slug}`} class="historie-link">
                 <article class="historie-kort">
                   <div class="historie-img">
@@ -71,6 +71,7 @@ const stories = await getAllComicStories()
     </div>
   </section>
 
+  <AnimateIn>
   <section class="diplom-banner">
     <div class="container diplom-banner-inner">
       <div>
@@ -80,6 +81,7 @@ const stories = await getAllComicStories()
       <a href="/barn" class="btn btn-gold">Tilbake til Barn & unge</a>
     </div>
   </section>
+  </AnimateIn>
 
 </BaseLayout>
 

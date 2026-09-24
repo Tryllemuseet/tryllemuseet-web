@@ -1,5 +1,6 @@
 // schemaTypes/historicalClip.ts
 import { defineType, defineField } from 'sanity'
+import { richBlockContent } from './richBlockContent'
 
 export const historicalClip = defineType({
   name: 'historicalClip',
@@ -98,7 +99,7 @@ export const historicalClip = defineType({
       name: 'description',
       title: 'Beskrivelse',
       type: 'array',
-      of: [{ type: 'block' }],
+      of: richBlockContent(),
       description: 'Kontekstuell beskrivelse av opptaket. Ingen avsløring av triks.',
     }),
 

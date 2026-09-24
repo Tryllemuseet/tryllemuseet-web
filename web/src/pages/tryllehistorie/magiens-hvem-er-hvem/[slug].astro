@@ -2,6 +2,7 @@
 // src/pages/tryllehistorie/magiens-hvem-er-hvem/[slug].astro
 import BaseLayout from '../../../layouts/BaseLayout.astro'
 import NarrateButton from '../../../components/NarrateButton.astro'
+import AnimateIn from '../../../components/AnimateIn.astro'
 import { getBiographyBySlug, getBiographyPaths, portableTextToHtml, portableTextToPlainText, urlFor, formatBioAge } from '../../../lib/sanity'
 
 export async function getStaticPaths() {
@@ -79,11 +80,12 @@ const videoTypeLabel: Record<string, string> = {
 
     <!-- KORTBIOGRAFI ────────────────────────────────────────────── -->
     {bio.shortBio && (
-      <p class="short-bio">{bio.shortBio}</p>
+      <AnimateIn><p class="short-bio">{bio.shortBio}</p></AnimateIn>
     )}
 
     <!-- FULL BIOGRAFI ───────────────────────────────────────────── -->
     {fullBioHtml && (
+      <AnimateIn>
       <section class="full-bio">
         <div class="section-head">
           <h2 class="section-heading">Biografi</h2>
@@ -91,18 +93,21 @@ const videoTypeLabel: Record<string, string> = {
         </div>
         <div class="prose" set:html={fullBioHtml} />
       </section>
+      </AnimateIn>
     )}
 
     <!-- BILDEGALLERI ────────────────────────────────────────────── -->
     {bio.gallery && bio.gallery.length > 0 && (
       <section class="gallery-section">
-        <h2 class="section-heading">Bilder</h2>
+        <AnimateIn><h2 class="section-heading">Bilder</h2></AnimateIn>
         <div class="gallery-grid">
-          {bio.gallery.filter((img: any) => img?.asset?.url).map((img: any) => (
+          {bio.gallery.filter((img: any) => img?.asset?.url).map((img: any, i: number) => (
+            <AnimateIn delay={Math.min(i * 80, 320)}>
             <figure class="gallery-item">
               <img src={urlFor(img).width(400).format('webp').url()} alt={img.alt ?? bio.name} loading="lazy" />
               {img.caption && <figcaption>{img.caption}</figcaption>}
             </figure>
+            </AnimateIn>
           ))}
         </div>
       </section>
@@ -110,6 +115,7 @@ const videoTypeLabel: Record<string, string> = {
 
     <!-- VIDEOER ─────────────────────────────────────────────────── -->
     {bio.videos && bio.videos.length > 0 && (
+      <AnimateIn>
       <section class="links-section">
         <h2 class="section-heading">Videoer</h2>
         <ul class="links-list">
@@ -127,10 +133,12 @@ const videoTypeLabel: Record<string, string> = {
           ))}
         </ul>
       </section>
+      </AnimateIn>
     )}
 
     <!-- ARKIVOPPTAK ─────────────────────────────────────────────── -->
     {bio.archiveClips && bio.archiveClips.length > 0 && (
+      <AnimateIn>
       <section class="links-section">
         <h2 class="section-heading">Arkivopptak</h2>
         <ul class="links-list">
@@ -145,10 +153,12 @@ const videoTypeLabel: Record<string, string> = {
           ))}
         </ul>
       </section>
+      </AnimateIn>
     )}
 
     <!-- LENKER ──────────────────────────────────────────────────── -->
     {bio.links && bio.links.length > 0 && (
+      <AnimateIn>
       <section class="links-section">
         <h2 class="section-heading">Lenker</h2>
         <ul class="links-list">
@@ -174,10 +184,12 @@ const videoTypeLabel: Record<string, string> = {
           ))}
         </ul>
       </section>
+      </AnimateIn>
     )}
 
     <!-- KILDER ──────────────────────────────────────────────────── -->
     {bio.sources && bio.sources.length > 0 && (
+      <AnimateIn>
       <section class="sources-section">
         <h2 class="section-heading">Kilder</h2>
         <ul class="sources-list">
@@ -204,6 +216,7 @@ const videoTypeLabel: Record<string, string> = {
           <a href="/kontakt">Bidra med korreksjoner</a>.
         </p>
       </section>
+      </AnimateIn>
     )}
 
     <!-- NAVIGASJON ──────────────────────────────────────────────── -->

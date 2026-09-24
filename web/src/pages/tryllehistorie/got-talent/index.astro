@@ -82,7 +82,7 @@ const total     = appearances.length
   </div>
 
   <main class="container appearances-grid" id="appearances-grid">
-    {appearances.map((a: any) => (
+    {appearances.map((a: any, i: number) => (
       <article
         class="appearance-card"
         data-show={a.show}
@@ -91,6 +91,9 @@ const total     = appearances.length
         data-year={a.year ?? 0}
         data-show={a.show}
         data-name={(a.magician?.artistName ?? a.magician?.name ?? '').toLowerCase()}
+        data-animate
+        data-direction="up"
+        style={`transition-delay:${Math.min(i * 80, 320)}ms`}
       >
         <a href={`/tryllehistorie/got-talent/${a.slug}`} class="card-link">
           <div class="card-img">

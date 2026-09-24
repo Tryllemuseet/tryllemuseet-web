@@ -215,7 +215,7 @@ export const legend = defineType({
             ],
           }),
           defineField({ name: 'textKids',   title: '⭐ Tekst (barn)',   type: 'text', rows: 3 }),
-          defineField({ name: 'textAdults', title: 'Tekst (voksne)',    type: 'text', rows: 5 }),
+          defineField({ name: 'textAdults', title: 'Tekst (voksne)',    type: 'array', of: richBlockContent() }),
           defineField({ name: 'activityPrompt', title: 'Aktivitet / «prøv selv»', type: 'string', description: 'Valgfritt – kort interaktiv oppfordring' }),
         ],
         preview: {

@@ -4,7 +4,7 @@ import BaseLayout from '../layouts/BaseLayout.astro'
 import AnimateIn from '../components/AnimateIn.astro'
 import PageHero from '../components/PageHero.astro'
 import Button from '../components/Button.astro'
-import { getOmOssPage, getAllPartners, getSiteConfig, portableTextToHtml } from '../lib/sanity'
+import { getOmOssPage, getAllPartners, getSiteConfig, portableTextToHtml, ptParagraph } from '../lib/sanity'
 
 const [p, partnerDocs, site] = await Promise.all([getOmOssPage(), getAllPartners(), getSiteConfig()])
 
@@ -14,10 +14,10 @@ const hero = p?.hero ?? {
   headingEm: 'for tryllekunstens historie',
   ingress: 'Tryllemuseet er dedikert til å bevare, formidle og feire tryllekunstens rike arv.',
 }
-const om       = p?.omMuseet   ?? { historieHeading: 'Vår historie', historieTekst: [], formalHeading: 'Formål', formalTekst: '' }
+const om       = p?.omMuseet   ?? { historieHeading: 'Vår historie', historieTekst: [], formalHeading: 'Formål', formalTekst: [] }
 const fakta    = p?.faktaboks  ?? { stiftet: '', organisasjonsform: '', tilknytning: '', adresse: '', orgnr: '' }
 const styret   = p?.styret     ?? { heading: 'Styret', ingress: '', medlemmer: [] }
-const medlem   = p?.medlemskap ?? { heading: 'Bli medlem', ingress: '', motivasjonsTekst: '', nivaaer: [], vippsInfo: '' }
+const medlem   = p?.medlemskap ?? { heading: 'Bli medlem', ingress: '', motivasjonsTekst: [], nivaaer: [], vippsInfo: '' }
 
 // Faktaboksens adresse kan overstyres per side; ellers gjelder Globale innstillinger
 const faktaAdresse = fakta.adresse || site.address?.replace(/\n/g, ', ')
@@ -25,7 +25,7 @@ const pressePartial = p?.presse ?? {}
 const presse   = {
   label: pressePartial.label ?? '',
   heading: pressePartial.heading ?? 'Pressekontakt',
-  tekst: pressePartial.tekst ?? '',
+  tekst: pressePartial.tekst ?? [],
   knappLabel: pressePartial.knappLabel ?? 'Send pressehenvendelse',
   knappHref: pressePartial.knappHref ?? '/kontakt',
   nedlastinger: pressePartial.nedlastinger ?? [
@@ -38,13 +38,18 @@ const frivilligPartial = p?.frivillig ?? {}
 const frivillig = {
   label:      frivilligPartial.label      ?? 'Frivillig',
   heading:    frivilligPartial.heading    ?? 'Hjelp oss holde museet åpent',
-  tekst:      frivilligPartial.tekst      ?? 'Vi trenger frivillige som kan ta museumsvakter, hjelpe til på arrangementer og bidra med registrering og kuratering av samlingen.',
+  tekst:      frivilligPartial.tekst      ?? [ptParagraph('Vi trenger frivillige som kan ta museumsvakter, hjelpe til på arrangementer og bidra med registrering og kuratering av samlingen.', 'frivillig-fallback')],
   knappLabel: frivilligPartial.knappLabel ?? 'Jeg vil bidra →',
   knappHref:  frivilligPartial.knappHref  ?? '/kontakt',
 }
 const partnere = p?.partnere   ?? { heading: 'Samarbeidspartnere', liste: [] }
 
 const historieHtml = portableTextToHtml(om.historieTekst)
+const formalHtml = portableTextToHtml(om.formalTekst)
+const motivasjonHtml = portableTextToHtml(medlem.motivasjonsTekst)
+const presseHtml = portableTextToHtml(presse.tekst)
+const frivilligHtml = portableTextToHtml(frivillig.tekst)
+const donationHtml = portableTextToHtml(site.donationText)
 ---
 
 <BaseLayout
@@ -72,7 +77,7 @@ const historieHtml = portableTextToHtml(om.historieTekst)
           : null
         }
         {om.formalHeading && <h2>{om.formalHeading}</h2>}
-        {om.formalTekst && <p>{om.formalTekst}</p>}
+        {formalHtml && <div class="prose" set:html={formalHtml} />}
       </div>
       </AnimateIn>
       <AnimateIn direction="right">
@@ -118,13 +123,9 @@ const historieHtml = portableTextToHtml(om.historieTekst)
       <h2 class="section-title">{medlem.heading}</h2>
       {medlem.ingress && <p class="section-ingress">{medlem.ingress}</p>}
 
-      {medlem.motivasjonsTekst && (
+      {motivasjonHtml && (
         <AnimateIn direction="up">
-        <div class="motivasjon-boks">
-          {medlem.motivasjonsTekst.split('\n\n').map(avsnitt => (
-            <p>{avsnitt}</p>
-          ))}
-        </div>
+        <div class="motivasjon-boks" set:html={motivasjonHtml} />
         </AnimateIn>
       )}
 
@@ -166,7 +167,7 @@ const historieHtml = portableTextToHtml(om.historieTekst)
         <div class="donasjon-tekst">
           <span class="etikett">Engangsstøtte</span>
           <h2>Gi en gave</h2>
-          <p>{site.donationText}</p>
+          {donationHtml && <Fragment set:html={donationHtml} />}
           {!site.donationUrl && site.vippsNumber && (
             <p class="donasjon-vipps">Vipps beløpet til <strong>{site.vippsNumber}</strong> — ingen medlemskapsforpliktelse.</p>
           )}
@@ -187,7 +188,7 @@ const historieHtml = portableTextToHtml(om.historieTekst)
         <div class="frivillig-tekst">
           <span class="etikett">{frivillig.label}</span>
           <h2>{frivillig.heading}</h2>
-          <p>{frivillig.tekst}</p>
+          {frivilligHtml && <div class="prose" set:html={frivilligHtml} />}
         </div>
       </AnimateIn>
       <AnimateIn direction="right">
@@ -203,7 +204,7 @@ const historieHtml = portableTextToHtml(om.historieTekst)
       <div>
         {presse.label && <span class="etikett">{presse.label}</span>}
         <h2>{presse.heading}</h2>
-        {presse.tekst.split('\n').map(linje => <p>{linje}</p>)}
+        {presseHtml && <Fragment set:html={presseHtml} />}
         <Button variant="secondary" href={presse.knappHref} class="presse-btn">{presse.knappLabel}</Button>
       </div>
       </AnimateIn>

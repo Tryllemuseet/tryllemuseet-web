@@ -2,6 +2,7 @@
 // src/pages/tryllehistorie/got-talent/[slug].astro
 import BaseLayout from '../../../layouts/BaseLayout.astro'
 import NarrateButton from '../../../components/NarrateButton.astro'
+import AnimateIn from '../../../components/AnimateIn.astro'
 import { getGotTalentPaths, getGotTalentAppearanceBySlug, getOtherTvAppearances, showLabels, showMeta, resultLabels, portableTextToHtml, portableTextToPlainText } from '../../../lib/sanity'
 
 export async function getStaticPaths() {
@@ -70,6 +71,7 @@ const magicianLinks = a.magician?.links ?? []
     <div class="detail-main">
 
       {description.length > 0 && (
+        <AnimateIn>
         <section class="detail-section">
           <div class="section-head">
             <h2 class="detail-heading">Om opptredenen</h2>
@@ -77,9 +79,11 @@ const magicianLinks = a.magician?.links ?? []
           </div>
           <div class="prose" set:html={portableTextToHtml(description)} />
         </section>
+        </AnimateIn>
       )}
 
       {embedUrl && (
+        <AnimateIn>
         <section class="detail-section">
           <h2 class="detail-heading">Se opptredenen</h2>
           <div class="video-wrap">
@@ -88,14 +92,18 @@ const magicianLinks = a.magician?.links ?? []
               allowfullscreen loading="lazy"></iframe>
           </div>
         </section>
+        </AnimateIn>
       )}
       {!embedUrl && a.videoUrl && (
+        <AnimateIn>
         <section class="detail-section">
           <a href={a.videoUrl} class="video-link" target="_blank" rel="noopener">▶ Se opptredenen ↗</a>
         </section>
+        </AnimateIn>
       )}
 
       {otherAppearances.length > 0 && (
+        <AnimateIn>
         <section class="detail-section">
           <h2 class="detail-heading">Andre opptredener av {a.magician?.artistName ?? a.magician?.name}</h2>
           <ul class="other-list">
@@ -117,9 +125,11 @@ const magicianLinks = a.magician?.links ?? []
             })}
           </ul>
         </section>
+        </AnimateIn>
       )}
     </div>
 
+    <AnimateIn direction="right">
     <aside class="detail-sidebar">
       {a.magician?.mainImage?.asset?.url && (
         <div class="sidebar-img-wrap">
@@ -163,6 +173,7 @@ const magicianLinks = a.magician?.links ?? []
         </a>
       </div>
     </aside>
+    </AnimateIn>
   </div>
 
   <div class="container back-nav">

@@ -3,13 +3,25 @@
 import BaseLayout from '../../layouts/BaseLayout.astro'
 import PageHero from '../../components/PageHero.astro'
 import ContentCard from '../../components/ContentCard.astro'
+import AnimateIn from '../../components/AnimateIn.astro'
 import { getAllTemaer, getUtstillingDeepDives, getUtstillingPage, urlFor } from '../../lib/sanity'
+
+const STAGGER_MS = 80
+const STAGGER_CAP_MS = 320
+const staggerDelay = (i: number) => Math.min(i * STAGGER_MS, STAGGER_CAP_MS)
 
 const [temaer, exhibitions, page] = await Promise.all([
   getAllTemaer(),
   getUtstillingDeepDives(),
   getUtstillingPage(),
 ])
+
+// Uferdig innhold («Kommer snart») er som hovedregel skjult i produksjon —
+// forhåndsvisning/staging viser fortsatt alt, til redaksjonell kontroll.
+// Et konkret kommende område kan likevel annonseres i produksjon ved å
+// eksplisitt slå på showAsComingSoon i Sanity.
+const isProdEnv = import.meta.env.PUBLIC_VERCEL_ENV === 'production'
+const visibleSeksjoner = page.seksjoner.filter(s => !isProdEnv || s.ready || s.showAsComingSoon)
 ---
 
 <BaseLayout
@@ -24,13 +36,14 @@ const [temaer, exhibitions, page] = await Promise.all([
   <!-- ── TEMAER ────────────────────────────────────────────────────── -->
   {temaer.length > 0 && (
     <section class="container tema-section">
-      <p class="section-label">{temaer.length > 1 ? 'Temaer' : 'Tema'}</p>
+      <AnimateIn><p class="section-label">{temaer.length > 1 ? 'Temaer' : 'Tema'}</p></AnimateIn>
       <div class="card-grid">
-        {temaer.map((t) => {
+        {temaer.map((t, i) => {
           const imgUrl = t.heroImage?.asset
             ? urlFor(t.heroImage).width(700).height(500).format('webp').fit('crop').url()
             : undefined
           return (
+            <AnimateIn delay={staggerDelay(i)}>
             <ContentCard
               imageUrl={imgUrl}
               imageAlt={t.heroImage?.alt ?? t.title}
@@ -40,6 +53,7 @@ const [temaer, exhibitions, page] = await Promise.all([
               href={`/utstillingen/${t.slug}`}
               ctaText={`${t.content.length} ${t.content.length === 1 ? 'opplevelse' : 'opplevelser'} →`}
             />
+            </AnimateIn>
           )
         })}
       </div>
@@ -49,13 +63,14 @@ const [temaer, exhibitions, page] = await Promise.all([
   <!-- ── AKTUELL UTSTILLING ────────────────────────────────────────── -->
   {exhibitions.length > 0 && (
     <section class="container aktuell-section">
-      <p class="section-label">{exhibitions.length > 1 ? 'Aktuelle utstillinger' : 'Aktuell utstilling'}</p>
+      <AnimateIn><p class="section-label">{exhibitions.length > 1 ? 'Aktuelle utstillinger' : 'Aktuell utstilling'}</p></AnimateIn>
       <div class="aktuell-stack">
-        {exhibitions.map((ex) => {
+        {exhibitions.map((ex, i) => {
           const imgUrl = ex.mainImage?.asset
             ? urlFor(ex.mainImage).width(900).height(600).format('webp').fit('crop').url()
             : undefined
           return (
+            <AnimateIn delay={staggerDelay(i)}>
             <ContentCard
               variant="dark"
               imageUrl={imgUrl}
@@ -67,6 +82,7 @@ const [temaer, exhibitions, page] = await Promise.all([
               href={`/utstillingen/${ex.slug}`}
               ctaText="Se utstillingen →"
             />
+            </AnimateIn>
           )
         })}
       </div>
@@ -77,12 +93,16 @@ const [temaer, exhibitions, page] = await Promise.all([
   <div class="container"><hr class="gold-rule section-rule" /></div>
 
   <!-- ── KOMMENDE SEKSJONER ────────────────────────────────────────── -->
+  {visibleSeksjoner.length > 0 && (
   <section class="container coming-section">
-    <p class="section-label">{page.kommerSnartSeksjon.label}</p>
-    <h2 class="display-title section-title">{page.kommerSnartSeksjon.heading}</h2>
+    <AnimateIn>
+      <p class="section-label">{page.kommerSnartSeksjon.label}</p>
+      <h2 class="display-title section-title">{page.kommerSnartSeksjon.heading}</h2>
+    </AnimateIn>
 
     <div class="card-grid">
-      {page.seksjoner.map((s) => (
+      {visibleSeksjoner.map((s, i) => (
+        <AnimateIn delay={staggerDelay(i)}>
         <ContentCard
           variant="compact"
           icon={s.icon}
@@ -93,9 +113,11 @@ const [temaer, exhibitions, page] = await Promise.all([
           ctaText={s.ready ? 'Utforsk →' : undefined}
           status={s.ready ? undefined : 'Kommer snart'}
         />
+        </AnimateIn>
       ))}
     </div>
   </section>
+  )}
 
   <div class="section-bottom-pad" />
 

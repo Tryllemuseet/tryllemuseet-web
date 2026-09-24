@@ -15,14 +15,17 @@ import { whoKnew }        from './whoKnew'
 import { book }           from './book'
 import { homepage }       from './homepage'
 import { barnPage }       from './barnPage'
+import { aktiviteterPage } from './aktiviteterPage'
 import { omOssPage }      from './omOssPage'
 import { besokPage }           from './besokPage'
 import { kontaktPage }        from './kontaktPage'
 import { tryllehistoriePage } from './tryllehistoriePage'
+import { hvemErHvemPage } from './hvemErHvemPage'
 import { ressurserPage }      from './ressurserPage'
 import { utstillingPage }    from './utstillingPage'
 import { personvernPage } from './personvernPage'
 import { tryllebutikkenPage } from './tryllebutikkenPage'
+import { kursPage }           from './kursPage'
 import { godeRadConfig }      from './godeRadConfig'
 import { partner }        from './partner'
 import artifact           from './artifact'
@@ -43,6 +46,8 @@ import { trick }           from './trick'
 import { comicStory }      from './comicStory'
 import { worldRecordTrick } from './worldRecordTrick'
 import { competitionResult } from './competitionResult'
+import { organizationRole } from './organizationRole'
+import { historicalSection } from './historicalSection'
 import { story }           from './story'
 
 export const schemaTypes = [
@@ -52,11 +57,14 @@ export const schemaTypes = [
   utstillingPage,
   tryllebutikkenPage,
   barnPage,
+  aktiviteterPage,
   tryllehistoriePage,
+  hvemErHvemPage,
   ressurserPage,
   omOssPage,
   kontaktPage,
   personvernPage,
+  kursPage,
 
   // Dokumenttyper — Utstillingen
   tema,
@@ -91,6 +99,8 @@ export const schemaTypes = [
   historiskeKlippNb,
   worldRecordTrick,
   competitionResult,
+  organizationRole,
+  historicalSection,
   book,
   source,
 

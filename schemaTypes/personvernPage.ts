@@ -1,4 +1,5 @@
 import { defineField, defineType } from 'sanity'
+import { richBlockContent } from './richBlockContent'
 
 export const personvernPage = defineType({
   name: 'personvernPage',
@@ -43,7 +44,7 @@ export const personvernPage = defineType({
             name: 'body',
             title: 'Innhold',
             type: 'array',
-            of: [{ type: 'block' }],
+            of: richBlockContent(),
           }),
         ],
         preview: { select: { title: 'heading' } },

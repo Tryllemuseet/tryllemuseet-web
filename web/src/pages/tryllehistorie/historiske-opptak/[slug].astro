@@ -2,6 +2,7 @@
 // src/pages/tryllehistorie/historiske-opptak/[slug].astro
 import BaseLayout from '../../../layouts/BaseLayout.astro'
 import NarrateButton from '../../../components/NarrateButton.astro'
+import AnimateIn from '../../../components/AnimateIn.astro'
 import { getHistoricalClipPaths, getHistoricalClipBySlug, getOtherHistoricalClips, portableTextToHtml, portableTextToPlainText } from '../../../lib/sanity'
 
 export async function getStaticPaths() {
@@ -68,6 +69,7 @@ const magicianLinks = c.magician?.links ?? []
     <div class="detail-main">
 
       {description.length > 0 && (
+        <AnimateIn>
         <section class="detail-section">
           <div class="section-head">
             <h2 class="detail-heading">Om opptaket</h2>
@@ -75,9 +77,11 @@ const magicianLinks = c.magician?.links ?? []
           </div>
           <div class="prose" set:html={portableTextToHtml(description)} />
         </section>
+        </AnimateIn>
       )}
 
       {embedUrl && (
+        <AnimateIn>
         <section class="detail-section">
           <h2 class="detail-heading">Se opptaket</h2>
           <div class="video-wrap">
@@ -89,9 +93,11 @@ const magicianLinks = c.magician?.links ?? []
             <p class="video-caption">{c.featuredImage.caption}</p>
           )}
         </section>
+        </AnimateIn>
       )}
 
       {embedUrlAlt && (
+        <AnimateIn>
         <section class="detail-section">
           <h2 class="detail-heading">Alternativt opptak</h2>
           <div class="video-wrap">
@@ -100,15 +106,19 @@ const magicianLinks = c.magician?.links ?? []
               allowfullscreen loading="lazy"></iframe>
           </div>
         </section>
+        </AnimateIn>
       )}
 
       {!embedUrl && c.videoUrl && (
+        <AnimateIn>
         <section class="detail-section">
           <a href={c.videoUrl} class="video-link" target="_blank" rel="noopener">▶ Se opptaket ↗</a>
         </section>
+        </AnimateIn>
       )}
 
       {c.source && (
+        <AnimateIn>
         <section class="detail-section">
           <h2 class="detail-heading">Kilde</h2>
           <p class="source-text">
@@ -117,9 +127,11 @@ const magicianLinks = c.magician?.links ?? []
             ) : c.source}
           </p>
         </section>
+        </AnimateIn>
       )}
 
       {otherClips.length > 0 && (
+        <AnimateIn>
         <section class="detail-section">
           <h2 class="detail-heading">
             Andre opptak av {c.magician?.artistName ?? c.magician?.name}
@@ -136,9 +148,11 @@ const magicianLinks = c.magician?.links ?? []
             ))}
           </ul>
         </section>
+        </AnimateIn>
       )}
     </div>
 
+    <AnimateIn direction="right">
     <aside class="detail-sidebar">
       {c.magician && (
         <>
@@ -185,6 +199,7 @@ const magicianLinks = c.magician?.links ?? []
         </div>
       )}
     </aside>
+    </AnimateIn>
   </div>
 
   <div class="container back-nav">

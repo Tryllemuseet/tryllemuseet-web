@@ -5,9 +5,12 @@ import AnimateIn from '../components/AnimateIn.astro'
 import PageHero from '../components/PageHero.astro'
 import InfoCard from '../components/InfoCard.astro'
 import Button from '../components/Button.astro'
-import { getSiteConfig, getBesokPage } from '../lib/sanity'
+import { getSiteConfig, getBesokPage, portableTextToHtml } from '../lib/sanity'
 
 const [site, page] = await Promise.all([getSiteConfig(), getBesokPage()])
+
+const medlemskapHtml = portableTextToHtml(page.medlemskapSeksjon.tekst)
+const forestillingerHtml = portableTextToHtml(page.forestillingerSeksjon.tekst)
 
 // Display handle derived from the canonical URL in siteConfig, e.g. "facebook.com/tryllemuseet"
 const socialHandle = (url: string) => url.replace(/^https?:\/\/(www\.)?/, '').replace(/\/$/, '')
@@ -94,13 +97,13 @@ const socialHandle = (url: string) => url.replace(/^https?:\/\/(www\.)?/, '').re
         <div class="member-strip-text">
           <p class="section-label">{page.medlemskapSeksjon.label}</p>
           <h2 class="display-title member-strip-heading">{page.medlemskapSeksjon.heading}</h2>
-          <p>{page.medlemskapSeksjon.tekst}</p>
+          <Fragment set:html={medlemskapHtml} />
         </div>
         <Button variant="membership" href={site.membershipUrl}>Bli medlem nå →</Button>
       </section>
 
       <InfoCard icon="🎩" title={page.forestillingerSeksjon.heading}>
-        <p class="info-text">{page.forestillingerSeksjon.tekst}</p>
+        <div class="info-text" set:html={forestillingerHtml} />
         <Button variant="outline" href="/aktiviteter">Se kommende forestillinger →</Button>
       </InfoCard>
 

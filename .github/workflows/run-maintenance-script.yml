@@ -1,0 +1,42 @@
+name: Run maintenance script
+
+# Manual, one-off runner for scripts/*.mjs maintenance scripts (dedupe,
+# migrations, patches) against Sanity — same SANITY_TOKEN the scheduled sync
+# jobs use, so ad-hoc fixes don't need a token pasted anywhere by hand.
+on:
+  workflow_dispatch:
+    inputs:
+      script_path:
+        description: 'Script to run, relative to scripts/ (e.g. list-foolus-duplicates.mjs)'
+        required: true
+        type: string
+      args:
+        description: 'Extra CLI args (e.g. --dry-run)'
+        required: false
+        default: ''
+        type: string
+
+jobs:
+  run:
+    name: node scripts/${{ inputs.script_path }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run script
+        env:
+          SANITY_TOKEN: ${{ secrets.SANITY_TOKEN }}
+          SANITY_DATASET: production
+        run: node "scripts/${{ inputs.script_path }}" ${{ inputs.args }}

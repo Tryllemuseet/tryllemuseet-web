@@ -1,6 +1,7 @@
 ---
 // src/pages/ressurser/index.astro
 import BaseLayout from '../../layouts/BaseLayout.astro'
+import AnimateIn from '../../components/AnimateIn.astro'
 import { getRessurserPage } from '../../lib/sanity'
 
 const page = await getRessurserPage()
@@ -26,11 +27,12 @@ const kommerSnart   = page.ressurser.filter(r =>  r.soon)
 
     {tilgjengelige.length > 0 && (
       <section class="resources-section">
-        <h2 class="section-heading">Tilgjengelig nå</h2>
+        <AnimateIn><h2 class="section-heading">Tilgjengelig nå</h2></AnimateIn>
         <div class="resources-grid">
-          {tilgjengelige.map(r => {
+          {tilgjengelige.map((r, i) => {
             const ekstern = r.href.startsWith('http')
             return (
+              <AnimateIn delay={Math.min(i * 80, 320)}>
               <a
                 href={r.href}
                 class="resource-card resource-card--active"
@@ -44,6 +46,7 @@ const kommerSnart   = page.ressurser.filter(r =>  r.soon)
                 </div>
                 <span class="resource-arrow" aria-hidden="true">→</span>
               </a>
+              </AnimateIn>
             )
           })}
         </div>
@@ -52,9 +55,10 @@ const kommerSnart   = page.ressurser.filter(r =>  r.soon)
 
     {kommerSnart.length > 0 && (
       <section class="resources-section">
-        <h2 class="section-heading">Kommer snart</h2>
+        <AnimateIn><h2 class="section-heading">Kommer snart</h2></AnimateIn>
         <div class="resources-grid">
-          {kommerSnart.map(r => (
+          {kommerSnart.map((r, i) => (
+            <AnimateIn delay={Math.min(i * 80, 320)}>
             <div class="resource-card resource-card--soon">
               <div class="resource-icon" aria-hidden="true">{r.emoji}</div>
               <div class="resource-body">
@@ -63,6 +67,7 @@ const kommerSnart   = page.ressurser.filter(r =>  r.soon)
               </div>
               <span class="soon-badge">Snart</span>
             </div>
+            </AnimateIn>
           ))}
         </div>
       </section>

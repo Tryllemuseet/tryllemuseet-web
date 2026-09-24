@@ -39,6 +39,7 @@ Denne bruksanvisningen dekker de oppgavene en redaktør utfører til daglig.
 19. [Tryllemuseet i media](#19-tryllemuseet-i-media)
 20. [Trylleforeninger](#20-trylleforeninger)
 21. [Det trettende kabinett (spillet)](#21-det-trettende-kabinett-spillet)
+22. [Automatiske jobber — hva kjører når](#22-automatiske-jobber--hva-kjører-når)
 
 > **Veiledning til kapittel 12 (Infoskjerm):** Seksjonene 12a–12c dekker de tre dokumenttypene som styrer skjermen. Start med 12a hvis du er ny, og legg til videoer via 12c.
 
@@ -71,6 +72,22 @@ Sanity skiller mellom *utkast* og *publisert innhold*:
 
 > **Viktig:** Det er kun publiserte dokumenter som vises på nettsiden. Husk å trykke «Publiser» når du er ferdig.
 
+> ⚠️ **Fallgruve — et gammelt, glemt utkast kan se ut som om innholdet er
+> borte (opplevd 2026-09):** Studio viser deg **utkastet** når du åpner et
+> dokument, ikke den publiserte versjonen, hvis det finnes et upublisert
+> utkast liggende — selv om den publiserte siden fortsatt viser innhold på
+> nettsiden. Ligger det et gammelt, forlatt utkast (f.eks. fra en økt som
+> aldri ble fullført eller publisert), kan det se **helt tomt** ut selv om
+> det egentlig er fullt av innhold ute på nettsiden. Fyller du da inn nytt
+> innhold og trykker **Publiser**, overskriver du hele den gode publiserte
+> versjonen med det (tomme) utkastet pluss det du nettopp la til.
+>
+> **Ser et dokument tomt ut der du vet det pleier å ha innhold** — ikke
+> begynn å fylle inn på nytt. Se øverst i dokumentet om det står at det er
+> ulagrede/upubliserte endringer, og trykk **«Forkast endringer»** først for
+> å gå tilbake til sist publiserte versjon. Fyll heller inn de nye
+> endringene dine i den versjonen, og publiser derfra.
+
 ### Slette et dokument
 
 Åpne dokumentet → klikk de tre prikkene (…) øverst til høyre → velg «Delete». Bruk sletting med omhu — se [Skjule innhold](#14-skjule-innhold-uten-å-slette) for et reversibelt alternativ.
@@ -101,8 +118,12 @@ Dette er ett enkelt dokument som styrer informasjon som går igjen på hele nett
 | Åpningstider (tillegg) | Tekst etter kortteksten, f.eks. «og etter avtale» |
 | Bli medlem — URL | Alle «Bli medlem»-knapper på hele nettsiden |
 | Vipps-nummer | Vises i Tryllebutikken og i Bli medlem-seksjonen på Om oss |
+| Gi en gave — URL | Lenke til museets betalings-/donasjonsløsning. Stå tom for å vise Vipps-nummeret i stedet |
+| Gi en gave — knappetekst | Teksten på donasjonsknappen på forsiden og Om oss |
+| Gi en gave — tekst | Rik tekst. Vises på forsiden og Om oss, over donasjonsknappen |
 | Facebook / Instagram / YouTube | Lenker i footer |
 | Standard meta-beskrivelse | Google-beskrivelse for alle sider som ikke har egen |
+| «Lær et triks» er aktiv | Av/på-bryter (standard: av). Se [4b. Triks — Lær et triks](#4b-triks--lær-et-triks) |
 
 **Etter endring:** Publiser dokumentet. Nettsiden er statisk generert og bygges på nytt automatisk hver natt — endringene vises derfor på nettsiden senest neste morgen. Haster det, kan Trond (eller den som har GitHub-tilgang) kjøre **Daily rebuild** manuelt i GitHub Actions, så er endringen ute på noen minutter. Infoskjermen er unntaket: den henter innhold direkte og oppdaterer seg selv innen 5 minutter.
 
@@ -145,6 +166,15 @@ Passerte arrangementer vises ikke automatisk, men de blir liggende i lista. Du k
 **Meny:** Triks (Lær et triks) — under Aktiviteter
 
 Enkle trylletriks barn kan øve på hjemme. Vises på `/barn/laer-et-triks` (oversikt) og som egen side per triks.
+
+> **Ikke lansert ennå (2026-08):** Funksjonen styres av bryteren **«Lær et
+> triks» er aktiv** i **Globale innstillinger** (standard: av). Så lenge den
+> er av, er teaseren på `/barn` skjult og oversikts-/triks-sidene får
+> `noindex` (fortsatt tilgjengelige på egen URL, bare ikke markedsført eller
+> søkbare). Innhold og «Se også»-lenker til triks-sider fra andre
+> dokumenter (f.eks. utstillingssiden om Houdini) vises heller ikke før
+> bryteren skrus på. Slå den på når funksjonen er klar for lansering —
+> ingen kodeendring trengs, bare en ny bygging.
 
 | Felt | Påkrevd | Merknad |
 |---|---|---|
@@ -375,7 +405,7 @@ Korte «visste du at»-portretter av kjente personer med et overraskende forhold
 | URL-slug | Ja | Genereres fra navnet |
 | Kategori | Ja | Vitenskap / Politikk & samfunn / Sport / Kultur & underholdning |
 | Krok (korttekst) | Ja | Kort «visste du at»-tekst til spotlight-kortet, 2–3 setninger |
-| Brødtekst | Nei | Valgfri, lengre artikkeltekst til egen side. Kan stå tom hvis «Koblet til» peker på en side som allerede har historien |
+| Brødtekst | Nei | Rik tekst. Valgfri, lengre artikkeltekst til egen side. Kan stå tom hvis «Koblet til» peker på en side som allerede har historien |
 | Bilde | Nei | |
 | Koblet til | Nei | Valgfri kobling til en Fordypning eller en biografi (Hvem er hvem) — lenkes til fra egen side som «Les hele historien» |
 | Kilder | Nei | |
@@ -491,7 +521,7 @@ inndelt artikkel.
 
 ## 7b. Magic Club — kvelder
 
-**Meny:** Magic Club — kveld ⚠️ *se merknad om menyplassering nedenfor*
+**Meny:** Magic Club — kveld (egen seksjon «Magic Club» i venstremenyen)
 
 Dokumenterer enkeltkvelder av **Magic Club**, Davidos faste magikerkveld i Oslo (2015–). Vises på `/tryllehistorie/fordypninger/magic-club` (oversikt) og som egen side per kveld. Selve samleartikkelen om konseptet er et vanlig **Fordypning**-dokument (se [7. Fordypninger](#7-fordypninger)) — «Magic Club — kveld» brukes kun til de enkelte kveldene.
 
@@ -505,10 +535,8 @@ Dokumenterer enkeltkvelder av **Magic Club**, Davidos faste magikerkveld i Oslo 
 | Gjestestjerner | Nei | Internasjonale eller spesielle gjester denne kvelden — navn + kort beskrivelse, f.eks. «Livin' Legend» |
 | Norsk lineup | Nei | Navn, med valgfri kobling til personens biografi hvis den finnes i Hvem er hvem |
 | Øvrige innslag | Nei | F.eks. dansere eller musikalske innslag — kategori + navn |
-| Notater | Nei | Hva gjorde akkurat denne kvelden spesiell, hvis kjent |
+| Notater | Nei | Rik tekst — hva gjorde akkurat denne kvelden spesiell, hvis kjent |
 | Kilde-URL | Nei | F.eks. lenke til Facebook-posten informasjonen er hentet fra |
-
-> ⚠️ **Manglende menypunkt:** Denne dokumenttypen finnes i Studio, men er (ennå) ikke lagt inn i venstremenyens mappestruktur — trykk **Ctrl+K** (Cmd+K på Mac) og søk etter «Magic Club», eller bruk **+ Nytt dokument** øverst i Studio, for å opprette eller finne en kveld. Si fra til Trond hvis du vil ha den lagt til som egen menylenke under Fordypninger.
 
 ---
 
@@ -534,7 +562,7 @@ Dokumenterer norske magikeres opptredener på Got Talent, Fool Us og lignende pr
 |---|---|
 | Sesong / Episode | Nummer |
 | Episodetittel | F.eks. for Fool Us-episoder |
-| Beskrivelse | Hva magikeren gjorde på scenen. Ingen avsløring av metoder |
+| Beskrivelse | Rik tekst. Hva magikeren gjorde på scenen. Ingen avsløring av metoder |
 | Bilde | Last opp stillbilde fra opptredenen |
 | Videolenke | Direktelenke til YouTube eller NRK |
 | Redaksjonell merknad | Intern merknad — vises ikke på nettsiden |
@@ -557,7 +585,7 @@ Bibliotekskatalogen over bøker om tryllekunst. Vises på `/ressurser/bibliotek`
 | Undertittel | Valgfri |
 | Utgivelsesår | Tall. Bruk «Årsnotat» for komplekse årstall |
 | Forfattere | Legg til én og én. Koble til person i HEH-registeret hvis mulig |
-| Beskrivelse | Norsk, kuratert beskrivelse. Legg gjerne til språknotat til slutt |
+| Beskrivelse | Rik tekst. Norsk, kuratert beskrivelse. Legg gjerne til språknotat til slutt. *(Vises foreløpig ikke på nettsiden — kun i Studio)* |
 | Språk | Boken er skrevet på dette språket |
 | Emneord | Velg fra listen |
 | Boktype | Norsk / Internasjonal / Public domain |
@@ -657,9 +685,9 @@ Velg mellom **Museets egen samling** og **Lån fra privatperson / institusjon**.
 | Materiale | F.eks. «Tre, silke, metall» |
 | Dimensjoner | F.eks. «30 × 20 × 15 cm» |
 | Tilstand | Utmerket / God / Middels / Dårlig / Restaurert |
-| Proveniens / historikk | Hvem eide gjenstanden, dokumentasjon |
+| Proveniens / historikk | Rik tekst — hvem eide gjenstanden, dokumentasjon |
 | Plassering i museet | F.eks. «Sal 2, monter A» |
-| Utfyllende tekst | Lengre redaksjonell tekst |
+| Utfyllende tekst | Rik tekst — lengre redaksjonell tekst, med lenker og bilder ved behov |
 | Fremhevet | Vis på portalsiden og forsiden |
 
 ---
@@ -829,41 +857,44 @@ Forsiden er bygget opp av flere uavhengige seksjoner i samme dokument. Du
 trenger bare åpne dette ene dokumentet, rulle ned til riktig seksjon, endre
 og publisere.
 
-Feltene er merket ⚠️ i Studio når de ikke lenger har noen synlig effekt på
-nettsiden — se merknaden etter tabellen.
-
 | Seksjon | Felt | Merknad |
 |---|---|---|
-| **Hero-bannere (karusell i toppen)** | Tekstlinje 1/2, Knapp — tekst, Lenke, Bilde, Video | Det faktiske hero-banneret øverst på forsiden. Maks 6 kan legges inn, men i dag vises kun det **første** banneret i lista (ikke en roterende karusell ennå) |
+| **Hero-identitet (fast linje over karusellen)** | Museumsnavn, Stedsbeskrivelse, Knapp — tekst, Knapp — URL | Alltid synlig, smal linje øverst på forsiden — uavhengig av hvilken karusell-slide som vises. Skal umiddelbart gjøre klart at Tryllemuseet er et fysisk museum man kan besøke |
+| **Hero-bannere (karusell i toppen)** | Kicker-tekst, Tekstlinje 1/2, Knapp — tekst, Lenke, Bilde, Video | Den roterende karusellen øverst på forsiden (bytter banner hvert 7. sekund, med piler/prikker for manuell navigering). Maks 6 kan legges inn. **Kicker-tekst** er valgfri — en liten linje over tekstlinje 1, f.eks. «Høstens hovedutstilling»; bruk sparsomt, kun på banneret som skal fremheves ekstra |
 | **Dette kan du oppleve (4 kort)** | Ikon, Bilde, Kicker-tekst, Tittel, Beskrivelse, Lenke, Knappetekst | De fire kortene rett under arrangement-kalenderen. Maks 4. Se merknad under |
-| ⚠️ **Hero** | Overskrift, Kursiv del, Ingress, Knapp 1/2, Bakgrunnsbilde | Vises ikke — erstattet av Hero-bannere over |
-| ⚠️ **Info-badges** | Tekst (maks 3) | Vises ikke — hørte til det gamle Hero-oppsettet |
-| **Fremhevet innhold** | ⚠️ Tidsperiode-label, ⚠️ Overskrift | Vises ikke — seksjonsoverskriften «Historie og aktuelt» er fast i koden |
-| | Håndplukket innhold (maks 5) | Fungerer som normalt — se under |
-| **Barn & unge-seksjon** | Overskrift, Ingress | Brukes som tittel/beskrivelse på «Barn & unge»-kortet i «Dette kan du oppleve», når det kortet ikke er overstyrt der |
-| | ⚠️ Aktiviteter/features, ⚠️ Sitater | Vises ikke |
-| **Medlemskap-seksjon** | Overskrift, Tekst, Knapp — tekst | Knappens URL hentes alltid fra **Globale innstillinger** → Bli medlem-lenke, ikke herfra |
-| ⚠️ **Om museet-seksjon** | Overskrift, Tekst, Sitat, Sitatets kilde | Vises ikke — forsiden har ingen egen «Om museet»-seksjon i dagens design |
+| **Fremhevet innhold** | Håndplukket innhold (maks 5) | Se merknad under |
+| **Barn & unge-seksjon** | Overskrift, Ingress | Brukes som tittel/beskrivelse på «Barn & unge»-kortet i «Dette kan du oppleve», når det kortet ikke er overstyrt der (dvs. når «Dette kan du oppleve» er tomt og standardutvalget vises) |
+| **Medlemskap-seksjon** | Overskrift, Tekst (rik tekst), Knapp — tekst | Knappens URL hentes alltid fra **Globale innstillinger** → Bli medlem-lenke, ikke herfra |
 | **Kurs-seksjon** | Overskrift, Ingress, Knapp — tekst og URL | Brukes som tittel/beskrivelse/lenke på «Kurs»-kortet i «Dette kan du oppleve», når det kortet ikke er overstyrt der |
-| | ⚠️ Detaljer, ⚠️ Pris, ⚠️ Prislabel, ⚠️ Fondsbadge | Vises ikke |
-| ⚠️ **Kurssitat** | Sitatekst, Kilde | Vises ikke |
 
-> **«Dette kan du oppleve» — nytt felt (2026-08):** De fire kortene var
-> tidligere fast kodet og ikke redigerbare i det hele tatt. Nå kan du legge
-> inn egne kort her (opptil 4 — ikon **eller** bilde, kicker-tekst, tittel,
-> beskrivelse, lenke og knappetekst; pilen «→» legges til automatisk bak
-> knappeteksten). **La feltet stå helt tomt** for å bruke det innebygde
-> standardutvalget (Houdini/utstillingen, Barn & unge, Kurs, Magiens
-> historie) — fyller du inn ett eller flere kort, overstyrer det **hele**
-> seksjonen, ikke bare de kortene du la til.
+> **«Dette kan du oppleve» styrer alt-eller-ingenting:** De fire kortene var
+> tidligere fast kodet og ikke redigerbare i det hele tatt (2026-08: gjort
+> redigerbart). Legg inn egne kort her (opptil 4 — ikon **eller** bilde,
+> kicker-tekst, tittel, beskrivelse, lenke og knappetekst; pilen «→» legges
+> til automatisk bak knappeteksten). **La feltet stå helt tomt** for å bruke
+> det innebygde standardutvalget på 4 kort (Houdini/utstillingen, Barn &
+> unge, Kurs, Magiens historie) — fyller du inn ett eller flere kort,
+> overstyrer det **hele** seksjonen, ikke bare de kortene du la til. Vil du
+> f.eks. fjerne kun Barn & unge-kortet uten å endre de andre tre, må du
+> altså legge inn alle tre du vil beholde her, ikke bare la stå tomt.
+>
+> **Per 2026-09** er feltet fylt ut med nettopp disse tre kortene
+> (Houdini/utstillingen, Aktuelt nå/Kurs, Magiens historie) — Barn &
+> unge-kortet er bevisst utelatt. Skal Barn & unge-kortet tilbake, legg det
+> til som et fjerde element her (bruk gjerne teksten fra Barn &
+> unge-seksjonen over som utgangspunkt); tøm hele feltet igjen for å gå
+> tilbake til det innebygde 4-korts-standardutvalget.
 
-> **Om de ⚠️-merkede feltene:** Forsiden har vært gjennom en redesign, og
-> flere felt fra den forrige versjonen henger fortsatt igjen i skjemaet uten
-> å bli lest av den ferdig bygde siden lenger. De er beholdt (ikke slettet)
-> i tilfelle innholdet skal gjenbrukes, men ikke bruk tid på å redigere dem
-> — de har ingen synlig effekt akkurat nå. Studio-tittelen på hvert felt
-> starter med ⚠️ og feltbeskrivelsen sier «vises ikke på nettsiden» slik at
-> dette er tydelig direkte i redigeringsgrensesnittet, ikke bare her.
+> **Ryddet opp (2026-09):** Forsiden gikk gjennom en redesign en stund
+> tilbake, og flere felt fra den forrige versjonen (bl.a. et gammelt
+> «Hero»-oppsett, info-badges, en «Om museet»-seksjon og et kurssitat) lå
+> igjen i skjemaet lenge etter at den ferdig bygde siden sluttet å lese dem
+> — merket med ⚠️ og «vises ikke på nettsiden» i Studio. Disse er nå fjernet
+> både fra skjemaet og fra det publiserte Forside-dokumentet. Skulle du
+> likevel en dag se en advarsel i Studio om «Unknown fields found» — f.eks.
+> etter en fremtidig skjemaopprydning — er det ufarlig: det betyr bare at
+> dokumentet har gamle feltverdier liggende som ikke lenger er en del av
+> skjemaet; de vises ikke på nettsiden og gjør ingen skade.
 
 > **Oppdatert 2026-07 — «Håndplukket innhold» er ikke lenger låst til
 > Gullalderen:** Feltet lar deg nå velge fritt blant **Fordypninger**
@@ -876,10 +907,11 @@ nettsiden — se merknaden etter tabellen.
 > For en avisartikkel lenker kortet direkte inn i lese-modalen på
 > `/tryllehistorie/historiske-artikler` — ingen egen side trengs for det.
 
-> **Krever ny deploy:** Forsiden er en statisk generert side. Endringer du
-> publiserer i Sanity vises ikke på tryllemuseet.no før neste bygging (enten
-> den daglige kl. 05:30, eller en manuell «Daily rebuild» trigget av Trond via
-> GitHub Actions). Det er normalt — ikke et tegn på at noe gikk galt.
+> **Krever ny deploy — kun i produksjon:** Forsiden er en statisk generert
+> side. Endringer du publiserer i Sanity vises nesten momentant på
+> test.tryllemuseet.no, men ikke på tryllemuseet.no før neste nattlige
+> bygging (kl. 05:30) eller en manuell trigger via GitHub Actions. Det er
+> normalt — ikke et tegn på at noe gikk galt. Se §22 for detaljer.
 
 ---
 
@@ -951,6 +983,21 @@ Slå av «Vis på nettsted» for å fjerne dokumentet fra nettsiden uten å slet
 - Et arrangement er avlyst, men du vil beholde informasjonen.
 - En biografi er midlertidig under revisjon.
 - En partner-avtale er satt på pause.
+
+### Skjule en hel funksjon (feature-flagg)
+
+Noen få større, ferdigbygde funksjoner har en egen av/på-bryter i stedet for
+å styres dokument for dokument — brukes når hele funksjonen (ikke bare ett
+dokument) skal holdes utenfor produksjon til den er klar for lansering:
+
+| Bryter | Ligger i | Styrer |
+|---|---|---|
+| «Lær et triks» er aktiv | Globale innstillinger | Se [4b](#4b-triks--lær-et-triks) |
+| Spillet er aktivt | Kabinettet: Innstillinger | Se [21. Det trettende kabinett](#21-det-trettende-kabinett-spillet) |
+| Quiz er aktiv | Quiz: Innstillinger | Se [16. Tryllequiz](#16-tryllequiz) |
+
+Innhold, sider og skjema ligger urørt bak bryteren — å skru den på krever
+ingen kodeendring, bare en ny bygging av nettsiden.
 
 ---
 
@@ -1172,7 +1219,7 @@ Dokumentet er delt i faner. Jobb i denne rekkefølgen:
 | Tittel (redaksjonell) | Påkrevd. Deres egen tittel — kan avvike fra originalen |
 | URL-slug | Genereres fra tittelen |
 | Ingress / teaser | Påkrevd. Maks ~200 tegn, vises i kortlisten |
-| Omskrevet artikkeltekst | **Deres egen frie gjengivelse i egne ord.** Dette — ikke originalteksten — er det besøkende leser |
+| Omskrevet artikkeltekst | Rik tekst. **Deres egen frie gjengivelse i egne ord.** Dette — ikke originalteksten — er det besøkende leser |
 | Museets kommentar | Kort kontekst som vises i arkivet |
 | Omtalte tryllekunstnere | Koble til personer i Hvem er hvem — lenkes automatisk til profilen |
 
@@ -1368,6 +1415,37 @@ Rett teksten i disse to dokumentene (bytt til «begerspillet»), eller slå av
 
 Slå på **Vis engelsk språkvalg i spillet** samme sted når det engelske
 innholdet er klart for besøkende.
+
+---
+
+## 22. Automatiske jobber — hva kjører når
+
+Nettsiden er statisk generert (Astro) — den bygges på nytt fra Sanity-
+innholdet, ikke ved hvert besøk. **Test og produksjon oppfører seg nå
+bevisst ulikt (fra september 2026):**
+
+- **test.tryllemuseet.no** oppdaterer seg **så godt som momentant** — både
+  når en redaktør publiserer noe i Sanity, og når en kodeendring merges.
+  Bruk test-miljøet hvis du vil se resultatet av en publisering med en
+  gang.
+- **tryllemuseet.no (produksjon)** oppdaterer seg **kun ved den nattlige
+  byggingen**, uansett om det er en Sanity-publisering eller en
+  kodeendring som venter. Dette er bevisst — produksjon skal ikke endre
+  seg midt på dagen uten et bevisst valg om det.
+
+| Jobb | Når | Hva den gjør |
+|---|---|---|
+| **Nightly production rebuild** | Hver natt kl. 05:30 UTC (07:30 norsk sommertid / 06:30 vintertid) | Bygger nettsiden på nytt og publiserer **kun til produksjon** (tryllemuseet.no). Dette er jobben som får fremtidsdaterte avisartikler (§17), 70-årsregelen for faksimiler, og «Vis på nettsted»-endringer til faktisk å slå inn i produksjon — og den eneste måten kodeendringer eller Sanity-innhold når tryllemuseet.no på. |
+| **Sync YouTube clips** | Hver natt kl. 06:00 UTC (08:00 sommertid / 07:00 vintertid) — 30 minutter etter Nightly production rebuild | Henter nye videoer fra YouTube-kanalene registrert under **YouTube-kilde (synk)** (§18) og oppretter/oppdaterer «Historisk TV-opptak»-dokumenter automatisk. Disse dukker opp på test.tryllemuseet.no nesten momentant (se over), men på tryllemuseet.no først ved *påfølgende* natts bygging, siden denne jobben kjører etter produksjonsbyggingen. |
+| **Deploy Sanity Studio** | Automatisk, hver gang en endring i skjemaet (`schemaTypes/`) havner på `main` | Publiserer nytt skjema til `sanity.studio` — dette er grunnen til at en ny felttype eller et nytt dokument dukker opp i Studio-grensesnittet uten at noen logger seg inn og trykker «Deploy» manuelt. |
+| **Schema conventions** *(kun for utviklere)* | Ved hver pull request som endrer `schemaTypes/` | Sjekker at nye dokumenttyper har «Vis på nettsted» og at lange tekstfelt støtter riktekst, før koden i det hele tatt kan slås sammen. Berører ikke redaktørarbeid direkte, men er grunnen til at disse to konvensjonene ikke lenger glipper stille. |
+| **Seed hero banners** / **Seed stories** *(engangsjobber)* | Kun hvis noen endrer selve seed-skriptet i koden | Fylte inn innhold automatisk ved lansering (forsidens karusell og de tre første «Liten historie»-artiklene). Skriver aldri over noe som er redigert i Studio siden — i praksis dormant nå. |
+
+**Trenger du en produksjons-oppdatering *nå*, uten å vente til neste
+natt?** En teknisk ansvarlig kan trigge **Nightly production rebuild**
+manuelt fra GitHub → Actions → Nightly production rebuild → Run workflow.
+Det er den samme jobben som kjører hver natt, bare på forespørsel. (Test
+trenger aldri dette — den er alltid oppdatert i praksis.)
 
 ---
 

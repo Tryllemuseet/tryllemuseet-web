@@ -1,5 +1,6 @@
 // schemaTypes/barnPage.ts
 import { defineField, defineType } from 'sanity'
+import { richBlockContent } from './richBlockContent'
 
 export const barnPage = defineType({
   name: 'barnPage',
@@ -78,7 +79,7 @@ export const barnPage = defineType({
       fields: [
         defineField({ name: 'label', title: 'Label', type: 'string' }),
         defineField({ name: 'heading', title: 'Overskrift', type: 'string' }),
-        defineField({ name: 'tekst', title: 'Tekst', type: 'text', rows: 4 }),
+        defineField({ name: 'tekst', title: 'Tekst', type: 'array', of: richBlockContent() }),
         defineField({
           name: 'detaljer',
           title: 'Praktiske detaljer',

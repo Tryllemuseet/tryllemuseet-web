@@ -2,6 +2,7 @@
 // src/pages/utstillingen/trylleforeningene/[slug].astro
 import BaseLayout from '../../../layouts/BaseLayout.astro'
 import NarrateButton from '../../../components/NarrateButton.astro'
+import AnimateIn from '../../../components/AnimateIn.astro'
 import {
   getMagicOrganizationBySlug,
   getMagicOrganizationPaths,
@@ -77,16 +78,19 @@ function yearRange(): string {
 
   <!-- INGRESS ───────────────────────────────────────────────────── -->
   {org.ingress && (
+    <AnimateIn>
     <div class="container">
       <div class="ingress-row">
         <p class="org-ingress">{org.ingress}</p>
         <NarrateButton text={bodyPlain} label="Les artikkelen høyt" />
       </div>
     </div>
+    </AnimateIn>
   )}
 
   <!-- BRØDTEKST ─────────────────────────────────────────────────── -->
   {bodyHtml && (
+    <AnimateIn>
     <div class="container body-wrap">
       {!org.ingress && (
         <div class="section-head section-head--end">
@@ -95,15 +99,16 @@ function yearRange(): string {
       )}
       <div class="portable-text" set:html={bodyHtml} />
     </div>
+    </AnimateIn>
   )}
 
   <!-- SENTRALE SKIKKELSER ───────────────────────────────────────── -->
   {org.keyPeople && org.keyPeople.length > 0 && (
     <section class="container key-people-section">
-      <h2 class="section-heading">Sentrale skikkelser</h2>
+      <AnimateIn><h2 class="section-heading">Sentrale skikkelser</h2></AnimateIn>
       <ul class="key-people-list">
-        {org.keyPeople.map((kp) => (
-          <li class="key-person">
+        {org.keyPeople.map((kp, i) => (
+          <li class="key-person" data-animate data-direction="up" style={`transition-delay:${Math.min(i * 80, 320)}ms`}>
             <a
               href={`/tryllehistorie/magiens-hvem-er-hvem/${kp.person.slug}`}
               class="key-person-link"
@@ -124,10 +129,11 @@ function yearRange(): string {
   <!-- UNDERARTIKLER ─────────────────────────────────────────────── -->
   {org.articles && org.articles.length > 0 && (
     <section class="container articles-section">
-      {org.articles.map((article) => {
+      {org.articles.map((article, i) => {
         const articleHtml = portableTextToHtml(article.body)
         const articlePlain = [article.ingress, portableTextToPlainText(article.body)].filter(Boolean).join(' ')
         return (
+          <AnimateIn delay={Math.min(i * 80, 320)}>
           <article class="sub-article">
             <div class="section-head">
               <h2 class="sub-article-title">{article.title}</h2>
@@ -140,6 +146,7 @@ function yearRange(): string {
               <div class="portable-text" set:html={articleHtml} />
             )}
           </article>
+          </AnimateIn>
         )
       })}
     </section>
@@ -148,9 +155,10 @@ function yearRange(): string {
   <!-- BILDEGALLERI ──────────────────────────────────────────────── -->
   {org.gallery && org.gallery.length > 0 && (
     <section class="container gallery-section">
-      <h2 class="section-heading">Bildegalleri</h2>
+      <AnimateIn><h2 class="section-heading">Bildegalleri</h2></AnimateIn>
       <div class="gallery-grid">
-        {org.gallery.map((img) => (
+        {org.gallery.map((img, i) => (
+          <AnimateIn delay={Math.min(i * 80, 320)}>
           <figure class="gallery-item">
             <img
               src={urlFor(img).width(480).format('webp').url()}
@@ -163,6 +171,7 @@ function yearRange(): string {
               </figcaption>
             )}
           </figure>
+          </AnimateIn>
         ))}
       </div>
     </section>
@@ -171,9 +180,10 @@ function yearRange(): string {
   <!-- LOGOHISTORIKK ─────────────────────────────────────────────── -->
   {org.logoHistory && org.logoHistory.length > 1 && (
     <section class="container logo-history-section">
-      <h2 class="section-heading">Logohistorikk</h2>
+      <AnimateIn><h2 class="section-heading">Logohistorikk</h2></AnimateIn>
       <div class="logo-history-grid">
-        {org.logoHistory.map((entry) => (
+        {org.logoHistory.map((entry, i) => (
+          <AnimateIn delay={Math.min(i * 80, 320)}>
           <figure class="logo-entry">
             {entry.logo?.asset?.url && (
               <img
@@ -187,6 +197,7 @@ function yearRange(): string {
               {entry.note && <span class="logo-note">{entry.note}</span>}
             </figcaption>
           </figure>
+          </AnimateIn>
         ))}
       </div>
     </section>
@@ -194,6 +205,7 @@ function yearRange(): string {
 
   <!-- KILDER ────────────────────────────────────────────────────── -->
   {org.sources && org.sources.length > 0 && (
+    <AnimateIn>
     <section class="container sources-section">
       <h2 class="section-heading">Kilder</h2>
       <ul class="sources-list">
@@ -211,6 +223,7 @@ function yearRange(): string {
         })}
       </ul>
     </section>
+    </AnimateIn>
   )}
 
   <!-- TILBAKE ───────────────────────────────────────────────────── -->

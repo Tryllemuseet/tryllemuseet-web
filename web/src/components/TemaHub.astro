@@ -26,6 +26,15 @@ const kindIcon: Record<TemaContentItem['_type'], string> = {
   artifact: '🎩',
   magicOrganization: '🏛️',
 }
+// Type-spesifikk CTA-tekst — «Utforsk →» er for generisk for barnehistorien
+// og quizen når de skal fremstå som noe man aktivt opplever, ikke bare leser.
+const ctaLabel: Record<TemaContentItem['_type'], string> = {
+  legend: 'Utforsk →',
+  comicStory: 'Opplev historien →',
+  quizTheme: 'Spill quizen →',
+  artifact: 'Utforsk →',
+  magicOrganization: 'Utforsk →',
+}
 
 function cardImgUrl(item: TemaContentItem, width = 640) {
   return item.cardImage?.asset
@@ -67,7 +76,7 @@ const heroImgUrl = tema.heroImage?.asset
             </p>
             <h2 class="tema-card-title">{item.cardTitle}</h2>
             {item.cardExcerpt && <p class="tema-card-excerpt">{item.cardExcerpt}</p>}
-            <span class="tema-card-cta">Utforsk →</span>
+            <span class="tema-card-cta">{ctaLabel[item._type] ?? 'Utforsk →'}</span>
           </div>
         </a>
       )

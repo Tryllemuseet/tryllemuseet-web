@@ -105,7 +105,21 @@ Short URLs used on print material and QR codes (e.g., `/got-talent`, `/hvem-er-h
 
 `web/public/skjerm.html` (the physical info screen) is the **only** part of the site that queries Sanity client-side at runtime instead of at build time — by design, so the screen picks up content changes (videos, quotes, events) within minutes without a rebuild. It also fetches live bus departures from the Entur API. Everything else on the site is pure SSG.
 
-The quiz page (`/tryllequiz`) and its nav link are gated by the `quizConfig.isActive` flag in Sanity: when the flag is off, the page builds as a "coming soon" teaser and the nav link is hidden. Toggling the flag requires a rebuild to take effect.
+### Feature Flags
+
+Three boolean singleton fields in Sanity gate features that are built and content-complete but not (yet) meant to be publicly discoverable — used for "keep it live for staging, keep it out of production" launch scoping (see `tryllemuseet_houdini_og_lanseringsavgrensning.md`, 2026-08):
+
+| Flag | Gates |
+|---|---|
+| `quizConfig.isActive` | `/tryllequiz` page + its nav link |
+| `gameConfig.isActive` | `/det-trettende-kabinett` page + its nav link |
+| `siteConfig.laerEtTriksActive` | `/barn/laer-et-triks` teaser + hero CTA on `/barn`, plus `noindex` on the `/barn/laer-et-triks` routes themselves |
+
+When a flag is off: the quiz/game pages build as a "coming soon" teaser with `noindex`; `laerEtTriksActive` instead hides the entry points into an otherwise-normal page (the route itself stays reachable and indexable once you have the URL — there's no single page to gate since it's a whole sub-section). All three leave content, schema, and routes fully intact — nothing is deleted, so turning the flag on requires no code change, just a rebuild.
+
+`laerEtTriksActive` also gates the `relatedLinks` ("Se også") arrays on `legend` and `comicStory` documents, and the `barnPage.hero` second CTA: editor content can freely reference `/barn/laer-et-triks/*` paths (and does, on the Houdini exhibition/story docs) without leaking a link to the unlaunched feature — `LegendBody.astro` and `barn/historier/[slug].astro` filter those paths out while the flag is off. If you add a new relatedLinks-style field elsewhere, apply the same filter rather than assuming editors won't link there early.
+
+Toggling any of these flags requires a rebuild to take effect, same as any other Sanity content change (see §4 CI/CD and Deployment Pipeline below).
 
 ### Sanity Client Configuration
 

@@ -1,9 +1,18 @@
 ---
+// src/components/AnimateIn.astro
+// Global scroll-triggered "build" mechanism — see BaseLayout.astro's
+// "Scroll animations" script for the IntersectionObserver logic and the
+// "SCROLL ANIMATIONS" CSS block for the actual reveal styles. This wrapper
+// itself carries no animation logic; it only tags its content for that
+// shared observer, plus an optional stagger delay.
 interface Props {
   direction?: 'left' | 'right' | 'up';
+  /** Stagger delay in ms — e.g. `delay={i * 80}` in a card-grid .map(), capped
+   * by the caller (see docs/architecture.md § Scroll-triggered build). */
+  delay?: number;
 }
-const { direction = 'up' } = Astro.props;
+const { direction = 'up', delay = 0 } = Astro.props;
 ---
-<div data-animate data-direction={direction}>
+<div data-animate data-direction={direction} style={delay ? `transition-delay:${delay}ms` : undefined}>
   <slot />
 </div>

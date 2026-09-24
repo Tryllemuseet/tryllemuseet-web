@@ -3,6 +3,7 @@
 import BaseLayout from '../../layouts/BaseLayout.astro'
 import LegendBody from '../../components/LegendBody.astro'
 import TemaHub from '../../components/TemaHub.astro'
+import AnimateIn from '../../components/AnimateIn.astro'
 import {
   getUtstillingEntryBySlug,
   getUtstillingPaths,
@@ -77,6 +78,7 @@ const pageDescription = tema?.intro ?? entry?.detailIntro ?? entry?.tagline ?? `
   <LegendBody entry={entry}>
     <Fragment slot="extra">
       {books.length > 0 && (
+        <AnimateIn>
         <section class="books-section" aria-label={`Bøker av ${entry.title}`}>
           <h2 class="section-heading">Bøker</h2>
           <ul class="books-list">
@@ -121,6 +123,7 @@ const pageDescription = tema?.intro ?? entry?.detailIntro ?? entry?.tagline ?? `
             <a href="/ressurser/bibliotek">Se alle bøker i biblioteket →</a>
           </p>
         </section>
+        </AnimateIn>
       )}
     </Fragment>
 

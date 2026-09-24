@@ -2,6 +2,7 @@
 // src/pages/utstillingen/artefakter/[slug].astro
 import BaseLayout from '../../../layouts/BaseLayout.astro'
 import NarrateButton from '../../../components/NarrateButton.astro'
+import AnimateIn from '../../../components/AnimateIn.astro'
 import { getAllArtifacts, getArtifactBySlug, urlFor, portableTextToHtml, portableTextToPlainText } from '../../../lib/sanity'
 
 export async function getStaticPaths() {
@@ -18,6 +19,10 @@ if (!a) return Astro.redirect('/utstillingen/artefakter', 301)
 
 const notesHtml = portableTextToHtml(a.notes)
 const notesPlain = portableTextToPlainText(a.notes)
+const provenanceHtml = portableTextToHtml(a.provenance)
+const provenancePlain = portableTextToPlainText(a.provenance)
+const childContentHtml = portableTextToHtml(a.childContent)
+const childPlain = [a.childText, portableTextToPlainText(a.childContent)].filter(Boolean).join(' ')
 
 const categoryLabels: Record<string, string> = {
   rekvisitt:  'Rekvisitt',
@@ -74,6 +79,7 @@ const mainImgUrl = a.mainImage?.asset
   <div class="container page-body">
 
     <!-- 1. FAKTA ─────────────────────────────────────────────── -->
+    <AnimateIn>
     <section class="facts-section" aria-label="Gjenstanden">
       <h2 class="section-heading">Om gjenstanden</h2>
       <dl class="facts-list">
@@ -142,20 +148,38 @@ const mainImgUrl = a.mainImage?.asset
         )}
       </dl>
     </section>
+    </AnimateIn>
+
+    <!-- 1b. BARNETEKST ──────────────────────────────────────── -->
+    {a.childText && (
+      <AnimateIn>
+      <section class="child-panel" aria-label="For barn">
+        <div class="section-head">
+          <p class="child-label">⭐ For barn</p>
+          <NarrateButton text={childPlain} label="Les barneteksten høyt" />
+        </div>
+        <p class="child-text">{a.childText}</p>
+        {childContentHtml && <div class="child-content" set:html={childContentHtml} />}
+      </section>
+      </AnimateIn>
+    )}
 
     <!-- 2. PROVENIENS ───────────────────────────────────────── -->
-    {a.provenance && (
+    {provenanceHtml && (
+      <AnimateIn>
       <section class="prose-section" aria-label="Proveniens">
         <div class="section-head">
           <h2 class="section-heading">Proveniens / historikk</h2>
-          <NarrateButton text={a.provenance} label="Les proveniensen høyt" />
+          <NarrateButton text={provenancePlain} label="Les proveniensen høyt" />
         </div>
-        <p class="prose-text">{a.provenance}</p>
+        <div class="prose-text" set:html={provenanceHtml} />
       </section>
+      </AnimateIn>
     )}
 
     <!-- 3. UTFYLLENDE TEKST ─────────────────────────────────── -->
     {notesHtml && (
+      <AnimateIn>
       <section class="prose-section" aria-label="Mer om gjenstanden">
         <div class="section-head">
           <h2 class="section-heading">Les mer</h2>
@@ -163,22 +187,25 @@ const mainImgUrl = a.mainImage?.asset
         </div>
         <div class="prose" set:html={notesHtml} />
       </section>
+      </AnimateIn>
     )}
 
     <!-- 4. BILDEGALLERI ─────────────────────────────────────── -->
     {a.gallery && a.gallery.length > 0 && (
       <section class="gallery-section" aria-label="Bildegalleri">
-        <h2 class="section-heading">Galleri</h2>
+        <AnimateIn><h2 class="section-heading">Galleri</h2></AnimateIn>
         <div class="gallery-grid">
-          {a.gallery.map((img) => {
+          {a.gallery.map((img, i) => {
             const gUrl = img.asset
               ? urlFor(img).width(800).format('webp').url()
               : null
             return gUrl ? (
+              <AnimateIn delay={Math.min(i * 80, 320)}>
               <figure class="gallery-fig">
                 <img src={gUrl} alt={img.alt ?? ''} loading="lazy" />
                 {img.caption && <figcaption>{img.caption}</figcaption>}
               </figure>
+              </AnimateIn>
             ) : null
           })}
         </div>
@@ -187,9 +214,11 @@ const mainImgUrl = a.mainImage?.asset
 
     <!-- 5. TAGGER ───────────────────────────────────────────── -->
     {a.tags && a.tags.length > 0 && (
+      <AnimateIn>
       <div class="tags-row" aria-label="Tagger">
         {a.tags.map(t => <span class="tag">{t}</span>)}
       </div>
+      </AnimateIn>
     )}
 
     <!-- NAVIGASJON ─────────────────────────────────────────── -->
@@ -292,6 +321,39 @@ const mainImgUrl = a.mainImage?.asset
     padding: 0.65rem 1rem;
     margin: 0;
   }
+
+  /* ── BARNETEKST ────────────────────────────────────────────── */
+  .child-panel {
+    background: #FFF9E0;
+    border: 2px solid #E8C840;
+    border-radius: 6px;
+    padding: 1.5rem;
+  }
+  .child-label {
+    font-family: var(--font-ui);
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: #C47A00;
+    margin-bottom: 0.6rem;
+  }
+  .section-head .child-label { flex: 1; }
+  .child-text {
+    font-family: var(--font-body);
+    font-size: 1rem;
+    line-height: 1.65;
+    color: var(--ink);
+  }
+  .child-content {
+    font-family: var(--font-body);
+    font-size: 1rem;
+    line-height: 1.65;
+    color: var(--ink);
+    margin-top: 0.75rem;
+  }
+  .child-content p { margin-bottom: 0.9rem; }
+  .child-content p:last-child { margin-bottom: 0; }
 
   /* ── PROSE ─────────────────────────────────────────────────── */
   .prose-text {

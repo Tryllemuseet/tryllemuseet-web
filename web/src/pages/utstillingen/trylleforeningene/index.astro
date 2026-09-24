@@ -1,6 +1,7 @@
 ---
 // src/pages/utstillingen/trylleforeningene/index.astro
 import BaseLayout from '../../../layouts/BaseLayout.astro'
+import AnimateIn from '../../../components/AnimateIn.astro'
 import { getAllMagicOrganizations } from '../../../lib/sanity'
 import type { MagicOrganization } from '../../../lib/sanity'
 
@@ -37,7 +38,8 @@ function yearRange(org: MagicOrganization): string {
       <p class="empty-notice">Ingen foreninger er registrert ennå.</p>
     )}
 
-    {orgs.map((org) => (
+    {orgs.map((org, i) => (
+      <AnimateIn delay={Math.min(i * 80, 320)}>
       <article class="org-card">
         <a href={`/utstillingen/trylleforeningene/${org.slug}`} class="org-card-link">
 
@@ -77,6 +79,7 @@ function yearRange(org: MagicOrganization): string {
           <span class="org-arrow" aria-hidden="true">→</span>
         </a>
       </article>
+      </AnimateIn>
     ))}
   </main>
 

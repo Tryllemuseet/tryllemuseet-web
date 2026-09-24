@@ -1,4 +1,5 @@
 import { defineType, defineField } from 'sanity'
+import { richBlockContent } from './richBlockContent'
 
 export const event = defineType({
   name: 'event',
@@ -6,6 +7,13 @@ export const event = defineType({
   type: 'document',
   icon: () => '📅',
   fields: [
+    defineField({
+      name:         'isVisible',
+      title:        'Vis på nettsted',
+      type:         'boolean',
+      initialValue: true,
+      description:  'Skjul arrangementet fra nettsiden uten å slette det. Standard: på.',
+    }),
     defineField({
       name: 'title',
       title: 'Tittel',
@@ -66,7 +74,7 @@ export const event = defineType({
       name: 'description',
       title: 'Fullstendig beskrivelse',
       type: 'array',
-      of: [{ type: 'block' }],
+      of: richBlockContent(),
     }),
     defineField({
       name: 'image',

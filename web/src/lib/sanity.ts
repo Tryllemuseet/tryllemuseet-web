@@ -56,7 +56,7 @@ export interface Artifact {
   material?:        string
   dimensions?:      string
   condition?:       string
-  provenance?:      string
+  provenance?:      any[]
   displayLocation?: string
   ownerType?:       'museum' | 'loan'
   lenderName?:      string
@@ -70,6 +70,8 @@ export interface Artifact {
   gallery?:         { asset: { _ref: string; url: string }; alt?: string; caption?: string }[]
   tags?:            string[]
   notes?:           any[]
+  childText?:       string
+  childContent?:    any[]
 }
 
 // ── Spørringer ───────────────────────────────────────────────────
@@ -186,7 +188,17 @@ export async function getUtstillingEntryBySlug(slug: string): Promise<Utstilling
       detailIntro, sections[] { heading, body },
       mainImage { asset->{ _ref, url }, alt },
       gallery[] { asset->{ _ref, url }, alt, caption },
-      stations[] { title, order, year, image { asset->{ _ref, url }, alt }, textKids, textAdults, activityPrompt },
+      stations[] {
+        title, order, year, image { asset->{ _ref, url }, alt }, textKids,
+        textAdults[]{
+          ...,
+          markDefs[]{
+            ...,
+            "reference": reference->{ "slug": slug.current }
+          }
+        },
+        activityPrompt
+      },
       sources[] { label, url, sourceRef-> { title, author, type, year, url } },
       relatedLinks[] { label, path },
       "biographyRef": biographyRef->{ name, "slug": slug.current, isVisible }
@@ -308,7 +320,14 @@ export async function getAllEvents(): Promise<Event[]> {
   return sanityClient.fetch(`
     *[_type == "event" && isVisible != false] | order(date asc) {
       _id, title, "slug": slug.current,
-      date, ageGroup, price, excerpt, description, featured,
+      date, ageGroup, price, excerpt, featured,
+      description[]{
+        ...,
+        markDefs[]{
+          ...,
+          "reference": reference->{ "slug": slug.current }
+        }
+      },
       image { asset->{ _ref, url }, alt },
       bookingUrl, infoUrl
     }
@@ -337,9 +356,30 @@ export async function getArtifactBySlug(slug: string): Promise<Artifact | null> 
       _id, title, "slug": slug.current,
       description, year, yearNote, origin,
       category, material, dimensions, condition,
-      provenance, displayLocation,
+      provenance[]{
+        ...,
+        markDefs[]{
+          ...,
+          "reference": reference->{ "slug": slug.current }
+        }
+      },
+      displayLocation,
       ownerType, lenderName, loanFrom, loanTo, loanReference,
-      featured, order, tags, notes,
+      featured, order, tags, childText,
+      notes[]{
+        ...,
+        markDefs[]{
+          ...,
+          "reference": reference->{ "slug": slug.current }
+        }
+      },
+      childContent[]{
+        ...,
+        markDefs[]{
+          ...,
+          "reference": reference->{ "slug": slug.current }
+        }
+      },
       mainImage { asset->{ _ref, url }, alt },
       gallery[] { asset->{ _ref, url }, alt, caption }
     }
@@ -424,7 +464,13 @@ export async function getAllBooks(): Promise<Book[]> {
         "slug": personRef->slug.current,
         "hasProfile": defined(personRef)
       },
-      description
+      description[]{
+        ...,
+        markDefs[]{
+          ...,
+          "reference": reference->{ "slug": slug.current }
+        }
+      }
     }
   `)
 }
@@ -448,6 +494,7 @@ export async function getBooksByUtstillingSlug(slug: string): Promise<Book[]> {
 
 // ── Typer: Forside ───────────────────────────────────────────────
 export interface HeroBanner {
+  etikett?: string
   tekstLinje1: string
   tekstLinje2?: string
   knappLabel?: string
@@ -475,48 +522,21 @@ export interface Homepage {
   }
   heroBannere?: HeroBanner[]
   oppleveKort?: OppleveKort[]
-  hero: {
-    heading:    string
-    headingEm:  string
-    ingress:    string
-    cta1Label:  string
-    cta1Href:   string
-    cta2Label:  string
-    cta2Href:   string
-    bgImage?:   { asset: { _ref: string; url: string }; hotspot: any }
-  }
-  infoBadges:       { label: string }[]
-  fremhevetInnhold: { eraLabel?: string; heading: string; elementer?: FeaturedItem[] }
+  fremhevetInnhold: { elementer?: FeaturedItem[] }
   barnSeksjon: {
-    heading:   string
-    ingress:   string
-    features:  string[]
-    sitater:   { emoji: string; tekst: string; kilde: string }[]
+    heading: string
+    ingress: string
   }
   medlemSeksjon: {
     heading:    string
-    tekst:      string
+    tekst:      any[]
     knappLabel: string
-  }
-  omMuseet: {
-    heading:     string
-    tekst:       string
-    sitat:       string
-    sitatKilde:  string
   }
   kursSeksjon?: {
     heading:    string
     ingress:    string
-    detaljer:   string[]
-    pris:       string
-    prisLabel:  string
-    fondsBadge: string
     knappLabel: string
     knappHref:  string
-  }
-  kursSitat?: {
-    tekst: string
-    kilde: string
   }
 }
 
@@ -567,7 +587,7 @@ export async function getHomepage(): Promise<Homepage | null> {
     *[_type == "homepage"][0] {
       heroIdentitet { heading, sted, knappLabel, knappHref },
       heroBannere[] {
-        tekstLinje1, tekstLinje2, knappLabel, href,
+        etikett, tekstLinje1, tekstLinje2, knappLabel, href,
         bilde { asset->{ _ref, url }, hotspot, alt },
         "videoUrl": video.asset->url
       },
@@ -575,14 +595,7 @@ export async function getHomepage(): Promise<Homepage | null> {
         icon, label, title, description, href, knappTekst,
         bilde { asset->{ _ref, url }, hotspot, alt }
       },
-      hero {
-        heading, headingEm, ingress,
-        cta1Label, cta1Href, cta2Label, cta2Href,
-        bgImage { asset->{ _ref, url }, hotspot }
-      },
-      infoBadges[] { label },
       fremhevetInnhold {
-        eraLabel, heading,
         elementer[]-> {
           _type,
           _type == "legend" => {
@@ -597,14 +610,19 @@ export async function getHomepage(): Promise<Homepage | null> {
           }
         }
       },
-      barnSeksjon {
-        heading, ingress, features,
-        sitater[] { emoji, tekst, kilde }
+      barnSeksjon { heading, ingress },
+      medlemSeksjon {
+        heading,
+        tekst[]{
+          ...,
+          markDefs[]{
+            ...,
+            "reference": reference->{ "slug": slug.current }
+          }
+        },
+        knappLabel
       },
-      medlemSeksjon { heading, tekst, knappLabel },
-      omMuseet { heading, tekst, sitat, sitatKilde },
-      kursSeksjon { heading, ingress, detaljer, pris, prisLabel, fondsBadge, knappLabel, knappHref },
-      kursSitat { tekst, kilde }
+      kursSeksjon { heading, ingress, knappLabel, knappHref }
     }
   `, { publicDomainCutoff: publicDomainCutoffIso() })
 }
@@ -663,7 +681,7 @@ export interface BarnPage {
   aldersgrupper: { alder: string; ikon: string; tekst: string }[]
   aktiviteter:   { tittel: string; beskrivelse: string; ikon: string }[]
   skolebesok: {
-    label: string; heading: string; tekst: string
+    label: string; heading: string; tekst: any[]
     detaljer: string[]; knappLabel: string; knappHref: string
   }
   kursBanner: { heading: string; tekst: string; knappLabel: string; knappHref: string }
@@ -673,25 +691,25 @@ export interface BarnPage {
 // ── Typer: Om oss ────────────────────────────────────────────────
 export interface OmOssPage {
   hero: { label: string; heading: string; headingEm: string; ingress: string }
-  omMuseet: { historieHeading: string; historieTekst: any[]; formalHeading: string; formalTekst: string }
+  omMuseet: { historieHeading: string; historieTekst: any[]; formalHeading: string; formalTekst: any[] }
   faktaboks: { stiftet: string; organisasjonsform: string; tilknytning: string; adresse: string; orgnr: string }
   styret: {
     heading: string; ingress: string
     medlemmer: { navn: string; rolle: string }[]
   }
   medlemskap: {
-    heading: string; ingress: string; motivasjonsTekst: string
+    heading: string; ingress: string; motivasjonsTekst: any[]
     nivaaer: { type: string; pris: string; anbefalt: boolean; fordeler: string[]; knappLabel: string; knappUrl: string }[]
     vippsInfo: string
   }
   presse: {
-    label: string; heading: string; tekst: string; knappLabel: string; knappHref: string
+    label: string; heading: string; tekst: any[]; knappLabel: string; knappHref: string
     nedlastinger: { emoji: string; tittel: string; beskrivelse: string }[]
     nedlastingsNotat: string
   }
   partnere: { heading: string; liste: { navn: string; beskrivelse: string; url?: string }[] }
   frivillig?: {
-    label: string; heading: string; tekst: string; knappLabel: string; knappHref: string
+    label: string; heading: string; tekst: any[]; knappLabel: string; knappHref: string
   }
 }
 
@@ -701,7 +719,17 @@ export async function getBarnPage(): Promise<BarnPage | null> {
       hero { label, heading, headingEm, ingress, cta1Label, cta1Href, cta2Label, cta2Href },
       aldersgrupper[] { alder, ikon, tekst },
       aktiviteter[] { tittel, beskrivelse, ikon },
-      skolebesok { label, heading, tekst, detaljer, knappLabel, knappHref },
+      skolebesok {
+        label, heading,
+        tekst[]{
+          ...,
+          markDefs[]{
+            ...,
+            "reference": reference->{ "slug": slug.current }
+          }
+        },
+        detaljer, knappLabel, knappHref
+      },
       kursBanner { heading, tekst, knappLabel, knappHref },
       laerEtTriksHero { label, heading, ingress }
     }
@@ -872,7 +900,14 @@ export async function getGodeRadConfig(): Promise<GodeRadConfig> {
 export async function getAllWorldRecordTricks(): Promise<WorldRecordTrick[]> {
   return sanityClient.fetch(`
     *[_type == "worldRecordTrick" && isVisible != false] | order(category asc, coalesce(order, 9999) asc) {
-      _id, category, title, teaserText, fullStory,
+      _id, category, title, teaserText,
+      fullStory[]{
+        ...,
+        markDefs[]{
+          ...,
+          "reference": reference->{ "slug": slug.current }
+        }
+      },
       "relatedPerson": relatedPerson-> { "slug": slug.current, name },
       sources, needsVerification, order
     }
@@ -896,17 +931,61 @@ export async function getOmOssPage(): Promise<OmOssPage | null> {
   return sanityClient.fetch(`
     *[_type == "omOssPage"][0] {
       hero { label, heading, headingEm, ingress },
-      omMuseet { historieHeading, historieTekst, formalHeading, formalTekst },
+      omMuseet {
+        historieHeading,
+        historieTekst[]{
+          ...,
+          markDefs[]{
+            ...,
+            "reference": reference->{ "slug": slug.current }
+          }
+        },
+        formalHeading,
+        formalTekst[]{
+          ...,
+          markDefs[]{
+            ...,
+            "reference": reference->{ "slug": slug.current }
+          }
+        }
+      },
       faktaboks { stiftet, organisasjonsform, tilknytning, adresse, orgnr },
       styret { heading, ingress, medlemmer[] { navn, rolle } },
       medlemskap {
-        heading, ingress, motivasjonsTekst,
+        heading, ingress,
+        motivasjonsTekst[]{
+          ...,
+          markDefs[]{
+            ...,
+            "reference": reference->{ "slug": slug.current }
+          }
+        },
         nivaaer[] { type, pris, anbefalt, fordeler, knappLabel, knappUrl },
         vippsInfo
       },
-      presse { label, heading, tekst, knappLabel, knappHref, nedlastinger[] { emoji, tittel, beskrivelse }, nedlastingsNotat },
+      presse {
+        label, heading,
+        tekst[]{
+          ...,
+          markDefs[]{
+            ...,
+            "reference": reference->{ "slug": slug.current }
+          }
+        },
+        knappLabel, knappHref, nedlastinger[] { emoji, tittel, beskrivelse }, nedlastingsNotat
+      },
       partnere { heading, liste[] { navn, beskrivelse, url } },
-      frivillig { label, heading, tekst, knappLabel, knappHref }
+      frivillig {
+        label, heading,
+        tekst[]{
+          ...,
+          markDefs[]{
+            ...,
+            "reference": reference->{ "slug": slug.current }
+          }
+        },
+        knappLabel, knappHref
+      }
     }
   `)
 }
@@ -975,8 +1054,8 @@ export interface BesokPage {
     rader: { kategori: string; pris: string; gratis: boolean }[]
     merknad: string
   }
-  medlemskapSeksjon: { label: string; heading: string; tekst: string }
-  forestillingerSeksjon: { heading: string; tekst: string }
+  medlemskapSeksjon: { label: string; heading: string; tekst: any[] }
+  forestillingerSeksjon: { heading: string; tekst: any[] }
   sporsmalSeksjon: { tekst: string }
   transport: { badge: string; farge: 'rod' | 'blaa'; tekst: string }[]
   familieSeksjon: {
@@ -994,8 +1073,26 @@ export async function getBesokPage(): Promise<BesokPage> {
       hurtiginfo { inngangTekst, forestillingerTekst },
       apningstider { rader[] { dag, tid, aapen }, merknad },
       priser { rader[] { kategori, pris, gratis }, merknad },
-      medlemskapSeksjon { label, heading, tekst },
-      forestillingerSeksjon { heading, tekst },
+      medlemskapSeksjon {
+        label, heading,
+        tekst[]{
+          ...,
+          markDefs[]{
+            ...,
+            "reference": reference->{ "slug": slug.current }
+          }
+        }
+      },
+      forestillingerSeksjon {
+        heading,
+        tekst[]{
+          ...,
+          markDefs[]{
+            ...,
+            "reference": reference->{ "slug": slug.current }
+          }
+        }
+      },
       familieSeksjon { heading, tekst, knappLabel, knappHref },
       sporsmalSeksjon { tekst },
       transport[] { badge, farge, tekst }
@@ -1030,11 +1127,11 @@ export async function getBesokPage(): Promise<BesokPage> {
     medlemskapSeksjon: {
       label:   d?.medlemskapSeksjon?.label   ?? 'Støtt museet',
       heading: d?.medlemskapSeksjon?.heading ?? 'Bli medlem!',
-      tekst:   d?.medlemskapSeksjon?.tekst   ?? 'Som medlem støtter du Tryllemuseet og bidrar til å holde magien levende for kommende generasjoner. Medlemskapet er enkelt å tegne.',
+      tekst:   d?.medlemskapSeksjon?.tekst?.length ? d.medlemskapSeksjon.tekst : [ptParagraph('Som medlem støtter du Tryllemuseet og bidrar til å holde magien levende for kommende generasjoner. Medlemskapet er enkelt å tegne.', 'medlemskap-fallback')],
     },
     forestillingerSeksjon: {
       heading: d?.forestillingerSeksjon?.heading ?? 'Trylleforestillinger',
-      tekst:   d?.forestillingerSeksjon?.tekst   ?? 'Vi arrangerer tre trylleforestillinger hvert halvår — for familier, barn og alle som elsker magi. Forestillingene holdes på Årvoll gård og er åpne for alle.',
+      tekst:   d?.forestillingerSeksjon?.tekst?.length ? d.forestillingerSeksjon.tekst : [ptParagraph('Vi arrangerer tre trylleforestillinger hvert halvår — for familier, barn og alle som elsker magi. Forestillingene holdes på Årvoll gård og er åpne for alle.', 'forestillinger-fallback')],
     },
     familieSeksjon: {
       heading:    d?.familieSeksjon?.heading    ?? 'Kommer du med barn?',
@@ -1052,11 +1149,74 @@ export async function getBesokPage(): Promise<BesokPage> {
   }
 }
 
+// ── Typer: Tryllekurs ────────────────────────────────────────────
+export interface KursPage {
+  hero:       { label: string; heading: string; ingress: string }
+  omKurset:   { heading: string; tekst: any[] }
+  detaljer:   string[]
+  pris:       { belop: string; label: string }
+  fondsBadge?: string
+  sitat:      { tekst: string; kilde: string }
+  pamelding:  { knappLabel: string; knappHref: string }
+}
+
+export async function getKursPage(): Promise<KursPage> {
+  const d = await sanityClient.fetch(`
+    *[_type == "kursPage"][0] {
+      hero { label, heading, ingress },
+      omKurset {
+        heading,
+        tekst[]{
+          ...,
+          markDefs[]{
+            ...,
+            "reference": reference->{ "slug": slug.current }
+          }
+        }
+      },
+      detaljer,
+      pris { belop, label },
+      fondsBadge,
+      sitat { tekst, kilde },
+      pamelding { knappLabel, knappHref }
+    }
+  `)
+  return {
+    hero: {
+      label:   d?.hero?.label   ?? 'Hva skjer',
+      heading: d?.hero?.heading ?? 'Tryllekurs for barn',
+      ingress: d?.hero?.ingress ?? 'Du lærer triks som er enkle å utføre, men som virker meget imponerende. Kursene går over tre ettermiddager annenhver uke.',
+    },
+    omKurset: {
+      heading: d?.omKurset?.heading ?? 'Om kurset',
+      tekst:   d?.omKurset?.tekst?.length ? d.omKurset.tekst : [ptParagraph('Du lærer triks som er enkle å utføre, men som virker meget imponerende. Kursene går over tre ettermiddager annenhver uke.', 'omkurset-fallback')],
+    },
+    detaljer: d?.detaljer ?? [
+      'Aldersgrupper: 6–8 år (kl. 17) · 9–12 år (kl. 18.30) · 13+ år (kl. 20)',
+      'Kun 14 plasser per kurs — «først til mølla»',
+      'Inkluderer kursmateriell og tryllerekvisitter',
+    ],
+    pris: {
+      belop: d?.pris?.belop ?? '50,-',
+      label: d?.pris?.label ?? 'pr kurs',
+    },
+    fondsBadge: d?.fondsBadge ?? 'Støttet av Sparebankstiftelsen DNB',
+    sitat: {
+      tekst: d?.sitat?.tekst ?? '«Vil bare takke for et utrolig gøyalt tryllekurs — han koste seg!»',
+      kilde: d?.sitat?.kilde ?? 'Mor til kursdeltaker, 8 år · Februar 2026',
+    },
+    pamelding: {
+      knappLabel: d?.pamelding?.knappLabel ?? 'Se kommende kurs',
+      knappHref:  d?.pamelding?.knappHref  ?? 'https://kurs.tryllemuseet.no',
+    },
+  }
+}
+
 // ── Typer: Kontakt ───────────────────────────────────────────────
 export interface KontaktPage {
   hero:      { label: string; heading: string; ingress: string }
   skjemaUrl: string
-  faq:       { sporsmal: string; svar: string }[]
+  faq:       { sporsmal: string; svar: any[] }[]
 }
 
 export async function getKontaktPage(): Promise<KontaktPage> {
@@ -1064,7 +1224,16 @@ export async function getKontaktPage(): Promise<KontaktPage> {
     *[_type == "kontaktPage"][0] {
       hero { label, heading, ingress },
       skjemaUrl,
-      faq[] { sporsmal, svar }
+      faq[] {
+        sporsmal,
+        svar[]{
+          ...,
+          markDefs[]{
+            ...,
+            "reference": reference->{ "slug": slug.current }
+          }
+        }
+      }
     }
   `)
   return {
@@ -1075,10 +1244,10 @@ export async function getKontaktPage(): Promise<KontaktPage> {
     },
     skjemaUrl: d?.skjemaUrl ?? 'https://forms.cloud.microsoft/Pages/ResponsePage.aspx?id=ntTGX9tmLEuCq9W0nbG7xw-QkId2PUtCgZXNTCF6McdUNjhIWjhENjhaWTA2U1ZCTjBKRjZIUjdSMy4u&embed=true',
     faq: d?.faq ?? [
-      { sporsmal: 'Kan vi booke besøk for en skole eller gruppe?',   svar: 'Ja! Vi tar imot grupper og skoleklasser etter avtale. Send oss en melding med antall deltakere og ønsket dato.' },
-      { sporsmal: 'Er museet tilgjengelig for rullestol?',           svar: 'Ta kontakt med oss på forhånd, så sørger vi for at besøket blir best mulig.' },
-      { sporsmal: 'Holdes det bursdagsarrangementer?',               svar: 'Ta kontakt med oss for å høre om mulighetene — vi finner gjerne en magisk løsning!' },
-      { sporsmal: 'Kan vi kjøpe tryllerekvisitter?',                 svar: 'Vi har et lite utvalg i museumsbutikken. Større utvalg finner du hos spesialforretninger som Egelos Crazy Shop.' },
+      { sporsmal: 'Kan vi booke besøk for en skole eller gruppe?',   svar: [ptParagraph('Ja! Vi tar imot grupper og skoleklasser etter avtale. Send oss en melding med antall deltakere og ønsket dato.', 'faq1')] },
+      { sporsmal: 'Er museet tilgjengelig for rullestol?',           svar: [ptParagraph('Ta kontakt med oss på forhånd, så sørger vi for at besøket blir best mulig.', 'faq2')] },
+      { sporsmal: 'Holdes det bursdagsarrangementer?',               svar: [ptParagraph('Ta kontakt med oss for å høre om mulighetene — vi finner gjerne en magisk løsning!', 'faq3')] },
+      { sporsmal: 'Kan vi kjøpe tryllerekvisitter?',                 svar: [ptParagraph('Vi har et lite utvalg i museumsbutikken. Større utvalg finner du hos spesialforretninger som Egelos Crazy Shop.', 'faq4')] },
     ],
   }
 }
@@ -1094,11 +1263,32 @@ export interface TryllehistorieSeksjon {
   soon:   boolean
 }
 
+export interface TryllehistorieSeksjonMedTekst {
+  heading: string
+  body:    PortableTextBlock[]
+}
+
 export interface TryllehistoriePage {
-  hero:              { label: string; heading: string; ingress: string }
-  seksjoner:         TryllehistorieSeksjon[]
-  tidslinjeHeading:  string
-  tidslinje:         { aar: string; hendelse: string; siste: boolean }[]
+  hero:               { label: string; heading: string; ingress: string }
+  historieIntro:      string
+  historieSeksjoner:  TryllehistorieSeksjonMedTekst[]
+  seksjoner:          TryllehistorieSeksjon[]
+  tidslinjeHeading:   string
+  tidslinje:          { aar: string; hendelse: string; siste: boolean }[]
+}
+
+// Enkel Portable Text-blokk med ett avsnitt — brukt til å bygge hardkodede
+// fallback-verdier for rike tekstfelt (både her og i sidenes egne
+// fallback-objekter, f.eks. om-oss.astro/besok.astro/kurs.astro) uten å
+// måtte skrive ut hele blokkstrukturen for hånd hvert sted.
+export function ptParagraph(text: string, key: string): PortableTextBlock {
+  return {
+    _type: 'block',
+    _key: key,
+    style: 'normal',
+    markDefs: [],
+    children: [{ _type: 'span', _key: `${key}-s`, text, marks: [] }],
+  } as PortableTextBlock
 }
 
 export async function getTryllehistoriePage(): Promise<TryllehistoriePage> {
@@ -1106,6 +1296,8 @@ export async function getTryllehistoriePage(): Promise<TryllehistoriePage> {
     sanityClient.fetch(`
     *[_type == "tryllehistoriePage"][0] {
       hero { label, heading, ingress },
+      historieIntro,
+      historieSeksjoner[] { heading, body },
       seksjoner[] { href, emoji, title, sub, desc, badge, soon },
       tidslinjeHeading,
       tidslinje[] { aar, hendelse, siste }
@@ -1150,6 +1342,33 @@ export async function getTryllehistoriePage(): Promise<TryllehistoriePage> {
       heading: d?.hero?.heading ?? 'Tryllehistorie',
       ingress: d?.hero?.ingress ?? 'Fra begerspillet i Egypt for 4000 år siden til gullalderens store scenemagikere og norske tryllekunstnere i dag — magiens lange historie.',
     },
+    historieIntro: d?.historieIntro ?? 'Tryllekunst er kanskje verdens eldste form for underholdning: kunsten å få andre mennesker til å undres. Fortellingen strekker seg fra faraoenes hoff til dagens talentshow — og hele veien er det den samme gnisten som driver den.',
+    historieSeksjoner: d?.historieSeksjoner ?? [
+      {
+        heading: 'De første undrene',
+        body: [ptParagraph('Lenge før det fantes teatre og TV, samlet folk seg rundt gjøglere som fikk små kuler til å forsvinne under begre. Begerspillet — verdens eldste kjente trylletriks — ble avbildet i Egypt for rundt fire tusen år siden, og en gammel nedtegnelse forteller om magikeren Dedi, som skal ha opptrådt for selveste farao Khufu. Trangen til å bli forundret er med andre ord like gammel som sivilisasjonen selv.', 'hs1')],
+      },
+      {
+        heading: 'Gjøglere i farlige tider',
+        body: [ptParagraph('I middelalderens Europa levde tryllekunsten på markedsplassene, blant gjøglere og omreisende artister. Men kunsten kunne være livsfarlig: Den som var for flink med hendene, risikerte å bli anklaget for trolldom. Da engelskmannen Reginald Scot i 1584 ga ut «The Discoverie of Witchcraft», var det nettopp for å vise at taskenspillernes triks var fingerferdighet — ikke djevelskap. Boken ble samtidig den første trykte forklaringen på hvordan triksene gjøres.', 'hs2')],
+      },
+      {
+        heading: 'Fra markedsbod til teatersal',
+        body: [ptParagraph('Utover 1700- og 1800-tallet flyttet magien innendørs. Den franske urmakeren Jean-Eugène Robert-Houdin åpnet sitt eget teater i Paris i 1845 og kledde tryllekunsten i kjole og hvitt: eleganse, mekaniske underverker og vitenskapens språk i stedet for gjøglerens kappe. Den moderne scenetryllingen var født — og en ung amerikaner valgte senere kunstnernavnet Houdini til ære for ham.', 'hs3')],
+      },
+      {
+        heading: 'Gullalderen',
+        body: [ptParagraph('Tiårene fra midten av 1800-tallet til rundt 1930 kalles gjerne magiens gullalder. Herrmann, Kellar, Thurston og Houdini fylte de største scenene i verden, reiste på turné med tonnevis av illusjoner og kjempet om publikums gunst med praktfulle litografiske plakater. Også i Norge lot man seg fortrylle — en ung Henrik Ibsen holdt sine egne trylleforestillinger hjemme i Skien, og verdensstjernene fant veien til norske scener.', 'hs4')],
+      },
+      {
+        heading: 'Nedgang — og nytt liv',
+        body: [ptParagraph('Så kom filmen, radioen og etter hvert fjernsynet, og de store illusjonsshowene mistet publikum. Men magien døde ikke — den tilpasset seg. Tryllekunstnerne samlet seg i foreninger som Magiske Cirkel Norge, stiftet i Oslo i 1928, kunsten fant nye hjem i TV-studioer og klubblokaler, og på 1990-tallet førte gatemagien trolldommen helt ut på fortauet igjen — tett på publikum, akkurat som ved markedsbodene tusen år tidligere.', 'hs5')],
+      },
+      {
+        heading: 'Historien fortsetter',
+        body: [ptParagraph('I dag lever tryllekunsten i beste velgående — på teaterscener og i talentshow, i bursdagsselskaper og på skjermen. Og på Årvoll gård i Oslo tar Tryllemuseet vare på hele denne fortellingen: gjenstandene, plakatene, bøkene og menneskene som har viet livet til det umulige. Resten av historien finner du i arkivene nedenfor.', 'hs6')],
+      },
+    ],
     seksjoner: withAutoBadges(d?.seksjoner ?? [
       { href: '/tryllehistorie/magiens-hvem-er-hvem',        emoji: '📖', title: 'Magiens Hvem er Hvem',               sub: 'Norske tryllekunstnere',      desc: 'Biografier over norske tryllekunstnere fra Terje Nordheims standardverk. Søk på navn, kunstnernavn og spesialitet.',                                                                    badge: 'Biografier',  soon: false },
       { href: '/utstillingen',                                emoji: '🎩', title: 'Gullalderen 1845–1930',              sub: 'Internasjonal tryllehistorie', desc: 'Robert-Houdin, Herrmann, Kellar, Thurston og Houdini — magikerne som forandret verden og skapte scenetryllingens gylne epoke.',                                                          badge: '7 utstillingsfelt', soon: false },
@@ -1180,6 +1399,42 @@ export async function getTryllehistoriePage(): Promise<TryllehistoriePage> {
       { aar: '1947',           hendelse: 'Den Magiske Ring stiftes i Oslo — ti unge tryllekunstnere rundt et rundt bord',                    siste: false },
       { aar: '1997',           hendelse: 'David Blaines «Street Magic» — vendepunktet for gatemagien på TV',                                 siste: false },
       { aar: 'I dag',          hendelse: 'Tryllemuseet på Årvoll holder historien levende',                                                  siste: true  },
+    ],
+  }
+}
+
+// ── Typer: Aktiviteter (Hva skjer) ────────────────────────────────
+export interface AktiviteterSeksjon {
+  href:  string
+  emoji: string
+  title: string
+  sub:   string
+  desc:  string
+  badge: string
+  soon:  boolean
+}
+
+export interface AktiviteterPage {
+  hero:      { label: string; heading: string; ingress: string }
+  seksjoner: AktiviteterSeksjon[]
+}
+
+export async function getAktiviteterPage(): Promise<AktiviteterPage> {
+  const d = await sanityClient.fetch(`
+    *[_type == "aktiviteterPage"][0] {
+      hero { label, heading, ingress },
+      seksjoner[] { href, emoji, title, sub, desc, badge, soon }
+    }
+  `)
+  return {
+    hero: {
+      label:   d?.hero?.label   ?? 'Tryllemuseet',
+      heading: d?.hero?.heading ?? 'Hva skjer',
+      ingress: d?.hero?.ingress ?? 'Kurs, forestillinger og andre magiske opplevelser for barn og voksne – på Tryllemuseet og i tryllemiljøet.',
+    },
+    seksjoner: d?.seksjoner ?? [
+      { href: '/aktiviteter/kurs',           emoji: '🎓', title: 'Tryllekurs',             sub: 'For barn',        desc: 'Lær triks som er enkle å utføre, men som virker meget imponerende — kurs over tre ettermiddager annenhver uke.', badge: 'Kurs',    soon: false },
+      { href: '/aktiviteter/tryllekunstnere', emoji: '🎩', title: 'Bestill tryllekunstner', sub: 'Til arrangement', desc: 'Book en tryllekunstner fra Magiske Cirkel Norges tryllekatalog til ditt neste arrangement eller selskap.',        badge: 'Booking', soon: false },
     ],
   }
 }
@@ -1228,7 +1483,7 @@ export async function getRessurserPage(): Promise<RessurserPage> {
 export interface UtstillingPage {
   hero: { eraLabel: string; heading: string; ingress: string }
   kommerSnartSeksjon: { label: string; heading: string }
-  seksjoner: { icon: string; label: string; title: string; description: string; slug: string; ready: boolean }[]
+  seksjoner: { icon: string; label: string; title: string; description: string; slug: string; ready: boolean; showAsComingSoon: boolean }[]
 }
 
 export async function getUtstillingPage(): Promise<UtstillingPage> {
@@ -1236,7 +1491,7 @@ export async function getUtstillingPage(): Promise<UtstillingPage> {
     *[_type == "utstillingPage"][0] {
       hero { eraLabel, heading, ingress },
       kommerSnartSeksjon { label, heading },
-      seksjoner[] { icon, label, title, description, slug, ready }
+      seksjoner[] { icon, label, title, description, slug, ready, showAsComingSoon }
     }
   `)
   return {
@@ -1250,11 +1505,11 @@ export async function getUtstillingPage(): Promise<UtstillingPage> {
       heading: d?.kommerSnartSeksjon?.heading ?? 'I utstillingen',
     },
     seksjoner: d?.seksjoner ?? [
-      { icon: '🔮',   label: 'Fast utstilling',      title: 'Tryllekunstens gullalder', description: 'Robert-Houdin, Herrmann, Kellar, Thurston og Houdini — veggpanelene i Gullalder-salen.', slug: 'gullalderen',        ready: true  },
-      { icon: '⭐',   label: 'Portretter',          title: 'Fordypninger',       description: 'Fra Arnardo til Finn Jon — tryllekunstnerne som satte spor.',                                slug: 'fordypninger',       ready: false },
-      { icon: '🎩',   label: 'Samlingen',           title: 'Artefakter',         description: 'Sjeldne rekvisitter, historiske gjenstander og mysterier fra museets samling.',              slug: 'artefakter',         ready: true  },
-      { icon: '♣',    label: 'Organisasjonene',     title: 'Trylleforeningene',  description: 'Magiske Cirkel Norge og Den magiske ring — fellesskapet bak kunsten.',                      slug: 'trylleforeningene',  ready: true  },
-      { icon: '🛍',   label: 'Butikken',             title: 'Tryllebutikken',     description: 'Bøker, rekvisitter og kuriositeter for den nysgjerrige.',                                   slug: 'tryllebutikken',     ready: true  },
+      { icon: '🔮',   label: 'Fast utstilling',      title: 'Tryllekunstens gullalder', description: 'Robert-Houdin, Herrmann, Kellar, Thurston og Houdini — veggpanelene i Gullalder-salen.', slug: 'gullalderen',        ready: true,  showAsComingSoon: false },
+      { icon: '⭐',   label: 'Portretter',          title: 'Fordypninger',       description: 'Fra Arnardo til Finn Jon — tryllekunstnerne som satte spor.',                                slug: 'fordypninger',       ready: false, showAsComingSoon: false },
+      { icon: '🎩',   label: 'Samlingen',           title: 'Artefakter',         description: 'Sjeldne rekvisitter, historiske gjenstander og mysterier fra museets samling.',              slug: 'artefakter',         ready: true,  showAsComingSoon: false },
+      { icon: '♣',    label: 'Organisasjonene',     title: 'Trylleforeningene',  description: 'Magiske Cirkel Norge og Den magiske ring — fellesskapet bak kunsten.',                      slug: 'trylleforeningene',  ready: true,  showAsComingSoon: false },
+      { icon: '🛍',   label: 'Butikken',             title: 'Tryllebutikken',     description: 'Bøker, rekvisitter og kuriositeter for den nysgjerrige.',                                   slug: 'tryllebutikken',     ready: true,  showAsComingSoon: false },
     ],
   }
 }
@@ -1275,11 +1530,12 @@ export interface SiteConfig {
   vippsNumber:       string
   donationUrl?:      string
   donationLabel:     string
-  donationText:      string
+  donationText:      PortableTextBlock[]
   facebook:          string
   instagram:         string
   youtube?:          string
   seoDescription:    string
+  laerEtTriksActive: boolean
 }
 
 // Kun e-post og adresse — til personvernsiden
@@ -1293,9 +1549,16 @@ export async function getSiteConfig(): Promise<SiteConfig> {
       siteName, siteTagline, email, phone,
       address, addressShort, mapUrl, mapEmbedUrl,
       openingHoursShort, openingHoursNote,
-      membershipUrl, vippsNumber, donationUrl, donationLabel, donationText,
+      membershipUrl, vippsNumber, donationUrl, donationLabel,
+      donationText[]{
+        ...,
+        markDefs[]{
+          ...,
+          "reference": reference->{ "slug": slug.current }
+        }
+      },
       facebook, instagram, youtube,
-      seoDescription
+      seoDescription, laerEtTriksActive
     }
   `)
   const base = config ?? {
@@ -1312,13 +1575,15 @@ export async function getSiteConfig(): Promise<SiteConfig> {
     facebook:          'https://www.facebook.com/tryllemuseet',
     instagram:         'https://www.instagram.com/tryllemuseet',
     seoDescription:    'Norges minste, merkeligste og mest magiske museum. Besøk oss på Årvoll gård i Oslo — søndager 12–15. Gratis inngang.',
+    laerEtTriksActive: false,
   }
   // donationLabel/donationText er nye felter (2026-08) — dekk eksisterende
   // siteConfig-dokumenter som ennå ikke har fylt dem inn i Studio.
   return {
     ...base,
     donationLabel: config?.donationLabel ?? 'Gi en gave →',
-    donationText:  config?.donationText  ?? 'Museet drives i stor grad av frivillige. En gave bidrar til å bevare samlingen, utvikle utstillingene og holde museet gratis og tilgjengelig for alle.',
+    donationText:  config?.donationText?.length ? config.donationText : [ptParagraph('Museet drives i stor grad av frivillige. En gave bidrar til å bevare samlingen, utvikle utstillingene og holde museet gratis og tilgjengelig for alle.', 'donation-fallback')],
+    laerEtTriksActive: config?.laerEtTriksActive === true,
   }
 }
 
@@ -1364,6 +1629,7 @@ const DEFAULT_MAIN_AREAS: NavMainArea[] = [
     subAreas: [
       { label: 'Oversikt',                 link: '/aktiviteter',                    isVisible: true },
       { label: 'Barn & unge',              link: '/barn',                           isVisible: true },
+      { label: 'Tryllekurs',               link: '/aktiviteter/kurs',               isVisible: true },
       { label: 'Tryllequiz',               link: '/tryllequiz',                     isVisible: true, featureFlag: 'quiz' },
       { label: 'Det trettende kabinett',   link: '/det-trettende-kabinett',          isVisible: true, featureFlag: 'game' },
       { label: 'Bestill tryllekunstner',   link: '/aktiviteter/tryllekunstnere',     isVisible: true },
@@ -1409,6 +1675,31 @@ export async function getSiteNavigation(): Promise<SiteNavigation> {
   return {
     mainAreas: d?.mainAreas ?? DEFAULT_MAIN_AREAS,
   }
+}
+
+export interface UncoveredSubArea {
+  label: string
+  link:  string
+}
+
+// Hub-sider skal ikke være avhengige av at dropdown-menyen er eneste vei inn
+// i et underområde (se tryllemuseet_sanity_hubs_automatisk_levende_innhold.md
+// § 5–6). Denne henter siteNavigation (samme sannhetskilde som selve menyen)
+// og returnerer underområdene til `mainAreaLink` som IKKE allerede er dekket
+// av `coveredHrefs` — typisk lenkene en side allerede viser eksplisitte kort
+// for. Bruk denne som et sikkerhetsnett etter en håndkuratert kortliste, ikke
+// som erstatning for den: den fyller hull, den fjerner ikke redaktørens eget
+// utvalg. Funksjonsbryttede underområder (quiz/spill) utelates helt her — vi
+// vet ikke uten en ekstra spørring om de er aktive, og et låst kort er verre
+// enn intet kort.
+export async function getUncoveredSubAreas(mainAreaLink: string, coveredHrefs: string[]): Promise<UncoveredSubArea[]> {
+  const nav = await getSiteNavigation()
+  const area = nav.mainAreas.find(a => a.link === mainAreaLink)
+  if (!area) return []
+  const covered = new Set(coveredHrefs)
+  return area.subAreas
+    .filter(s => s.isVisible !== false && (!s.featureFlag || s.featureFlag === 'none') && !covered.has(s.link))
+    .map(s => ({ label: s.label, link: s.link }))
 }
 
 // ── Legg til på slutten av src/lib/sanity.ts ────────────────────
@@ -1529,7 +1820,15 @@ export async function getFoolUsAppearanceBySlug(slug: string): Promise<TvAppeara
     *[_type == "tvAppearance" && show == "fool-us" && slug.current == $slug && isVisible != false][0] {
       _id, "slug": slug.current,
       show, year, season, episode, episodeTitle,
-      result, description, videoUrl,
+      result,
+      description[]{
+        ...,
+        markDefs[]{
+          ...,
+          "reference": reference->{ "slug": slug.current }
+        }
+      },
+      videoUrl,
       featuredImage { asset->{ url }, alt, caption },
       magician-> {
         _id, name, "slug": slug.current,
@@ -1547,7 +1846,15 @@ export async function getGotTalentAppearanceBySlug(slug: string): Promise<TvAppe
     *[_type == "tvAppearance" && show in $shows && slug.current == $slug && isVisible != false][0] {
       _id, "slug": slug.current,
       show, year, season, episode, episodeTitle,
-      result, description, videoUrl,
+      result,
+      description[]{
+        ...,
+        markDefs[]{
+          ...,
+          "reference": reference->{ "slug": slug.current }
+        }
+      },
+      videoUrl,
       featuredImage { asset->{ url }, alt, caption },
       magician-> {
         _id, name, "slug": slug.current,
@@ -1832,7 +2139,7 @@ export interface LegendStation {
   year?:           string
   image?:          { asset: { _ref: string; url: string }; alt?: string }
   textKids?:       string
-  textAdults?:     string
+  textAdults?:     any[]
   activityPrompt?: string
 }
 
@@ -1849,7 +2156,14 @@ export async function getBiographyBySlug(slug: string): Promise<Biography | null
       featured, tags,
       mainImage { asset->{ _ref, url }, alt, caption },
       gallery[] { asset->{ _ref, url }, alt, caption },
-      shortBio, fullBio,
+      shortBio,
+      fullBio[]{
+        ...,
+        markDefs[]{
+          ...,
+          "reference": reference->{ "slug": slug.current }
+        }
+      },
       videos[] { title, url, type, year },
       links[] {
         label, type, url,
@@ -1897,6 +2211,55 @@ export async function getBiographyDirectory(): Promise<Biography[]> {
   `)
 }
 
+// ── Typer og spørring: Magiens Hvem er Hvem (sideinnledning) ──────
+export interface HvemErHvemPage {
+  hero: { label: string; heading: string; ingress: string }
+  kildeNotice: any[]
+}
+
+// Fallback som gjenskaper kilde-notisen (fet/kursiv/lenke) slik den sto
+// hardkodet i siden før dette feltet ble redigerbart — se ptParagraph()
+// for det tilsvarende enkle-avsnitt-mønsteret.
+const kildeNoticeFallback = [{
+  _type: 'block',
+  _key: 'kilde-fallback-0',
+  style: 'normal',
+  markDefs: [
+    { _type: 'link', _key: 'kilde-fallback-link', href: '/kontakt' },
+  ],
+  children: [
+    { _type: 'span', _key: 'k0', text: 'Om kilden: ', marks: ['strong'] },
+    { _type: 'span', _key: 'k1', text: 'Denne oversikten er basert på ', marks: [] },
+    { _type: 'span', _key: 'k2', text: '«Magiens Hvem er Hvem»', marks: ['em'] },
+    { _type: 'span', _key: 'k3', text: ' av Terje Nordheim (2005), og dekker norske tryllekunstnere frem til ca. år 2000 — altså over 25 år gammelt. Oppdateringsarbeid er påbegynt. Kjenner du noen av disse — eller mangler du en person? ', marks: [] },
+    { _type: 'span', _key: 'k4', text: 'Ta kontakt med oss', marks: ['kilde-fallback-link'] },
+    { _type: 'span', _key: 'k5', text: '.', marks: [] },
+  ],
+}]
+
+export async function getHvemErHvemPage(): Promise<HvemErHvemPage> {
+  const d = await sanityClient.fetch(`
+    *[_type == "hvemErHvemPage"][0] {
+      hero { label, heading, ingress },
+      kildeNotice[]{
+        ...,
+        markDefs[]{
+          ...,
+          "reference": reference->{ "slug": slug.current }
+        }
+      }
+    }
+  `)
+  return {
+    hero: {
+      label:   d?.hero?.label   ?? 'Tryllehistorie',
+      heading: d?.hero?.heading ?? 'Magiens Hvem er Hvem',
+      ingress: d?.hero?.ingress ?? 'Biografisk oversikt over {{antall}} norske tryllekunstnere.',
+    },
+    kildeNotice: d?.kildeNotice?.length ? d.kildeNotice : kildeNoticeFallback,
+  }
+}
+
 export interface MonthlyBiographyPick {
   _id:         string
   name:        string
@@ -1921,6 +2284,68 @@ export async function getMonthlyBiographyPick(): Promise<MonthlyBiographyPick | 
   `)
   if (items.length === 0) return null
   return items[new Date().getMonth() % items.length]
+}
+
+// ── Deterministisk ukentlig rotasjon («auto content») ────────────
+//
+// Generell mekanisme for innhold som skal bytte automatisk uke for uke uten
+// Math.random() (ustabilt mellom bygg) og uten en egen historikk-database.
+// Frøet er år+ISO-uke, så resultatet er stabilt innenfor samme uke og endrer
+// seg ved ukeskiftet via den daglige rebyggingen (samme mekanisme som de
+// månedlige plukkene over). Se docs/architecture.md § Feature Flags-naboen
+// «Auto content»/tryllemuseet_sanity_hubs_automatisk_levende_innhold.md.
+
+// year*100 + ISO-ukenummer, f.eks. 202634 for uke 34 i 2026.
+export function getIsoWeekSeed(date: Date = new Date()): number {
+  const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()))
+  const dayNum = (d.getUTCDay() + 6) % 7 // mandag = 0 … søndag = 6
+  d.setUTCDate(d.getUTCDate() - dayNum + 3) // torsdag i inneværende uke
+  const isoYear = d.getUTCFullYear()
+  const firstThursday = new Date(Date.UTC(isoYear, 0, 4))
+  const firstThursdayDayNum = (firstThursday.getUTCDay() + 6) % 7
+  firstThursday.setUTCDate(firstThursday.getUTCDate() - firstThursdayDayNum + 3)
+  const isoWeek = 1 + Math.round((d.getTime() - firstThursday.getTime()) / (7 * 86400000))
+  return isoYear * 100 + isoWeek
+}
+
+function positiveMod(n: number, m: number): number {
+  return ((n % m) + m) % m
+}
+
+// Deterministisk plukk fra en liste, gitt et frø (f.eks. getIsoWeekSeed()).
+// avoidWindow > 0: hopper videre (fortsatt deterministisk) forbi indekser som
+// de siste `avoidWindow` frøene ville plukket, så lenge poolen er stor nok
+// til at det finnes et alternativ — «unngå nylig vist» uten historikk-lagring
+// (matematisk løsning, se seksjon 10 i kildedokumentet).
+export function pickBySeed<T>(items: T[], seed: number, avoidWindow = 0): T | null {
+  if (items.length === 0) return null
+  if (avoidWindow <= 0 || items.length <= avoidWindow) {
+    return items[positiveMod(seed, items.length)]
+  }
+  const recentlyShown = new Set<number>()
+  for (let i = 1; i <= avoidWindow; i++) recentlyShown.add(positiveMod(seed - i, items.length))
+  let index = positiveMod(seed, items.length)
+  let attempts = 0
+  while (recentlyShown.has(index) && attempts < items.length) {
+    index = positiveMod(index + 1, items.length)
+    attempts++
+  }
+  return items[index]
+}
+
+// «Ukens tryllekunstner» — samme utvalgskriterier som getMonthlyBiographyPick,
+// men roterer ukentlig og unngår de 8 siste ukenes plukk (der poolen er stor
+// nok til det).
+export async function getWeeklyBiographyPick(): Promise<MonthlyBiographyPick | null> {
+  const items: MonthlyBiographyPick[] = await sanityClient.fetch(`
+    *[_type == "biography" && isVisible != false && defined(mainImage) && defined(shortBio)]
+      | order(slug.current asc) {
+      _id, name, artistName, years, shortBio,
+      "slug": slug.current,
+      mainImage { asset->{ _ref, url }, alt, caption }
+    }
+  `)
+  return pickBySeed(items, getIsoWeekSeed(), 8)
 }
 
 // ── Spørringer: Legend ───────────────────────────────────────────
@@ -1964,7 +2389,17 @@ export async function getLegendBySlug(slug: string): Promise<Legend | null> {
       gallery[] { asset->{ _ref, url }, alt, caption },
       content,
       videos[] { title, url, type, year },
-      stations[] { title, order, year, image { asset->{ _ref, url }, alt }, textKids, textAdults, activityPrompt },
+      stations[] {
+        title, order, year, image { asset->{ _ref, url }, alt }, textKids,
+        textAdults[]{
+          ...,
+          markDefs[]{
+            ...,
+            "reference": reference->{ "slug": slug.current }
+          }
+        },
+        activityPrompt
+      },
       sources[] { label, url, sourceRef-> { title, author, type, year, url } },
       relatedLinks[] { label, path },
       biographyRef-> {
@@ -2032,7 +2467,7 @@ export interface MagicClubEdition {
   guestStars?: MagicClubGuestStar[]
   lineup?:     MagicClubLineupEntry[]
   otherActs?:  MagicClubOtherAct[]
-  notes?:      string
+  notes?:      PortableTextBlock[]
   sourceUrl?:  string
   seriesRef?:  { _id: string; title: string; "slug": string }
 }
@@ -2045,7 +2480,14 @@ const magicClubEditionProjection = `
   guestStars[] { name, description },
   lineup[] { name, bioRef-> { _id, name, "slug": slug.current } },
   otherActs[] { category, names },
-  notes, sourceUrl,
+  notes[]{
+    ...,
+    markDefs[]{
+      ...,
+      "reference": reference->{ "slug": slug.current }
+    }
+  },
+  sourceUrl,
   seriesRef-> { _id, title, "slug": slug.current }
 `
 
@@ -2132,7 +2574,13 @@ export async function getWhoKnewBySlug(slug: string): Promise<WhoKnew | null> {
   return sanityClient.fetch(`
     *[_type == "whoKnew" && slug.current == $slug && isVisible != false][0] {
       ${whoKnewCardProjection},
-      body,
+      body[]{
+        ...,
+        markDefs[]{
+          ...,
+          "reference": reference->{ "slug": slug.current }
+        }
+      },
       sources[] { label, url, sourceRef-> { title, author, type, year, url } }
     }
   `, { slug })
@@ -2209,7 +2657,14 @@ export async function getHistoricalClipBySlug(slug: string): Promise<HistoricalC
     *[_type == "historicalClip" && slug.current == $slug && isVisible != false][0] {
       _id, "slug": slug.current,
       title, year, broadcaster, show, category,
-      description, videoUrl, videoUrlAlt, source,
+      description[]{
+        ...,
+        markDefs[]{
+          ...,
+          "reference": reference->{ "slug": slug.current }
+        }
+      },
+      videoUrl, videoUrlAlt, source,
       featuredImage { asset->{ url }, alt, caption },
       magician-> {
         _id, name, "slug": slug.current,
@@ -2257,7 +2712,7 @@ export interface HistoriskKlippNb {
   copyrightOverride?: 'auto' | 'show' | 'hide'
   images?:      { asset: { _ref: string; url: string }; alt?: string; caption?: string }[]
   teaser:       string
-  rewrittenText?: string
+  rewrittenText?: PortableTextBlock[]
   commentary?:  string
   someText?:    string
   category?:    string
@@ -2294,7 +2749,15 @@ const historiskKlippProjection = `
     originalDate < $publicDomainCutoff => images[]{ asset->{ _ref, url }, alt, caption },
     []
   ),
-  teaser, rewrittenText, commentary, category,
+  teaser,
+  rewrittenText[]{
+    ...,
+    markDefs[]{
+      ...,
+      "reference": reference->{ "slug": slug.current }
+    }
+  },
+  commentary, category,
   mentionedMagicians[]-> { _id, name, "slug": slug.current, artistName }
 `
 
@@ -2491,7 +2954,16 @@ export async function getPersonvernPage(): Promise<PersonvernPage | null> {
   return sanityClient.fetch(`
     *[_type == "personvernPage"][0] {
       lastUpdated, intro,
-      sections[] { _key, heading, body }
+      sections[] {
+        _key, heading,
+        body[]{
+          ...,
+          markDefs[]{
+            ...,
+            "reference": reference->{ "slug": slug.current }
+          }
+        }
+      }
     }
   `)
 }
