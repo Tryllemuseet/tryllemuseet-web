@@ -2,6 +2,7 @@
 // src/layouts/BaseLayout.astro
 import { getSiteConfig, getQuizConfig, getGameConfig, getSiteNavigation } from '../lib/sanity'
 import type { NavMainArea, NavSubArea } from '../lib/sanity'
+import { SITE_ORIGIN, isIndexable } from '../lib/site'
 import Analytics from '@vercel/analytics/astro'
 
 export interface Props {
@@ -28,10 +29,8 @@ const [site, quizConfig, gameConfig, navigation] = await Promise.all([
 ])
 const metaDescription = description ?? site.seoDescription
 
-// "production" i Vercel prod-miljø; alt annet (test, preview, lokalt) skal ikke indekseres
-const isProdEnv = import.meta.env.PUBLIC_VERCEL_ENV === 'production'
-const canonicalUrl = new URL(Astro.url.pathname, 'https://tryllemuseet.no').toString()
-const shareImage = new URL(ogImage ?? '/Logosirkel_m_tekst.jpg', 'https://tryllemuseet.no').toString()
+const canonicalUrl = new URL(Astro.url.pathname, SITE_ORIGIN).toString()
+const shareImage = new URL(ogImage ?? '/Logosirkel_m_tekst.jpg', SITE_ORIGIN).toString()
 const quizActive = quizConfig?.isActive === true
 const gameActive = gameConfig?.isActive === true
 
@@ -77,7 +76,7 @@ const allNavLinks: { href: string; label: string; external?: boolean }[] = [
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="description" content={metaDescription} />
-  {(!isProdEnv || noindex) && <meta name="robots" content="noindex, nofollow" />}
+  {(!isIndexable || noindex) && <meta name="robots" content="noindex, nofollow" />}
   <title>{title}</title>
   <link rel="canonical" href={canonicalUrl} />
 
