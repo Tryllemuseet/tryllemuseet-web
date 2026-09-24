@@ -1,8 +1,7 @@
 // src/pages/robots.txt.ts
-// "production" i Vercel prod-miljø; alt annet (test, preview, lokalt) skal ikke crawles
-const isProdEnv = import.meta.env.PUBLIC_VERCEL_ENV === 'production'
+import { isIndexable } from '../lib/site'
 
-const body = isProdEnv
+const body = isIndexable
   ? `User-agent: *\nAllow: /\n`
   : `User-agent: *\nDisallow: /\n`
 
