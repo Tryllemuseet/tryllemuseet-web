@@ -1,0 +1,82 @@
+---
+// src/components/GrasrotandelStats.astro
+// Norsk Tipping's official Grasrotandelen statistics iframe, made responsive
+// (the stock embed code has a fixed width of 550px).
+export interface Props {
+  orgnr: string
+}
+
+const { orgnr } = Astro.props
+// Norsk Tipping's URL expects digits only; tolerate "989 347 500"-style input.
+const src = `https://www.norsk-tipping.no/grasrotandelen/statistikk/iframe/${orgnr.replace(/\D/g, '')}`
+---
+
+<section class="grasrot-seksjon section-pad" id="grasrotandelen" aria-labelledby="grasrotandelen-tittel">
+  <div class="container grasrot-inner">
+    <span class="etikett">Norsk Tipping</span>
+    <h2 id="grasrotandelen-tittel">Grasrotandelen</h2>
+    <p class="grasrot-ingress">
+      Hver gang du tipper hos Norsk Tipping kan du gi en andel av innsatsen til Tryllemuseet,
+      uten at det koster deg noe. Her ser du hva vi har mottatt de siste årene.
+    </p>
+    <div class="grasrot-frame">
+      <iframe
+        src={src}
+        title="Grasrotandelen: statistikk over hva Tryllemuseet har mottatt fra Norsk Tipping"
+        loading="lazy"
+        scrolling="yes"
+      ></iframe>
+    </div>
+  </div>
+</section>
+
+<style>
+  .section-pad { padding-block: 5rem; }
+  .grasrot-inner { text-align: center; }
+
+  .etikett {
+    display: inline-block;
+    font-family: var(--font-ui);
+    font-size: 0.75rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--gold);
+    border-bottom: 1px solid var(--gold);
+    padding-bottom: 0.2em;
+    margin-bottom: 1rem;
+  }
+
+  h2 {
+    font-family: var(--font-display);
+    font-size: clamp(1.4rem, 2.5vw, 2rem);
+    color: var(--burgundy);
+    margin: 0.3rem 0 1rem;
+  }
+  h2::after { content: ''; display: block; width: 50px; height: 2px; background: var(--gold); margin: 0.6rem auto 0; }
+
+  .grasrot-ingress {
+    font-family: var(--font-body);
+    font-size: 1rem;
+    color: var(--ink-mid, #3D2E1A);
+    line-height: 1.7;
+    max-width: 560px;
+    margin: 0 auto 2.5rem;
+  }
+
+  .grasrot-frame {
+    width: 100%;
+    max-width: 550px;
+    margin: 0 auto;
+    background: white;
+    border: 1px solid rgba(107,15,26,0.12);
+    border-top: 3px solid var(--gold);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  .grasrot-frame iframe {
+    display: block;
+    width: 100%;
+    height: 650px;
+    border: 0;
+  }
+</style>
