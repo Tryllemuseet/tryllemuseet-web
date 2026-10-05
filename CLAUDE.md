@@ -295,9 +295,9 @@ Included in the plan (overage prices in parentheses):
 | History retention | 90 days |
 
 Practical consequences:
-- **Datasets:** room for `production` plus a `development` dataset (and one spare, e.g. `staging`). As of 2026-10-05 only `production` exists — `development` still has to be created by an admin (see "Sanity og innhold" below). Don't create datasets without asking.
+- **Datasets:** room for `production` plus a `development` dataset (and one spare). As of 2026-10-05 only `production` exists. The setup steps (webhook first, then `sanity dataset copy`) are in `docs/development-dataset-operations-routine.md`; they need an Administrator account. Don't create datasets without asking. `development` is a sandbox for schema changes and bulk scripts, not a staging step — content is never promoted from it to `production`.
 - **Webhooks:** 2 of 4 are in use today, both pointing at the same `tryllemuseet-web` deploy hook (see Deploy hooks above). Note that "Vercel Rebuild" uses dataset `*`, so once a `development` dataset exists, edits there will also trigger test rebuilds unless that webhook is narrowed to `production`.
-- **Overage costs real money:** API/CDN requests, bandwidth and assets are billed beyond the quota. Bulk scripts, `skjerm.html` (client-side live queries) and uncached API calls count against the API quota — prefer the CDN (`useCdn`) for read-only traffic, and check Usage in sanity.io/manage before adding anything that polls.
+- **Overage costs real money:** API/CDN requests, bandwidth and assets are billed beyond the quota. Bulk scripts, `skjerm.html` (client-side live queries) and uncached API calls count against the API quota (the info screen is deprioritized as of 2026-10 — the user is looking at a separate solution such as Yodeck, so don't invest further in `skjerm.html` without asking) — prefer the CDN (`useCdn`) for read-only traffic, and check Usage in sanity.io/manage before adding anything that polls.
 - **History:** document history is kept for 90 days, so accidental edits/deletes can be restored from the Studio's history within that window — but it is not a backup; take a `sanity dataset export` before large migrations.
 
 ## Visibility / Unpublish Convention
