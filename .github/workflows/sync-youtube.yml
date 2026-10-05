@@ -37,6 +37,6 @@ jobs:
         env:
           YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
           SANITY_TOKEN:    ${{ secrets.SANITY_TOKEN }}
-          # Alltid production (gratisplan har kun ett datasett)
+          # Alltid production (det eneste datasettet med ekte innhold)
           SANITY_DATASET: production
         run: node scripts/importYouTubeClips.mjs

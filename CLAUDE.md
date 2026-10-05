@@ -276,6 +276,30 @@ Contrary to what this section previously said, the `tryllemuseet-prod` Vercel pr
 
 **Production release flow (2026-09-24, set up manually outside a Claude Code session):** `tryllemuseet-prod` now builds production from a `prod` branch, released via a PR from `main` into `prod` (e.g. PR #173 "release: sync prod with main"). `tryllemuseet.no` and `www.tryllemuseet.no` are now attached to `tryllemuseet-prod` (apex → 308 → www), which resolves the domain open item above. **Unverified:** after the switch, the nightly `daily-rebuild.yml` run (deploy hook bound to `main`) produced a *preview* deployment instead of a production one. So Sanity-only content changes may no longer reach production nightly until that hook is rebound to `prod`.
 
+## Sanity plan and limits
+
+**As of 2026-10-05 the Sanity project (`n2ynpgty`, org `oV1UWxOsN`) is on the Growth (Non-Profit) plan, $0/month base price.** Earlier code comments and docs that say "free plan" / "gratisplan" / "only one dataset" predate this and are outdated.
+
+Included in the plan (overage prices in parentheses):
+
+| Resource | Included |
+|---|---|
+| Datasets | 3 |
+| Documents | 25k |
+| GROQ webhooks | 4 |
+| Members | 25 (+$15/extra member) |
+| CDN requests | 1M/month (+$1 per 250k) |
+| API requests | 250k/month (+$1 per 25k) |
+| Assets | 100 GB (+$0.50/GB) |
+| Bandwidth | 100 GB/month (+$0.30/GB) |
+| History retention | 90 days |
+
+Practical consequences:
+- **Datasets:** room for `production` plus a `development` dataset (and one spare, e.g. `staging`). As of 2026-10-05 only `production` exists — `development` still has to be created by an admin (see "Sanity og innhold" below). Don't create datasets without asking.
+- **Webhooks:** 2 of 4 are in use today, both pointing at the same `tryllemuseet-web` deploy hook (see Deploy hooks above). Note that "Vercel Rebuild" uses dataset `*`, so once a `development` dataset exists, edits there will also trigger test rebuilds unless that webhook is narrowed to `production`.
+- **Overage costs real money:** API/CDN requests, bandwidth and assets are billed beyond the quota. Bulk scripts, `skjerm.html` (client-side live queries) and uncached API calls count against the API quota — prefer the CDN (`useCdn`) for read-only traffic, and check Usage in sanity.io/manage before adding anything that polls.
+- **History:** document history is kept for 90 days, so accidental edits/deletes can be restored from the Studio's history within that window — but it is not a backup; take a `sanity dataset export` before large migrations.
+
 ## Visibility / Unpublish Convention
 
 All content document types (`biography`, `legend`, `event`, `tvAppearance`, `historicalClip`, `book`, `artifact`, `partner`, `quizTheme`, `quizQuestion`, `tema`, `trick`, `comicStory`, `story`, `whoKnew`, `worldRecordTrick`, `competitionResult`, `historiskeKlippNb`, `magicOrganization`, `magicClubEdition`, `mediaAppearance`, `gameChapter`) have a boolean field `isVisible` with `initialValue: true`. Config/settings singletons (`siteConfig`, `godeRadConfig`, `signageConfig`, `quizConfig`, `gameConfig`) use `isActive` instead — same semantics, different name since they're not "content" per se. `siteNavigation` models visibility per nested `navMainArea`/`navSubArea` item rather than on the document itself.
@@ -332,7 +356,7 @@ Messages are concise; use body for detail if needed.
 ## Sanity og innhold
 
 - Produksjonsdatasettet inneholder ekte innhold (bl.a. 171 magikerbiografier, bokregister, arrangementer). Test alltid skjemaendringer mot development-datasettet først.
-  - NB (juli 2026): development-datasettet finnes ikke i prosjektet ennå — API-et svarer «Dataset not found», og å opprette det krever admin-rettigheter (sanity.io/manage → prosjekt `n2ynpgty` → Datasets, eller `npx sanity dataset create development` som innlogget admin). Inntil det er opprettet: vær ekstra varsom med skjemaendringer, og flagg det i PR-en.
+  - NB (oppdatert 2026-10-05): Prosjektet er nå på Growth (Non-Profit)-planen med plass til 3 datasett (se «Sanity plan and limits»), men development-datasettet er fortsatt ikke opprettet — kun `production` finnes. Å opprette det krever admin-rettigheter (sanity.io/manage → prosjekt `n2ynpgty` → Datasets, eller `npx sanity dataset create development` som innlogget admin). Inntil det er opprettet: vær ekstra varsom med skjemaendringer, og flagg det i PR-en.
 - Skjemaendringer som kan bryte eksisterende dokumenter (felt som fjernes, endrer type eller blir påkrevd): flagg konsekvensene og spør før implementering.
 - Ikke slett eller masseoppdater dokumenter i produksjonsdatasettet uten eksplisitt bekreftelse.
 - GROQ-spørringer holdes samlet på ett sted i kodebasen (følg eksisterende struktur).
