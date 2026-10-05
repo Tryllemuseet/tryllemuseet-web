@@ -1,5 +1,9 @@
 # Operations Routine: development dataset
 
+## Status
+
+Done on 2026-10-05: `development` exists (private), populated from a `production` export (906 documents + 144 assets; drafts and the `system.schema` doc are the only differences in `count(*)`). At that point the "Vercel Rebuild" (`*`) webhook had already been removed — `sanity hooks list` showed only "Deploy test" (dataset `production`). The steps below are kept for refreshing the copy or recreating it.
+
 ## Purpose
 
 Since 2026-10-05 the Sanity project (`n2ynpgty`) is on the Growth (Non-Profit) plan, which allows 3 datasets. This routine sets up a `development` dataset holding a copy of `production`, so schema changes and bulk/migration scripts can be tested against realistic content before they touch the real 171 biographies, book register, events etc.
@@ -28,29 +32,23 @@ Verify: every remaining webhook lists dataset `production`, none `*`.
 
 ### 2. Create the dataset and copy production into it
 
-Preferred — server-side copy (creates the dataset, copies documents and assets):
-
-```
-npx sanity dataset copy production development
-```
-
-The CLI prints a job ID and follows its progress. Add `--skip-history` to skip copying document history (faster; history isn't needed in a sandbox).
-
-If the copy command is refused (e.g. not available on the plan), fall back to export/import:
+`sanity dataset copy` (server-side copy) is **not** included in the Growth plan — it fails with "Your current plan does not include the advanced dataset management feature". Use export/import:
 
 ```
 npx sanity dataset create development --visibility private
 npx sanity dataset export production production-YYYY-MM-DD.tar.gz
-npx sanity dataset import production-YYYY-MM-DD.tar.gz development
+npx sanity dataset import production-YYYY-MM-DD.tar.gz --dataset development --allow-replacement-characters
 ```
+
+`--allow-replacement-characters` is needed because one production document already contains a U+FFFD character (the `sourceNote` of the `story` "Mannen som lurte Houdini", `c556dcf3-…`, as of 2026-10-05). The import copies it as-is; fix it in production, and the flag can be dropped once the export is clean.
 
 Keep the `.tar.gz` outside the repo (it contains every document and asset). It doubles as a production backup.
 
-**Visibility:** `production` is public (anyone with the project ID can read published content — fine, it's what the website shows). For `development`, choose **private** so half-finished test content isn't world-readable. Consequence: reading it requires a token — locally that's the existing `SANITY_PREVIEW_TOKEN` in `web/.env.local`. If the copy command creates it as public, change it with `npx sanity dataset visibility set development private`.
+**Visibility:** `production` is public (anyone with the project ID can read published content — fine, it's what the website shows). `development` is **private** so half-finished test content isn't world-readable. Consequence: reading it requires a token — locally that's the existing `SANITY_PREVIEW_TOKEN` in `web/.env.local`.
 
 ### 3. Deploy the schema to the new dataset (optional)
 
-So tools that read the deployed schema (Sanity MCP `get_schema`, Vision) see it:
+So tools that read the deployed schema (Sanity MCP `get_schema`, Vision) see it. Needs an account with the `deploySchema` grant (an Administrator login) — the editor-scoped token in cloud sessions is refused. Not yet done as of 2026-10-05:
 
 ```
 SANITY_STUDIO_DATASET=development npx sanity schema deploy
@@ -64,7 +62,7 @@ npx sanity documents query 'count(*[_type == "biography"])' --dataset production
 npx sanity documents query 'count(*[_type == "biography"])' --dataset development
 ```
 
-The two counts should match. Then start a local Studio against it (below) and open a few documents with images.
+The two counts should match (`count(*)` differs only by `system.schema` until step 3 is done). Then start a local Studio against it (below) and open a few documents with images.
 
 ## Using the development dataset
 
@@ -82,11 +80,13 @@ Nothing is pointed at `development` by default — every tool falls back to `pro
 `development` drifts from `production` over time. To reset it to a fresh copy:
 
 ```
-npx sanity dataset delete development
-npx sanity dataset copy production development
+npx sanity dataset export production production-YYYY-MM-DD.tar.gz
+npx sanity dataset import production-YYYY-MM-DD.tar.gz --dataset development --replace --allow-replacement-characters
 ```
 
-Anything only in `development` is lost — that's the point of a sandbox, but check with whoever is using it first. Step 1 (webhooks) stays in effect, so refreshes are safe.
+`--replace` overwrites documents with the same `_id`; documents created only in `development` survive. For a fully clean copy, `npx sanity dataset delete development` and recreate it first.
+
+Changes made in `development` are overwritten — that's the point of a sandbox, but check with whoever is using it first. As long as no webhook listens on `*` or `development`, refreshes don't trigger any deploys.
 
 ## Rollback
 

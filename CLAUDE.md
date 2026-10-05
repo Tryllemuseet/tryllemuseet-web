@@ -255,6 +255,8 @@ Update TypeScript interfaces in sanity.ts when schema changes.
 | Test — `test.tryllemuseet.no` | `tryllemuseet-web` | Immediately — normal Vercel git auto-deploy, untouched | Immediately — two Sanity webhooks ("Vercel Rebuild", dataset `*`, and "Deploy test", dataset `production"`) call `tryllemuseet-web`'s deploy hook directly on every document mutation. Confirmed firing successfully (HTTP 201) via `sanity hooks logs`, including on Studio publishes and the YouTube-sync script's writes. The two are redundant (same target hook); harmless but could be trimmed to one. |
 | Production — `tryllemuseet.no` | `tryllemuseet-prod` | **Disabled on purpose.** Repo-root `vercel.json` (`git.deploymentEnabled: false`) turns off Vercel's git auto-deploy for this project only — it has `rootDirectory: null` (repo root), so it's the only project that reads this file; `tryllemuseet-web`'s root directory is `web/`, so it looks for (and doesn't find) its own `web/vercel.json` and keeps auto-deploying as normal. | Never directly — no Sanity webhook targets prod's deploy hook. Only `.github/workflows/daily-rebuild.yml` does, once nightly at 05:30 UTC (or on-demand via **Actions → Nightly production rebuild → Run workflow**), via the `VERCEL_DEPLOY_HOOK_PROD` secret. Deploy hooks are a separate trigger path from git push and are unaffected by `git.deploymentEnabled`, so the nightly/manual rebuild still works with git auto-deploy off. |
 
+**Update 2026-10-05:** `sanity hooks list` now shows only "Deploy test" — "Vercel Rebuild" (`*`) has been removed, so the redundancy noted in the table is gone.
+
 So: a merged PR is live on test within seconds, same as a Sanity publish. Production only picks up **either** kind of change — code or content — at the next nightly rebuild (or a manual workflow run). If you need a fix live in production sooner than the next 05:30 UTC run, trigger `daily-rebuild.yml` manually.
 
 **Open items, not yet resolved — flagged rather than guessed at:**
@@ -295,8 +297,8 @@ Included in the plan (overage prices in parentheses):
 | History retention | 90 days |
 
 Practical consequences:
-- **Datasets:** room for `production` plus a `development` dataset (and one spare). As of 2026-10-05 only `production` exists. The setup steps (webhook first, then `sanity dataset copy`) are in `docs/development-dataset-operations-routine.md`; they need an Administrator account. Don't create datasets without asking. `development` is a sandbox for schema changes and bulk scripts, not a staging step — content is never promoted from it to `production`.
-- **Webhooks:** 2 of 4 are in use today, both pointing at the same `tryllemuseet-web` deploy hook (see Deploy hooks above). Note that "Vercel Rebuild" uses dataset `*`, so once a `development` dataset exists, edits there will also trigger test rebuilds unless that webhook is narrowed to `production`.
+- **Datasets:** `production` (public) and `development` (private, created 2026-10-05 as an export/import copy of production — `sanity dataset copy` is *not* in the plan), with one slot spare. Refresh/recreate steps are in `docs/development-dataset-operations-routine.md`. Don't create or delete datasets without asking. `development` is a sandbox for schema changes and bulk scripts, not a staging step — content is never promoted from it to `production`.
+- **Webhooks:** 1 of 4 in use as of 2026-10-05 — only "Deploy test" (dataset `production`) → `tryllemuseet-web` deploy hook. The "Vercel Rebuild" (`*`) hook mentioned under Deploy hooks above no longer exists. Never point a webhook at `*` or `development`: bulk imports into `development` would then trigger one deploy per document.
 - **Overage costs real money:** API/CDN requests, bandwidth and assets are billed beyond the quota. Bulk scripts, `skjerm.html` (client-side live queries) and uncached API calls count against the API quota (the info screen is deprioritized as of 2026-10 — the user is looking at a separate solution such as Yodeck, so don't invest further in `skjerm.html` without asking) — prefer the CDN (`useCdn`) for read-only traffic, and check Usage in sanity.io/manage before adding anything that polls.
 - **History:** document history is kept for 90 days, so accidental edits/deletes can be restored from the Studio's history within that window — but it is not a backup; take a `sanity dataset export` before large migrations.
 
@@ -356,7 +358,7 @@ Messages are concise; use body for detail if needed.
 ## Sanity og innhold
 
 - Produksjonsdatasettet inneholder ekte innhold (bl.a. 171 magikerbiografier, bokregister, arrangementer). Test alltid skjemaendringer mot development-datasettet først.
-  - NB (oppdatert 2026-10-05): Prosjektet er nå på Growth (Non-Profit)-planen med plass til 3 datasett (se «Sanity plan and limits»), men development-datasettet er fortsatt ikke opprettet — kun `production` finnes. Å opprette det krever admin-rettigheter (sanity.io/manage → prosjekt `n2ynpgty` → Datasets, eller `npx sanity dataset create development` som innlogget admin). Inntil det er opprettet: vær ekstra varsom med skjemaendringer, og flagg det i PR-en.
+  - Development-datasettet ble opprettet 2026-10-05 (privat, kopi av production per den datoen — se `docs/development-dataset-operations-routine.md` for oppfrisking). Pek Studio/web/skript mot det med `SANITY_STUDIO_DATASET` / `PUBLIC_SANITY_DATASET` / `SANITY_DATASET=development`.
 - Skjemaendringer som kan bryte eksisterende dokumenter (felt som fjernes, endrer type eller blir påkrevd): flagg konsekvensene og spør før implementering.
 - Ikke slett eller masseoppdater dokumenter i produksjonsdatasettet uten eksplisitt bekreftelse.
 - GROQ-spørringer holdes samlet på ett sted i kodebasen (følg eksisterende struktur).
