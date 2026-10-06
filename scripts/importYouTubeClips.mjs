@@ -27,7 +27,7 @@
  * Required env vars:
  *   YOUTUBE_API_KEY   — YouTube Data API v3 key
  *   SANITY_TOKEN      — Sanity API token (editor or write)
- *   SANITY_DATASET    — Target dataset (default: staging — NEVER production unless explicit)
+ *   SANITY_DATASET    — Target dataset (default: development — NEVER production unless explicit)
  *
  * Usage:
  *   node scripts/importYouTubeClips.mjs
@@ -44,7 +44,7 @@ const API_VERSION  = '2024-01-01'
 
 const YT_API_KEY     = process.env.YOUTUBE_API_KEY
 const SANITY_TOKEN   = process.env.SANITY_TOKEN ?? process.env.SANITY_AUTH_TOKEN
-const SANITY_DATASET = process.env.SANITY_DATASET ?? 'staging'
+const SANITY_DATASET = process.env.SANITY_DATASET ?? 'development'
 
 // ── Guards ────────────────────────────────────────────────────────────────────
 

@@ -357,7 +357,7 @@ Messages are concise; use body for detail if needed.
 
 ## Sanity og innhold
 
-- Produksjonsdatasettet inneholder ekte innhold (bl.a. 171 magikerbiografier, bokregister, arrangementer). Test alltid skjemaendringer mot development-datasettet først.
+- Produksjonsdatasettet inneholder ekte innhold (bl.a. 231 magikerbiografier per 2026-10-05, bokregister, arrangementer). Test alltid skjemaendringer mot development-datasettet først.
   - Development-datasettet ble opprettet 2026-10-05 (privat, kopi av production per den datoen — se `docs/development-dataset-operations-routine.md` for oppfrisking). Pek Studio/web/skript mot det med `SANITY_STUDIO_DATASET` / `PUBLIC_SANITY_DATASET` / `SANITY_DATASET=development`.
 - Skjemaendringer som kan bryte eksisterende dokumenter (felt som fjernes, endrer type eller blir påkrevd): flagg konsekvensene og spør før implementering.
 - Ikke slett eller masseoppdater dokumenter i produksjonsdatasettet uten eksplisitt bekreftelse.

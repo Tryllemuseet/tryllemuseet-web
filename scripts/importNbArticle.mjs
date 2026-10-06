@@ -13,7 +13,7 @@
  *   SANITY_TOKEN    — Sanity API token (editor or write)
  *
  * Optional env vars:
- *   SANITY_DATASET  — Target dataset (default: staging — pass 'production' explicitly)
+ *   SANITY_DATASET  — Target dataset (default: development — pass 'production' explicitly)
  *
  * Usage:
  *   node scripts/importNbArticle.mjs https://www.nb.no/items/URN:NBN:no-nb_digavis_...
@@ -28,7 +28,7 @@ import { createClient } from '@sanity/client'
 const PROJECT_ID    = 'n2ynpgty'
 const API_VERSION   = '2024-01-01'
 const SANITY_TOKEN  = process.env.SANITY_TOKEN
-const SANITY_DATASET = process.env.SANITY_DATASET ?? 'staging'
+const SANITY_DATASET = process.env.SANITY_DATASET ?? 'development'
 
 const NB_API_BASE   = 'https://api.nb.no/catalog/v1/items'
 const IIIF_BASE     = 'https://www.nb.no/services/image/resolver'
