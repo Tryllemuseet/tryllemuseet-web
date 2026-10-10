@@ -11,10 +11,12 @@
  *   header   h1 → title, .orig → originalTitle ("På norsk: X" swaps the
  *            two: X becomes the title, the <h1> the original), .lede → lead,
  *            .notice → notice (+ its <strong> → noticeLabel)
- *   section  h2 → section kind/heading; <p> → body; ol.props / plain
- *            lists → listItems; <figure> and image-only lists (ul.photos)
- *            → figures (incl. .pos markers);
- *            ol.routine / ol.steps <li> → steps (h3 → step title)
+ *   section  walked in document order: h2 (+ p.sub) → section kind/heading;
+ *            <p> and images (<figure>, ul.photos) → body text with inline
+ *            images and captions; figures with .pos number markers →
+ *            section figures; other lists → listItems; ol.routine /
+ *            ol.steps <li> → steps (h3 inside → step title); a section-level
+ *            <h3> → subsection
  *   footer   .source <p> → sourceText, <dl> → sourceFacts,
  *            .small / .credit → rightsNote
  *
@@ -178,62 +180,118 @@ async function importFile(file) {
   const noticeFull = clean(notice.text())
   const noticeText = noticeLabel && noticeFull.startsWith(noticeLabel) ? noticeFull.slice(noticeLabel.length).trim() : noticeFull
 
+  // Walk each <section> in document order so text, images and steps keep
+  // the source's sequence. Figures with number markers stay section figures;
+  // all other images become inline images in the body text (with caption).
+  // An <h3> starts a subsection; content that follows a step list starts an
+  // untitled continuation subsection (steps always render after the body).
   const sections = []
+  const isStepList = el => $(el).is('ol.routine, ol.steps')
+  const isPhotoList = el => $(el).is('ol, ul') && $(el).find('img').length > 0 && !clean($(el).text())
+
+  async function inlineImage(img, caption) {
+    const ref = await uploadImage($(img).attr('src'), hint())
+    if (!ref) return null
+    return {
+      _type: 'image',
+      _key: key(),
+      asset: { _type: 'reference', _ref: ref },
+      alt: clean($(img).attr('alt') ?? ''),
+      ...(caption ? { caption } : {}),
+    }
+  }
+
   for (const sectionEl of $('section').toArray()) {
     const section = $(sectionEl)
-    const { kind, heading } = sectionKind(clean(section.find('h2').first().text()))
-    const notInLi = (_, el) => $(el).parents('li').length === 0
+    const h2 = clean(section.find('h2').first().text())
+    const sub = clean(section.find('p.sub').first().text())
+    const { kind, heading } = sectionKind(h2)
 
-    const body = blocksOf($, section.find('p').filter(notInLi).filter((_, el) => $(el).parents('figure').length === 0))
-
-    const stepLists = section.find('ol.routine, ol.steps')
-    // Image-only lists (e.g. ul.photos) are a row of pictures, not a text list.
-    const photoLists = section.find('ol, ul').not(stepLists).filter((_, el) => $(el).find('img').length > 0 && !clean($(el).text()))
-    const listItems = section.find('ol, ul').not(stepLists).not(photoLists).children('li').toArray().map(li => clean($(li).text())).filter(Boolean)
-
-    const figures = []
-    for (const fig of section.find('figure').filter(notInLi).toArray()) {
-      const markers = $(fig).find('.pos').toArray().map(pos => ({
-        _type: 'kitMarker',
+    const newChunk = props => ({ body: [], listItems: [], figures: [], steps: [], stepLayout: 'list', ...props })
+    let cur = newChunk({ kind, heading: sub ? `${heading ?? h2}: ${sub}` : heading, first: true })
+    const flush = () => {
+      const hasContent = cur.body.length || cur.listItems.length || cur.figures.length || cur.steps.length
+      if (!hasContent && !cur.heading && !cur.first) return
+      sections.push({
+        _type: 'kitTrickSection',
         _key: key(),
-        label: clean($(pos).text()),
-        top: Number((/top:\s*([\d.]+)%/.exec($(pos).attr('style') ?? '') ?? [])[1] ?? 50),
-      }))
-      const f = await toFigure($, $(fig).find('img').first(), clean($(fig).find('figcaption').text()), markers, hint())
-      if (f) figures.push(f)
-    }
-    for (const img of photoLists.find('img').toArray()) {
-      const f = await toFigure($, img, '', [], hint())
-      if (f) figures.push(f)
-    }
-
-    const steps = []
-    for (const li of stepLists.children('li').toArray()) {
-      const stepFigures = []
-      for (const img of $(li).find('img').toArray()) {
-        const f = await toFigure($, img, '', [], hint())
-        if (f) stepFigures.push(f)
-      }
-      const stepTitle = clean($(li).find('h3').first().text())
-      steps.push({
-        _type: 'kitStep',
-        _key: key(),
-        ...(stepTitle ? { title: stepTitle } : {}),
-        text: blocksOf($, $(li).find('p')),
-        ...(stepFigures.length ? { figures: stepFigures } : {}),
+        kind: cur.kind,
+        ...(cur.heading ? { heading: cur.heading } : {}),
+        ...(cur.subsection ? { subsection: true } : {}),
+        ...(cur.body.length ? { body: cur.body } : {}),
+        ...(cur.listItems.length ? { listItems: cur.listItems } : {}),
+        ...(cur.figures.length ? { figures: cur.figures } : {}),
+        ...(cur.steps.length ? { steps: cur.steps, stepLayout: cur.stepLayout } : {}),
       })
     }
+    const startSub = subHeading => { flush(); cur = newChunk({ kind: 'annet', heading: subHeading || undefined, subsection: true }) }
+    const afterSteps = () => { if (cur.steps.length) startSub('') }
 
-    sections.push({
-      _type: 'kitTrickSection',
-      _key: key(),
-      kind,
-      ...(heading ? { heading } : {}),
-      ...(body.length ? { body } : {}),
-      ...(listItems.length ? { listItems } : {}),
-      ...(figures.length ? { figures } : {}),
-      ...(steps.length ? { steps, stepLayout: stepLists.first().hasClass('steps') ? 'cards' : 'list' } : {}),
-    })
+    async function walk(nodes) {
+      for (const el of nodes) {
+        if (el.type !== 'tag') continue
+        const $el = $(el)
+        const tag = el.tagName.toLowerCase()
+        if (tag === 'h2' || $el.hasClass('sub')) continue
+        if (tag === 'h3') { startSub(clean($el.text())); continue }
+        if (tag === 'p') {
+          afterSteps()
+          const block = toBlock($, el)
+          if (block) cur.body.push(block)
+        } else if (tag === 'figure') {
+          afterSteps()
+          const caption = clean($el.find('figcaption').text())
+          const markers = $el.find('.pos').toArray().map(pos => ({
+            _type: 'kitMarker',
+            _key: key(),
+            label: clean($(pos).text()),
+            top: Number((/top:\s*([\d.]+)%/.exec($(pos).attr('style') ?? '') ?? [])[1] ?? 50),
+          }))
+          if (markers.length) {
+            const f = await toFigure($, $el.find('img').first(), caption, markers, hint())
+            if (f) cur.figures.push(f)
+          } else {
+            const im = await inlineImage($el.find('img').first(), caption)
+            if (im) cur.body.push(im)
+          }
+        } else if (tag === 'img') {
+          afterSteps()
+          const im = await inlineImage(el, '')
+          if (im) cur.body.push(im)
+        } else if (isStepList(el)) {
+          if (cur.steps.length) startSub('')
+          cur.stepLayout = $el.hasClass('steps') ? 'cards' : 'list'
+          for (const li of $el.children('li').toArray()) {
+            const stepFigures = []
+            for (const img of $(li).find('img').toArray()) {
+              const f = await toFigure($, img, clean($(img).closest('figure').find('figcaption').text()), [], hint())
+              if (f) stepFigures.push(f)
+            }
+            const stepTitle = clean($(li).find('h3').first().text())
+            cur.steps.push({
+              _type: 'kitStep',
+              _key: key(),
+              ...(stepTitle ? { title: stepTitle } : {}),
+              text: blocksOf($, $(li).find('p')),
+              ...(stepFigures.length ? { figures: stepFigures } : {}),
+            })
+          }
+        } else if (isPhotoList(el)) {
+          afterSteps()
+          for (const img of $el.find('img').toArray()) {
+            const im = await inlineImage(img, '')
+            if (im) cur.body.push(im)
+          }
+        } else if (tag === 'ol' || tag === 'ul') {
+          afterSteps()
+          cur.listItems.push(...$el.children('li').toArray().map(li => clean($(li).text())).filter(Boolean))
+        } else {
+          await walk(el.children ?? [])
+        }
+      }
+    }
+    await walk(section.children().toArray())
+    flush()
   }
 
   const footer = $('footer').first()
@@ -263,10 +321,15 @@ async function importFile(file) {
   }
 
   // First figure in the document doubles as the card image.
-  const firstFigure = sections.flatMap(s => [...(s.figures ?? []), ...(s.steps ?? []).flatMap(st => st.figures ?? [])])[0]
-  if (firstFigure) doc.coverImage = { ...firstFigure.image }
+  // First image in the document (figure, inline or step) doubles as the card image.
+  const firstImage = sections.flatMap(s => [
+    ...(s.body ?? []).filter(b => b._type === 'image'),
+    ...(s.figures ?? []).map(f => f.image),
+    ...(s.steps ?? []).flatMap(st => (st.figures ?? []).map(f => f.image)),
+  ])[0]
+  if (firstImage) doc.coverImage = { _type: 'image', asset: firstImage.asset, alt: firstImage.alt }
 
-  console.log(`  ${sections.length} sections: ${sections.map(s => s.heading ?? s.kind).join(', ')}`)
+  console.log(`  ${sections.length} sections: ${sections.map(s => (s.subsection ? '↳' : '') + (s.heading ?? s.kind)).join(', ')}`)
   if (dryRun) {
     console.log(`  [dry-run] would write ${doc._id}`)
   } else {

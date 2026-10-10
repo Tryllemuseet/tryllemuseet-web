@@ -894,6 +894,9 @@ const allNavLinks: { href: string; label: string; external?: boolean }[] = [
   .gallery-section img,
   .gallery-seksjon img { cursor: zoom-in; }
 
+  /* Caption on inline rich-text images (portableTextToHtml in sanity.ts) */
+  .pt-image figcaption { font-family: var(--font-ui); font-size: 0.85rem; line-height: 1.4; color: #666; margin-top: 0.4rem; }
+
   /* ── SCROLL ANIMATIONS ────────────────────────────────────── */
   /* Distances/duration per the site's scroll-build standard — diskret,
      elegant, museumsaktig. Never applied to heroes or above-the-fold

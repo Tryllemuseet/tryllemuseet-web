@@ -190,10 +190,19 @@ export const kitTrick = defineType({
               title: 'Overskrift',
               type: 'string',
               description: 'Tomt: typens navn brukes. Fyll ut for f.eks. «Forberedelse før fremføringen».',
-              validation: R => R.custom((value, ctx) =>
-                (ctx.parent as { kind?: string } | undefined)?.kind === 'annet' && !value
-                  ? 'Seksjoner av typen «Annet» må ha overskrift.'
-                  : true),
+              validation: R => R.custom((value, ctx) => {
+                const parent = ctx.parent as { kind?: string; subsection?: boolean } | undefined
+                return parent?.kind === 'annet' && !parent?.subsection && !value
+                  ? 'Seksjoner av typen «Annet» må ha overskrift (unntatt underseksjoner).'
+                  : true
+              }),
+            }),
+            defineField({
+              name: 'subsection',
+              title: 'Underseksjon',
+              type: 'boolean',
+              initialValue: false,
+              description: 'På: vises som mellomtittel under forrige seksjon (f.eks. «French drop» under «Effekt 3»), ikke som egen hovedseksjon. Uten overskrift fortsetter den bare forrige seksjon.',
             }),
             defineField({ name: 'body', title: 'Tekst', type: 'array', of: richBlockContent() }),
             defineField({
@@ -221,9 +230,9 @@ export const kitTrick = defineType({
             }),
           ],
           preview: {
-            select: { kind: 'kind', heading: 'heading', steps: 'steps', media: 'figures.0.image' },
-            prepare: ({ kind, heading, steps, media }: { kind?: string; heading?: string; steps?: unknown[]; media?: unknown }) => ({
-              title: heading || KIT_TRICK_SECTION_KINDS.find(k => k.value === kind)?.title || 'Seksjon',
+            select: { kind: 'kind', heading: 'heading', subsection: 'subsection', steps: 'steps', media: 'figures.0.image' },
+            prepare: ({ kind, heading, subsection, steps, media }: { kind?: string; heading?: string; subsection?: boolean; steps?: unknown[]; media?: unknown }) => ({
+              title: (subsection ? '↳ ' : '') + (heading || (subsection ? '(fortsettelse)' : KIT_TRICK_SECTION_KINDS.find(k => k.value === kind)?.title) || 'Seksjon'),
               subtitle: steps?.length ? `${steps.length} trinn` : undefined,
               media: media as never,
             }),

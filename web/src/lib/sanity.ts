@@ -1922,11 +1922,12 @@ export function portableTextToHtml(blocks: PortableTextBlock[] | undefined | nul
   return toHTML(blocks, {
     components: {
       types: {
-        image: ({ value }: { value?: { asset?: { _ref: string; url?: string }; alt?: string } }) => {
+        image: ({ value }: { value?: { asset?: { _ref: string; url?: string }; alt?: string; caption?: string } }) => {
           if (!value?.asset) return ''
           const src = urlFor(value).width(720).format('webp').url()
-          const alt = (value.alt ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
-          return `<figure class="pt-image"><img src="${src}" alt="${alt}" loading="lazy" decoding="async" /></figure>`
+          const esc = (t: string) => t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
+          const caption = value.caption ? `<figcaption>${esc(value.caption)}</figcaption>` : ''
+          return `<figure class="pt-image"><img src="${src}" alt="${esc(value.alt ?? '')}" loading="lazy" decoding="async" />${caption}</figure>`
         },
       },
       marks: {
@@ -3280,6 +3281,7 @@ export interface KitTrickSection {
   _key:        string
   kind:        KitTrickSectionKind
   heading?:    string
+  subsection?: boolean
   body?:       PortableTextBlock[]
   listItems?:  string[]
   figures?:    KitFigure[]
@@ -3382,7 +3384,7 @@ export async function getKitTrickBySlug(client: SanityClientLike, slug: string):
       ${KIT_TRICK_CARD},
       notice, noticeLabel,
       sections[] {
-        _key, kind, heading, listItems, stepLayout,
+        _key, kind, heading, subsection, listItems, stepLayout,
         body[] { ${KIT_RICH_TEXT} },
         figures[] ${KIT_FIGURE},
         steps[] { _key, title, text[] { ${KIT_RICH_TEXT} }, figures[] ${KIT_FIGURE} }
