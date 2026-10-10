@@ -12,7 +12,32 @@
 // vanlige dokumenter med auto-generert _id, og å anta et fast ID-mønster her
 // ville skjult det eksisterende dokumentet i Studio i stedet for å åpne det.
 // Rene UI-/navigasjonsendringer — ingen skjema- eller innholdsendringer.
-import type { StructureResolver } from 'sanity/structure'
+import type { StructureBuilder, StructureResolver } from 'sanity/structure'
+import { KIT_ID_PREFIX } from './schemaTypes/kitCollection'
+
+// Tryllekofferter must get an ID under the private "lukket." path (see
+// schemaTypes/kitCollection.ts), which the Studio's normal "create" flow
+// can't do. So the default create button is replaced with one whose intent
+// carries a fresh private ID. The child resolver runs each time the list is
+// opened, so every visit gets a new ID.
+const kitCollectionListItem = (S: StructureBuilder) =>
+  S.listItem()
+    .title('Tryllekofferter (lukket)')
+    .schemaType('kitCollection')
+    .child(() =>
+      S.documentTypeList('kitCollection')
+        .title('Tryllekofferter (lukket)')
+        .initialValueTemplates([])
+        .menuItems([
+          S.menuItem()
+            .title('Ny tryllekoffert')
+            .intent({
+              type: 'create',
+              params: { type: 'kitCollection', id: `${KIT_ID_PREFIX}${crypto.randomUUID()}` },
+            })
+            .showAsAction(true),
+        ]),
+    )
 
 export const structure: StructureResolver = (S) =>
   S.list()
@@ -85,6 +110,8 @@ export const structure: StructureResolver = (S) =>
               S.documentTypeListItem('gameChapter').title('Kabinettet: Rom'),
               S.divider(),
               S.documentTypeListItem('godeRadConfig').title('Gode råd'),
+              S.divider(),
+              kitCollectionListItem(S),
             ]),
         ),
 

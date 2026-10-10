@@ -47,6 +47,7 @@ The schema defines 35 registered content types in `/schemaTypes` (see `schemaTyp
 - `partner.ts` — Sponsors/partners with category grouping
 - `signageConfig.ts`, `signageVideo.ts`, `signageQuote.ts` — Content for the physical info screen (`/skjerm.html`)
 - `quizConfig.ts`, `quizTheme.ts`, `quizQuestion.ts` — Tryllequiz (`/tryllequiz`): settings singleton with `isActive` master switch, selectable themes, and questions with difficulty + validated answers (see `docs/tryllequiz-concept.md`)
+- `kitCollection.ts` (Studio label: "Tryllekoffert (lukket område)", added 2026-10) — Content for buyers of the museum's magic kits/boxes, shown in the code-protected area `/bak-teppet` (see "Closed area" under Key Patterns). One doc per kit **type** with one shared `accessCode`; no personal data. **Docs must have an `_id` under the private `lukket.` path** — create them only via Studio → Aktiviteter → "Tryllekofferter (lukket)" → "Ny tryllekoffert" (or a script with an explicit `lukket.*` ID), never via the global "+ Create" menu (hidden there on purpose). A doc-level validation blocks publishing one without the prefix.
 - `gameConfig.ts`, `gameChapter.ts` — "Det trettende kabinett" story game (`/det-trettende-kabinett`): settings singleton with `isActive` master switch (plus `englishEnabled` for the in-game language toggle), and per-room copy overrides with optional room/fact images, rich-text intros and parallel English fields. Puzzle logic lives in the page code (see `docs/det-trettende-kabinett-concept.md`)
 
 **Helper Types** (object types used inline by document types):
@@ -79,6 +80,7 @@ The schema defines 35 registered content types in `/schemaTypes` (see `schemaTyp
   - `historiske-opptak/` (+ `[slug]`) — archival TV clips
   - `historiske-artikler/` — press clipping archive
   - `nordisk-tv-magi/` — combined overview; its `[slug]` route 301-redirects to got-talent/fool-us
+- `bak-teppet/` (`index` + `[slug]`) — closed area for kit buyers; the only on-demand (`prerender = false`) pages on the site. See "Closed area" under Key Patterns.
 - `web/public/skjerm.html` — physical info screen; fetches Sanity client-side (live, not SSG) plus Entur bus departures. `/skjerm` redirects to it.
 - Legacy/short URL redirects (QR codes, print) are defined in `web/astro.config.mjs` under `redirects`.
 
@@ -222,6 +224,15 @@ const relatedLinks = (entry.relatedLinks ?? []).filter(l =>
 
 This keeps the flag as the single source of truth — editors can write cross-links whenever they want, and the flag alone decides what's actually visible.
 
+### Closed area ("Bak teppet", `/bak-teppet`)
+
+Code-protected pages for people who bought a magic kit. Everything else on the site is static; these two pages run on demand as a Vercel function via `@astrojs/vercel` (added 2026-10 for this — the adapter changes nothing for prerendered pages, though `astro.config.mjs` redirects are now real 301s in Vercel's routing instead of meta-refresh HTML files).
+
+- **Content privacy** comes from Sanity, not the page: `kitCollection` docs have `_id`s under `lukket.`, and Sanity never serves dot-path IDs to unauthenticated requests, even in the public `production` dataset. Queries (`getKitAccessList()`, `getKitBySlug()` in `sanity.ts`) take a token-bearing client and also filter `_id in path("lukket.**")`. Uploaded images are still public-by-URL on Sanity's CDN (unguessable URLs); videos should be YouTube "unlisted" or Vimeo with domain restriction, not Sanity files.
+- **Access**: `web/src/lib/bakTeppet.ts`. A correct code (typed into the form, or `/bak-teppet?kode=XXXX-XXXX` from a QR code in the box) sets an httpOnly cookie with an HMAC of `<kit id>:<current code>` per unlocked kit. Changing a kit's code in Studio revokes old cookies; setting `isVisible` off disables the kit. The HMAC key is derived from the Sanity token, so there's no separate secret.
+- **Env**: `SANITY_PRIVATE_READ_TOKEN` (Sanity API token, Viewer role) must be set in **both** Vercel projects (runtime, via `astro:env/server`). Without it the area shows "ikke tilgjengelig" (HTTP 503); the rest of the site is unaffected. Locally `astro dev` falls back to `SANITY_PREVIEW_TOKEN`.
+- **Not searchable**: `noindex` meta + `X-Robots-Tag` header + `Cache-Control: private, no-store`; not in navigation. Deliberately *not* listed in `robots.txt` (that file is public and would advertise the path).
+
 ## Important Queries & Types
 
 ALL GROQ queries live in `web/src/lib/sanity.ts` — pages must import query functions from there, never call `sanityClient.fetch()` inline. (Exception: `web/public/skjerm.html`, which queries Sanity client-side by design.)
@@ -304,7 +315,7 @@ Practical consequences:
 
 ## Visibility / Unpublish Convention
 
-All content document types (`biography`, `legend`, `event`, `tvAppearance`, `historicalClip`, `book`, `artifact`, `partner`, `quizTheme`, `quizQuestion`, `tema`, `trick`, `comicStory`, `story`, `whoKnew`, `worldRecordTrick`, `competitionResult`, `historiskeKlippNb`, `magicOrganization`, `magicClubEdition`, `mediaAppearance`, `gameChapter`) have a boolean field `isVisible` with `initialValue: true`. Config/settings singletons (`siteConfig`, `godeRadConfig`, `signageConfig`, `quizConfig`, `gameConfig`) use `isActive` instead — same semantics, different name since they're not "content" per se. `siteNavigation` models visibility per nested `navMainArea`/`navSubArea` item rather than on the document itself.
+All content document types (`kitCollection`, `biography`, `legend`, `event`, `tvAppearance`, `historicalClip`, `book`, `artifact`, `partner`, `quizTheme`, `quizQuestion`, `tema`, `trick`, `comicStory`, `story`, `whoKnew`, `worldRecordTrick`, `competitionResult`, `historiskeKlippNb`, `magicOrganization`, `magicClubEdition`, `mediaAppearance`, `gameChapter`) have a boolean field `isVisible` with `initialValue: true`. Config/settings singletons (`siteConfig`, `godeRadConfig`, `signageConfig`, `quizConfig`, `gameConfig`) use `isActive` instead — same semantics, different name since they're not "content" per se. `siteNavigation` models visibility per nested `navMainArea`/`navSubArea` item rather than on the document itself.
 
 **Rules:**
 - Default is always `true` — new documents are visible automatically

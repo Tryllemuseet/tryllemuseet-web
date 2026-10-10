@@ -103,7 +103,11 @@ All `getStaticPaths()` calls filter on `isVisible != false`, ensuring hidden doc
 
 Short URLs used on print material and QR codes (e.g., `/got-talent`, `/hvem-er-hvem`) are defined centrally in `web/astro.config.mjs` under `redirects` and resolve to their canonical paths at build time. `/skjerm` redirects to `/skjerm.html`.
 
-`web/public/skjerm.html` (the physical info screen) is the **only** part of the site that queries Sanity client-side at runtime instead of at build time — by design, so the screen picks up content changes (videos, quotes, events) within minutes without a rebuild. It also fetches live bus departures from the Entur API. Everything else on the site is pure SSG.
+`web/public/skjerm.html` (the physical info screen) is the **only** part of the site that queries Sanity client-side at runtime instead of at build time — by design, so the screen picks up content changes (videos, quotes, events) within minutes without a rebuild. It also fetches live bus departures from the Entur API. Everything else on the site is pure SSG, except the closed kit-buyer area below.
+
+### Closed Area: `/bak-teppet` (on-demand rendering)
+
+The only server-rendered pages. `@astrojs/vercel` is configured in `astro.config.mjs`, but output stays `static`: only `src/pages/bak-teppet/*.astro` opt out with `export const prerender = false` and run as a single Vercel function. They read private `kitCollection` documents (IDs under `lukket.`, invisible to the public Sanity API) with `SANITY_PRIVATE_READ_TOKEN`, and gate access with a per-kit-type shared code and an HMAC cookie (`web/src/lib/bakTeppet.ts`). Because they render per request, kit content changes in Sanity show up immediately, without a rebuild — unlike the rest of the site. See CLAUDE.md "Closed area" for details.
 
 ### Feature Flags
 
