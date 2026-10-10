@@ -270,6 +270,8 @@ Selve triksene ligger i **Aktiviteter → Tryllebeskrivelser (lukket)**, ikke in
    - **Nummerert liste** for f.eks. rekvisitter
    - **Bilder** med bildetekst. Under «Nummermerker på bildet» kan du legge små nummerrundinger langs bildekanten.
    - **Trinn** med nummer, valgfri overskrift, tekst og bilder. Velg «Liste» eller «Kort» som visning.
+   - **Underseksjon**: kryss av for å vise seksjonen som mellomtittel under forrige seksjon (f.eks. «French drop» under «Effekt 3»).
+   - Bilder kan også settes rett inn i teksten, med bildetekst. Bilder som står etter hverandre, vises side om side.
 4. **Kilde og rettigheter** nederst: tekst om kilden, faktaliste (Produkt, Produsent, Kontakt …) og rettighetsmerknad.
 5. **Relaterte tryllebeskrivelser** vises som «Se også» nederst på siden.
 
