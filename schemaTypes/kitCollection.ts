@@ -37,16 +37,16 @@ function normalizeAccessCode(code: string): string {
 
 export const kitCollection = defineType({
   name: 'kitCollection',
-  title: 'Tryllekoffert (lukket område)',
+  title: 'Tryllesett (lukket område)',
   type: 'document',
   icon: () => '🧰',
-  description: 'Lukket side for kjøpere av en tryllekoffert/-eske. Én per koffert-type, med én felles tilgangskode.',
+  description: 'Lukket side for kjøpere av et tryllesett (trylleeske eller tryllekoffert). Én per type sett, med én felles tilgangskode.',
 
   validation: Rule => Rule.custom((_, context) => {
     const id = (context.document?._id ?? '').replace(/^drafts\./, '')
     return id.startsWith(KIT_ID_PREFIX)
       ? true
-      : 'Dette dokumentet er ikke privat og vil ikke vises på nettsiden. Opprett kofferten på nytt via «Tryllekofferter (lukket)» → «Ny tryllekoffert», og slett denne.'
+      : 'Dette dokumentet er ikke privat og vil ikke vises på nettsiden. Opprett tryllesettet på nytt via «Tryllesett (lukket)» → «Nytt tryllesett», og slett denne.'
   }),
 
   fields: [
@@ -63,9 +63,9 @@ export const kitCollection = defineType({
     // ── GRUNNINFO ─────────────────────────────────────────────────
     defineField({
       name: 'title',
-      title: 'Navn på kofferten/esken',
+      title: 'Navn på tryllesettet',
       type: 'string',
-      description: 'F.eks. «Den store tryllekofferten».',
+      description: 'F.eks. «Den store tryllekofferten» eller «Trylleeske for nybegynnere».',
       validation: R => R.required(),
     }),
 
@@ -83,7 +83,7 @@ export const kitCollection = defineType({
       title: 'Tilgangskode',
       type: 'string',
       initialValue: generateAccessCode,
-      description: 'Trykkes på kort/QR-kode i esken. Store/små bokstaver, mellomrom og bindestrek spiller ingen rolle. Bytt koden hvis den har spredt seg — da må alle som har logget inn, taste den nye koden.',
+      description: 'Trykkes på kortet/QR-koden i esken eller kofferten. Store/små bokstaver, mellomrom og bindestrek spiller ingen rolle. Bytt koden hvis den har spredt seg — da må alle som har logget inn, taste den nye koden.',
       validation: R => R.required().custom(async (value, context) => {
         if (!value) return true
         const normalized = normalizeAccessCode(value)
@@ -94,14 +94,14 @@ export const kitCollection = defineType({
           { id, draftId: `drafts.${id}` },
         )
         return clash.some(c => c && normalizeAccessCode(c) === normalized)
-          ? 'En annen koffert bruker allerede denne koden.'
+          ? 'Et annet tryllesett bruker allerede denne koden.'
           : true
       }),
     }),
 
     defineField({
       name: 'coverImage',
-      title: 'Bilde av kofferten',
+      title: 'Bilde av tryllesettet',
       type: 'image',
       options: { hotspot: true },
       fields: [defineField({ name: 'alt', title: 'Alt-tekst', type: 'string' })],
@@ -117,10 +117,10 @@ export const kitCollection = defineType({
 
     defineField({
       name: 'contents',
-      title: 'I kofferten finner du',
+      title: 'I settet finner du',
       type: 'array',
       of: [{ type: 'string' }],
-      description: 'Enkel liste over det som ligger i kofferten.',
+      description: 'Enkel liste over det som ligger i esken eller kofferten.',
     }),
 
     // ── TRIKS / INNHOLD ──────────────────────────────────────────

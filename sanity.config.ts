@@ -21,7 +21,7 @@ export default defineConfig({
   },
 
   document: {
-    // Tryllekofferter need a private ID — only creatable from their own
+    // Tryllesett (kitCollection) need a private ID — only creatable from their own
     // list in structure.ts, not from the global "+ Create" menu.
     newDocumentOptions: (prev, { creationContext }) =>
       creationContext.type === 'global' ? prev.filter(t => t.templateId !== 'kitCollection') : prev,
