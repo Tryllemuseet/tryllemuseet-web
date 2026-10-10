@@ -4,6 +4,7 @@ import BaseLayout from '../layouts/BaseLayout.astro'
 import AnimateIn from '../components/AnimateIn.astro'
 import PageHero from '../components/PageHero.astro'
 import Button from '../components/Button.astro'
+import GrasrotandelStats from '../components/GrasrotandelStats.astro'
 import { getOmOssPage, getAllPartners, getSiteConfig, portableTextToHtml, ptParagraph } from '../lib/sanity'
 
 const [p, partnerDocs, site] = await Promise.all([getOmOssPage(), getAllPartners(), getSiteConfig()])
@@ -180,6 +181,10 @@ const donationHtml = portableTextToHtml(site.donationText)
       </AnimateIn>
     </div>
   </section>
+
+  <!-- ── GRASROTANDELEN ───────────────────────────────────────── -->
+  {/* TODO: replace placeholder with the museum's real organization number */}
+  <GrasrotandelStats orgnr="000000000" />
 
   <!-- ── FRIVILLIG ────────────────────────────────────────────── -->
   <section class="frivillig-seksjon section-pad" id="frivillig">

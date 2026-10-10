@@ -13,6 +13,7 @@ Denne bruksanvisningen dekker de oppgavene en redaktør utfører til daglig.
 4. [Arrangementer](#4-arrangementer)
    - [4b. Triks — Lær et triks](#4b-triks--lær-et-triks)
    - [4c. Interaktive historier (tegneserier)](#4c-interaktive-historier-tegneserier)
+   - [4d. Tryllekofferter — lukket område (Bak teppet)](#4d-tryllekofferter--lukket-område-bak-teppet)
 5. [Utstillingen — Gullalderen og dybdeutstillinger](#5-utstillingen--gullalderen-og-dybdeutstillinger)
    - [5b. Tema — samle flere opplevelser om samme sak](#5b-tema--samle-flere-opplevelser-om-samme-sak)
 6. [Hvem er hvem — biografiregisteret](#6-hvem-er-hvem--biografiregisteret)
@@ -238,6 +239,38 @@ Klikk «Add item» under **Scener** for å legge til en ny scene. Rekkefølgen p
 | Klikkbare punkter på hovedbildet (hotspots) | Nei | Gullmerker barnet kan trykke på for å lære mer. Posisjoneres med **vannrett/loddrett posisjon i prosent** (0–100) fra henholdsvis venstre og toppen av bildet — juster og se resultatet i forhåndsvisningen. Hvert punkt har en kort merkelapp og en fakta-tekst |
 | Faktaboks | Nei | Valgfri utheva boks, f.eks. «Visste du?» eller «Historisk kontekst» — egen overskrift og tekst |
 | Ekstra bilder | Nei | Flere tilleggsbilder til scenen (historiske plakater, foto) |
+
+---
+
+## 4d. Tryllekofferter — lukket område (Bak teppet)
+
+**Meny:** Aktiviteter → Tryllekofferter (lukket)
+**På nettsiden:** `tryllemuseet.no/bak-teppet` — ikke i menyen, ikke søkbar, krever kode.
+
+Én side per koffert-/esketype. Alle som kjøper samme type, bruker samme kode.
+
+### Opprette en ny koffert
+
+1. Gå til **Aktiviteter → Tryllekofferter (lukket)** og trykk **Ny tryllekoffert** øverst i lista.
+   - Bruk alltid denne knappen, ikke «+ Opprett» øverst i Studio. Knappen gir dokumentet en privat ID, slik at innholdet ikke kan leses utenfra. Får du en rød feilmelding om at dokumentet «ikke er privat», er det opprettet feil: slett det og lag det på nytt via knappen.
+   - Åpner knappen en koffert du nettopp laget? Gå ut av lista og inn igjen (eller last siden på nytt), så får du en ny.
+2. Fyll inn navn, bilde, velkomsttekst, «I kofferten finner du» og ett **Triks** per triks, med beskrivelse og videoer.
+3. **Tilgangskode** fylles ut automatisk med en tilfeldig kode (f.eks. `K7QX-M3PA`). Den kan endres, men må ha minst 8 bokstaver/tall og være unik.
+4. Publiser. Endringer vises på nettsiden med en gang — det trengs ingen ny bygging.
+
+### Kode og QR-kode til kortet i esken
+
+- Kunden kan skrive koden på `tryllemuseet.no/bak-teppet`.
+- Eller lag en QR-kode av adressen `https://www.tryllemuseet.no/bak-teppet?kode=K7QX-M3PA` (bytt ut med kofferten sin kode). Én skanning logger inn og åpner riktig side. Kunden forblir innlogget på enheten i opptil to år.
+
+### Video
+
+Bruk YouTube med synlighet **«Ikke oppført»**, eller Vimeo med innebygging begrenset til tryllemuseet.no. Lim inn vanlig video-lenke — den vises som innebygd spiller. Ikke last opp videofiler i Sanity.
+
+### Stenge tilgang
+
+- **Koden har spredt seg:** bytt koden. Alle som brukte den gamle, må taste den nye.
+- **Ta kofferten ut av salg:** slå av **Aktiv**. Koden slutter å virke, innholdet beholdes.
 
 ---
 

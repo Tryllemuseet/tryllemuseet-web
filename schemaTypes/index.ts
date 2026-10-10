@@ -49,6 +49,7 @@ import { competitionResult } from './competitionResult'
 import { organizationRole } from './organizationRole'
 import { historicalSection } from './historicalSection'
 import { story }           from './story'
+import { kitCollection }   from './kitCollection'
 
 export const schemaTypes = [
   // Sidetyper — rekkefølge følger hovedmenyen (se siteNavigation)
@@ -86,6 +87,7 @@ export const schemaTypes = [
   gameConfig,
   gameChapter,
   event,
+  kitCollection,
 
   // Dokumenttyper — Opptredener
   tvAppearance,

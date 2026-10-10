@@ -47,6 +47,7 @@ The schema defines 35 registered content types in `/schemaTypes` (see `schemaTyp
 - `partner.ts` — Sponsors/partners with category grouping
 - `signageConfig.ts`, `signageVideo.ts`, `signageQuote.ts` — Content for the physical info screen (`/skjerm.html`)
 - `quizConfig.ts`, `quizTheme.ts`, `quizQuestion.ts` — Tryllequiz (`/tryllequiz`): settings singleton with `isActive` master switch, selectable themes, and questions with difficulty + validated answers (see `docs/tryllequiz-concept.md`)
+- `kitCollection.ts` (Studio label: "Tryllekoffert (lukket område)", added 2026-10) — Content for buyers of the museum's magic kits/boxes, shown in the code-protected area `/bak-teppet` (see "Closed area" under Key Patterns). One doc per kit **type** with one shared `accessCode`; no personal data. **Docs must have an `_id` under the private `lukket.` path** — create them only via Studio → Aktiviteter → "Tryllekofferter (lukket)" → "Ny tryllekoffert" (or a script with an explicit `lukket.*` ID), never via the global "+ Create" menu (hidden there on purpose). A doc-level validation blocks publishing one without the prefix.
 - `gameConfig.ts`, `gameChapter.ts` — "Det trettende kabinett" story game (`/det-trettende-kabinett`): settings singleton with `isActive` master switch (plus `englishEnabled` for the in-game language toggle), and per-room copy overrides with optional room/fact images, rich-text intros and parallel English fields. Puzzle logic lives in the page code (see `docs/det-trettende-kabinett-concept.md`)
 
 **Helper Types** (object types used inline by document types):
@@ -79,6 +80,7 @@ The schema defines 35 registered content types in `/schemaTypes` (see `schemaTyp
   - `historiske-opptak/` (+ `[slug]`) — archival TV clips
   - `historiske-artikler/` — press clipping archive
   - `nordisk-tv-magi/` — combined overview; its `[slug]` route 301-redirects to got-talent/fool-us
+- `bak-teppet/` (`index` + `[slug]`) — closed area for kit buyers; the only on-demand (`prerender = false`) pages on the site. See "Closed area" under Key Patterns.
 - `web/public/skjerm.html` — physical info screen; fetches Sanity client-side (live, not SSG) plus Entur bus departures. `/skjerm` redirects to it.
 - Legacy/short URL redirects (QR codes, print) are defined in `web/astro.config.mjs` under `redirects`.
 
@@ -222,6 +224,15 @@ const relatedLinks = (entry.relatedLinks ?? []).filter(l =>
 
 This keeps the flag as the single source of truth — editors can write cross-links whenever they want, and the flag alone decides what's actually visible.
 
+### Closed area ("Bak teppet", `/bak-teppet`)
+
+Code-protected pages for people who bought a magic kit. Everything else on the site is static; these two pages run on demand as a Vercel function via `@astrojs/vercel` (added 2026-10 for this — the adapter changes nothing for prerendered pages, though `astro.config.mjs` redirects are now real 301s in Vercel's routing instead of meta-refresh HTML files).
+
+- **Content privacy** comes from Sanity, not the page: `kitCollection` docs have `_id`s under `lukket.`, and Sanity never serves dot-path IDs to unauthenticated requests, even in the public `production` dataset. Queries (`getKitAccessList()`, `getKitBySlug()` in `sanity.ts`) take a token-bearing client and also filter `_id in path("lukket.**")`. Uploaded images are still public-by-URL on Sanity's CDN (unguessable URLs); videos should be YouTube "unlisted" or Vimeo with domain restriction, not Sanity files.
+- **Access**: `web/src/lib/bakTeppet.ts`. A correct code (typed into the form, or `/bak-teppet?kode=XXXX-XXXX` from a QR code in the box) sets an httpOnly cookie with an HMAC of `<kit id>:<current code>` per unlocked kit. Changing a kit's code in Studio revokes old cookies; setting `isVisible` off disables the kit. The HMAC key is derived from the Sanity token, so there's no separate secret.
+- **Env**: `SANITY_PRIVATE_READ_TOKEN` (Sanity API token, Viewer role) must be set in **both** Vercel projects (runtime, via `astro:env/server`). Without it the area shows "ikke tilgjengelig" (HTTP 503); the rest of the site is unaffected. Locally `astro dev` falls back to `SANITY_PREVIEW_TOKEN`.
+- **Not searchable**: `noindex` meta + `X-Robots-Tag` header + `Cache-Control: private, no-store`; not in navigation. Deliberately *not* listed in `robots.txt` (that file is public and would advertise the path).
+
 ## Important Queries & Types
 
 ALL GROQ queries live in `web/src/lib/sanity.ts` — pages must import query functions from there, never call `sanityClient.fetch()` inline. (Exception: `web/public/skjerm.html`, which queries Sanity client-side by design.)
@@ -255,6 +266,8 @@ Update TypeScript interfaces in sanity.ts when schema changes.
 | Test — `test.tryllemuseet.no` | `tryllemuseet-web` | Immediately — normal Vercel git auto-deploy, untouched | Immediately — two Sanity webhooks ("Vercel Rebuild", dataset `*`, and "Deploy test", dataset `production"`) call `tryllemuseet-web`'s deploy hook directly on every document mutation. Confirmed firing successfully (HTTP 201) via `sanity hooks logs`, including on Studio publishes and the YouTube-sync script's writes. The two are redundant (same target hook); harmless but could be trimmed to one. |
 | Production — `tryllemuseet.no` | `tryllemuseet-prod` | **Disabled on purpose.** Repo-root `vercel.json` (`git.deploymentEnabled: false`) turns off Vercel's git auto-deploy for this project only — it has `rootDirectory: null` (repo root), so it's the only project that reads this file; `tryllemuseet-web`'s root directory is `web/`, so it looks for (and doesn't find) its own `web/vercel.json` and keeps auto-deploying as normal. | Never directly — no Sanity webhook targets prod's deploy hook. Only `.github/workflows/daily-rebuild.yml` does, once nightly at 05:30 UTC (or on-demand via **Actions → Nightly production rebuild → Run workflow**), via the `VERCEL_DEPLOY_HOOK_PROD` secret. Deploy hooks are a separate trigger path from git push and are unaffected by `git.deploymentEnabled`, so the nightly/manual rebuild still works with git auto-deploy off. |
 
+**Update 2026-10-05:** `sanity hooks list` now shows only "Deploy test" — "Vercel Rebuild" (`*`) has been removed, so the redundancy noted in the table is gone.
+
 So: a merged PR is live on test within seconds, same as a Sanity publish. Production only picks up **either** kind of change — code or content — at the next nightly rebuild (or a manual workflow run). If you need a fix live in production sooner than the next 05:30 UTC run, trigger `daily-rebuild.yml` manually.
 
 **Open items, not yet resolved — flagged rather than guessed at:**
@@ -267,9 +280,42 @@ So: a merged PR is live on test within seconds, same as a Sanity publish. Produc
 Contrary to what this section previously said, the `tryllemuseet-prod` Vercel project's production deploy hook (`Prod-hook-git`) is bound to the `main` branch, and Vercel's git integration deploys `main` straight to `tryllemuseet.no` on every push (confirmed via the project's `-git-main-` domain alias and a run of `target: "production"` deployments tracking `main` commits directly, including same-day production deploys of merged PRs). So pushing/merging to `main` does ship new code to production — there is no separate promotion step required.
 </details>
 
+### Search indexing and analytics
+
+- **Indexing** is decided in one place: `isIndexable` in `web/src/lib/site.ts`, used by `BaseLayout.astro` (the `noindex` meta tag) and `pages/robots.txt.ts`. A build is indexable only if `PUBLIC_VERCEL_ENV === 'production'` **and** `PUBLIC_VERCEL_PROJECT_PRODUCTION_URL` is `tryllemuseet.no`/`www.tryllemuseet.no`. Both Vercel system variables are set automatically. `VERCEL_ENV` alone isn't enough, because the test project (`test.tryllemuseet.no`) also builds as "production" in its own project; before this check, test was indexable. Previews, test and local builds fail closed (noindex, `Disallow: /`). Don't reintroduce `PUBLIC_VERCEL_ENV === 'production'` checks for indexing.
+- **Canonical/OG URLs** use `SITE_ORIGIN` (`https://www.tryllemuseet.no`) from the same file. The apex `tryllemuseet.no` 308-redirects to `www`, so canonicals must point at `www`.
+- **Traffic**: `<Analytics />` (Vercel Web Analytics) is in `BaseLayout.astro`. Data is only collected in projects where Web Analytics is enabled in the Vercel dashboard. As of 2026-09-24 it was enabled on `tryllemuseet-web` (test) but **not** on `tryllemuseet-prod`.
+- Other `PUBLIC_VERCEL_ENV === 'production'` checks (Sanity CDN/perspective in `sanity.ts`, "Kommer snart" filtering in `utstillingen/index.astro`) still treat test as production. That's a separate, known quirk and was left unchanged.
+
+**Production release flow (2026-09-24, set up manually outside a Claude Code session):** `tryllemuseet-prod` now builds production from a `prod` branch, released via a PR from `main` into `prod` (e.g. PR #173 "release: sync prod with main"). `tryllemuseet.no` and `www.tryllemuseet.no` are now attached to `tryllemuseet-prod` (apex → 308 → www), which resolves the domain open item above. **Unverified:** after the switch, the nightly `daily-rebuild.yml` run (deploy hook bound to `main`) produced a *preview* deployment instead of a production one. So Sanity-only content changes may no longer reach production nightly until that hook is rebound to `prod`.
+
+## Sanity plan and limits
+
+**As of 2026-10-05 the Sanity project (`n2ynpgty`, org `oV1UWxOsN`) is on the Growth (Non-Profit) plan, $0/month base price.** Earlier code comments and docs that say "free plan" / "gratisplan" / "only one dataset" predate this and are outdated.
+
+Included in the plan (overage prices in parentheses):
+
+| Resource | Included |
+|---|---|
+| Datasets | 3 |
+| Documents | 25k |
+| GROQ webhooks | 4 |
+| Members | 25 (+$15/extra member) |
+| CDN requests | 1M/month (+$1 per 250k) |
+| API requests | 250k/month (+$1 per 25k) |
+| Assets | 100 GB (+$0.50/GB) |
+| Bandwidth | 100 GB/month (+$0.30/GB) |
+| History retention | 90 days |
+
+Practical consequences:
+- **Datasets:** `production` (public) and `development` (private, created 2026-10-05 as an export/import copy of production — `sanity dataset copy` is *not* in the plan), with one slot spare. Refresh/recreate steps are in `docs/development-dataset-operations-routine.md`. Don't create or delete datasets without asking. `development` is a sandbox for schema changes and bulk scripts, not a staging step — content is never promoted from it to `production`.
+- **Webhooks:** 1 of 4 in use as of 2026-10-05 — only "Deploy test" (dataset `production`) → `tryllemuseet-web` deploy hook. The "Vercel Rebuild" (`*`) hook mentioned under Deploy hooks above no longer exists. Never point a webhook at `*` or `development`: bulk imports into `development` would then trigger one deploy per document.
+- **Overage costs real money:** API/CDN requests, bandwidth and assets are billed beyond the quota. Bulk scripts, `skjerm.html` (client-side live queries) and uncached API calls count against the API quota (the info screen is deprioritized as of 2026-10 — the user is looking at a separate solution such as Yodeck, so don't invest further in `skjerm.html` without asking) — prefer the CDN (`useCdn`) for read-only traffic, and check Usage in sanity.io/manage before adding anything that polls.
+- **History:** document history is kept for 90 days, so accidental edits/deletes can be restored from the Studio's history within that window — but it is not a backup; take a `sanity dataset export` before large migrations.
+
 ## Visibility / Unpublish Convention
 
-All content document types (`biography`, `legend`, `event`, `tvAppearance`, `historicalClip`, `book`, `artifact`, `partner`, `quizTheme`, `quizQuestion`, `tema`, `trick`, `comicStory`, `story`, `whoKnew`, `worldRecordTrick`, `competitionResult`, `historiskeKlippNb`, `magicOrganization`, `magicClubEdition`, `mediaAppearance`, `gameChapter`) have a boolean field `isVisible` with `initialValue: true`. Config/settings singletons (`siteConfig`, `godeRadConfig`, `signageConfig`, `quizConfig`, `gameConfig`) use `isActive` instead — same semantics, different name since they're not "content" per se. `siteNavigation` models visibility per nested `navMainArea`/`navSubArea` item rather than on the document itself.
+All content document types (`kitCollection`, `biography`, `legend`, `event`, `tvAppearance`, `historicalClip`, `book`, `artifact`, `partner`, `quizTheme`, `quizQuestion`, `tema`, `trick`, `comicStory`, `story`, `whoKnew`, `worldRecordTrick`, `competitionResult`, `historiskeKlippNb`, `magicOrganization`, `magicClubEdition`, `mediaAppearance`, `gameChapter`) have a boolean field `isVisible` with `initialValue: true`. Config/settings singletons (`siteConfig`, `godeRadConfig`, `signageConfig`, `quizConfig`, `gameConfig`) use `isActive` instead — same semantics, different name since they're not "content" per se. `siteNavigation` models visibility per nested `navMainArea`/`navSubArea` item rather than on the document itself.
 
 **Rules:**
 - Default is always `true` — new documents are visible automatically
@@ -322,8 +368,8 @@ Messages are concise; use body for detail if needed.
 
 ## Sanity og innhold
 
-- Produksjonsdatasettet inneholder ekte innhold (bl.a. 171 magikerbiografier, bokregister, arrangementer). Test alltid skjemaendringer mot development-datasettet først.
-  - NB (juli 2026): development-datasettet finnes ikke i prosjektet ennå — API-et svarer «Dataset not found», og å opprette det krever admin-rettigheter (sanity.io/manage → prosjekt `n2ynpgty` → Datasets, eller `npx sanity dataset create development` som innlogget admin). Inntil det er opprettet: vær ekstra varsom med skjemaendringer, og flagg det i PR-en.
+- Produksjonsdatasettet inneholder ekte innhold (bl.a. 231 magikerbiografier per 2026-10-05, bokregister, arrangementer). Test alltid skjemaendringer mot development-datasettet først.
+  - Development-datasettet ble opprettet 2026-10-05 (privat, kopi av production per den datoen — se `docs/development-dataset-operations-routine.md` for oppfrisking). Pek Studio/web/skript mot det med `SANITY_STUDIO_DATASET` / `PUBLIC_SANITY_DATASET` / `SANITY_DATASET=development`.
 - Skjemaendringer som kan bryte eksisterende dokumenter (felt som fjernes, endrer type eller blir påkrevd): flagg konsekvensene og spør før implementering.
 - Ikke slett eller masseoppdater dokumenter i produksjonsdatasettet uten eksplisitt bekreftelse.
 - GROQ-spørringer holdes samlet på ett sted i kodebasen (følg eksisterende struktur).

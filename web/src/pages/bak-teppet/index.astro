@@ -1,0 +1,203 @@
+---
+// src/pages/bak-teppet/index.astro
+//
+// Entry to the closed kit-buyer area (see src/lib/bakTeppet.ts). Rendered on
+// demand, never prerendered: shows a code form, accepts the code via POST
+// (typed) or ?kode= (QR code in the box), and lists the kits this browser
+// has already unlocked. Not linked from navigation; noindex everywhere.
+export const prerender = false
+
+import BaseLayout from '../../layouts/BaseLayout.astro'
+import PageHero from '../../components/PageHero.astro'
+import {
+  BAK_TEPPET_PATH,
+  loadSession,
+  findKitByCode,
+  grantAccess,
+  clearAccess,
+  setPrivateHeaders,
+  failedAttemptDelay,
+} from '../../lib/bakTeppet'
+
+setPrivateHeaders(Astro.response.headers)
+
+const session = await loadSession(Astro.cookies)
+const secure = Astro.url.protocol === 'https:'
+
+let error = ''
+let typedCode = ''
+
+if (session) {
+  let code: string | null = null
+  if (Astro.request.method === 'POST') {
+    const form = await Astro.request.formData()
+    if (form.get('handling') === 'logg-ut') {
+      clearAccess(Astro.cookies)
+      return Astro.redirect(BAK_TEPPET_PATH, 303)
+    }
+    code = String(form.get('kode') ?? '')
+  } else {
+    code = Astro.url.searchParams.get('kode')
+  }
+
+  if (code !== null) {
+    const kit = findKitByCode(session.kits, code)
+    if (kit) {
+      grantAccess(Astro.cookies, session, kit, secure)
+      // Redirect so the code never stays in the address bar or history.
+      return Astro.redirect(`${BAK_TEPPET_PATH}/${kit.slug}`, 303)
+    }
+    await failedAttemptDelay()
+    error = 'Koden stemmer ikke. Sjekk at du har skrevet den riktig — du finner den på kortet i kofferten.'
+    typedCode = code
+    Astro.response.status = 401
+  }
+} else {
+  console.error('[bak-teppet] SANITY_PRIVATE_READ_TOKEN is not set')
+  Astro.response.status = 503
+}
+
+const unlocked = session?.unlocked ?? []
+---
+
+<BaseLayout
+  title="Bak teppet — Tryllemuseet"
+  description="Lukket område for deg som har kjøpt en tryllekoffert fra Tryllemuseet."
+  noindex
+>
+  <PageHero
+    compact
+    label="Bak teppet"
+    title="For deg med tryllekoffert"
+    intro="Her finner du beskrivelser og videoer til triksene i kofferten din."
+  />
+
+  <section class="bt section-pad">
+    <div class="container bt-inner">
+
+      {!session && (
+        <p class="bt-melding" role="alert">
+          Området er dessverre ikke tilgjengelig akkurat nå. Prøv igjen senere.
+        </p>
+      )}
+
+      {session && unlocked.length > 0 && (
+        <div class="bt-kort">
+          <h2>Dine kofferter</h2>
+          <ul class="bt-liste">
+            {unlocked.map(k => (
+              <li><a href={`${BAK_TEPPET_PATH}/${k.slug}`}>{k.title} →</a></li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {session && (
+        <form class="bt-kort bt-skjema" method="post" action={BAK_TEPPET_PATH}>
+          <h2>{unlocked.length > 0 ? 'Har du en annen koffert?' : 'Skriv inn koden'}</h2>
+          <p>
+            Koden står på kortet som ligger i kofferten. Du kan også skanne QR-koden på kortet.
+          </p>
+          <label for="kode">Kode</label>
+          <input
+            id="kode"
+            name="kode"
+            type="text"
+            value={typedCode}
+            autocomplete="off"
+            autocapitalize="characters"
+            spellcheck="false"
+            required
+            aria-invalid={error ? 'true' : undefined}
+            aria-describedby={error ? 'kode-feil' : undefined}
+            placeholder="F.eks. ABCD-EFGH"
+          />
+          {error && <p id="kode-feil" class="bt-feil" role="alert">{error}</p>}
+          <button type="submit" class="bt-knapp">Åpne</button>
+        </form>
+      )}
+
+      {unlocked.length > 0 && (
+        <form method="post" action={BAK_TEPPET_PATH} class="bt-loggut">
+          <input type="hidden" name="handling" value="logg-ut" />
+          <button type="submit">Logg ut på denne enheten</button>
+        </form>
+      )}
+
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .section-pad { padding-block: 3rem; }
+  .bt-inner { max-width: 560px; display: flex; flex-direction: column; gap: 1.5rem; }
+
+  .bt-kort {
+    background: var(--cream);
+    border-radius: 8px;
+    padding: 1.5rem 1.75rem;
+  }
+  .bt-kort h2 {
+    font-family: var(--font-display);
+    font-size: 1.4rem;
+    color: var(--burgundy);
+    margin-bottom: 0.75rem;
+  }
+  .bt-kort p { font-family: var(--font-body); color: #555; line-height: 1.6; margin-bottom: 1rem; }
+
+  .bt-liste { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0.5rem; }
+  .bt-liste a { font-family: var(--font-ui); font-weight: 600; color: var(--burgundy); }
+
+  .bt-skjema label {
+    display: block;
+    font-family: var(--font-ui);
+    font-size: 0.78rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--gold-dark, var(--gold));
+    margin-bottom: 0.4rem;
+  }
+  .bt-skjema input {
+    width: 100%;
+    font-family: var(--font-ui);
+    font-size: 1.25rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 0.65rem 0.85rem;
+    border: 1px solid var(--cream-dark, #ccc);
+    border-radius: var(--radius, 4px);
+    background: #fff;
+  }
+  .bt-skjema input:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+  .bt-skjema input[aria-invalid='true'] { border-color: var(--burgundy); }
+
+  .bt-feil { color: var(--burgundy) !important; font-weight: 600; margin: 0.6rem 0 0 !important; }
+
+  .bt-knapp {
+    margin-top: 1rem;
+    font-family: var(--font-ui);
+    font-size: 1rem;
+    font-weight: 600;
+    background: var(--burgundy);
+    color: var(--cream);
+    border: 0;
+    border-radius: var(--radius, 4px);
+    padding: 0.7rem 1.6rem;
+    cursor: pointer;
+  }
+  .bt-knapp:hover { background: var(--burgundy-dk, var(--burgundy)); }
+
+  .bt-melding { font-family: var(--font-body); color: #555; }
+
+  .bt-loggut button {
+    background: none;
+    border: 0;
+    padding: 0;
+    font-family: var(--font-ui);
+    font-size: 0.85rem;
+    color: var(--grey, #777);
+    text-decoration: underline;
+    cursor: pointer;
+  }
+</style>
