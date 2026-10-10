@@ -8,10 +8,12 @@
  * including their embedded images.
  *
  * What it recognises (anything else is skipped with a warning):
- *   header   h1 → title, .orig → originalTitle, .lede → lead,
+ *   header   h1 → title, .orig → originalTitle ("På norsk: X" swaps the
+ *            two: X becomes the title, the <h1> the original), .lede → lead,
  *            .notice → notice (+ its <strong> → noticeLabel)
  *   section  h2 → section kind/heading; <p> → body; ol.props / plain
- *            lists → listItems; <figure> → figures (incl. .pos markers);
+ *            lists → listItems; <figure> and image-only lists (ul.photos)
+ *            → figures (incl. .pos markers);
  *            ol.routine / ol.steps <li> → steps (h3 → step title)
  *   footer   .source <p> → sourceText, <dl> → sourceFacts,
  *            .small / .credit → rightsNote
@@ -156,8 +158,15 @@ async function toFigure($, imgEl, caption, markers, hint) {
 
 async function importFile(file) {
   const $ = cheerio.load(readFileSync(file, 'utf-8'))
-  const title = clean($('h1').first().text())
-  if (!title) throw new Error(`${file}: no <h1>`)
+  const h1 = clean($('h1').first().text())
+  if (!h1) throw new Error(`${file}: no <h1>`)
+  // Two header styles: "Originaltittel: X" under a Norwegian <h1>, or
+  // "På norsk: X" under an original-language <h1>. Normalise to Norwegian
+  // title + originalTitle either way.
+  const origLine = clean($('header .orig').first().text())
+  const norwegian = /^På norsk:\s*/i.test(origLine) ? origLine.replace(/^På norsk:\s*/i, '') : null
+  const title = norwegian ?? h1
+  const originalTitle = norwegian ? h1 : origLine.replace(/^Originaltittel:\s*/i, '')
   const slug = slugify(title)
   console.log(`\n${basename(file)} → «${title}» (${slug})`)
   let imgCount = 0
@@ -178,7 +187,9 @@ async function importFile(file) {
     const body = blocksOf($, section.find('p').filter(notInLi).filter((_, el) => $(el).parents('figure').length === 0))
 
     const stepLists = section.find('ol.routine, ol.steps')
-    const listItems = section.find('ol, ul').not(stepLists).children('li').toArray().map(li => clean($(li).text())).filter(Boolean)
+    // Image-only lists (e.g. ul.photos) are a row of pictures, not a text list.
+    const photoLists = section.find('ol, ul').not(stepLists).filter((_, el) => $(el).find('img').length > 0 && !clean($(el).text()))
+    const listItems = section.find('ol, ul').not(stepLists).not(photoLists).children('li').toArray().map(li => clean($(li).text())).filter(Boolean)
 
     const figures = []
     for (const fig of section.find('figure').filter(notInLi).toArray()) {
@@ -189,6 +200,10 @@ async function importFile(file) {
         top: Number((/top:\s*([\d.]+)%/.exec($(pos).attr('style') ?? '') ?? [])[1] ?? 50),
       }))
       const f = await toFigure($, $(fig).find('img').first(), clean($(fig).find('figcaption').text()), markers, hint())
+      if (f) figures.push(f)
+    }
+    for (const img of photoLists.find('img').toArray()) {
+      const f = await toFigure($, img, '', [], hint())
       if (f) figures.push(f)
     }
 
@@ -238,7 +253,7 @@ async function importFile(file) {
     isVisible: true,
     title,
     slug: { _type: 'slug', current: slug },
-    ...(header.find('.orig').length ? { originalTitle: clean(header.find('.orig').text()).replace(/^Originaltittel:\s*/i, '') } : {}),
+    ...(originalTitle ? { originalTitle } : {}),
     ...(header.find('.lede').length ? { lead: clean(header.find('.lede').text()) } : {}),
     ...(noticeText ? { notice: noticeText, noticeLabel: noticeLabel || '' } : {}),
     sections,
