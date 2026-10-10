@@ -3243,7 +3243,7 @@ export async function getAllGameChapters(): Promise<GameChapter[]> {
   `)
 }
 
-// ── Bak teppet (lukket kundeområde for tryllekofferter) ──────────
+// ── Bak teppet (lukket kundeområde for tryllesett) ──────────
 //
 // kitCollection documents live under the private "lukket." ID path (see
 // schemaTypes/kitCollection.ts), so the public sanityClient above can't see

@@ -15,28 +15,33 @@
 import type { StructureBuilder, StructureResolver } from 'sanity/structure'
 import { KIT_ID_PREFIX } from './schemaTypes/kitCollection'
 
-// Tryllekofferter must get an ID under the private "lukket." path (see
-// schemaTypes/kitCollection.ts), which the Studio's normal "create" flow
-// can't do. So the default create button is replaced with one whose intent
-// carries a fresh private ID. The child resolver runs each time the list is
-// opened, so every visit gets a new ID.
+// Tryllesett (magic kits: boxes and suitcases) must get an ID under the
+// private "lukket." path (see schemaTypes/kitCollection.ts), which the
+// Studio's normal "create" flow can't do. So the default create button is
+// replaced with one whose intent carries a fresh private ID. The child
+// resolver runs each time the list is opened, so every visit gets a new ID.
+//
+// .initialValueTemplates([]) must be the LAST call: every builder method
+// returns a clone, and clone() re-infers the default templates (bringing back
+// Sanity's own create button, which makes a public UUID) unless the
+// instance it's called on already had templates set explicitly.
 const kitCollectionListItem = (S: StructureBuilder) =>
   S.listItem()
-    .title('Tryllekofferter (lukket)')
+    .title('Tryllesett (lukket)')
     .schemaType('kitCollection')
     .child(() =>
       S.documentTypeList('kitCollection')
-        .title('Tryllekofferter (lukket)')
-        .initialValueTemplates([])
+        .title('Tryllesett (lukket)')
         .menuItems([
           S.menuItem()
-            .title('Ny tryllekoffert')
+            .title('Nytt tryllesett')
             .intent({
               type: 'create',
               params: { type: 'kitCollection', id: `${KIT_ID_PREFIX}${crypto.randomUUID()}` },
             })
             .showAsAction(true),
-        ]),
+        ])
+        .initialValueTemplates([]),
     )
 
 export const structure: StructureResolver = (S) =>

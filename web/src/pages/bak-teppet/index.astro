@@ -48,7 +48,7 @@ if (session) {
       return Astro.redirect(`${BAK_TEPPET_PATH}/${kit.slug}`, 303)
     }
     await failedAttemptDelay()
-    error = 'Koden stemmer ikke. Sjekk at du har skrevet den riktig — du finner den på kortet i kofferten.'
+    error = 'Koden stemmer ikke. Sjekk at du har skrevet den riktig — du finner den på kortet i esken eller kofferten.'
     typedCode = code
     Astro.response.status = 401
   }
@@ -62,14 +62,14 @@ const unlocked = session?.unlocked ?? []
 
 <BaseLayout
   title="Bak teppet — Tryllemuseet"
-  description="Lukket område for deg som har kjøpt en tryllekoffert fra Tryllemuseet."
+  description="Lukket område for deg som har kjøpt et tryllesett fra Tryllemuseet."
   noindex
 >
   <PageHero
     compact
     label="Bak teppet"
-    title="For deg med tryllekoffert"
-    intro="Her finner du beskrivelser og videoer til triksene i kofferten din."
+    title="For deg med tryllesett"
+    intro="Her finner du beskrivelser og videoer til triksene i tryllesettet ditt."
   />
 
   <section class="bt section-pad">
@@ -83,7 +83,7 @@ const unlocked = session?.unlocked ?? []
 
       {session && unlocked.length > 0 && (
         <div class="bt-kort">
-          <h2>Dine kofferter</h2>
+          <h2>Dine tryllesett</h2>
           <ul class="bt-liste">
             {unlocked.map(k => (
               <li><a href={`${BAK_TEPPET_PATH}/${k.slug}`}>{k.title} →</a></li>
@@ -94,9 +94,9 @@ const unlocked = session?.unlocked ?? []
 
       {session && (
         <form class="bt-kort bt-skjema" method="post" action={BAK_TEPPET_PATH}>
-          <h2>{unlocked.length > 0 ? 'Har du en annen koffert?' : 'Skriv inn koden'}</h2>
+          <h2>{unlocked.length > 0 ? 'Har du et annet tryllesett?' : 'Skriv inn koden'}</h2>
           <p>
-            Koden står på kortet som ligger i kofferten. Du kan også skanne QR-koden på kortet.
+            Koden står på kortet som ligger i esken eller kofferten. Du kan også skanne QR-koden på kortet.
           </p>
           <label for="kode">Kode</label>
           <input

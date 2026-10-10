@@ -71,8 +71,8 @@ const items = kit.items ?? []
 
       <div class="kit-items">
         {items.length > 1 && (
-          <nav class="kit-toc" aria-label="Triks i kofferten">
-            <p class="kit-label">Triks i kofferten</p>
+          <nav class="kit-toc" aria-label="Triks i settet">
+            <p class="kit-label">Triks i settet</p>
             <ol>
               {items.map(item => <li><a href={`#triks-${item._key}`}>{item.title}</a></li>)}
             </ol>
@@ -126,7 +126,7 @@ const items = kit.items ?? []
 
       {kit.contents && kit.contents.length > 0 && (
         <aside class="kit-innhold">
-          <p class="kit-label">I kofferten finner du</p>
+          <p class="kit-label">I settet finner du</p>
           <ul>{kit.contents.map(c => <li>{c}</li>)}</ul>
         </aside>
       )}
