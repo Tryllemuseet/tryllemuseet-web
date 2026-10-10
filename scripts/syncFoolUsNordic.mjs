@@ -36,7 +36,7 @@
  *
  * Required env vars:
  *   SANITY_TOKEN   — Sanity API token with write access (fallback: SANITY_AUTH_TOKEN)
- *   SANITY_DATASET — Target dataset (default: staging — NEVER production unless explicit)
+ *   SANITY_DATASET — Target dataset (default: development — NEVER production unless explicit)
  * Optional:
  *   DRY_RUN=true   — log intended changes, make no Sanity writes
  *   DEBUG=true     — log raw table/cell HTML when a row can't be parsed cleanly
@@ -55,7 +55,7 @@ const PROJECT_ID  = 'n2ynpgty'
 const API_VERSION = '2024-01-01'
 
 const SANITY_TOKEN   = process.env.SANITY_TOKEN ?? process.env.SANITY_AUTH_TOKEN
-const SANITY_DATASET = process.env.SANITY_DATASET ?? 'staging'
+const SANITY_DATASET = process.env.SANITY_DATASET ?? 'development'
 const DRY_RUN = process.env.DRY_RUN === 'true'
 const DEBUG   = process.env.DEBUG === 'true'
 
