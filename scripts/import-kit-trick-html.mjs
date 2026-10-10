@@ -8,7 +8,8 @@
  * including their embedded images.
  *
  * What it recognises (anything else is skipped with a warning):
- *   header   h1 → title, .orig → originalTitle ("På norsk: X" swaps the
+ *   header   h1 → title, .orig → originalTitle ("Originaltittel:"/"På engelsk:"
+ *            prefix stripped; "På norsk: X" swaps the
  *            two: X becomes the title, the <h1> the original), .lede → lead,
  *            .notice → notice (+ its <strong> → noticeLabel)
  *   section  walked in document order: h2 (+ p.sub) → section kind/heading;
@@ -162,13 +163,13 @@ async function importFile(file) {
   const $ = cheerio.load(readFileSync(file, 'utf-8'))
   const h1 = clean($('h1').first().text())
   if (!h1) throw new Error(`${file}: no <h1>`)
-  // Two header styles: "Originaltittel: X" under a Norwegian <h1>, or
+  // Two header styles: "Originaltittel: X" (or "På engelsk: X") under a Norwegian <h1>, or
   // "På norsk: X" under an original-language <h1>. Normalise to Norwegian
   // title + originalTitle either way.
   const origLine = clean($('header .orig').first().text())
   const norwegian = /^På norsk:\s*/i.test(origLine) ? origLine.replace(/^På norsk:\s*/i, '') : null
   const title = norwegian ?? h1
-  const originalTitle = norwegian ? h1 : origLine.replace(/^Originaltittel:\s*/i, '')
+  const originalTitle = norwegian ? h1 : origLine.replace(/^(Originaltittel|På engelsk|Original):\s*/i, '')
   const slug = slugify(title)
   console.log(`\n${basename(file)} → «${title}» (${slug})`)
   let imgCount = 0
@@ -187,7 +188,9 @@ async function importFile(file) {
   // untitled continuation subsection (steps always render after the body).
   const sections = []
   const isStepList = el => $(el).is('ol.routine, ol.steps')
-  const isPhotoList = el => $(el).is('ol, ul') && $(el).find('img').length > 0 && !clean($(el).text())
+  // A list of photos, optionally each in a <figure> with a <figcaption>.
+  const isPhotoList = el => $(el).is('ol, ul') && $(el).find('img').length > 0 &&
+    !clean($(el).clone().find('figcaption').remove().end().text())
 
   async function inlineImage(img, caption) {
     const ref = await uploadImage($(img).attr('src'), hint())
@@ -279,7 +282,7 @@ async function importFile(file) {
         } else if (isPhotoList(el)) {
           afterSteps()
           for (const img of $el.find('img').toArray()) {
-            const im = await inlineImage(img, '')
+            const im = await inlineImage(img, clean($(img).closest('figure').find('figcaption').text()))
             if (im) cur.body.push(im)
           }
         } else if (tag === 'ol' || tag === 'ul') {
