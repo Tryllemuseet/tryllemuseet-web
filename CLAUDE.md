@@ -257,7 +257,34 @@ Update TypeScript interfaces in sanity.ts when schema changes.
 - **Studio**: Deployed via npm run deploy to Sanity hosting
 - **Web**: Hosted on Vercel. `PUBLIC_VERCEL_ENV` controls CDN usage in production.
 
-### Deploy hooks (web)
+### Deploys: test vs production (web)
+
+**Verified 2026-10-10** against Vercel deployment history. This supersedes the older notes kept in the collapsed block below.
+
+| Environment | Vercel project | Code change | Sanity content change |
+|---|---|---|---|
+| Test: `test.tryllemuseet.no` | `tryllemuseet-web` (root `web/`) | Merge to `main` deploys automatically (git). | Sanity webhook "Deploy test" (dataset `production`) calls the project's deploy hook on every mutation. |
+| Production: `www.tryllemuseet.no` | `tryllemuseet-prod` (root `web/`, production branch `prod`) | Release PR `main` → `prod` (e.g. #173, #180); the merge to `prod` deploys automatically (git). | Nightly `.github/workflows/daily-rebuild.yml` (05:30 UTC, or run manually) via the `VERCEL_DEPLOY_HOOK_PROD` secret — **but see open item below**. |
+
+**Git auto-deploy is controlled by the repo-root `vercel.json`, and it applies to both projects**, even though both have root directory `web/`. Earlier notes claimed only the prod project read it; deployment history shows otherwise. From #172 (2026-09-22) until 2026-10-10 it was `deploymentEnabled: false`, so **no** merge triggered a build in either project. Test only updated when the Sanity webhook fired, and production only got manual or hook builds. It is now branch-scoped:
+
+```json
+"deploymentEnabled": { "**": false, "main": true, "prod": true }
+```
+
+Only `main` and `prod` deploy; other branches (PR branches) get no preview deployments. Because the file is shared, each project also builds the *other* branch as a preview (the test project builds `prod`, the prod project builds `main`). It's harmless but uses build quota. To suppress it, set an "Ignored Build Step" per project in the Vercel dashboard (e.g. `[ "$VERCEL_GIT_COMMIT_REF" != "prod" ]` on `tryllemuseet-prod`, `[ "$VERCEL_GIT_COMMIT_REF" != "main" ]` on `tryllemuseet-web`).
+
+To ship code to production: merge to `main` (live on test within minutes), then open and merge a release PR `main` → `prod`.
+
+**Open items (2026-10-10):**
+- **Nightly production rebuild doesn't reach production.** The deploy hook behind `VERCEL_DEPLOY_HOOK_PROD` is bound to `main`, so the nightly run creates a *preview* deployment in `tryllemuseet-prod` instead of a production one. Sanity-only content changes therefore don't reach production until the next code release. Fix (Vercel dashboard + GitHub secret, not code): create a deploy hook for the `prod` branch in `tryllemuseet-prod` and store its URL in the `VERCEL_DEPLOY_HOOK_PROD` secret. (`/bak-teppet` is unaffected; it reads Sanity per request.)
+- **Sanity webhook build storms.** The "Deploy test" webhook fires once per document mutation. Bulk writes (the daily YouTube sync at ~12:10 UTC) produce 15–25 test deployments within two minutes, most of them cancelled. That wastes Hobby build quota (100 deployments/day). The unused `tryllemuseet-deploy-debouncer` Vercel project was probably meant to coalesce these; purpose unconfirmed, left untouched.
+- `PUBLIC_VERCEL_ENV === 'production'` checks (Sanity CDN/perspective in `sanity.ts`, "Kommer snart" filtering) treat test as production too, because test builds as "production" in its own project. This is a known quirk; see also "Search indexing" below.
+
+<details>
+<summary>Superseded notes (2026-08 and 2026-09; kept for history, no longer accurate)</summary>
+
+#### Deploy hooks (web), as documented 2026-09
 
 **Correction (2026-09, replaces the 2026-08 correction below — verified directly against live Vercel project settings, Sanity webhook config/logs, and Vercel deployment history):** test and production intentionally behave differently now, by design (previously they didn't — see the superseded note underneath):
 
@@ -278,6 +305,10 @@ So: a merged PR is live on test within seconds, same as a Sanity publish. Produc
 <summary>Superseded 2026-08 correction (kept for history — no longer accurate as of 2026-09, see above)</summary>
 
 Contrary to what this section previously said, the `tryllemuseet-prod` Vercel project's production deploy hook (`Prod-hook-git`) is bound to the `main` branch, and Vercel's git integration deploys `main` straight to `tryllemuseet.no` on every push (confirmed via the project's `-git-main-` domain alias and a run of `target: "production"` deployments tracking `main` commits directly, including same-day production deploys of merged PRs). So pushing/merging to `main` does ship new code to production — there is no separate promotion step required.
+</details>
+
+
+
 </details>
 
 ### Search indexing and analytics
