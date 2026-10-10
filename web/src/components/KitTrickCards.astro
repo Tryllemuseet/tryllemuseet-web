@@ -1,0 +1,70 @@
+---
+// src/components/KitTrickCards.astro
+// Card grid linking to tryllebeskrivelser (/bak-teppet/triks/<slug>). Used on
+// kit pages and in a trick page's "Se også". Server-rendered inside the closed
+// /bak-teppet area only; the linked page does its own access check.
+import { urlFor, type KitTrickCard } from '../lib/sanity'
+
+interface Props {
+  tricks: KitTrickCard[]
+  numbered?: boolean
+}
+
+const { tricks, numbered = false } = Astro.props
+---
+
+<ol class:list={['ktc', { 'ktc--numbered': numbered }]}>
+  {tricks.map((t, i) => (
+    <li class="ktc-item">
+      <a class="ktc-card" href={`/bak-teppet/triks/${t.slug}`}>
+        {t.coverImage?.asset ? (
+          <img
+            class="ktc-img"
+            src={urlFor(t.coverImage).width(480).height(320).fit('crop').format('webp').url()}
+            alt=""
+            loading="lazy"
+          />
+        ) : (
+          <span class="ktc-img ktc-img--empty" aria-hidden="true">✦</span>
+        )}
+        <span class="ktc-body">
+          <span class="ktc-title">{numbered && <span class="ktc-nr">{i + 1}.</span>} {t.title}</span>
+          {t.originalTitle && <span class="ktc-orig">{t.originalTitle}</span>}
+          {t.lead && <span class="ktc-lead">{t.lead}</span>}
+        </span>
+      </a>
+    </li>
+  ))}
+</ol>
+
+<style>
+  .ktc {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
+    gap: 1.25rem;
+  }
+  .ktc-card {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    background: #fff;
+    border: 1px solid var(--cream-dark, #e5dccb);
+    border-radius: 8px;
+    overflow: hidden;
+    text-decoration: none;
+    color: inherit;
+    transition: border-color 150ms, box-shadow 150ms;
+  }
+  .ktc-card:hover { border-color: var(--gold); box-shadow: 0 4px 16px rgba(0,0,0,0.08); }
+  .ktc-card:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+  .ktc-img { display: block; width: 100%; aspect-ratio: 3 / 2; object-fit: cover; background: var(--cream); }
+  .ktc-img--empty { display: grid; place-items: center; font-size: 2rem; color: var(--gold); }
+  .ktc-body { display: flex; flex-direction: column; gap: 0.3rem; padding: 0.9rem 1rem 1.1rem; }
+  .ktc-title { font-family: var(--font-display); font-size: 1.15rem; color: var(--burgundy); line-height: 1.25; }
+  .ktc-nr { color: var(--gold-dark, var(--gold)); }
+  .ktc-orig { font-family: var(--font-ui); font-size: 0.8rem; color: #777; }
+  .ktc-lead { font-family: var(--font-body); font-size: 0.92rem; color: #555; line-height: 1.5; }
+</style>

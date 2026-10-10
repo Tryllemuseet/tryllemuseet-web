@@ -10,14 +10,15 @@
 // never serves documents whose _id contains a "." to unauthenticated
 // requests, even in the public production dataset, so the access code and
 // texts can't be read via the public API. structure.ts creates new kits with
-// such an ID, and the validation below blocks publishing one that isn't.
+// such an ID, and the validation below blocks publishing one that isn't (see
+// privateDoc.ts). The tricks themselves are separate kitTrick documents,
+// referenced from `tricks`, so one description can be shared by many kits.
 // Uploaded images/files are still public-by-URL on Sanity's CDN (unguessable
 // URLs) — that's acceptable here; videos should live on YouTube (unlisted)
 // or Vimeo (domain-restricted) rather than in Sanity.
-import { defineType, defineField, defineArrayMember } from 'sanity'
+import { defineType, defineField } from 'sanity'
 import { richBlockContent } from './richBlockContent'
-
-export const KIT_ID_PREFIX = 'lukket.'
+import { privateIdValidation } from './privateDoc'
 
 // Unambiguous characters only (no 0/O, 1/I/L) so codes printed on a card are
 // easy to type. 8 chars from 31 symbols ≈ 40 bits — not guessable online.
@@ -37,17 +38,12 @@ function normalizeAccessCode(code: string): string {
 
 export const kitCollection = defineType({
   name: 'kitCollection',
-  title: 'Tryllekoffert (lukket område)',
+  title: 'Tryllesett (lukket område)',
   type: 'document',
   icon: () => '🧰',
-  description: 'Lukket side for kjøpere av en tryllekoffert/-eske. Én per koffert-type, med én felles tilgangskode.',
+  description: 'Lukket side for kjøpere av et tryllesett (trylleeske eller tryllekoffert). Én per type sett, med én felles tilgangskode.',
 
-  validation: Rule => Rule.custom((_, context) => {
-    const id = (context.document?._id ?? '').replace(/^drafts\./, '')
-    return id.startsWith(KIT_ID_PREFIX)
-      ? true
-      : 'Dette dokumentet er ikke privat og vil ikke vises på nettsiden. Opprett kofferten på nytt via «Tryllekofferter (lukket)» → «Ny tryllekoffert», og slett denne.'
-  }),
+  validation: Rule => Rule.custom(privateIdValidation('«Tryllesett (lukket)» → «Nytt tryllesett»')),
 
   fields: [
 
@@ -63,9 +59,9 @@ export const kitCollection = defineType({
     // ── GRUNNINFO ─────────────────────────────────────────────────
     defineField({
       name: 'title',
-      title: 'Navn på kofferten/esken',
+      title: 'Navn på tryllesettet',
       type: 'string',
-      description: 'F.eks. «Den store tryllekofferten».',
+      description: 'F.eks. «Den store tryllekofferten» eller «Trylleeske for nybegynnere».',
       validation: R => R.required(),
     }),
 
@@ -83,7 +79,7 @@ export const kitCollection = defineType({
       title: 'Tilgangskode',
       type: 'string',
       initialValue: generateAccessCode,
-      description: 'Trykkes på kort/QR-kode i esken. Store/små bokstaver, mellomrom og bindestrek spiller ingen rolle. Bytt koden hvis den har spredt seg — da må alle som har logget inn, taste den nye koden.',
+      description: 'Trykkes på kortet/QR-koden i esken eller kofferten. Store/små bokstaver, mellomrom og bindestrek spiller ingen rolle. Bytt koden hvis den har spredt seg — da må alle som har logget inn, taste den nye koden.',
       validation: R => R.required().custom(async (value, context) => {
         if (!value) return true
         const normalized = normalizeAccessCode(value)
@@ -94,14 +90,14 @@ export const kitCollection = defineType({
           { id, draftId: `drafts.${id}` },
         )
         return clash.some(c => c && normalizeAccessCode(c) === normalized)
-          ? 'En annen koffert bruker allerede denne koden.'
+          ? 'Et annet tryllesett bruker allerede denne koden.'
           : true
       }),
     }),
 
     defineField({
       name: 'coverImage',
-      title: 'Bilde av kofferten',
+      title: 'Bilde av tryllesettet',
       type: 'image',
       options: { hotspot: true },
       fields: [defineField({ name: 'alt', title: 'Alt-tekst', type: 'string' })],
@@ -117,70 +113,20 @@ export const kitCollection = defineType({
 
     defineField({
       name: 'contents',
-      title: 'I kofferten finner du',
+      title: 'I settet finner du',
       type: 'array',
       of: [{ type: 'string' }],
-      description: 'Enkel liste over det som ligger i kofferten.',
+      description: 'Enkel liste over det som ligger i esken eller kofferten.',
     }),
 
-    // ── TRIKS / INNHOLD ──────────────────────────────────────────
+    // ── TRYLLEBESKRIVELSER ───────────────────────────────────────
     defineField({
-      name: 'items',
-      title: 'Triks og beskrivelser',
+      name: 'tricks',
+      title: 'Tryllebeskrivelser i settet',
       type: 'array',
-      of: [
-        defineArrayMember({
-          name: 'kitItem',
-          title: 'Triks',
-          type: 'object',
-          fields: [
-            defineField({
-              name: 'title',
-              title: 'Tittel',
-              type: 'string',
-              validation: R => R.required(),
-            }),
-            defineField({
-              name: 'image',
-              title: 'Bilde',
-              type: 'image',
-              options: { hotspot: true },
-              fields: [defineField({ name: 'alt', title: 'Alt-tekst', type: 'string' })],
-            }),
-            defineField({
-              name: 'description',
-              title: 'Beskrivelse / fremgangsmåte',
-              type: 'array',
-              of: richBlockContent(),
-            }),
-            defineField({
-              name: 'videos',
-              title: 'Videoer',
-              type: 'array',
-              description: 'YouTube («Ikke oppført») eller Vimeo vises innebygd; andre lenker vises som lenke.',
-              of: [
-                defineArrayMember({
-                  name: 'kitVideo',
-                  type: 'object',
-                  fields: [
-                    defineField({ name: 'label', title: 'Tittel', type: 'string' }),
-                    defineField({
-                      name: 'url',
-                      title: 'URL',
-                      type: 'url',
-                      validation: R => R.required(),
-                    }),
-                  ],
-                  preview: { select: { title: 'label', subtitle: 'url' } },
-                }),
-              ],
-            }),
-          ],
-          preview: {
-            select: { title: 'title', media: 'image' },
-          },
-        }),
-      ],
+      description: 'Velg blant tryllebeskrivelsene. Samme beskrivelse kan ligge i flere sett, så den skrives bare én gang. Nye lages under «Tryllebeskrivelser (lukket)».',
+      of: [{ type: 'reference', to: [{ type: 'kitTrick' }], options: { disableNew: true } }],
+      validation: R => R.unique(),
     }),
 
   ],

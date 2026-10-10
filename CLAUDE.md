@@ -47,7 +47,8 @@ The schema defines 35 registered content types in `/schemaTypes` (see `schemaTyp
 - `partner.ts` — Sponsors/partners with category grouping
 - `signageConfig.ts`, `signageVideo.ts`, `signageQuote.ts` — Content for the physical info screen (`/skjerm.html`)
 - `quizConfig.ts`, `quizTheme.ts`, `quizQuestion.ts` — Tryllequiz (`/tryllequiz`): settings singleton with `isActive` master switch, selectable themes, and questions with difficulty + validated answers (see `docs/tryllequiz-concept.md`)
-- `kitCollection.ts` (Studio label: "Tryllekoffert (lukket område)", added 2026-10) — Content for buyers of the museum's magic kits/boxes, shown in the code-protected area `/bak-teppet` (see "Closed area" under Key Patterns). One doc per kit **type** with one shared `accessCode`; no personal data. **Docs must have an `_id` under the private `lukket.` path** — create them only via Studio → Aktiviteter → "Tryllekofferter (lukket)" → "Ny tryllekoffert" (or a script with an explicit `lukket.*` ID), never via the global "+ Create" menu (hidden there on purpose). A doc-level validation blocks publishing one without the prefix.
+- `kitCollection.ts` (Studio label: "Tryllesett (lukket område)", added 2026-10; "tryllesett" is the umbrella term for both *trylleesker* and *tryllekofferter*) — Content for buyers of the museum's magic kits, shown in the code-protected area `/bak-teppet` (see "Closed area" under Key Patterns). One doc per kit **type** with one shared `accessCode`; no personal data. **Docs must have an `_id` under the private `lukket.` path** — create them only via Studio → Aktiviteter → "Tryllesett (lukket)" → "Nytt tryllesett" (or a script with an explicit `lukket.*` ID), never via the global "+ Create" menu (hidden there on purpose). A doc-level validation blocks publishing one without the prefix. Its `tricks` field references `kitTrick` docs (below). The old inline `items` array was removed 2026-10 (no published kit used it).
+- `kitTrick.ts` (Studio label: "Tryllebeskrivelse (lukket)", added 2026-10): one trick's instructions, often a Norwegian translation of the sheet that comes with the trick. It's written once and referenced from any number of kits (`kitCollection.tricks`) and other tricks (`relatedTricks`), so nothing is stored twice. The body is a `sections` array (kind = effekt / hemmeligheten / rekvisitter / forberedelse / utforelse / tips / annet; each with rich text (including inline images with captions), a numbered list, figures with optional number markers, and steps). A section with `subsection: true` renders as an `<h3>` under the previous one, or with no heading continues it, and is left out of the table of contents, plus header fields (`originalTitle`, `lead`, `notice`) and source fields (`sourceText`, `sourceFacts`, `rightsNote`). It's private like `kitCollection`: create only via Studio → Aktiviteter → "Tryllebeskrivelser (lukket)" → "Ny tryllebeskrivelse". It's rendered at `/bak-teppet/triks/<slug>`. `scripts/import-kit-trick-html.mjs` imports HTML pages in the "Tryllekunst · Bruksanvisning" layout (including embedded images) as `kitTrick` docs; it defaults to the `development` dataset.
 - `gameConfig.ts`, `gameChapter.ts` — "Det trettende kabinett" story game (`/det-trettende-kabinett`): settings singleton with `isActive` master switch (plus `englishEnabled` for the in-game language toggle), and per-room copy overrides with optional room/fact images, rich-text intros and parallel English fields. Puzzle logic lives in the page code (see `docs/det-trettende-kabinett-concept.md`)
 
 **Helper Types** (object types used inline by document types):
@@ -80,7 +81,7 @@ The schema defines 35 registered content types in `/schemaTypes` (see `schemaTyp
   - `historiske-opptak/` (+ `[slug]`) — archival TV clips
   - `historiske-artikler/` — press clipping archive
   - `nordisk-tv-magi/` — combined overview; its `[slug]` route 301-redirects to got-talent/fool-us
-- `bak-teppet/` (`index` + `[slug]`) — closed area for kit buyers; the only on-demand (`prerender = false`) pages on the site. See "Closed area" under Key Patterns.
+- `bak-teppet/` (`index`, `[slug]` for a kit, `triks/[slug]` for a tryllebeskrivelse): closed area for kit buyers, and the only on-demand (`prerender = false`) pages on the site. See "Closed area" under Key Patterns.
 - `web/public/skjerm.html` — physical info screen; fetches Sanity client-side (live, not SSG) plus Entur bus departures. `/skjerm` redirects to it.
 - Legacy/short URL redirects (QR codes, print) are defined in `web/astro.config.mjs` under `redirects`.
 
@@ -231,6 +232,9 @@ Code-protected pages for people who bought a magic kit. Everything else on the s
 - **Content privacy** comes from Sanity, not the page: `kitCollection` docs have `_id`s under `lukket.`, and Sanity never serves dot-path IDs to unauthenticated requests, even in the public `production` dataset. Queries (`getKitAccessList()`, `getKitBySlug()` in `sanity.ts`) take a token-bearing client and also filter `_id in path("lukket.**")`. Uploaded images are still public-by-URL on Sanity's CDN (unguessable URLs); videos should be YouTube "unlisted" or Vimeo with domain restriction, not Sanity files.
 - **Access**: `web/src/lib/bakTeppet.ts`. A correct code (typed into the form, or `/bak-teppet?kode=XXXX-XXXX` from a QR code in the box) sets an httpOnly cookie with an HMAC of `<kit id>:<current code>` per unlocked kit. Changing a kit's code in Studio revokes old cookies; setting `isVisible` off disables the kit. The HMAC key is derived from the Sanity token, so there's no separate secret.
 - **Env**: `SANITY_PRIVATE_READ_TOKEN` (Sanity API token, Viewer role) must be set in **both** Vercel projects (runtime, via `astro:env/server`). Without it the area shows "ikke tilgjengelig" (HTTP 503); the rest of the site is unaffected. Locally `astro dev` falls back to `SANITY_PREVIEW_TOKEN`.
+- **Shared tricks**: a trick page is open to anyone whose cookie unlocks at least one active kit that references it (`kitIds` in `getKitTrickBySlug()`). Visitors without access, and unknown slugs, both get the same redirect to `/bak-teppet?neste=<path>`, so the page doesn't reveal which slugs exist. After a correct code, `?neste=` sends them back to the page (`safeNextPath()` only allows paths inside `/bak-teppet/`). Links to trick pages from anywhere, including other tricks, therefore just work.
+- **GROQ gotcha**: filter reference arrays *before* dereferencing (`tricks[<filter on _ref/@->>]->{…}`). `tricks[]->[filter]` returns `null` per element instead of dropping it.
+- **Studio**: both private types are hidden from the global "+ Create" menu, and "Duplicate" is removed for them (`sanity.config.ts`), because a copy would get a public UUID.
 - **Not searchable**: `noindex` meta + `X-Robots-Tag` header + `Cache-Control: private, no-store`; not in navigation. Deliberately *not* listed in `robots.txt` (that file is public and would advertise the path).
 
 ## Important Queries & Types
@@ -257,7 +261,34 @@ Update TypeScript interfaces in sanity.ts when schema changes.
 - **Studio**: Deployed via npm run deploy to Sanity hosting
 - **Web**: Hosted on Vercel. `PUBLIC_VERCEL_ENV` controls CDN usage in production.
 
-### Deploy hooks (web)
+### Deploys: test vs production (web)
+
+**Verified 2026-10-10** against Vercel deployment history. This supersedes the older notes kept in the collapsed block below.
+
+| Environment | Vercel project | Code change | Sanity content change |
+|---|---|---|---|
+| Test: `test.tryllemuseet.no` | `tryllemuseet-web` (root `web/`) | Merge to `main` deploys automatically (git). | Sanity webhook "Deploy test" (dataset `production`) calls the project's deploy hook on every mutation. |
+| Production: `www.tryllemuseet.no` | `tryllemuseet-prod` (root `web/`, production branch `prod`) | Release PR `main` → `prod` (e.g. #173, #180); the merge to `prod` deploys automatically (git). | Nightly `.github/workflows/daily-rebuild.yml` (05:30 UTC, or run manually) via the `VERCEL_DEPLOY_HOOK_PROD` secret — **but see open item below**. |
+
+**Git auto-deploy is controlled by the repo-root `vercel.json`, and it applies to both projects**, even though both have root directory `web/`. Earlier notes claimed only the prod project read it; deployment history shows otherwise. From #172 (2026-09-22) until 2026-10-10 it was `deploymentEnabled: false`, so **no** merge triggered a build in either project. Test only updated when the Sanity webhook fired, and production only got manual or hook builds. It is now branch-scoped:
+
+```json
+"deploymentEnabled": { "**": false, "main": true, "prod": true }
+```
+
+Only `main` and `prod` deploy; other branches (PR branches) get no preview deployments. Because the file is shared, each project also builds the *other* branch as a preview (the test project builds `prod`, the prod project builds `main`). It's harmless but uses build quota. To suppress it, set an "Ignored Build Step" per project in the Vercel dashboard (e.g. `[ "$VERCEL_GIT_COMMIT_REF" != "prod" ]` on `tryllemuseet-prod`, `[ "$VERCEL_GIT_COMMIT_REF" != "main" ]` on `tryllemuseet-web`).
+
+To ship code to production: merge to `main` (live on test within minutes), then open and merge a release PR `main` → `prod`.
+
+**Open items (2026-10-10):**
+- **Nightly production rebuild doesn't reach production.** The deploy hook behind `VERCEL_DEPLOY_HOOK_PROD` is bound to `main`, so the nightly run creates a *preview* deployment in `tryllemuseet-prod` instead of a production one. Sanity-only content changes therefore don't reach production until the next code release. Fix (Vercel dashboard + GitHub secret, not code): create a deploy hook for the `prod` branch in `tryllemuseet-prod` and store its URL in the `VERCEL_DEPLOY_HOOK_PROD` secret. (`/bak-teppet` is unaffected; it reads Sanity per request.)
+- **Sanity webhook build storms.** The "Deploy test" webhook fires once per document mutation. Bulk writes (the daily YouTube sync at ~12:10 UTC) produce 15–25 test deployments within two minutes, most of them cancelled. That wastes Hobby build quota (100 deployments/day). The unused `tryllemuseet-deploy-debouncer` Vercel project was probably meant to coalesce these; purpose unconfirmed, left untouched.
+- `PUBLIC_VERCEL_ENV === 'production'` checks (Sanity CDN/perspective in `sanity.ts`, "Kommer snart" filtering) treat test as production too, because test builds as "production" in its own project. This is a known quirk; see also "Search indexing" below.
+
+<details>
+<summary>Superseded notes (2026-08 and 2026-09; kept for history, no longer accurate)</summary>
+
+#### Deploy hooks (web), as documented 2026-09
 
 **Correction (2026-09, replaces the 2026-08 correction below — verified directly against live Vercel project settings, Sanity webhook config/logs, and Vercel deployment history):** test and production intentionally behave differently now, by design (previously they didn't — see the superseded note underneath):
 
@@ -278,6 +309,10 @@ So: a merged PR is live on test within seconds, same as a Sanity publish. Produc
 <summary>Superseded 2026-08 correction (kept for history — no longer accurate as of 2026-09, see above)</summary>
 
 Contrary to what this section previously said, the `tryllemuseet-prod` Vercel project's production deploy hook (`Prod-hook-git`) is bound to the `main` branch, and Vercel's git integration deploys `main` straight to `tryllemuseet.no` on every push (confirmed via the project's `-git-main-` domain alias and a run of `target: "production"` deployments tracking `main` commits directly, including same-day production deploys of merged PRs). So pushing/merging to `main` does ship new code to production — there is no separate promotion step required.
+</details>
+
+
+
 </details>
 
 ### Search indexing and analytics
@@ -315,7 +350,7 @@ Practical consequences:
 
 ## Visibility / Unpublish Convention
 
-All content document types (`kitCollection`, `biography`, `legend`, `event`, `tvAppearance`, `historicalClip`, `book`, `artifact`, `partner`, `quizTheme`, `quizQuestion`, `tema`, `trick`, `comicStory`, `story`, `whoKnew`, `worldRecordTrick`, `competitionResult`, `historiskeKlippNb`, `magicOrganization`, `magicClubEdition`, `mediaAppearance`, `gameChapter`) have a boolean field `isVisible` with `initialValue: true`. Config/settings singletons (`siteConfig`, `godeRadConfig`, `signageConfig`, `quizConfig`, `gameConfig`) use `isActive` instead — same semantics, different name since they're not "content" per se. `siteNavigation` models visibility per nested `navMainArea`/`navSubArea` item rather than on the document itself.
+All content document types (`kitCollection`, `kitTrick`, `biography`, `legend`, `event`, `tvAppearance`, `historicalClip`, `book`, `artifact`, `partner`, `quizTheme`, `quizQuestion`, `tema`, `trick`, `comicStory`, `story`, `whoKnew`, `worldRecordTrick`, `competitionResult`, `historiskeKlippNb`, `magicOrganization`, `magicClubEdition`, `mediaAppearance`, `gameChapter`) have a boolean field `isVisible` with `initialValue: true`. Config/settings singletons (`siteConfig`, `godeRadConfig`, `signageConfig`, `quizConfig`, `gameConfig`) use `isActive` instead — same semantics, different name since they're not "content" per se. `siteNavigation` models visibility per nested `navMainArea`/`navSubArea` item rather than on the document itself.
 
 **Rules:**
 - Default is always `true` — new documents are visible automatically
