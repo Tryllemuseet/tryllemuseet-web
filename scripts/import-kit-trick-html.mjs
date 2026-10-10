@@ -24,13 +24,20 @@
  * Documents get a deterministic private ID, `lukket.kittrick-<slug>`, so
  * re-running replaces the same document instead of creating a duplicate.
  * Images are uploaded as Sanity assets (Sanity de-duplicates identical
- * files). The tricks are NOT added to any tryllesett — do that in Studio.
+ * files).
+ *
+ * An existing document is NOT overwritten unless --replace is given, so
+ * edits made in Studio after an earlier import aren't lost by accident.
+ * --kit=<slug> appends the trick to that tryllesett (kitCollection) after
+ * writing it, unless it's already there or the kit has an unpublished draft.
  *
  * Targets the DEVELOPMENT dataset by default. Set SANITY_DATASET=production
  * to import for real.
  *
  * Usage:
- *   node scripts/import-kit-trick-html.mjs [--dry-run] file1.html [file2.html …]
+ *   node scripts/import-kit-trick-html.mjs [--dry-run] [--replace] [--kit=<kit-slug>] file1.html [file2.html …]
+ *
+ * Full procedure (writing, import, review): docs/kit-trick-operations-routine.md
  *   (token from SANITY_API_TOKEN, SANITY_TOKEN, SANITY_AUTH_TOKEN or the
  *    local Sanity CLI login)
  */
@@ -44,11 +51,13 @@ import { randomUUID } from 'crypto'
 
 const args = process.argv.slice(2)
 const dryRun = args.includes('--dry-run')
+const replace = args.includes('--replace')
+const kitSlug = args.find(a => a.startsWith('--kit='))?.slice('--kit='.length) || null
 const files = args.filter(a => !a.startsWith('--'))
 const dataset = process.env.SANITY_DATASET ?? 'development'
 
 if (files.length === 0) {
-  console.error('Usage: node scripts/import-kit-trick-html.mjs [--dry-run] file.html [...]')
+  console.error('Usage: node scripts/import-kit-trick-html.mjs [--dry-run] [--replace] [--kit=<kit-slug>] file.html [...]')
   process.exit(1)
 }
 
@@ -333,13 +342,58 @@ async function importFile(file) {
   if (firstImage) doc.coverImage = { _type: 'image', asset: firstImage.asset, alt: firstImage.alt }
 
   console.log(`  ${sections.length} sections: ${sections.map(s => (s.subsection ? '↳' : '') + (s.heading ?? s.kind)).join(', ')}`)
+  const existing = token ? await client.fetch('*[_id in [$id, "drafts." + $id]]._id', { id: doc._id }) : []
+  if (existing.length && !replace) {
+    console.log(`  ! ${doc._id} already exists in ${dataset} — skipped. Use --replace to overwrite it (this discards edits made in Studio).`)
+    return null
+  }
   if (dryRun) {
-    console.log(`  [dry-run] would write ${doc._id}`)
+    console.log(`  [dry-run] would ${existing.length ? 'replace' : 'create'} ${doc._id}`)
   } else {
     await client.createOrReplace(doc)
     console.log(`  ✓ wrote ${doc._id} to ${dataset}`)
   }
+  return doc._id
+}
+
+// Appends the trick to a tryllesett, the same way an editor would in Studio.
+async function findKit() {
+  const kits = await client.fetch(
+    '*[_type == "kitCollection" && _id in path("lukket.**")]{ _id, title, "slug": slug.current, "refs": tricks[]._ref }',
+  )
+  const kit = kits.find(k => k.slug === kitSlug)
+  if (!kit) {
+    console.error(`No tryllesett with slug "${kitSlug}" in ${dataset}. Available: ${kits.map(k => k.slug).join(', ') || '(none)'}`)
+    process.exit(1)
+  }
+  return kit
+}
+
+async function addToKit(trickId) {
+  const kit = await findKit()
+  if ((kit.refs ?? []).includes(trickId)) {
+    console.log(`  = already in «${kit.title}»`)
+    return
+  }
+  if (await client.fetch('count(*[_id == $id])', { id: `drafts.${kit._id}` })) {
+    console.log(`  ! «${kit.title}» has unpublished changes in Studio — add the trick there instead.`)
+    return
+  }
+  if (dryRun) {
+    console.log(`  [dry-run] would add to «${kit.title}»`)
+    return
+  }
+  await client
+    .patch(kit._id)
+    .setIfMissing({ tricks: [] })
+    .append('tricks', [{ _type: 'reference', _ref: trickId, _key: key() }])
+    .commit()
+  console.log(`  ✓ added to «${kit.title}»`)
 }
 
 console.log(`Dataset: ${dataset}${dryRun ? ' (dry run)' : ''}`)
-for (const file of files) await importFile(file)
+if (kitSlug && token) await findKit() // fail before uploading anything
+for (const file of files) {
+  const id = await importFile(file)
+  if (id && kitSlug) await addToKit(id)
+}
