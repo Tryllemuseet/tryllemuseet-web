@@ -3242,3 +3242,83 @@ export async function getAllGameChapters(): Promise<GameChapter[]> {
     }
   `)
 }
+
+// ── Bak teppet (lukket kundeområde for tryllekofferter) ──────────
+//
+// kitCollection documents live under the private "lukket." ID path (see
+// schemaTypes/kitCollection.ts), so the public sanityClient above can't see
+// them. These queries take a token-bearing client from
+// createPrivateSanityClient(); the token itself is read server-side only, in
+// src/lib/bakTeppet.ts. The path filter is a second line of defence: a kit
+// accidentally created with a public ID is never served from here.
+
+export interface KitVideo {
+  label?: string
+  url:    string
+}
+
+export interface KitItem {
+  _key:         string
+  title:        string
+  image?:       { asset: { _ref: string; url: string }; alt?: string }
+  description?: PortableTextBlock[]
+  videos?:      KitVideo[]
+}
+
+export interface KitCollection {
+  _id:         string
+  title:       string
+  slug:        string
+  coverImage?: { asset: { _ref: string; url: string }; alt?: string }
+  intro?:      PortableTextBlock[]
+  contents?:   string[]
+  items?:      KitItem[]
+}
+
+export interface KitAccessEntry {
+  _id:        string
+  title:      string
+  slug:       string
+  accessCode: string
+}
+
+type SanityClientLike = typeof sanityClient
+
+export function createPrivateSanityClient(token: string): SanityClientLike {
+  return sanityClient.withConfig({ token, useCdn: false, perspective: 'published' })
+}
+
+const KIT_FILTER = `_type == "kitCollection" && _id in path("lukket.**") && isVisible != false && defined(slug.current) && defined(accessCode)`
+
+// Rich-text projection: inline image URLs + internal-link slugs, as
+// portableTextToHtml() expects.
+const KIT_RICH_TEXT = `
+  ...,
+  _type == "image" => { ..., asset->{ _ref, url } },
+  markDefs[]{ ..., "reference": reference->{ "slug": slug.current } }
+`
+
+// All active kits with their codes — only ever used server-side to check a
+// typed code or a cookie; never rendered.
+export async function getKitAccessList(client: SanityClientLike): Promise<KitAccessEntry[]> {
+  return client.fetch(`
+    *[${KIT_FILTER}] | order(title asc) { _id, title, "slug": slug.current, accessCode }
+  `)
+}
+
+export async function getKitBySlug(client: SanityClientLike, slug: string): Promise<KitCollection | null> {
+  return client.fetch(`
+    *[${KIT_FILTER} && slug.current == $slug][0] {
+      _id, title, "slug": slug.current,
+      coverImage { asset->{ _ref, url }, alt },
+      intro[] { ${KIT_RICH_TEXT} },
+      contents,
+      items[] {
+        _key, title,
+        image { asset->{ _ref, url }, alt },
+        description[] { ${KIT_RICH_TEXT} },
+        videos[] { label, url }
+      }
+    }
+  `, { slug })
+}

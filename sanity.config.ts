@@ -19,4 +19,11 @@ export default defineConfig({
   schema: {
     types: schemaTypes,
   },
+
+  document: {
+    // Tryllekofferter need a private ID — only creatable from their own
+    // list in structure.ts, not from the global "+ Create" menu.
+    newDocumentOptions: (prev, { creationContext }) =>
+      creationContext.type === 'global' ? prev.filter(t => t.templateId !== 'kitCollection') : prev,
+  },
 })

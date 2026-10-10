@@ -1,8 +1,21 @@
 // @ts-check
-import { defineConfig } from 'astro/config';
+import { defineConfig, envField } from 'astro/config';
+import vercel from '@astrojs/vercel';
 
 // https://astro.build/config
 export default defineConfig({
+  // The site stays fully static. The adapter only exists so the few pages
+  // that opt out with `export const prerender = false` (the code-protected
+  // /bak-teppet area) can run on demand as Vercel functions.
+  adapter: vercel(),
+  env: {
+    schema: {
+      // Read-only Sanity token for the private "lukket." documents behind
+      // /bak-teppet (see schemaTypes/kitCollection.ts). Read at runtime on
+      // the server only — never inlined into client code.
+      SANITY_PRIVATE_READ_TOKEN: envField.string({ context: 'server', access: 'secret', optional: true }),
+    },
+  },
   redirects: {
     // Short URLs used on print material / QR codes → canonical paths
     '/got-talent':                  '/tryllehistorie/got-talent',
