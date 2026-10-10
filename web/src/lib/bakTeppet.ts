@@ -104,6 +104,19 @@ export function clearAccess(cookies: AstroCookies) {
   cookies.delete(COOKIE_NAME, { path: BAK_TEPPET_PATH })
 }
 
+/** Where to send a visitor after a correct code: `?neste=` if it points
+ *  inside Bak teppet (so links to a trick page survive the code form),
+ *  otherwise null. Rejects anything that could leave the site. */
+export function safeNextPath(value: string | null | undefined): string | null {
+  if (!value) return null
+  return /^\/bak-teppet\/[a-z0-9/_-]+$/i.test(value) && !value.includes('//') ? value : null
+}
+
+/** Code-form URL that returns to `path` after login. */
+export function loginUrl(path: string): string {
+  return `${BAK_TEPPET_PATH}?neste=${encodeURIComponent(path)}`
+}
+
 /** Headers for every Bak teppet response: never indexed, never cached. */
 export function setPrivateHeaders(headers: Headers) {
   headers.set('X-Robots-Tag', 'noindex, nofollow, noarchive')

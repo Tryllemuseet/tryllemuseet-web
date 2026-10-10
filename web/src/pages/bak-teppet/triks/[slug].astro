@@ -1,0 +1,372 @@
+---
+// src/pages/bak-teppet/triks/[slug].astro
+//
+// One tryllebeskrivelse (kitTrick). Written once in Studio and shared by any
+// number of tryllesett; open to visitors whose cookie unlocks at least one
+// active kit that includes it (see src/lib/bakTeppet.ts). Anyone else is sent
+// to the code form, which returns here after a correct code. Rendered on
+// demand; noindex everywhere.
+export const prerender = false
+
+import BaseLayout from '../../../layouts/BaseLayout.astro'
+import NarrateButton from '../../../components/NarrateButton.astro'
+import KitTrickCards from '../../../components/KitTrickCards.astro'
+import {
+  getKitTrickBySlug,
+  portableTextToHtml,
+  portableTextToPlainText,
+  urlFor,
+  type KitFigure,
+  type KitTrickSection,
+} from '../../../lib/sanity'
+import {
+  BAK_TEPPET_PATH,
+  loadSession,
+  loginUrl,
+  setPrivateHeaders,
+  videoEmbedUrl,
+} from '../../../lib/bakTeppet'
+
+setPrivateHeaders(Astro.response.headers)
+
+const { slug } = Astro.params
+const session = await loadSession(Astro.cookies)
+if (!session || !slug) return Astro.redirect(BAK_TEPPET_PATH)
+
+const trick = await getKitTrickBySlug(session.client, slug)
+// Same response whether the trick doesn't exist or just isn't unlocked, so
+// the page doesn't reveal which slugs exist.
+const kitsWithTrick = trick ? session.unlocked.filter(k => trick.kitIds.includes(k._id)) : []
+if (!trick || kitsWithTrick.length === 0) return Astro.redirect(loginUrl(Astro.url.pathname))
+
+const SECTION_TITLES: Record<KitTrickSection['kind'], string> = {
+  effekt: 'Effekt',
+  hemmeligheten: 'Hemmeligheten',
+  rekvisitter: 'Rekvisitter',
+  forberedelse: 'Forberedelse',
+  utforelse: 'Utførelse',
+  tips: 'Tips',
+  annet: '',
+}
+
+const sections = (trick.sections ?? []).map((sec, i) => ({
+  ...sec,
+  title: sec.heading || SECTION_TITLES[sec.kind] || 'Mer',
+  id: `${sec.kind}-${i + 1}`,
+}))
+
+const figureSrc = (f: KitFigure, width: number) =>
+  f.image?.asset ? urlFor(f.image).width(width).auto('format').url() : null
+
+// Everything a visitor might want read aloud, in page order.
+const narration = [
+  trick.lead,
+  ...sections.flatMap(sec => [
+    sec.title,
+    portableTextToPlainText(sec.body),
+    ...(sec.listItems ?? []),
+    ...(sec.steps ?? []).flatMap((st, i) => [`${i + 1}. ${st.title ?? ''}`, portableTextToPlainText(st.text)]),
+  ]),
+].filter(Boolean).join(' ')
+
+const related = trick.relatedTricks ?? []
+---
+
+<BaseLayout title={`${trick.title} — Bak teppet — Tryllemuseet`} description={trick.lead} noindex>
+
+  <nav class="breadcrumb container" aria-label="Brødsmuler">
+    <a href={BAK_TEPPET_PATH}>Bak teppet</a>
+    <span>›</span>
+    <a href={`${BAK_TEPPET_PATH}/${kitsWithTrick[0].slug}`}>{kitsWithTrick[0].title}</a>
+    <span>›</span>
+    <span aria-current="page">{trick.title}</span>
+  </nav>
+
+  <article class="kt container">
+    <header class="kt-head">
+      <p class="kt-kicker">Tryllebeskrivelse</p>
+      <h1>{trick.title}</h1>
+      {trick.originalTitle && <p class="kt-orig">Originaltittel: {trick.originalTitle}</p>}
+      {trick.lead && <p class="kt-lead">{trick.lead}</p>}
+      {trick.notice && (
+        <p class="kt-notice">{trick.noticeLabel && <strong>{trick.noticeLabel}</strong>} {trick.notice}</p>
+      )}
+      <div class="kt-narrate">
+        <NarrateButton text={narration} label={`Les «${trick.title}» høyt`} />
+      </div>
+      {sections.length > 2 && (
+        <nav class="kt-toc" aria-label="Innhold">
+          {sections.map(sec => <a href={`#${sec.id}`}>{sec.title}</a>)}
+        </nav>
+      )}
+    </header>
+
+    {sections.map(sec => (
+      <section class="kt-section" aria-labelledby={sec.id}>
+        <h2 id={sec.id}>{sec.title}</h2>
+
+        {sec.body && sec.body.length > 0 && (
+          <div class="prose kt-prose" set:html={portableTextToHtml(sec.body)} />
+        )}
+
+        {sec.listItems && sec.listItems.length > 0 && (
+          <ol class="kt-list">{sec.listItems.map(item => <li>{item}</li>)}</ol>
+        )}
+
+        {sec.figures && sec.figures.length > 0 && (
+          <div class:list={['kt-figs', { 'kt-figs--single': sec.figures.length === 1 }]}>
+            {sec.figures.map(f => figureSrc(f, 1000) && (
+              <figure class="kt-fig">
+                <div class="kt-fig-img">
+                  <img src={figureSrc(f, 1000)} alt={f.image?.alt ?? ''} loading="lazy" />
+                  {(f.markers ?? []).map(m => (
+                    <span class="kt-marker" style={`top: ${m.top}%`} aria-hidden="true">{m.label}</span>
+                  ))}
+                </div>
+                {f.caption && <figcaption>{f.caption}</figcaption>}
+              </figure>
+            ))}
+          </div>
+        )}
+
+        {sec.steps && sec.steps.length > 0 && (
+          <ol class:list={['kt-steps', sec.stepLayout === 'cards' ? 'kt-steps--cards' : 'kt-steps--list']}>
+            {sec.steps.map((st, i) => (
+              <li class="kt-step">
+                <span class="kt-num" aria-hidden="true">{i + 1}</span>
+                <div class="kt-step-body">
+                  {st.title && <h3>{st.title}</h3>}
+                  {st.text && st.text.length > 0 && <div class="prose kt-prose" set:html={portableTextToHtml(st.text)} />}
+                  {(st.figures ?? []).map(f => figureSrc(f, 800) && (
+                    <figure class="kt-fig kt-step-fig">
+                      <div class="kt-fig-img">
+                        <img src={figureSrc(f, 800)} alt={f.image?.alt ?? ''} loading="lazy" />
+                        {(f.markers ?? []).map(m => (
+                          <span class="kt-marker" style={`top: ${m.top}%`} aria-hidden="true">{m.label}</span>
+                        ))}
+                      </div>
+                      {f.caption && <figcaption>{f.caption}</figcaption>}
+                    </figure>
+                  ))}
+                </div>
+              </li>
+            ))}
+          </ol>
+        )}
+      </section>
+    ))}
+
+    {trick.videos && trick.videos.length > 0 && (
+      <section class="kt-section" aria-labelledby="video">
+        <h2 id="video">Video</h2>
+        {trick.videos.map(v => {
+          const embed = videoEmbedUrl(v.url)
+          return embed ? (
+            <figure class="kt-video">
+              <div class="kt-video-wrap">
+                <iframe
+                  src={embed}
+                  title={v.label ?? `Video: ${trick.title}`}
+                  loading="lazy"
+                  allow="accelerometer; encrypted-media; gyroscope; picture-in-picture; fullscreen"
+                  allowfullscreen
+                ></iframe>
+              </div>
+              {v.label && <figcaption>{v.label}</figcaption>}
+            </figure>
+          ) : (
+            <p><a class="kt-link" href={v.url} target="_blank" rel="noopener noreferrer">{v.label ?? 'Se video'} →</a></p>
+          )
+        })}
+      </section>
+    )}
+
+    {related.length > 0 && (
+      <section class="kt-section" aria-labelledby="se-ogsa">
+        <h2 id="se-ogsa">Se også</h2>
+        <KitTrickCards tricks={related} />
+      </section>
+    )}
+
+    {(trick.sourceText?.length || trick.sourceFacts?.length || trick.rightsNote) && (
+      <footer class="kt-source">
+        <h2>Kilde og oversettelse</h2>
+        {trick.sourceText && trick.sourceText.length > 0 && (
+          <div class="kt-source-text" set:html={portableTextToHtml(trick.sourceText)} />
+        )}
+        {trick.sourceFacts && trick.sourceFacts.length > 0 && (
+          <dl>
+            {trick.sourceFacts.map(f => (<><dt>{f.label}</dt><dd>{f.value}</dd></>))}
+          </dl>
+        )}
+        {trick.rightsNote && <p class="kt-small">{trick.rightsNote}</p>}
+      </footer>
+    )}
+
+    {kitsWithTrick.length > 1 && (
+      <p class="kt-in-kits">
+        Finnes i: {kitsWithTrick.map((k, i) => (<>{i > 0 && ', '}<a href={`${BAK_TEPPET_PATH}/${k.slug}`}>{k.title}</a></>))}
+      </p>
+    )}
+
+    <div class="page-nav">
+      <a href={`${BAK_TEPPET_PATH}/${kitsWithTrick[0].slug}`}>← {kitsWithTrick[0].title}</a>
+    </div>
+  </article>
+
+</BaseLayout>
+
+<style>
+  .breadcrumb { padding-block: 1.5rem 0; font-family: var(--font-ui); font-size: 0.85rem; color: #777; }
+  .breadcrumb a { color: var(--burgundy); text-decoration: none; }
+  .breadcrumb a:hover { text-decoration: underline; }
+  .breadcrumb span[aria-current] { color: #999; }
+
+  .kt { max-width: 56rem; padding-bottom: 3rem; }
+
+  .kt-head { padding-block: 2rem 1.75rem; border-bottom: 3px double var(--gold); }
+  .kt-kicker {
+    font-family: var(--font-ui);
+    font-size: 0.8rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: #777;
+    margin-bottom: 0.6rem;
+  }
+  .kt-head h1 {
+    font-family: var(--font-display);
+    font-size: clamp(2rem, 6vw, 3.2rem);
+    line-height: 1.1;
+    color: var(--burgundy);
+    text-wrap: balance;
+  }
+  .kt-orig { font-family: var(--font-ui); font-size: 0.95rem; color: #666; margin-top: 0.6rem; }
+  .kt-lead { font-family: var(--font-body); font-style: italic; color: #555; margin-top: 0.9rem; max-width: 40rem; line-height: 1.6; }
+  .kt-notice {
+    font-family: var(--font-ui);
+    font-size: 0.94rem;
+    line-height: 1.5;
+    background: var(--cream);
+    border: 1px solid rgba(212,168,67,0.45);
+    padding: 0.75rem 1rem;
+    margin-top: 1.25rem;
+    max-width: 44rem;
+  }
+  .kt-notice strong { color: var(--burgundy); }
+  .kt-narrate { margin-top: 1rem; }
+  .kt-toc { display: flex; flex-wrap: wrap; gap: 0.4rem 1.1rem; margin-top: 1.1rem; font-family: var(--font-ui); font-size: 0.9rem; }
+  .kt-toc a { color: var(--burgundy); }
+
+  .kt-section { padding-block: 2.25rem 0.25rem; scroll-margin-top: 6rem; }
+  .kt-section h2, .kt-source h2 {
+    font-family: var(--font-display);
+    font-weight: 500;
+    font-size: 1.4rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--burgundy);
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+  .kt-section h2::after { content: ""; flex: 1; height: 1px; background: rgba(212,168,67,0.5); }
+
+  .kt-prose { font-family: var(--font-body); font-size: 1.05rem; line-height: 1.7; color: #333; max-width: 42rem; }
+  .kt-prose :global(p) { margin-bottom: 0.9rem; }
+
+  .kt-list { font-family: var(--font-body); font-size: 1.05rem; line-height: 1.6; padding-left: 1.4rem; max-width: 42rem; }
+  .kt-list li { margin-bottom: 0.35rem; }
+
+  .kt-figs { display: grid; grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr)); gap: 1.25rem; margin-block: 1.25rem 0.5rem; }
+  .kt-figs--single { grid-template-columns: minmax(0, 1fr); }
+  .kt-fig { margin: 0; }
+  /* Shrink-wrap the image so markers sit on its right edge, not the column's. */
+  .kt-fig-img { position: relative; width: fit-content; max-width: 100%; }
+  .kt-fig img { display: block; max-width: 100%; height: auto; background: #fffdf8; border: 1px solid rgba(212,168,67,0.4); }
+  .kt-figs--single .kt-fig img { max-height: 26rem; width: auto; }
+  .kt-figs:not(.kt-figs--single) .kt-fig img { width: 100%; }
+  .kt-fig figcaption { font-family: var(--font-ui); font-size: 0.86rem; line-height: 1.4; color: #666; margin-top: 0.45rem; }
+  .kt-marker {
+    position: absolute;
+    right: -0.9rem;
+    transform: translateY(-50%);
+    width: 1.8rem;
+    height: 1.8rem;
+    border-radius: 50%;
+    background: var(--burgundy);
+    color: var(--cream);
+    font-family: var(--font-ui);
+    font-weight: 600;
+    font-size: 0.95rem;
+    display: grid;
+    place-items: center;
+    border: 2px solid #fff;
+  }
+
+  .kt-steps { list-style: none; margin: 1.5rem 0 0; padding: 0; display: grid; gap: 1.75rem; }
+  .kt-step { display: grid; grid-template-columns: 2.25rem minmax(0, 1fr); gap: 1rem; align-items: start; }
+  .kt-num {
+    width: 2.25rem;
+    height: 2.25rem;
+    border-radius: 50%;
+    background: var(--burgundy);
+    color: var(--cream);
+    font-family: var(--font-ui);
+    font-weight: 600;
+    display: grid;
+    place-items: center;
+  }
+  .kt-step h3 { font-family: var(--font-display); font-weight: 500; font-size: 1.1rem; color: #222; margin: 0.35rem 0 0.35rem; }
+  .kt-step-fig { margin-top: 0.75rem; }
+  .kt-steps--list .kt-step-fig img { max-height: 16rem; width: auto; }
+
+  .kt-steps--cards { grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr)); gap: 1.25rem; }
+  .kt-steps--cards .kt-step { display: flex; flex-direction: column; gap: 0.5rem; }
+  .kt-steps--cards .kt-step-body { display: flex; flex-direction: column; }
+  .kt-steps--cards .kt-step-fig { order: -1; margin: 0 0 0.25rem; }
+  .kt-steps--cards .kt-step-fig .kt-fig-img { width: 100%; }
+  .kt-steps--cards .kt-step-fig img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; }
+  .kt-steps--cards .kt-num { order: -2; width: 1.8rem; height: 1.8rem; font-size: 0.95rem; }
+  .kt-steps--cards .kt-prose { font-size: 0.97rem; color: #555; }
+
+  .kt-video { margin: 0 0 1.25rem; max-width: 42rem; }
+  .kt-video-wrap { position: relative; aspect-ratio: 16/9; border-radius: 4px; overflow: hidden; background: #000; }
+  .kt-video-wrap iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+  .kt-video figcaption { font-family: var(--font-ui); font-size: 0.85rem; color: #666; margin-top: 0.4rem; }
+  .kt-link { font-family: var(--font-ui); font-weight: 600; color: var(--burgundy); }
+
+  .kt-source {
+    margin-top: 3rem;
+    background: var(--cream);
+    border: 1px solid rgba(212,168,67,0.45);
+    padding: 1.25rem 1.25rem 0.75rem;
+  }
+  .kt-source h2 { font-size: 1.05rem; margin-bottom: 0.75rem; }
+  .kt-source-text { font-family: var(--font-ui); font-size: 0.94rem; line-height: 1.6; color: #333; }
+  .kt-source-text :global(p) { margin-bottom: 0.75rem; }
+  .kt-source dl {
+    font-family: var(--font-ui);
+    font-size: 0.94rem;
+    display: grid;
+    grid-template-columns: max-content minmax(0, 1fr);
+    gap: 0.35rem 1rem;
+    margin: 0.25rem 0 1rem;
+  }
+  .kt-source dt { color: #777; }
+  .kt-source dd { margin: 0; overflow-wrap: anywhere; }
+  .kt-small { font-family: var(--font-ui); font-size: 0.82rem; color: #777; margin-bottom: 0.5rem; }
+
+  .kt-in-kits { font-family: var(--font-ui); font-size: 0.9rem; color: #666; margin-top: 1.5rem; }
+  .kt-in-kits a { color: var(--burgundy); }
+
+  .page-nav { display: flex; gap: 0.75rem; margin-top: 2rem; padding-top: 2rem; border-top: 1px solid var(--cream-dark); font-family: var(--font-ui); font-size: 0.875rem; }
+  .page-nav a { color: var(--grey); text-decoration: none; border: 1px solid var(--cream-dark); padding: 0.4rem 1rem; border-radius: var(--radius); }
+  .page-nav a:hover { color: var(--burgundy); border-color: var(--gold); }
+
+  @media (max-width: 40rem) {
+    .kt-source dl { grid-template-columns: minmax(0, 1fr); gap: 0 1rem; }
+    .kt-source dd { margin-bottom: 0.5rem; }
+    .kt-marker { right: -0.6rem; }
+  }
+</style>

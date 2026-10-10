@@ -17,6 +17,7 @@ import {
   clearAccess,
   setPrivateHeaders,
   failedAttemptDelay,
+  safeNextPath,
 } from '../../lib/bakTeppet'
 
 setPrivateHeaders(Astro.response.headers)
@@ -26,6 +27,9 @@ const secure = Astro.url.protocol === 'https:'
 
 let error = ''
 let typedCode = ''
+// Set when a visitor followed a link to a trick or kit page before logging
+// in; after a correct code we send them there instead of the kit page.
+let next = safeNextPath(Astro.url.searchParams.get('neste'))
 
 if (session) {
   let code: string | null = null
@@ -36,6 +40,7 @@ if (session) {
       return Astro.redirect(BAK_TEPPET_PATH, 303)
     }
     code = String(form.get('kode') ?? '')
+    next = safeNextPath(String(form.get('neste') ?? '')) ?? next
   } else {
     code = Astro.url.searchParams.get('kode')
   }
@@ -45,7 +50,7 @@ if (session) {
     if (kit) {
       grantAccess(Astro.cookies, session, kit, secure)
       // Redirect so the code never stays in the address bar or history.
-      return Astro.redirect(`${BAK_TEPPET_PATH}/${kit.slug}`, 303)
+      return Astro.redirect(next ?? `${BAK_TEPPET_PATH}/${kit.slug}`, 303)
     }
     await failedAttemptDelay()
     error = 'Koden stemmer ikke. Sjekk at du har skrevet den riktig — du finner den på kortet i esken eller kofferten.'
@@ -99,6 +104,7 @@ const unlocked = session?.unlocked ?? []
             Koden står på kortet som ligger i esken eller kofferten. Du kan også skanne QR-koden på kortet.
           </p>
           <label for="kode">Kode</label>
+          {next && <input type="hidden" name="neste" value={next} />}
           <input
             id="kode"
             name="kode"

@@ -10,14 +10,15 @@
 // never serves documents whose _id contains a "." to unauthenticated
 // requests, even in the public production dataset, so the access code and
 // texts can't be read via the public API. structure.ts creates new kits with
-// such an ID, and the validation below blocks publishing one that isn't.
+// such an ID, and the validation below blocks publishing one that isn't (see
+// privateDoc.ts). The tricks themselves are separate kitTrick documents,
+// referenced from `tricks`, so one description can be shared by many kits.
 // Uploaded images/files are still public-by-URL on Sanity's CDN (unguessable
 // URLs) — that's acceptable here; videos should live on YouTube (unlisted)
 // or Vimeo (domain-restricted) rather than in Sanity.
-import { defineType, defineField, defineArrayMember } from 'sanity'
+import { defineType, defineField } from 'sanity'
 import { richBlockContent } from './richBlockContent'
-
-export const KIT_ID_PREFIX = 'lukket.'
+import { privateIdValidation } from './privateDoc'
 
 // Unambiguous characters only (no 0/O, 1/I/L) so codes printed on a card are
 // easy to type. 8 chars from 31 symbols ≈ 40 bits — not guessable online.
@@ -42,12 +43,7 @@ export const kitCollection = defineType({
   icon: () => '🧰',
   description: 'Lukket side for kjøpere av et tryllesett (trylleeske eller tryllekoffert). Én per type sett, med én felles tilgangskode.',
 
-  validation: Rule => Rule.custom((_, context) => {
-    const id = (context.document?._id ?? '').replace(/^drafts\./, '')
-    return id.startsWith(KIT_ID_PREFIX)
-      ? true
-      : 'Dette dokumentet er ikke privat og vil ikke vises på nettsiden. Opprett tryllesettet på nytt via «Tryllesett (lukket)» → «Nytt tryllesett», og slett denne.'
-  }),
+  validation: Rule => Rule.custom(privateIdValidation('«Tryllesett (lukket)» → «Nytt tryllesett»')),
 
   fields: [
 
@@ -123,64 +119,14 @@ export const kitCollection = defineType({
       description: 'Enkel liste over det som ligger i esken eller kofferten.',
     }),
 
-    // ── TRIKS / INNHOLD ──────────────────────────────────────────
+    // ── TRYLLEBESKRIVELSER ───────────────────────────────────────
     defineField({
-      name: 'items',
-      title: 'Triks og beskrivelser',
+      name: 'tricks',
+      title: 'Tryllebeskrivelser i settet',
       type: 'array',
-      of: [
-        defineArrayMember({
-          name: 'kitItem',
-          title: 'Triks',
-          type: 'object',
-          fields: [
-            defineField({
-              name: 'title',
-              title: 'Tittel',
-              type: 'string',
-              validation: R => R.required(),
-            }),
-            defineField({
-              name: 'image',
-              title: 'Bilde',
-              type: 'image',
-              options: { hotspot: true },
-              fields: [defineField({ name: 'alt', title: 'Alt-tekst', type: 'string' })],
-            }),
-            defineField({
-              name: 'description',
-              title: 'Beskrivelse / fremgangsmåte',
-              type: 'array',
-              of: richBlockContent(),
-            }),
-            defineField({
-              name: 'videos',
-              title: 'Videoer',
-              type: 'array',
-              description: 'YouTube («Ikke oppført») eller Vimeo vises innebygd; andre lenker vises som lenke.',
-              of: [
-                defineArrayMember({
-                  name: 'kitVideo',
-                  type: 'object',
-                  fields: [
-                    defineField({ name: 'label', title: 'Tittel', type: 'string' }),
-                    defineField({
-                      name: 'url',
-                      title: 'URL',
-                      type: 'url',
-                      validation: R => R.required(),
-                    }),
-                  ],
-                  preview: { select: { title: 'label', subtitle: 'url' } },
-                }),
-              ],
-            }),
-          ],
-          preview: {
-            select: { title: 'title', media: 'image' },
-          },
-        }),
-      ],
+      description: 'Velg blant tryllebeskrivelsene. Samme beskrivelse kan ligge i flere sett, så den skrives bare én gang. Nye lages under «Tryllebeskrivelser (lukket)».',
+      of: [{ type: 'reference', to: [{ type: 'kitTrick' }], options: { disableNew: true } }],
+      validation: R => R.unique(),
     }),
 
   ],

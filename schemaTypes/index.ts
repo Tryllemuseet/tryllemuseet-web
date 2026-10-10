@@ -50,6 +50,7 @@ import { organizationRole } from './organizationRole'
 import { historicalSection } from './historicalSection'
 import { story }           from './story'
 import { kitCollection }   from './kitCollection'
+import { kitTrick }        from './kitTrick'
 
 export const schemaTypes = [
   // Sidetyper — rekkefølge følger hovedmenyen (se siteNavigation)
@@ -88,6 +89,7 @@ export const schemaTypes = [
   gameChapter,
   event,
   kitCollection,
+  kitTrick,
 
   // Dokumenttyper — Opptredener
   tvAppearance,
