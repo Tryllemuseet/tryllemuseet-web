@@ -3245,34 +3245,79 @@ export async function getAllGameChapters(): Promise<GameChapter[]> {
 
 // ── Bak teppet (lukket kundeområde for tryllesett) ──────────
 //
-// kitCollection documents live under the private "lukket." ID path (see
-// schemaTypes/kitCollection.ts), so the public sanityClient above can't see
-// them. These queries take a token-bearing client from
-// createPrivateSanityClient(); the token itself is read server-side only, in
-// src/lib/bakTeppet.ts. The path filter is a second line of defence: a kit
-// accidentally created with a public ID is never served from here.
+// kitCollection (tryllesett) and kitTrick (tryllebeskrivelse) documents live
+// under the private "lukket." ID path (see schemaTypes/privateDoc.ts), so the
+// public sanityClient above can't see them. These queries take a
+// token-bearing client from createPrivateSanityClient(); the token itself is
+// read server-side only, in src/lib/bakTeppet.ts. The path filters are a
+// second line of defence: a document accidentally created with a public ID
+// is never served from here.
+
+type SanityImageRef = { asset: { _ref: string; url: string }; alt?: string }
 
 export interface KitVideo {
   label?: string
   url:    string
 }
 
-export interface KitItem {
-  _key:         string
-  title:        string
-  image?:       { asset: { _ref: string; url: string }; alt?: string }
-  description?: PortableTextBlock[]
-  videos?:      KitVideo[]
+export interface KitFigure {
+  _key:     string
+  image?:   SanityImageRef
+  caption?: string
+  markers?: { _key: string; label: string; top: number }[]
+}
+
+export interface KitStep {
+  _key:     string
+  title?:   string
+  text?:    PortableTextBlock[]
+  figures?: KitFigure[]
+}
+
+export type KitTrickSectionKind = 'effekt' | 'hemmeligheten' | 'rekvisitter' | 'forberedelse' | 'utforelse' | 'tips' | 'annet'
+
+export interface KitTrickSection {
+  _key:        string
+  kind:        KitTrickSectionKind
+  heading?:    string
+  body?:       PortableTextBlock[]
+  listItems?:  string[]
+  figures?:    KitFigure[]
+  steps?:      KitStep[]
+  stepLayout?: 'list' | 'cards'
+}
+
+/** Card-level fields, used in kit pages and "Se også" lists. */
+export interface KitTrickCard {
+  _id:            string
+  title:          string
+  slug:           string
+  originalTitle?: string
+  lead?:          string
+  coverImage?:    SanityImageRef
+}
+
+export interface KitTrick extends KitTrickCard {
+  notice?:        string
+  noticeLabel?:   string
+  sections?:      KitTrickSection[]
+  videos?:        KitVideo[]
+  relatedTricks?: KitTrickCard[]
+  sourceText?:    PortableTextBlock[]
+  sourceFacts?:   { _key: string; label: string; value: string }[]
+  rightsNote?:    string
+  /** IDs of active kits that include this trick — decides who may see it. */
+  kitIds:         string[]
 }
 
 export interface KitCollection {
   _id:         string
   title:       string
   slug:        string
-  coverImage?: { asset: { _ref: string; url: string }; alt?: string }
+  coverImage?: SanityImageRef
   intro?:      PortableTextBlock[]
   contents?:   string[]
-  items?:      KitItem[]
+  tricks?:     KitTrickCard[]
 }
 
 export interface KitAccessEntry {
@@ -3289,6 +3334,7 @@ export function createPrivateSanityClient(token: string): SanityClientLike {
 }
 
 const KIT_FILTER = `_type == "kitCollection" && _id in path("lukket.**") && isVisible != false && defined(slug.current) && defined(accessCode)`
+const KIT_TRICK_FILTER = `_type == "kitTrick" && _id in path("lukket.**") && isVisible != false && defined(slug.current)`
 
 // Rich-text projection: inline image URLs + internal-link slugs, as
 // portableTextToHtml() expects.
@@ -3297,6 +3343,18 @@ const KIT_RICH_TEXT = `
   _type == "image" => { ..., asset->{ _ref, url } },
   markDefs[]{ ..., "reference": reference->{ "slug": slug.current } }
 `
+
+const KIT_IMAGE = `{ asset->{ _ref, url }, alt }`
+
+const KIT_FIGURE = `{ _key, image ${KIT_IMAGE}, caption, markers[]{ _key, label, top } }`
+
+// Filter for an array of references to kitTrick, applied BEFORE `->`
+// (a filter after `->` yields null per element instead of dropping it).
+// Drops hidden tricks and any reference to a non-private ID.
+const KIT_TRICK_REF_FILTER = `string::startsWith(_ref, "lukket.") && @->_type == "kitTrick" && @->isVisible != false && defined(@->slug.current)`
+
+// Card-level projection of a trick.
+const KIT_TRICK_CARD = `_id, title, "slug": slug.current, originalTitle, lead, coverImage ${KIT_IMAGE}`
 
 // All active kits with their codes — only ever used server-side to check a
 // typed code or a cookie; never rendered.
@@ -3310,15 +3368,31 @@ export async function getKitBySlug(client: SanityClientLike, slug: string): Prom
   return client.fetch(`
     *[${KIT_FILTER} && slug.current == $slug][0] {
       _id, title, "slug": slug.current,
-      coverImage { asset->{ _ref, url }, alt },
+      coverImage ${KIT_IMAGE},
       intro[] { ${KIT_RICH_TEXT} },
       contents,
-      items[] {
-        _key, title,
-        image { asset->{ _ref, url }, alt },
-        description[] { ${KIT_RICH_TEXT} },
-        videos[] { label, url }
-      }
+      "tricks": tricks[${KIT_TRICK_REF_FILTER}]->{ ${KIT_TRICK_CARD} }
+    }
+  `, { slug })
+}
+
+export async function getKitTrickBySlug(client: SanityClientLike, slug: string): Promise<KitTrick | null> {
+  return client.fetch(`
+    *[${KIT_TRICK_FILTER} && slug.current == $slug][0] {
+      ${KIT_TRICK_CARD},
+      notice, noticeLabel,
+      sections[] {
+        _key, kind, heading, listItems, stepLayout,
+        body[] { ${KIT_RICH_TEXT} },
+        figures[] ${KIT_FIGURE},
+        steps[] { _key, title, text[] { ${KIT_RICH_TEXT} }, figures[] ${KIT_FIGURE} }
+      },
+      videos[] { label, url },
+      "relatedTricks": relatedTricks[${KIT_TRICK_REF_FILTER}]->{ ${KIT_TRICK_CARD} },
+      sourceText[] { ${KIT_RICH_TEXT} },
+      sourceFacts[] { _key, label, value },
+      rightsNote,
+      "kitIds": *[${KIT_FILTER} && ^._id in tricks[]._ref]._id
     }
   `, { slug })
 }

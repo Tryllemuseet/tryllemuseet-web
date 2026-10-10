@@ -3,6 +3,7 @@ import {structureTool} from 'sanity/structure'
 import {visionTool} from '@sanity/vision'
 import {schemaTypes} from './schemaTypes'
 import {structure} from './structure'
+import {PRIVATE_DOC_TYPES} from './schemaTypes/privateDoc'
 
 export default defineConfig({
   name: 'default',
@@ -21,9 +22,17 @@ export default defineConfig({
   },
 
   document: {
-    // Tryllesett (kitCollection) need a private ID — only creatable from their own
-    // list in structure.ts, not from the global "+ Create" menu.
+    // Tryllesett and tryllebeskrivelser need a private ID (see
+    // schemaTypes/privateDoc.ts) — only creatable from their own lists in
+    // structure.ts, not from the global "+ Create" menu, and never by
+    // "Duplicate", which would copy them to a public UUID.
     newDocumentOptions: (prev, { creationContext }) =>
-      creationContext.type === 'global' ? prev.filter(t => t.templateId !== 'kitCollection') : prev,
+      creationContext.type === 'global'
+        ? prev.filter(t => !(PRIVATE_DOC_TYPES as readonly string[]).includes(t.templateId))
+        : prev,
+    actions: (prev, { schemaType }) =>
+      (PRIVATE_DOC_TYPES as readonly string[]).includes(schemaType)
+        ? prev.filter(a => a.action !== 'duplicate')
+        : prev,
   },
 })

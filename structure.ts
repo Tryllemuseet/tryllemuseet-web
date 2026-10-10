@@ -13,31 +13,31 @@
 // ville skjult det eksisterende dokumentet i Studio i stedet for å åpne det.
 // Rene UI-/navigasjonsendringer — ingen skjema- eller innholdsendringer.
 import type { StructureBuilder, StructureResolver } from 'sanity/structure'
-import { KIT_ID_PREFIX } from './schemaTypes/kitCollection'
+import { PRIVATE_ID_PREFIX } from './schemaTypes/privateDoc'
 
-// Tryllesett (magic kits: boxes and suitcases) must get an ID under the
-// private "lukket." path (see schemaTypes/kitCollection.ts), which the
-// Studio's normal "create" flow can't do. So the default create button is
-// replaced with one whose intent carries a fresh private ID. The child
-// resolver runs each time the list is opened, so every visit gets a new ID.
+// Tryllesett and tryllebeskrivelser must get an ID under the private
+// "lukket." path (see schemaTypes/privateDoc.ts), which the Studio's normal
+// "create" flow can't do. So the default create button is replaced with one
+// whose intent carries a fresh private ID. The child resolver runs each time
+// the list is opened, so every visit gets a new ID.
 //
 // .initialValueTemplates([]) must be the LAST call: every builder method
 // returns a clone, and clone() re-infers the default templates (bringing back
 // Sanity's own create button, which makes a public UUID) unless the
 // instance it's called on already had templates set explicitly.
-const kitCollectionListItem = (S: StructureBuilder) =>
+const privateListItem = (S: StructureBuilder, schemaType: string, title: string, createTitle: string) =>
   S.listItem()
-    .title('Tryllesett (lukket)')
-    .schemaType('kitCollection')
+    .title(title)
+    .schemaType(schemaType)
     .child(() =>
-      S.documentTypeList('kitCollection')
-        .title('Tryllesett (lukket)')
+      S.documentTypeList(schemaType)
+        .title(title)
         .menuItems([
           S.menuItem()
-            .title('Nytt tryllesett')
+            .title(createTitle)
             .intent({
               type: 'create',
-              params: { type: 'kitCollection', id: `${KIT_ID_PREFIX}${crypto.randomUUID()}` },
+              params: { type: schemaType, id: `${PRIVATE_ID_PREFIX}${crypto.randomUUID()}` },
             })
             .showAsAction(true),
         ])
@@ -116,7 +116,8 @@ export const structure: StructureResolver = (S) =>
               S.divider(),
               S.documentTypeListItem('godeRadConfig').title('Gode råd'),
               S.divider(),
-              kitCollectionListItem(S),
+              privateListItem(S, 'kitCollection', 'Tryllesett (lukket)', 'Nytt tryllesett'),
+              privateListItem(S, 'kitTrick', 'Tryllebeskrivelser (lukket)', 'Ny tryllebeskrivelse'),
             ]),
         ),
 
