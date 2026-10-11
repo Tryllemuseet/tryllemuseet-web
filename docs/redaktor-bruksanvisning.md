@@ -279,6 +279,8 @@ Hver beskrivelse får sin egen adresse, `tryllemuseet.no/bak-teppet/triks/<slug>
 
 Har du triks som HTML-sider («Tryllekunst · Bruksanvisning»), kan de importeres med bilder via skriptet `scripts/import-kit-trick-html.mjs`. Be om hjelp til å kjøre det.
 
+**Nye beskrivelser:** Skriv dem i et eget claude.ai-prosjekt med instruksjonene i `docs/tryllebeskrivelser/prosjektinstruksjoner.md` og malen `docs/tryllebeskrivelser/mal.html`. Send så HTML-fila til en Claude Code-økt og si hvilket tryllesett den skal inn i. Hele rutinen står i `docs/kit-trick-operations-routine.md`.
+
 ### Kode og QR-kode til kortet i esken eller kofferten
 
 - Kunden kan skrive koden på `tryllemuseet.no/bak-teppet`.
