@@ -5,7 +5,14 @@ import { defineField } from 'sanity'
 // legend.ts, contentSection.ts and magicOrganization.ts so every rich-text
 // field in the Studio behaves identically, and renders identically via
 // portableTextToHtml() in web/src/lib/sanity.ts.
-export function richBlockContent(styles?: { title: string; value: string }[]) {
+//
+// `internalLinks: false` drops the biography link, for types that live in the
+// private "lukket" dataset (kitCollection, kitTrick): a reference can't point
+// to a biography in another dataset.
+export function richBlockContent(
+  styles?: { title: string; value: string }[],
+  { internalLinks = true }: { internalLinks?: boolean } = {},
+) {
   return [
     {
       type: 'block',
@@ -29,19 +36,21 @@ export function richBlockContent(styles?: { title: string; value: string }[]) {
               defineField({ name: 'href', title: 'URL', type: 'url' }),
             ],
           },
-          {
-            name: 'internalLink',
-            type: 'object',
-            title: 'Intern lenke (person i HEH)',
-            fields: [
-              defineField({
-                name: 'reference',
-                title: 'Person',
-                type: 'reference',
-                to: [{ type: 'biography' }],
-              }),
-            ],
-          },
+          ...(internalLinks
+            ? [{
+                name: 'internalLink',
+                type: 'object',
+                title: 'Intern lenke (person i HEH)',
+                fields: [
+                  defineField({
+                    name: 'reference',
+                    title: 'Person',
+                    type: 'reference',
+                    to: [{ type: 'biography' }],
+                  }),
+                ],
+              }]
+            : []),
         ],
       },
     },

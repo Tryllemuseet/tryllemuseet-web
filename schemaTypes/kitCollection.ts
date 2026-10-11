@@ -5,17 +5,18 @@
 // one shared access code printed in/on every box of that type — no personal
 // data, no per-customer logins.
 //
-// Privacy relies on the document ID, not on this schema: documents must be
-// created with an ID under the "lukket." path (e.g. "lukket.3f1c…"). Sanity
-// never serves documents whose _id contains a "." to unauthenticated
-// requests, even in the public production dataset, so the access code and
-// texts can't be read via the public API. structure.ts creates new kits with
-// such an ID, and the validation below blocks publishing one that isn't (see
-// privateDoc.ts). The tricks themselves are separate kitTrick documents,
-// referenced from `tricks`, so one description can be shared by many kits.
-// Uploaded images/files are still public-by-URL on Sanity's CDN (unguessable
-// URLs) — that's acceptable here; videos should live on YouTube (unlisted)
-// or Vimeo (domain-restricted) rather than in Sanity.
+// Privacy: these documents live in the PRIVATE "lukket" dataset (Studio
+// workspace "Bak teppet"), so neither the documents nor their image/file
+// assets can be queried or listed without a token. (Until 2026-10 they lived
+// in the public production dataset, where the "lukket." ID path hid the
+// documents but the asset documents — and so every image URL — were
+// listable by anyone.) The "lukket." ID prefix is kept as a second line of
+// defence: structure.ts creates new kits with such an ID, the validation
+// below blocks publishing one that isn't (see privateDoc.ts), and the web
+// queries only serve "lukket.**" IDs. The tricks themselves are separate
+// kitTrick documents, referenced from `tricks`, so one description can be
+// shared by many kits. Asset files are still served by unguessable URL;
+// videos should live on YouTube (unlisted) or Vimeo (domain-restricted).
 import { defineType, defineField } from 'sanity'
 import { richBlockContent } from './richBlockContent'
 import { privateIdValidation } from './privateDoc'
@@ -107,7 +108,7 @@ export const kitCollection = defineType({
       name: 'intro',
       title: 'Velkomsttekst',
       type: 'array',
-      of: richBlockContent(),
+      of: richBlockContent(undefined, { internalLinks: false }),
       description: 'Vises øverst etter innlogging.',
     }),
 

@@ -8,7 +8,8 @@
  * including their embedded images.
  *
  * What it recognises (anything else is skipped with a warning):
- *   header   h1 → title, .orig → originalTitle ("På norsk: X" swaps the
+ *   header   h1 → title, .orig → originalTitle ("Originaltittel:"/"På engelsk:"
+ *            prefix stripped; "På norsk: X" swaps the
  *            two: X becomes the title, the <h1> the original), .lede → lead,
  *            .notice → notice (+ its <strong> → noticeLabel)
  *   section  walked in document order: h2 (+ p.sub) → section kind/heading;
@@ -23,13 +24,21 @@
  * Documents get a deterministic private ID, `lukket.kittrick-<slug>`, so
  * re-running replaces the same document instead of creating a duplicate.
  * Images are uploaded as Sanity assets (Sanity de-duplicates identical
- * files). The tricks are NOT added to any tryllesett — do that in Studio.
+ * files).
  *
- * Targets the DEVELOPMENT dataset by default. Set SANITY_DATASET=production
- * to import for real.
+ * An existing document is NOT overwritten unless --replace is given, so
+ * edits made in Studio after an earlier import aren't lost by accident.
+ * --kit=<slug> appends the trick to that tryllesett (kitCollection) after
+ * writing it, unless it's already there or the kit has an unpublished draft.
+ *
+ * Targets the DEVELOPMENT dataset by default. Set SANITY_DATASET=lukket (the
+ * private dataset behind /bak-teppet) to import for real. "production" is
+ * refused: it's public, so the trick images would be listable there.
  *
  * Usage:
- *   node scripts/import-kit-trick-html.mjs [--dry-run] file1.html [file2.html …]
+ *   node scripts/import-kit-trick-html.mjs [--dry-run] [--replace] [--kit=<kit-slug>] file1.html [file2.html …]
+ *
+ * Full procedure (writing, import, review): docs/kit-trick-operations-routine.md
  *   (token from SANITY_API_TOKEN, SANITY_TOKEN, SANITY_AUTH_TOKEN or the
  *    local Sanity CLI login)
  */
@@ -43,11 +52,21 @@ import { randomUUID } from 'crypto'
 
 const args = process.argv.slice(2)
 const dryRun = args.includes('--dry-run')
+const replace = args.includes('--replace')
+const kitSlug = args.find(a => a.startsWith('--kit='))?.slice('--kit='.length) || null
 const files = args.filter(a => !a.startsWith('--'))
 const dataset = process.env.SANITY_DATASET ?? 'development'
 
+// Trick descriptions reveal how tricks are done. They belong in the private
+// "lukket" dataset; in the public production dataset their images would be
+// listable by anyone (see schemaTypes/kitCollection.ts).
+if (dataset === 'production') {
+  console.error('Refusing to import into the public "production" dataset. Use SANITY_DATASET=lukket.')
+  process.exit(1)
+}
+
 if (files.length === 0) {
-  console.error('Usage: node scripts/import-kit-trick-html.mjs [--dry-run] file.html [...]')
+  console.error('Usage: node scripts/import-kit-trick-html.mjs [--dry-run] [--replace] [--kit=<kit-slug>] file.html [...]')
   process.exit(1)
 }
 
@@ -162,13 +181,13 @@ async function importFile(file) {
   const $ = cheerio.load(readFileSync(file, 'utf-8'))
   const h1 = clean($('h1').first().text())
   if (!h1) throw new Error(`${file}: no <h1>`)
-  // Two header styles: "Originaltittel: X" under a Norwegian <h1>, or
+  // Two header styles: "Originaltittel: X" (or "På engelsk: X") under a Norwegian <h1>, or
   // "På norsk: X" under an original-language <h1>. Normalise to Norwegian
   // title + originalTitle either way.
   const origLine = clean($('header .orig').first().text())
   const norwegian = /^På norsk:\s*/i.test(origLine) ? origLine.replace(/^På norsk:\s*/i, '') : null
   const title = norwegian ?? h1
-  const originalTitle = norwegian ? h1 : origLine.replace(/^Originaltittel:\s*/i, '')
+  const originalTitle = norwegian ? h1 : origLine.replace(/^(Originaltittel|På engelsk|Original):\s*/i, '')
   const slug = slugify(title)
   console.log(`\n${basename(file)} → «${title}» (${slug})`)
   let imgCount = 0
@@ -187,7 +206,9 @@ async function importFile(file) {
   // untitled continuation subsection (steps always render after the body).
   const sections = []
   const isStepList = el => $(el).is('ol.routine, ol.steps')
-  const isPhotoList = el => $(el).is('ol, ul') && $(el).find('img').length > 0 && !clean($(el).text())
+  // A list of photos, optionally each in a <figure> with a <figcaption>.
+  const isPhotoList = el => $(el).is('ol, ul') && $(el).find('img').length > 0 &&
+    !clean($(el).clone().find('figcaption').remove().end().text())
 
   async function inlineImage(img, caption) {
     const ref = await uploadImage($(img).attr('src'), hint())
@@ -279,7 +300,7 @@ async function importFile(file) {
         } else if (isPhotoList(el)) {
           afterSteps()
           for (const img of $el.find('img').toArray()) {
-            const im = await inlineImage(img, '')
+            const im = await inlineImage(img, clean($(img).closest('figure').find('figcaption').text()))
             if (im) cur.body.push(im)
           }
         } else if (tag === 'ol' || tag === 'ul') {
@@ -330,13 +351,58 @@ async function importFile(file) {
   if (firstImage) doc.coverImage = { _type: 'image', asset: firstImage.asset, alt: firstImage.alt }
 
   console.log(`  ${sections.length} sections: ${sections.map(s => (s.subsection ? '↳' : '') + (s.heading ?? s.kind)).join(', ')}`)
+  const existing = token ? await client.fetch('*[_id in [$id, "drafts." + $id]]._id', { id: doc._id }) : []
+  if (existing.length && !replace) {
+    console.log(`  ! ${doc._id} already exists in ${dataset} — skipped. Use --replace to overwrite it (this discards edits made in Studio).`)
+    return null
+  }
   if (dryRun) {
-    console.log(`  [dry-run] would write ${doc._id}`)
+    console.log(`  [dry-run] would ${existing.length ? 'replace' : 'create'} ${doc._id}`)
   } else {
     await client.createOrReplace(doc)
     console.log(`  ✓ wrote ${doc._id} to ${dataset}`)
   }
+  return doc._id
+}
+
+// Appends the trick to a tryllesett, the same way an editor would in Studio.
+async function findKit() {
+  const kits = await client.fetch(
+    '*[_type == "kitCollection" && _id in path("lukket.**")]{ _id, title, "slug": slug.current, "refs": tricks[]._ref }',
+  )
+  const kit = kits.find(k => k.slug === kitSlug)
+  if (!kit) {
+    console.error(`No tryllesett with slug "${kitSlug}" in ${dataset}. Available: ${kits.map(k => k.slug).join(', ') || '(none)'}`)
+    process.exit(1)
+  }
+  return kit
+}
+
+async function addToKit(trickId) {
+  const kit = await findKit()
+  if ((kit.refs ?? []).includes(trickId)) {
+    console.log(`  = already in «${kit.title}»`)
+    return
+  }
+  if (await client.fetch('count(*[_id == $id])', { id: `drafts.${kit._id}` })) {
+    console.log(`  ! «${kit.title}» has unpublished changes in Studio — add the trick there instead.`)
+    return
+  }
+  if (dryRun) {
+    console.log(`  [dry-run] would add to «${kit.title}»`)
+    return
+  }
+  await client
+    .patch(kit._id)
+    .setIfMissing({ tricks: [] })
+    .append('tricks', [{ _type: 'reference', _ref: trickId, _key: key() }])
+    .commit()
+  console.log(`  ✓ added to «${kit.title}»`)
 }
 
 console.log(`Dataset: ${dataset}${dryRun ? ' (dry run)' : ''}`)
-for (const file of files) await importFile(file)
+if (kitSlug && token) await findKit() // fail before uploading anything
+for (const file of files) {
+  const id = await importFile(file)
+  if (id && kitSlug) await addToKit(id)
+}

@@ -1,0 +1,186 @@
+<!doctype html>
+<!--
+  MAL FOR TRYLLEBESKRIVELSE (kitTrick)
+
+  Denne fila viser alle byggeklossene importskriptet
+  (scripts/import-kit-trick-html.mjs) forstår. Bruk bare de delene trikset
+  trenger, og slett resten. Alt som ikke står her, blir hoppet over ved import.
+
+  Bilder legges inn i fila som data-URI (src="data:image/jpeg;base64,…").
+  Gi alltid alt-tekst, og bildetekst (<figcaption>) der det hjelper.
+  Plassholderbildet under er et 1×1-punkt.
+
+  Se docs/tryllebeskrivelser/prosjektinstruksjoner.md for skrivereglene.
+-->
+<html lang="nb">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tittel på trikset</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=Lora:ital,wght@0,400;0,600;1,400&family=Source+Sans+3:wght@400;600&display=swap">
+<style>
+:root {
+  --bg: #FBF7EF; --surface: #F2E9D6; --fg: #1A1208; --muted: #5C4F3D;
+  --accent: #6B0F1A; --on-accent: #FBF7EF; --gold: #D4A843; --rule: #D9C9A6;
+  --font-display: "Cinzel", Georgia, serif;
+  --font-body: "Lora", Georgia, serif;
+  --font-ui: "Source Sans 3", system-ui, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root { --bg: #16100A; --surface: #241A0F; --fg: #F3EAD8; --muted: #B8A98E;
+          --accent: #D4A843; --on-accent: #1A1208; --rule: #4A3A22; color-scheme: dark; }
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--fg); font-family: var(--font-body);
+       font-size: 1.0625rem; line-height: 1.7; padding-inline: 1rem; }
+.wrap { max-width: 56rem; margin-inline: auto; }
+header { padding-block: 3rem 2rem; border-bottom: 3px double var(--gold); }
+.kicker { font-family: var(--font-ui); font-size: .8125rem; letter-spacing: .18em; text-transform: uppercase; color: var(--muted); margin: 0 0 .75rem; }
+h1 { font-family: var(--font-display); font-size: clamp(2rem, 6.5vw, 3.4rem); line-height: 1.1; color: var(--accent); margin: 0; }
+.orig { font-family: var(--font-ui); color: var(--muted); font-size: .9375rem; margin: .75rem 0 0; }
+.lede { font-style: italic; color: var(--muted); margin: 1rem 0 0; max-width: 40rem; }
+.notice { font-family: var(--font-ui); font-size: .9375rem; line-height: 1.5; background: var(--surface); border: 1px solid var(--rule); padding: .75rem 1rem; margin: 1.5rem 0 0; }
+.notice strong { color: var(--accent); }
+section { padding-block: 2.5rem .5rem; }
+h2 { font-family: var(--font-display); font-weight: 500; font-size: 1.5rem; letter-spacing: .08em; text-transform: uppercase; color: var(--accent); margin: 0 0 1rem; }
+.sub { font-family: var(--font-ui); color: var(--muted); margin: -.5rem 0 1rem; }
+h3 { font-family: var(--font-display); color: var(--accent); font-size: 1.15rem; margin: 2rem 0 .75rem; }
+p { margin: 0 0 1rem; max-width: 40rem; }
+figure { margin: 1.5rem 0; position: relative; max-width: 28rem; }
+figure img { display: block; width: 100%; border: 1px solid var(--rule); }
+figcaption { font-family: var(--font-ui); font-size: .875rem; color: var(--muted); margin-top: .5rem; }
+.pos { position: absolute; right: -2.2rem; transform: translateY(-50%); width: 1.8rem; height: 1.8rem; border-radius: 50%;
+       background: var(--accent); color: var(--on-accent); font-family: var(--font-ui); font-weight: 600; display: grid; place-items: center; }
+.photos { display: grid; grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr)); gap: 1.25rem; margin: 1.5rem 0; padding: 0; list-style: none; }
+.photos figure { margin: 0; }
+.routine { margin: 0 0 1rem; padding-left: 1.5rem; max-width: 40rem; }
+.routine li { margin-bottom: .75rem; }
+.routine p { margin: 0; }
+.steps { display: grid; grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr)); gap: 1.25rem; padding: 0; list-style: none; }
+.steps h3 { margin: .5rem 0 .25rem; }
+ul.props { max-width: 40rem; }
+footer { margin-block: 3rem 2.5rem; padding-top: 1.25rem; border-top: 3px double var(--gold); }
+.source { background: var(--surface); border: 1px solid var(--rule); padding: 1.25rem 1.25rem .5rem; }
+.source h2 { font-size: 1.05rem; }
+.source p, .source dl { font-family: var(--font-ui); font-size: .9375rem; }
+.source dl { display: grid; grid-template-columns: max-content 1fr; gap: .35rem 1rem; }
+.source dd { margin: 0; }
+.small, .credit { font-family: var(--font-ui); font-size: .875rem; color: var(--muted); margin-top: 1rem; max-width: none; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- HODE ───────────────────────────────────────────────────────────────
+       kicker: vises bare her, importeres ikke. Bruk
+         «Tryllekunst · Bruksanvisning» for oversettelser,
+         «Tryllekunst · Fra samlingen» for museets egne triks,
+         «Puslespill · Fra samlingen» for puslespill.
+       h1: norsk tittel (blir også adressen, f.eks. /bak-teppet/triks/kortesken).
+       orig: originaltittel. Prefiksene «Originaltittel:» og «På engelsk:» fjernes.
+             (Står h1 på originalspråket, skriv «På norsk: <tittel>» i stedet.)
+       lede: én setning som frister. Valgfri.
+       notice: bare for oversettelser. -->
+  <header>
+    <p class="kicker">Tryllekunst · Bruksanvisning</p>
+    <h1>Tittel på trikset</h1>
+    <p class="orig">Originaltittel: Original Title</p>
+    <p class="lede">Én setning om hva publikum opplever.</p>
+    <p class="notice"><strong>Oversettelse.</strong> Denne siden er en norsk oversettelse av bruksanvisningen som følger med trikset «Original Title». Kilde og rettigheter er oppgitt nederst på siden. Siden avslører hemmeligheten bak trikset.</p>
+  </header>
+
+  <!-- SEKSJONER ──────────────────────────────────────────────────────────
+       Disse overskriftene får egen type og symbol på nettsiden:
+         Effekt · Hemmeligheten · Rekvisitter · Forberedelse · Utførelse · Tips
+       Alle andre overskrifter (f.eks. «Variasjon», «Oppgaven», «Slik gjør du»)
+       vises som de står. Rekkefølgen blir den samme som her. -->
+
+  <section>
+    <h2>Effekt</h2>
+    <p>Det publikum ser, fra start til slutt. Ingen hemmeligheter her.</p>
+  </section>
+
+  <section>
+    <h2>Rekvisitter</h2>
+    <!-- Vanlig liste → nummerert liste på nettsiden. -->
+    <ul class="props">
+      <li>Det som følger med trikset.</li>
+      <li>Det du skaffer selv (skriv det i parentes).</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Hemmeligheten</h2>
+    <p>Hvordan trikset virker, med vanlige ord.</p>
+
+    <!-- Bilde med nummermerker langs høyre kant. top = prosent ned på bildet. -->
+    <figure>
+      <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=" alt="Beskriv bildet for den som ikke ser det">
+      <span class="pos" style="top: 20%">1</span>
+      <span class="pos" style="top: 80%">2</span>
+      <figcaption>Tallene viser … Se stegene under.</figcaption>
+    </figure>
+
+    <!-- Bilder side om side, hver med bildetekst. -->
+    <ul class="photos">
+      <li><figure><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=" alt="…"><figcaption>Bildetekst 1.</figcaption></figure></li>
+      <li><figure><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=" alt="…"><figcaption>Bildetekst 2.</figcaption></figure></li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Utførelse</h2>
+    <p>Kort innledning før stegene. Valgfri.</p>
+    <!-- ol.routine → nummererte steg i liste. Ett steg = én handling.
+         «Publikum ser:» i fet skrift gjør det lett å følge med. -->
+    <ol class="routine">
+      <li><p>Gjør dette.</p><p><strong>Publikum ser:</strong> dette.</p></li>
+      <li><p>Gjør så dette.</p></li>
+    </ol>
+    <!-- Tekst etter stegene vises etter stegene. -->
+    <p>Funker det ikke med en gang? Øv litt foran speilet.</p>
+  </section>
+
+  <section>
+    <h2>Effekt 2</h2>
+    <p class="sub">Undertittel som legges til overskriften</p>
+    <p>En egen variant med egen overskrift.</p>
+    <!-- h3 inni en seksjon → mellomtittel (underseksjon). -->
+    <h3>Grep du må kunne først</h3>
+    <p>Forklar grepet med vanlige ord.</p>
+    <!-- ol.steps → steg som kort, gjerne med bilde og overskrift. -->
+    <ol class="steps">
+      <li>
+        <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=" alt="…">
+        <h3>Overskrift på steget</h3>
+        <p>Tekst til steget.</p>
+      </li>
+    </ol>
+  </section>
+
+  <section>
+    <h2>Tips</h2>
+    <p>Råd som gjør trikset bedre.</p>
+  </section>
+
+  <!-- BUNN ───────────────────────────────────────────────────────────────
+       .source: bare for oversettelser — tekst om kilden og en faktaliste.
+       .credit (eller .small): siste linje. Museets egne triks har bare denne:
+         «Tryllemuseet · Fra vår samling av trylletriks» -->
+  <footer>
+    <div class="source">
+      <h2>Kilde og oversettelse</h2>
+      <p>Teksten er oversatt til norsk fra … Oversettelsen er ikke godkjent av produsenten.</p>
+      <dl>
+        <dt>Produkt</dt><dd>…</dd>
+        <dt>Produsent</dt><dd>…</dd>
+      </dl>
+    </div>
+    <p class="credit">Tryllemuseet · Fra vår samling av trylletriks</p>
+  </footer>
+
+</div>
+</body>
+</html>

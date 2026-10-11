@@ -1917,14 +1917,19 @@ import type { PortableTextBlock } from '@portabletext/types'
  * Handles: paragraphs, headings (h2–h4), bold, italic,
  * underline, links, bullet lists, numbered lists, blockquotes.
  */
-export function portableTextToHtml(blocks: PortableTextBlock[] | undefined | null): string {
+export function portableTextToHtml(
+  blocks: PortableTextBlock[] | undefined | null,
+  // Content from the private "lukket" dataset passes privateUrlFor, so inline
+  // image URLs point at the right dataset.
+  imageUrlFor: typeof urlFor = urlFor,
+): string {
   if (!blocks?.length) return ''
   return toHTML(blocks, {
     components: {
       types: {
         image: ({ value }: { value?: { asset?: { _ref: string; url?: string }; alt?: string; caption?: string } }) => {
           if (!value?.asset) return ''
-          const src = urlFor(value).width(720).format('webp').url()
+          const src = imageUrlFor(value).width(720).format('webp').url()
           const esc = (t: string) => t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
           const caption = value.caption ? `<figcaption>${esc(value.caption)}</figcaption>` : ''
           return `<figure class="pt-image"><img src="${src}" alt="${esc(value.alt ?? '')}" loading="lazy" decoding="async" />${caption}</figure>`
@@ -3247,12 +3252,27 @@ export async function getAllGameChapters(): Promise<GameChapter[]> {
 // ── Bak teppet (lukket kundeområde for tryllesett) ──────────
 //
 // kitCollection (tryllesett) and kitTrick (tryllebeskrivelse) documents live
-// under the private "lukket." ID path (see schemaTypes/privateDoc.ts), so the
-// public sanityClient above can't see them. These queries take a
-// token-bearing client from createPrivateSanityClient(); the token itself is
-// read server-side only, in src/lib/bakTeppet.ts. The path filters are a
-// second line of defence: a document accidentally created with a public ID
-// is never served from here.
+// in the PRIVATE "lukket" dataset (Studio workspace "Bak teppet"), so the
+// public sanityClient above can't see them or list their images. These
+// queries take a token-bearing client from createPrivateSanityClient(); the
+// token itself is read server-side only, in src/lib/bakTeppet.ts. Image URLs
+// for this content must be built with privateUrlFor() (and passed to
+// portableTextToHtml()), since urlFor() points at the public dataset. The
+// "lukket." ID path filters are a second line of defence.
+//
+// PUBLIC_SANITY_PRIVATE_DATASET overrides the dataset locally (e.g.
+// "development"); the name isn't secret, only the token is.
+const PRIVATE_DATASET = import.meta.env.PUBLIC_SANITY_PRIVATE_DATASET ?? 'lukket'
+
+const privateBuilder = createImageUrlBuilder({
+  projectId: sanityClient.config().projectId!,
+  dataset:   PRIVATE_DATASET,
+})
+
+/** urlFor() for images in the private "lukket" dataset. */
+export function privateUrlFor(source: SanityImageSource) {
+  return privateBuilder.image(source)
+}
 
 type SanityImageRef = { asset: { _ref: string; url: string }; alt?: string }
 
@@ -3332,7 +3352,7 @@ export interface KitAccessEntry {
 type SanityClientLike = typeof sanityClient
 
 export function createPrivateSanityClient(token: string): SanityClientLike {
-  return sanityClient.withConfig({ token, useCdn: false, perspective: 'published' })
+  return sanityClient.withConfig({ dataset: PRIVATE_DATASET, token, useCdn: false, perspective: 'published' })
 }
 
 const KIT_FILTER = `_type == "kitCollection" && _id in path("lukket.**") && isVisible != false && defined(slug.current) && defined(accessCode)`

@@ -3,7 +3,7 @@
 // Card grid linking to tryllebeskrivelser (/bak-teppet/triks/<slug>). Used on
 // kit pages and in a trick page's "Se også". Server-rendered inside the closed
 // /bak-teppet area only; the linked page does its own access check.
-import { urlFor, type KitTrickCard } from '../lib/sanity'
+import { privateUrlFor, type KitTrickCard } from '../lib/sanity'
 
 interface Props {
   tricks: KitTrickCard[]
@@ -20,7 +20,7 @@ const { tricks, numbered = false } = Astro.props
         {t.coverImage?.asset ? (
           <img
             class="ktc-img"
-            src={urlFor(t.coverImage).width(480).height(320).fit('crop').format('webp').url()}
+            src={privateUrlFor(t.coverImage).width(480).height(320).fit('crop').format('webp').url()}
             alt=""
             loading="lazy"
           />
