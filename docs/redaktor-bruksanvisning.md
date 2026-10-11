@@ -50,6 +50,12 @@ Denne bruksanvisningen dekker de oppgavene en redaktør utfører til daglig.
 
 **Adresse:** `https://tryllemuseet-no.sanity.studio`
 
+Studio har to arbeidsområder, og du bytter mellom dem i menyen ved siden av tittelen øverst til venstre:
+- **Tryllemuseet** (`/production`): alt innhold på den åpne nettsiden.
+- **Bak teppet (lukket)** (`/lukket`): tryllesett og tryllebeskrivelser for kjøpere (se 4d).
+
+Gamle bokmerker til enkeltdokumenter i Studio kan slutte å virke, fordi adressene nå begynner med `/production`. Startadressen virker som før.
+
 Logg inn med Google-kontoen din (samme som du bruker til museets øvrige Google-tjenester). Ta kontakt med Trond hvis du ikke har tilgang.
 
 ### Navigasjon
@@ -244,14 +250,16 @@ Klikk «Add item» under **Scener** for å legge til en ny scene. Rekkefølgen p
 
 ## 4d. Tryllesett — lukket område (Bak teppet)
 
-**Meny:** Aktiviteter → Tryllesett (lukket)
+**Meny:** Bytt til arbeidsområdet **Bak teppet (lukket)** i menyen ved siden av «Tryllemuseet» øverst til venstre i Studio (eller gå rett til `https://tryllemuseet-no.sanity.studio/lukket`). Der ligger **Tryllesett** og **Tryllebeskrivelser**.
 **På nettsiden:** `tryllemuseet.no/bak-teppet` — ikke i menyen, ikke søkbar, krever kode.
 
 «Tryllesett» er fellesnavnet for både trylleesker og tryllekofferter. Det er én side per type sett, og alle som kjøper samme type, bruker samme kode.
 
+Bak teppet har sitt eget, private datasett. Verken tekstene eller bildene der kan hentes ut av andre enn museet. Derfor ligger det i et eget arbeidsområde, og det går ikke an å lenke derfra til personer i Hvem er hvem.
+
 ### Opprette et nytt tryllesett
 
-1. Gå til **Aktiviteter → Tryllesett (lukket)** og trykk **Nytt tryllesett** øverst i lista.
+1. Gå til **Bak teppet (lukket) → Tryllesett** og trykk **Nytt tryllesett** øverst i lista.
    - Bruk alltid denne knappen, ikke «+ Opprett» øverst i Studio. Knappen gir dokumentet en privat ID, slik at innholdet ikke kan leses utenfra. Får du en rød feilmelding om at dokumentet «ikke er privat», er det opprettet feil: slett det og lag det på nytt via knappen.
    - Bruk heller ikke «Duplicate» i ⋯-menyen. En kopi får vanlig ID og samme feilmelding.
    - Åpner knappen et sett du nettopp laget? Gå ut av lista og inn igjen (eller last siden på nytt), så får du et nytt.
@@ -261,7 +269,7 @@ Klikk «Add item» under **Scener** for å legge til en ny scene. Rekkefølgen p
 
 ### Tryllebeskrivelser: skrives én gang, brukes i mange sett
 
-Selve triksene ligger i **Aktiviteter → Tryllebeskrivelser (lukket)**, ikke inne i tryllesettet. Hver beskrivelse lages bare én gang, og velges så inn i så mange tryllesett du vil under **Tryllebeskrivelser i settet**. Endrer du beskrivelsen, endres den i alle settene samtidig.
+Selve triksene ligger i **Bak teppet (lukket) → Tryllebeskrivelser**, ikke inne i tryllesettet. Hver beskrivelse lages bare én gang, og velges så inn i så mange tryllesett du vil under **Tryllebeskrivelser i settet**. Endrer du beskrivelsen, endres den i alle settene samtidig.
 
 1. Trykk **Ny tryllebeskrivelse** (samme regel som for tryllesett: ikke «+ Opprett» eller «Duplicate»).
 2. Fyll inn tittel, eventuell originaltittel, ingress og merknad øverst (f.eks. «Oversettelse. Denne siden er en norsk oversettelse …»).

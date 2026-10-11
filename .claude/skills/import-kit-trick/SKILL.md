@@ -13,7 +13,7 @@ Follow `docs/kit-trick-operations-routine.md`. Short version:
    - Images are normally embedded in the HTML, so separate photos aren't needed.
 2. **Dry run against production:**
    ```
-   SANITY_DATASET=production node scripts/import-kit-trick-html.mjs --dry-run --kit=<kit-slug> <file>
+   SANITY_DATASET=lukket node scripts/import-kit-trick-html.mjs --dry-run --kit=<kit-slug> <file>
    ```
    Check the sections and that every image is listed. If something in the markup isn't handled, fix the importer first (on the session branch, PR), then import.
 3. **Import:** run the same command without `--dry-run`. Never pass `--replace` unless the user wants Studio edits discarded.

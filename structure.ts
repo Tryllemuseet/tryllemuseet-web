@@ -44,6 +44,16 @@ const privateListItem = (S: StructureBuilder, schemaType: string, title: string,
         .initialValueTemplates([]),
     )
 
+// Studio workspace "Bak teppet" (private "lukket" dataset, see
+// sanity.config.ts): only the closed-area types.
+export const privateStructure: StructureResolver = (S) =>
+  S.list()
+    .title('Bak teppet')
+    .items([
+      privateListItem(S, 'kitCollection', 'Tryllesett', 'Nytt tryllesett'),
+      privateListItem(S, 'kitTrick', 'Tryllebeskrivelser', 'Ny tryllebeskrivelse'),
+    ])
+
 export const structure: StructureResolver = (S) =>
   S.list()
     .title('Innhold')
@@ -115,9 +125,8 @@ export const structure: StructureResolver = (S) =>
               S.documentTypeListItem('gameChapter').title('Kabinettet: Rom'),
               S.divider(),
               S.documentTypeListItem('godeRadConfig').title('Gode råd'),
-              S.divider(),
-              privateListItem(S, 'kitCollection', 'Tryllesett (lukket)', 'Nytt tryllesett'),
-              privateListItem(S, 'kitTrick', 'Tryllebeskrivelser (lukket)', 'Ny tryllebeskrivelse'),
+              // Tryllesett and tryllebeskrivelser are in the "Bak teppet"
+              // workspace (privateStructure below), not here.
             ]),
         ),
 
