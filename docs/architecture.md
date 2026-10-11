@@ -118,6 +118,7 @@ Three boolean singleton fields in Sanity gate features that are built and conten
 | `quizConfig.isActive` | `/tryllequiz` page + its nav link |
 | `gameConfig.isActive` | `/det-trettende-kabinett` page + its nav link |
 | `siteConfig.laerEtTriksActive` | `/barn/laer-et-triks` teaser + hero CTA on `/barn`, plus `noindex` on the `/barn/laer-et-triks` routes themselves |
+| `siteConfig.trylleeffekterActive` | `noindex` on `/tryllehistorie/trylleeffekter` and its detail pages. Nothing links there by code; on launch, editors add it to `siteNavigation` (see `docs/trylleeffekter-concept.md`) |
 
 When a flag is off: the quiz/game pages build as a "coming soon" teaser with `noindex`; `laerEtTriksActive` instead hides the entry points into an otherwise-normal page (the route itself stays reachable and indexable once you have the URL — there's no single page to gate since it's a whole sub-section). All three leave content, schema, and routes fully intact — nothing is deleted, so turning the flag on requires no code change, just a rebuild.
 

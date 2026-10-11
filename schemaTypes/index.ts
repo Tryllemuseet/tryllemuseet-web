@@ -49,6 +49,7 @@ import { competitionResult } from './competitionResult'
 import { organizationRole } from './organizationRole'
 import { historicalSection } from './historicalSection'
 import { story }           from './story'
+import { magicEffect }     from './magicEffect'
 import { kitCollection }   from './kitCollection'
 import { kitTrick }        from './kitTrick'
 import { kitOriginal }     from './kitOriginal'
@@ -106,6 +107,7 @@ export const schemaTypes = [
   historicalSection,
   book,
   source,
+  magicEffect,
 
   // Dokumenttyper — Om oss
   mediaAppearance,

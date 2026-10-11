@@ -157,6 +157,14 @@ export const siteConfig = defineType({
       description:
         'Hovedbryteren for «Lær et triks» (/barn/laer-et-triks). Av: teaseren på /barn er skjult og siden får noindex, men innholdet er fortsatt tilgjengelig for testing på den fulle URL-en. På: teaseren vises og siden indekseres normalt. Speiler mønsteret til gameConfig.isActive/quizConfig.isActive.',
     }),
+    defineField({
+      name:         'trylleeffekterActive',
+      title:        '«Trylleeffekter» er aktiv',
+      type:         'boolean',
+      initialValue: false,
+      description:
+        'Hovedbryteren for Trylleeffekter (/tryllehistorie/trylleeffekter). Av: sidene får noindex og lenkes ikke fra noe sted, men kan testes på den fulle URL-en. På: sidene indekseres. Legg samtidig til «Trylleeffekter» under Tryllehistorie i navigasjonen.',
+    }),
   ],
 
   preview: {

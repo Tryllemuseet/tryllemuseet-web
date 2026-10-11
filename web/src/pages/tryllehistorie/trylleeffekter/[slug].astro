@@ -1,0 +1,228 @@
+---
+// src/pages/tryllehistorie/trylleeffekter/[slug].astro
+//
+// One trylleeffekt (magicEffect): what the audience sees, history, origin,
+// images and links to the collection. Never the method. noindex while
+// siteConfig.trylleeffekterActive is off (see index.astro).
+import BaseLayout from '../../../layouts/BaseLayout.astro'
+import NarrateButton from '../../../components/NarrateButton.astro'
+import {
+  getAllMagicEffects,
+  getMagicEffectBySlug,
+  getSiteConfig,
+  portableTextToHtml,
+  portableTextToPlainText,
+  urlFor,
+} from '../../../lib/sanity'
+
+export async function getStaticPaths() {
+  const effects = await getAllMagicEffects()
+  return effects.map(e => ({ params: { slug: e.slug } }))
+}
+
+const { slug } = Astro.params
+const [effect, config] = await Promise.all([getMagicEffectBySlug(slug!), getSiteConfig()])
+if (!effect) return Astro.redirect('/tryllehistorie/trylleeffekter', 301)
+
+const COUNTRY_LABELS: Record<string, string> = {
+  no: 'Norge', se: 'Sverige', dk: 'Danmark', fi: 'Finland', gb: 'Storbritannia', us: 'USA',
+  de: 'Tyskland', fr: 'Frankrike', it: 'Italia', es: 'Spania', jp: 'Japan', cn: 'Kina', other: 'Annet / ukjent',
+}
+const CATEGORY_LABELS: Record<string, string> = {
+  kort: 'Kort', mynter: 'Mynter', tau: 'Tau', ringer: 'Ringer', baller: 'Baller og kuler',
+  papir: 'Papir og sedler', mentalisme: 'Mentalisme', forsvinning: 'Forsvinning og forvandling',
+  illusjon: 'Illusjon', barnetriks: 'Barnetriks', annet: 'Annet',
+}
+
+const when = effect.yearNote ?? (effect.year ? String(effect.year) : undefined)
+const countries = (effect.countries ?? []).map(c => COUNTRY_LABELS[c] ?? c)
+const categories = (effect.categories ?? []).map(c => CATEGORY_LABELS[c] ?? c)
+const creators = effect.creators ?? []
+const producers = effect.producers ?? []
+const images = (effect.images ?? []).filter(i => i.asset)
+const hero = images[0]
+const narration = [
+  effect.title,
+  portableTextToPlainText(effect.effect),
+  portableTextToPlainText(effect.history),
+].filter(Boolean).join(' ')
+---
+
+<BaseLayout
+  title={`${effect.title} — Trylleeffekter — Tryllemuseet`}
+  description={effect.summary ?? `Om trylleeffekten ${effect.title} i Tryllemuseets oversikt.`}
+  noindex={!config.trylleeffekterActive}
+>
+
+  <nav class="breadcrumb container">
+    <a href="/tryllehistorie">Tryllehistorie</a>
+    <span>›</span>
+    <a href="/tryllehistorie/trylleeffekter">Trylleeffekter</a>
+    <span>›</span>
+    <span aria-current="page">{effect.title}</span>
+  </nav>
+
+  <article class="te container">
+    <header class:list={['te-hero', { 'te-hero--img': hero }]}>
+      <div>
+        <p class="section-label">Trylleeffekt</p>
+        <h1>{effect.title}</h1>
+        {effect.alternativeNames && effect.alternativeNames.length > 0 && (
+          <p class="te-alt">Også kjent som {effect.alternativeNames.join(', ')}</p>
+        )}
+        {effect.summary && <p class="te-lead">{effect.summary}</p>}
+        <NarrateButton text={narration} label={`Les om ${effect.title} høyt`} />
+      </div>
+      {hero && (
+        <figure class="te-hero-img">
+          <img src={urlFor(hero).width(720).format('webp').url()} alt={hero.alt ?? ''} />
+          {hero.caption && <figcaption>{hero.caption}</figcaption>}
+        </figure>
+      )}
+    </header>
+
+    <dl class="te-facts">
+      {when && (<><dt>Tid</dt><dd>{when}</dd></>)}
+      {countries.length > 0 && (<><dt>Land</dt><dd>{countries.join(', ')}</dd></>)}
+      {(creators.length > 0 || effect.creatorNote) && (
+        <>
+          <dt>Skaper</dt>
+          <dd>
+            {creators.map((c, i) => (
+              <>{i > 0 && ', '}{c.slug ? <a href={`/tryllehistorie/magiens-hvem-er-hvem/${c.slug}`}>{c.name}</a> : c.name}</>
+            ))}
+            {effect.creatorNote && <>{creators.length > 0 && ' · '}{effect.creatorNote}</>}
+          </dd>
+        </>
+      )}
+      {producers.length > 0 && (
+        <>
+          <dt>Produsent</dt>
+          <dd>
+            {producers.map((p, i) => (
+              <>
+                {i > 0 && '; '}
+                {p.biography?.slug ? <a href={`/tryllehistorie/magiens-hvem-er-hvem/${p.biography.slug}`}>{p.name}</a> : p.name}
+                {p.years && ` (${p.years})`}
+              </>
+            ))}
+          </dd>
+        </>
+      )}
+      {categories.length > 0 && (<><dt>Kategori</dt><dd>{categories.join(', ')}</dd></>)}
+    </dl>
+
+    {effect.effect && effect.effect.length > 0 && (
+      <section class="te-section">
+        <h2>Effekten</h2>
+        <div class="prose" set:html={portableTextToHtml(effect.effect)} />
+      </section>
+    )}
+
+    {effect.history && effect.history.length > 0 && (
+      <section class="te-section">
+        <h2>Historikk</h2>
+        <div class="prose" set:html={portableTextToHtml(effect.history)} />
+      </section>
+    )}
+
+    {images.length > 1 && (
+      <section class="te-section">
+        <h2>Bilder</h2>
+        <div class="te-gallery">
+          {images.slice(1).map(img => (
+            <figure>
+              <img src={urlFor(img).width(560).format('webp').url()} alt={img.alt ?? ''} loading="lazy" />
+              {img.caption && <figcaption>{img.caption}</figcaption>}
+            </figure>
+          ))}
+        </div>
+      </section>
+    )}
+
+    {effect.artifacts && effect.artifacts.length > 0 && (
+      <section class="te-section">
+        <h2>I samlingen</h2>
+        <ul class="te-links">
+          {effect.artifacts.map(a => (
+            <li><a href={`/utstillingen/artefakter/${a.slug}`}>{a.title}</a></li>
+          ))}
+        </ul>
+      </section>
+    )}
+
+    {effect.books && effect.books.length > 0 && (
+      <section class="te-section">
+        <h2>Litteratur i biblioteket</h2>
+        <ul class="te-links">
+          {effect.books.map(b => (
+            <li>
+              <a href="/ressurser/bibliotek">{b.title}</a>
+              {[b.authors?.filter(Boolean).join(', '), b.year].filter(Boolean).length > 0 && (
+                <span class="te-muted"> — {[b.authors?.filter(Boolean).join(', '), b.year].filter(Boolean).join(', ')}</span>
+              )}
+            </li>
+          ))}
+        </ul>
+      </section>
+    )}
+
+    {effect.sources && effect.sources.length > 0 && (
+      <section class="te-section">
+        <h2>Kilder</h2>
+        <ul class="te-links">
+          {effect.sources.map(src => {
+            const url = src.url ?? src.sourceRef?.url
+            const label = src.label ?? src.sourceRef?.title
+            return <li>{url ? <a href={url} target="_blank" rel="noopener noreferrer">{label}</a> : label}</li>
+          })}
+        </ul>
+      </section>
+    )}
+
+    <div class="page-nav">
+      <a href="/tryllehistorie/trylleeffekter">← Alle trylleeffekter</a>
+    </div>
+  </article>
+
+</BaseLayout>
+
+<style>
+  .te { max-width: var(--max-w-narrow); padding-top: 1rem; padding-bottom: 4rem; }
+  .te-hero { display: grid; gap: 2rem; align-items: start; margin-bottom: 2rem; }
+  .te-hero h1 { font-family: var(--font-display); color: var(--burgundy); margin: 0.25rem 0 0.5rem; }
+  .te-alt { font-family: var(--font-ui); color: var(--grey); margin-bottom: 0.75rem; }
+  .te-lead { font-size: 1.1rem; line-height: 1.6; margin-bottom: 1rem; }
+  .te-hero-img { margin: 0; }
+  .te-hero-img img, .te-gallery img { display: block; width: 100%; height: auto; border: 1px solid var(--cream-dark); border-radius: var(--radius-sm); }
+  figcaption { font-family: var(--font-ui); font-size: var(--text-sm); color: var(--grey); margin-top: 0.4rem; }
+
+  .te-facts {
+    display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 0.4rem 1.25rem;
+    font-family: var(--font-ui); background: var(--cream); border: 1px solid var(--cream-dark);
+    padding: 1rem 1.25rem; margin: 0 0 2.5rem;
+  }
+  .te-facts dt { color: var(--grey); }
+  .te-facts dd { margin: 0; }
+  .te-facts a, .te-links a { color: var(--burgundy); }
+
+  .te-section { margin-bottom: 2.5rem; }
+  .te-section h2 { font-family: var(--font-display); color: var(--burgundy); font-size: 1.4rem; margin-bottom: 0.75rem; }
+  .te-gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(12rem, 1fr)); gap: 1rem; }
+  .te-gallery figure { margin: 0; }
+  .te-links { padding-left: 1.2rem; font-family: var(--font-ui); }
+  .te-links li { margin-bottom: 0.35rem; }
+  .te-muted { color: var(--grey); }
+
+  .page-nav { margin-top: 2rem; padding-top: 2rem; border-top: 1px solid var(--cream-dark); font-family: var(--font-ui); font-size: var(--text-sm); }
+  .page-nav a { color: var(--grey); text-decoration: none; border: 1px solid var(--cream-dark); padding: 0.4rem 1rem; border-radius: var(--radius); }
+  .page-nav a:hover { color: var(--burgundy); border-color: var(--gold); }
+
+  @media (min-width: 48rem) {
+    .te-hero--img { grid-template-columns: minmax(0, 1fr) minmax(0, 18rem); }
+  }
+  @media (max-width: 40rem) {
+    .te-facts { grid-template-columns: minmax(0, 1fr); gap: 0 1rem; }
+    .te-facts dd { margin-bottom: 0.5rem; }
+  }
+</style>
