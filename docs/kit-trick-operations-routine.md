@@ -25,9 +25,9 @@ self-contained HTML file per trick, with embedded images, plus a `.md` copy for 
 
 1. **Save the HTML file somewhere outside the repo**, e.g. the session's upload folder.
    Don't commit trick files: they contain the secrets the closed area protects.
-2. **Dry run against production**, then read the output:
+2. **Dry run against `lukket`**, the private dataset behind `/bak-teppet` (the importer refuses `production`), then read the output:
    ```
-   SANITY_DATASET=production node scripts/import-kit-trick-html.mjs --dry-run --kit=<kit-slug> <file.html>
+   SANITY_DATASET=lukket node scripts/import-kit-trick-html.mjs --dry-run --kit=<kit-slug> <file.html>
    ```
    Check that:
    - The title, slug and section list look right.
@@ -36,7 +36,7 @@ self-contained HTML file per trick, with embedded images, plus a `.md` copy for 
    - For a closer look, temporarily print the doc as JSON instead of the dry-run line.
 3. **Import for real:**
    ```
-   SANITY_DATASET=production node scripts/import-kit-trick-html.mjs --kit=<kit-slug> <file.html>
+   SANITY_DATASET=lukket node scripts/import-kit-trick-html.mjs --kit=<kit-slug> <file.html>
    ```
    - The document gets the private ID `lukket.kittrick-<slug>`.
    - `--kit` appends it to the tryllesett. It skips the kit if the trick is already there, or if the kit has an unpublished draft (then add it in Studio instead).
@@ -44,11 +44,14 @@ self-contained HTML file per trick, with embedded images, plus a `.md` copy for 
 4. **Re-importing** an existing trick needs `--replace`. This overwrites the whole document, including any edits made in Studio since the last import. Prefer editing in Studio, or patching just the changed text (section 4), over re-importing.
 5. **Verify:**
    - The kit lists the trick in the expected place.
-   - An anonymous query still returns 0 private docs:
+   - Nothing from Bak teppet is visible without a token. Both must be 0 (the second
+     catches images uploaded to the public dataset by mistake):
      ```js
-     createClient({projectId: 'n2ynpgty', dataset: 'production', apiVersion: '2024-01-01', useCdn: false})
-       .fetch('count(*[_id in path("lukket.**")])')   // must be 0
+     const anon = createClient({projectId: 'n2ynpgty', dataset: 'production', apiVersion: '2024-01-01', useCdn: false})
+     anon.fetch('count(*[_id in path("lukket.**")])')
+     anon.fetch('count(*[_type == "sanity.imageAsset" && originalFilename match "<slug>*"])')
      ```
+     An anonymous query against `lukket` itself must fail (private dataset).
 
 No build or release is needed. `/bak-teppet` renders on demand, so the trick is live on
 test and production as soon as it's written.
@@ -67,6 +70,11 @@ that came up in the first seven:
 
 Translations that end up noticeably simplified get relabelled «Bearbeidet oversettelse»,
 both in `noticeLabel`/`notice` and in `sourceText`.
+
+Questions the editor can't answer right away (e.g. which colour a step really means) go to
+`docs/tryllebeskrivelser/uavklart.md`, the open-questions list. Reference steps and quoted
+words only, never the method itself. Check the list at the start of each session, and move
+items to «Avklart» once the text is fixed.
 
 ## 4. Apply text edits safely
 

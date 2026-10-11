@@ -13,7 +13,7 @@ Follow `docs/kit-trick-operations-routine.md`. Short version:
    - Images are normally embedded in the HTML, so separate photos aren't needed.
 2. **Dry run against production:**
    ```
-   SANITY_DATASET=production node scripts/import-kit-trick-html.mjs --dry-run --kit=<kit-slug> <file>
+   SANITY_DATASET=lukket node scripts/import-kit-trick-html.mjs --dry-run --kit=<kit-slug> <file>
    ```
    Check the sections and that every image is listed. If something in the markup isn't handled, fix the importer first (on the session branch, PR), then import.
 3. **Import:** run the same command without `--dry-run`. Never pass `--replace` unless the user wants Studio edits discarded.
@@ -25,6 +25,7 @@ Follow `docs/kit-trick-operations-routine.md`. Short version:
    - anything odd you noticed in the text, e.g. a solution photo shown too early or a likely mistranslation
    - offer to fix it
 6. **Text reviews:** propose changes, numbered per trick, and let the user decide. Apply approved edits as described in section 4 of the routine: check for drafts, back up, patch with `ifRevisionId`.
+   Questions the user leaves open go to `docs/tryllebeskrivelser/uavklart.md` (via PR). Mention any open items there when the user next works on tricks.
 
 Writing rules for the content itself: `docs/tryllebeskrivelser/prosjektinstruksjoner.md`.
 Never commit trick HTML files to the repo. They contain the secrets the area protects.

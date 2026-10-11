@@ -7,7 +7,9 @@
 // open to anyone who has unlocked at least one kit that includes the trick.
 //
 // Private like kitCollection: these pages reveal how tricks are done, so the
-// documents live under the "lukket." ID path (see privateDoc.ts).
+// documents live in the private "lukket" dataset, under the "lukket." ID path
+// (see kitCollection.ts and privateDoc.ts). Rich text has no biography links,
+// since a reference can't cross datasets.
 //
 // The body is a list of sections rather than fixed fields, because the source
 // sheets vary: the steps sometimes belong to "Hemmeligheten", sometimes to
@@ -16,6 +18,8 @@
 import { defineType, defineField, defineArrayMember } from 'sanity'
 import { richBlockContent } from './richBlockContent'
 import { privateIdValidation } from './privateDoc'
+
+const NO_INTERNAL_LINKS = { internalLinks: false }
 
 export const KIT_TRICK_SECTION_KINDS = [
   { title: 'Effekt', value: 'effekt' },
@@ -83,7 +87,7 @@ const step = defineArrayMember({
   type: 'object',
   fields: [
     defineField({ name: 'title', title: 'Overskrift (valgfri)', type: 'string', description: 'F.eks. «Å bla fra bunnen av boken».' }),
-    defineField({ name: 'text', title: 'Tekst', type: 'array', of: richBlockContent([{ title: 'Normaltekst', value: 'normal' }]) }),
+    defineField({ name: 'text', title: 'Tekst', type: 'array', of: richBlockContent([{ title: 'Normaltekst', value: 'normal' }], NO_INTERNAL_LINKS) }),
     defineField({ name: 'figures', title: 'Bilder', type: 'array', of: [figure] }),
   ],
   preview: {
@@ -204,7 +208,7 @@ export const kitTrick = defineType({
               initialValue: false,
               description: 'På: vises som mellomtittel under forrige seksjon (f.eks. «French drop» under «Effekt 3»), ikke som egen hovedseksjon. Uten overskrift fortsetter den bare forrige seksjon.',
             }),
-            defineField({ name: 'body', title: 'Tekst', type: 'array', of: richBlockContent() }),
+            defineField({ name: 'body', title: 'Tekst', type: 'array', of: richBlockContent(undefined, NO_INTERNAL_LINKS) }),
             defineField({
               name: 'listItems',
               title: 'Nummerert liste',
@@ -273,7 +277,7 @@ export const kitTrick = defineType({
       name: 'sourceText',
       title: 'Om kilden og oversettelsen',
       type: 'array',
-      of: richBlockContent([{ title: 'Normaltekst', value: 'normal' }]),
+      of: richBlockContent([{ title: 'Normaltekst', value: 'normal' }], NO_INTERNAL_LINKS),
       fieldset: 'source',
     }),
     defineField({

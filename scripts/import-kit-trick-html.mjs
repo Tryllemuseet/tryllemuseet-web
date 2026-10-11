@@ -31,8 +31,9 @@
  * --kit=<slug> appends the trick to that tryllesett (kitCollection) after
  * writing it, unless it's already there or the kit has an unpublished draft.
  *
- * Targets the DEVELOPMENT dataset by default. Set SANITY_DATASET=production
- * to import for real.
+ * Targets the DEVELOPMENT dataset by default. Set SANITY_DATASET=lukket (the
+ * private dataset behind /bak-teppet) to import for real. "production" is
+ * refused: it's public, so the trick images would be listable there.
  *
  * Usage:
  *   node scripts/import-kit-trick-html.mjs [--dry-run] [--replace] [--kit=<kit-slug>] file1.html [file2.html …]
@@ -55,6 +56,14 @@ const replace = args.includes('--replace')
 const kitSlug = args.find(a => a.startsWith('--kit='))?.slice('--kit='.length) || null
 const files = args.filter(a => !a.startsWith('--'))
 const dataset = process.env.SANITY_DATASET ?? 'development'
+
+// Trick descriptions reveal how tricks are done. They belong in the private
+// "lukket" dataset; in the public production dataset their images would be
+// listable by anyone (see schemaTypes/kitCollection.ts).
+if (dataset === 'production') {
+  console.error('Refusing to import into the public "production" dataset. Use SANITY_DATASET=lukket.')
+  process.exit(1)
+}
 
 if (files.length === 0) {
   console.error('Usage: node scripts/import-kit-trick-html.mjs [--dry-run] [--replace] [--kit=<kit-slug>] file.html [...]')

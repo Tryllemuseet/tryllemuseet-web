@@ -107,7 +107,7 @@ Short URLs used on print material and QR codes (e.g., `/got-talent`, `/hvem-er-h
 
 ### Closed Area: `/bak-teppet` (on-demand rendering)
 
-The only server-rendered pages. `@astrojs/vercel` is configured in `astro.config.mjs`, but output stays `static`: only `src/pages/bak-teppet/*.astro` opt out with `export const prerender = false` and run as a single Vercel function. They read private `kitCollection` documents (IDs under `lukket.`, invisible to the public Sanity API) with `SANITY_PRIVATE_READ_TOKEN`, and gate access with a per-kit-type shared code and an HMAC cookie (`web/src/lib/bakTeppet.ts`). Because they render per request, kit content changes in Sanity show up immediately, without a rebuild — unlike the rest of the site. See CLAUDE.md "Closed area" for details.
+The only server-rendered pages. `@astrojs/vercel` is configured in `astro.config.mjs`, but output stays `static`: only `src/pages/bak-teppet/*.astro` opt out with `export const prerender = false` and run as a single Vercel function. They read `kitCollection`/`kitTrick` documents from the private `lukket` dataset (so neither the documents nor their images can be listed through the public Sanity API) with `SANITY_PRIVATE_READ_TOKEN`, and gate access with a per-kit-type shared code and an HMAC cookie (`web/src/lib/bakTeppet.ts`). Because they render per request, kit content changes in Sanity show up immediately, without a rebuild — unlike the rest of the site. See CLAUDE.md "Closed area" for details.
 
 ### Feature Flags
 

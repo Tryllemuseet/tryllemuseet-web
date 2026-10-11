@@ -15,7 +15,7 @@ import {
   getKitTrickBySlug,
   portableTextToHtml,
   portableTextToPlainText,
-  urlFor,
+  privateUrlFor,
   type KitFigure,
   type KitTrickSection,
 } from '../../../lib/sanity'
@@ -59,7 +59,7 @@ const sections = (trick.sections ?? []).map((sec, i) => ({
 const tocSections = sections.filter(sec => !sec.subsection)
 
 const figureSrc = (f: KitFigure, width: number) =>
-  f.image?.asset ? urlFor(f.image).width(width).auto('format').url() : null
+  f.image?.asset ? privateUrlFor(f.image).width(width).auto('format').url() : null
 
 // Everything a visitor might want read aloud, in page order.
 const narration = [
@@ -111,7 +111,7 @@ const related = trick.relatedTricks ?? []
           : <h2 id={sec.id}>{sec.title}</h2>}
 
         {sec.body && sec.body.length > 0 && (
-          <div class="prose kt-prose" set:html={portableTextToHtml(sec.body)} />
+          <div class="prose kt-prose" set:html={portableTextToHtml(sec.body, privateUrlFor)} />
         )}
 
         {sec.listItems && sec.listItems.length > 0 && (
@@ -141,7 +141,7 @@ const related = trick.relatedTricks ?? []
                 <span class="kt-num" aria-hidden="true">{i + 1}</span>
                 <div class="kt-step-body">
                   {st.title && <h3>{st.title}</h3>}
-                  {st.text && st.text.length > 0 && <div class="prose kt-prose" set:html={portableTextToHtml(st.text)} />}
+                  {st.text && st.text.length > 0 && <div class="prose kt-prose" set:html={portableTextToHtml(st.text, privateUrlFor)} />}
                   {(st.figures ?? []).map(f => figureSrc(f, 800) && (
                     <figure class="kt-fig kt-step-fig">
                       <div class="kt-fig-img">
@@ -197,7 +197,7 @@ const related = trick.relatedTricks ?? []
       <footer class="kt-source">
         <h2>Kilde og oversettelse</h2>
         {trick.sourceText && trick.sourceText.length > 0 && (
-          <div class="kt-source-text" set:html={portableTextToHtml(trick.sourceText)} />
+          <div class="kt-source-text" set:html={portableTextToHtml(trick.sourceText, privateUrlFor)} />
         )}
         {trick.sourceFacts && trick.sourceFacts.length > 0 && (
           <dl>

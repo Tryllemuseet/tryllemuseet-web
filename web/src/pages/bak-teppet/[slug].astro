@@ -13,7 +13,7 @@ import {
   getKitBySlug,
   portableTextToHtml,
   portableTextToPlainText,
-  urlFor,
+  privateUrlFor,
 } from '../../lib/sanity'
 import {
   BAK_TEPPET_PATH,
@@ -48,7 +48,7 @@ const tricks = kit.tricks ?? []
       {kit.coverImage?.asset && (
         <div class="kit-hero-img">
           <img
-            src={urlFor(kit.coverImage).width(680).format('webp').url()}
+            src={privateUrlFor(kit.coverImage).width(680).format('webp').url()}
             alt={kit.coverImage.alt ?? kit.title}
           />
         </div>
@@ -58,7 +58,7 @@ const tricks = kit.tricks ?? []
         <h1>{kit.title}</h1>
         {kit.intro && kit.intro.length > 0 && (
           <>
-            <div class="prose kit-intro" set:html={portableTextToHtml(kit.intro)} />
+            <div class="prose kit-intro" set:html={portableTextToHtml(kit.intro, privateUrlFor)} />
             <NarrateButton text={portableTextToPlainText(kit.intro)} label={`Les om ${kit.title} høyt`} />
           </>
         )}
