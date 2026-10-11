@@ -27,5 +27,7 @@ Follow `docs/kit-trick-operations-routine.md`. Short version:
 6. **Text reviews:** propose changes, numbered per trick, and let the user decide. Apply approved edits as described in section 4 of the routine: check for drafts, back up, patch with `ifRevisionId`.
    Questions the user leaves open go to `docs/tryllebeskrivelser/uavklart.md` (via PR). Mention any open items there when the user next works on tricks.
 
+7. **Original PDFs**: when the user sends the original sheet, store it with `scripts/add-kit-original.mjs` (routine section 6). Access stays `archive` unless the user says the museum owns the rights or has permission.
+
 Writing rules for the content itself: `docs/tryllebeskrivelser/prosjektinstruksjoner.md`.
 Never commit trick HTML files to the repo. They contain the secrets the area protects.

@@ -274,6 +274,15 @@ export const kitTrick = defineType({
 
     // ── KILDE ─────────────────────────────────────────────────────
     defineField({
+      name: 'originals',
+      title: 'Originalbeskrivelser (PDF)',
+      type: 'array',
+      fieldset: 'source',
+      description: 'Originalene trikset bygger på, fra «Originalbeskrivelser». Bare de med tilgang «Vis i lukket område» lenkes fra siden; de andre ligger i arkivet.',
+      of: [{ type: 'reference', to: [{ type: 'kitOriginal' }], options: { disableNew: true } }],
+      validation: R => R.unique(),
+    }),
+    defineField({
       name: 'sourceText',
       title: 'Om kilden og oversettelsen',
       type: 'array',
