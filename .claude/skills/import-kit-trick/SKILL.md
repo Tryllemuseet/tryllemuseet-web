@@ -25,6 +25,7 @@ Follow `docs/kit-trick-operations-routine.md`. Short version:
    - anything odd you noticed in the text, e.g. a solution photo shown too early or a likely mistranslation
    - offer to fix it
 6. **Text reviews:** propose changes, numbered per trick, and let the user decide. Apply approved edits as described in section 4 of the routine: check for drafts, back up, patch with `ifRevisionId`.
+   Questions the user leaves open go to `docs/tryllebeskrivelser/uavklart.md` (via PR). Mention any open items there when the user next works on tricks.
 
 Writing rules for the content itself: `docs/tryllebeskrivelser/prosjektinstruksjoner.md`.
 Never commit trick HTML files to the repo. They contain the secrets the area protects.

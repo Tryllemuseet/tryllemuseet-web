@@ -68,6 +68,11 @@ that came up in the first seven:
 Translations that end up noticeably simplified get relabelled «Bearbeidet oversettelse»,
 both in `noticeLabel`/`notice` and in `sourceText`.
 
+Questions the editor can't answer right away (e.g. which colour a step really means) go to
+`docs/tryllebeskrivelser/uavklart.md`, the open-questions list. Reference steps and quoted
+words only, never the method itself. Check the list at the start of each session, and move
+items to «Avklart» once the text is fixed.
+
 ## 4. Apply text edits safely
 
 When the editor approves changes:
