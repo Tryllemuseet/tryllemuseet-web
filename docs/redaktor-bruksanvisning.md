@@ -289,6 +289,23 @@ Har du triks som HTML-sider («Tryllekunst · Bruksanvisning»), kan de importer
 
 **Nye beskrivelser:** Skriv dem i et eget claude.ai-prosjekt med instruksjonene i `docs/tryllebeskrivelser/prosjektinstruksjoner.md` og malen `docs/tryllebeskrivelser/mal.html`. Send så HTML-fila til en Claude Code-økt og si hvilket tryllesett den skal inn i. Hele rutinen står i `docs/kit-trick-operations-routine.md`.
 
+### Originalbeskrivelser (PDF) — museets arkiv
+
+Den originale bruksanvisningen et triks bygger på, kan tas vare på som PDF under **Bak teppet (lukket) → Originalbeskrivelser (arkiv)**. Én original kan høre til flere triks (f.eks. et hefte som dekker «punkt 18–21»), og ett triks kan ha flere originaler.
+
+1. Trykk **Ny originalbeskrivelse**, og last opp PDF-en (skann eller foto av hele originalen, samlet i én fil).
+2. Fyll inn tittel, språk, produsent/utgiver, år og produktnummer. «Hva originalen dekker» er for originaler som er del av noe større.
+3. Under **Rettigheter og tilgang** velger du hvem som får se den:
+   - **Kun arkiv** (standard): PDF-en tas vare på, men vises ikke noe sted.
+   - **Vis i lukket område**: kjøpere av tryllesettet får en lenke til PDF-en nederst på trikssiden.
+   - **Kan vises offentlig**: tillatt, men ingen åpen side viser den ennå.
+
+   Vis bare en original hvis museet eier rettighetene (kryss av for det), eller hvis dere har fått tillatelse fra rettighetshaveren (fyll inn dato, fra hvem og vilkår). Studio varsler hvis ingen av delene er fylt ut.
+4. **Arkivnotat** er for museet selv: hvor originalen fysisk ligger, hvem som skannet den og når. Det vises aldri på nettsiden.
+5. Koble originalen til trikset: åpne tryllebeskrivelsen og velg den under **Originalbeskrivelser (PDF)** i «Kilde og rettigheter».
+
+Du kan også sende PDF-en til en Claude Code-økt og si hvilket triks den hører til.
+
 ### Kode og QR-kode til kortet i esken eller kofferten
 
 - Kunden kan skrive koden på `tryllemuseet.no/bak-teppet`.

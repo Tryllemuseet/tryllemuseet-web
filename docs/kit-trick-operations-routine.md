@@ -11,7 +11,8 @@ Related files:
 | Writing instructions (Norwegian, for a claude.ai Project) | `docs/tryllebeskrivelser/prosjektinstruksjoner.md` |
 | HTML template the importer understands | `docs/tryllebeskrivelser/mal.html` |
 | Importer | `scripts/import-kit-trick-html.mjs` |
-| Schema | `schemaTypes/kitTrick.ts`, `schemaTypes/kitCollection.ts` |
+| Original PDFs | `scripts/add-kit-original.mjs` (section 6) |
+| Schema | `schemaTypes/kitTrick.ts`, `schemaTypes/kitCollection.ts`, `schemaTypes/kitOriginal.ts` |
 | Editor guide (Studio) | `docs/redaktor-bruksanvisning.md` §4d |
 | Claude Code skill | `.claude/skills/import-kit-trick/SKILL.md` |
 
@@ -92,3 +93,24 @@ When the editor approves changes:
 - `.orig` lines starting with «På engelsk:» kept the prefix. Fixed 2026-10. «På norsk: X» under a foreign `<h1>` swaps title and original title.
 - Content after a step list becomes an untitled continuation subsection, because steps always render after the body text.
 - Identical images (same data URI) upload once.
+
+## 6. Archive the original sheet (PDF)
+
+When the editor sends the original instructions a trick is based on, keep them as a
+`kitOriginal` ("Originalbeskrivelse"), linked from the trick:
+
+```
+SANITY_DATASET=lukket node scripts/add-kit-original.mjs \
+  --title="Ball & Vase — Read and keep" --trick=ball-og-vase \
+  --publisher="DiFattaMagic srl" --languages=en,it [--covers="punkt 18–21"] \
+  [--access=archive|closed|public] [--own] [--dry-run] original.pdf
+```
+
+- **Access defaults to `archive`**: the PDF is stored but never linked. Third-party
+  sheets are copyrighted, so only use `--access=closed` when the museum owns the rights
+  (`--own`) or has permission. Record the permission in Studio (date, from whom, terms).
+- Repeat `--trick=` when one sheet covers several tricks. To add a sheet to more tricks
+  later, select it under «Originalbeskrivelser (PDF)» on each trick in Studio.
+- The trick page lists only `closed`/`public` originals. The access filter is in the
+  GROQ query, so an archive-only PDF's URL never reaches the browser.
+- Combine multi-page scans into one PDF before uploading.
