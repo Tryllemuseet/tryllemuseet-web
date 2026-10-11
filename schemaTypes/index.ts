@@ -51,6 +51,7 @@ import { historicalSection } from './historicalSection'
 import { story }           from './story'
 import { kitCollection }   from './kitCollection'
 import { kitTrick }        from './kitTrick'
+import { kitOriginal }     from './kitOriginal'
 
 export const schemaTypes = [
   // Sidetyper — rekkefølge følger hovedmenyen (se siteNavigation)
@@ -131,4 +132,5 @@ export const schemaTypes = [
 export const privateSchemaTypes = [
   kitCollection,
   kitTrick,
+  kitOriginal,
 ]

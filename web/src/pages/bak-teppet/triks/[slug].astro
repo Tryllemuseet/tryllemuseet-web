@@ -17,6 +17,7 @@ import {
   portableTextToPlainText,
   privateUrlFor,
   type KitFigure,
+  type KitOriginalLink,
   type KitTrickSection,
 } from '../../../lib/sanity'
 import {
@@ -57,6 +58,17 @@ const sections = (trick.sections ?? []).map((sec, i) => ({
   id: `${sec.kind}-${i + 1}`,
 }))
 const tocSections = sections.filter(sec => !sec.subsection)
+
+// Original sheets cleared for this area (the query drops archive-only ones).
+const originals = trick.originals ?? []
+const originalMeta = (o: KitOriginalLink) => {
+  const parts = [o.publisher, o.year, o.covers].filter(Boolean)
+  const size = !o.fileSize ? ''
+    : o.fileSize < 1024 * 1024 ? `, ${Math.max(1, Math.round(o.fileSize / 1024))} kB`
+    : `, ${(o.fileSize / 1024 / 1024).toLocaleString('nb-NO', { maximumFractionDigits: 1 })} MB`
+  parts.push(`PDF${size}`)
+  return `(${parts.join(' · ')})`
+}
 
 const figureSrc = (f: KitFigure, width: number) =>
   f.image?.asset ? privateUrlFor(f.image).width(width).auto('format').url() : null
@@ -193,7 +205,7 @@ const related = trick.relatedTricks ?? []
       </section>
     )}
 
-    {(trick.sourceText?.length || trick.sourceFacts?.length || trick.rightsNote) && (
+    {(trick.sourceText?.length || trick.sourceFacts?.length || trick.rightsNote || originals.length > 0) && (
       <footer class="kt-source">
         <h2>Kilde og oversettelse</h2>
         {trick.sourceText && trick.sourceText.length > 0 && (
@@ -203,6 +215,19 @@ const related = trick.relatedTricks ?? []
           <dl>
             {trick.sourceFacts.map(f => (<><dt>{f.label}</dt><dd>{f.value}</dd></>))}
           </dl>
+        )}
+        {originals.length > 0 && (
+          <div class="kt-originals">
+            <h3>{originals.length === 1 ? 'Originalbeskrivelsen' : 'Originalbeskrivelsene'}</h3>
+            <ul>
+              {originals.map(o => (
+                <li>
+                  <a href={o.fileUrl} target="_blank" rel="noopener">{o.title}</a>
+                  <span class="kt-original-meta">{originalMeta(o)}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
         )}
         {trick.rightsNote && <p class="kt-small">{trick.rightsNote}</p>}
       </footer>
@@ -372,6 +397,12 @@ const related = trick.relatedTricks ?? []
   .kt-source dt { color: #777; }
   .kt-source dd { margin: 0; overflow-wrap: anywhere; }
   .kt-small { font-family: var(--font-ui); font-size: 0.82rem; color: #777; margin-bottom: 0.5rem; }
+  .kt-originals { font-family: var(--font-ui); font-size: 0.94rem; margin: 0.25rem 0 1rem; }
+  .kt-originals h3 { font-size: 0.94rem; font-weight: 600; margin-bottom: 0.4rem; }
+  .kt-originals ul { list-style: none; padding: 0; margin: 0; }
+  .kt-originals li { margin-bottom: 0.35rem; }
+  .kt-originals a { color: var(--burgundy); font-weight: 600; }
+  .kt-original-meta { color: #777; margin-left: 0.4rem; }
 
   .kt-in-kits { font-family: var(--font-ui); font-size: 0.9rem; color: #666; margin-top: 1.5rem; }
   .kt-in-kits a { color: var(--burgundy); }

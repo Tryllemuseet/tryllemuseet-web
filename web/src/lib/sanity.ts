@@ -3319,6 +3319,18 @@ export interface KitTrickCard {
   coverImage?:    SanityImageRef
 }
 
+/** An original instruction sheet (kitOriginal) cleared for the closed area. */
+export interface KitOriginalLink {
+  _id:         string
+  title:       string
+  publisher?:  string
+  year?:       number
+  covers?:     string
+  languages?:  string[]
+  fileUrl:     string
+  fileSize?:   number
+}
+
 export interface KitTrick extends KitTrickCard {
   notice?:        string
   noticeLabel?:   string
@@ -3328,6 +3340,8 @@ export interface KitTrick extends KitTrickCard {
   sourceText?:    PortableTextBlock[]
   sourceFacts?:   { _key: string; label: string; value: string }[]
   rightsNote?:    string
+  /** Only originals with access "closed" or "public"; archive-only ones are never fetched. */
+  originals?:     KitOriginalLink[]
   /** IDs of active kits that include this trick — decides who may see it. */
   kitIds:         string[]
 }
@@ -3375,6 +3389,11 @@ const KIT_FIGURE = `{ _key, image ${KIT_IMAGE}, caption, markers[]{ _key, label,
 // Drops hidden tricks and any reference to a non-private ID.
 const KIT_TRICK_REF_FILTER = `string::startsWith(_ref, "lukket.") && @->_type == "kitTrick" && @->isVisible != false && defined(@->slug.current)`
 
+// Originals (kitOriginal) a trick page may link to. The access check is part
+// of the query, so an archive-only PDF's URL never reaches the page. Applied
+// before `->` for the same reason as KIT_TRICK_REF_FILTER.
+const KIT_ORIGINAL_REF_FILTER = `string::startsWith(_ref, "lukket.") && @->_type == "kitOriginal" && @->isVisible != false && @->access in ["closed", "public"] && defined(@->file.asset)`
+
 // Card-level projection of a trick.
 const KIT_TRICK_CARD = `_id, title, "slug": slug.current, originalTitle, lead, coverImage ${KIT_IMAGE}`
 
@@ -3414,6 +3433,10 @@ export async function getKitTrickBySlug(client: SanityClientLike, slug: string):
       sourceText[] { ${KIT_RICH_TEXT} },
       sourceFacts[] { _key, label, value },
       rightsNote,
+      "originals": originals[${KIT_ORIGINAL_REF_FILTER}]->{
+        _id, title, publisher, year, covers, languages,
+        "fileUrl": file.asset->url, "fileSize": file.asset->size
+      },
       "kitIds": *[${KIT_FILTER} && ^._id in tricks[]._ref]._id
     }
   `, { slug })

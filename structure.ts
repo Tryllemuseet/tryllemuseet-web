@@ -52,6 +52,8 @@ export const privateStructure: StructureResolver = (S) =>
     .items([
       privateListItem(S, 'kitCollection', 'Tryllesett', 'Nytt tryllesett'),
       privateListItem(S, 'kitTrick', 'Tryllebeskrivelser', 'Ny tryllebeskrivelse'),
+      S.divider(),
+      privateListItem(S, 'kitOriginal', 'Originalbeskrivelser (arkiv)', 'Ny originalbeskrivelse'),
     ])
 
 export const structure: StructureResolver = (S) =>
