@@ -12,17 +12,17 @@
  *
  *   1. Copy (default). Idempotent: re-running replaces the target documents
  *      with the source's current versions. Assets are re-uploaded to the
- *      target; Sanity derives asset IDs from the file contents, so references
- *      stay valid (the script remaps them if an ID ever differs).
+ *      target, where they can get a different ID than in the source (in the
+ *      2026-10 move, 56 of 57 did); the script remaps the references.
  *
  *        SOURCE_DATASET=production TARGET_DATASET=lukket \
  *          node scripts/move-closed-content-to-private-dataset.mjs [--dry-run]
  *
  *   2. Delete from source (--delete-source). Only after the site and Studio
  *      read from the target. Refuses unless every source document exists in
- *      the target with identical content (so no edit made since the copy is
- *      lost), then deletes the documents and any asset no longer referenced
- *      in the source.
+ *      the target with identical content, apart from consistently remapped
+ *      asset IDs (so no edit made since the copy is lost), then deletes the
+ *      documents and any asset no longer referenced in the source.
  *
  *        SOURCE_DATASET=production TARGET_DATASET=lukket \
  *          node scripts/move-closed-content-to-private-dataset.mjs --delete-source [--dry-run]
@@ -82,9 +82,36 @@ function remapRefs(value, map) {
   return value
 }
 
-// Document content without system fields, for comparing source and target.
+// Compares a source document with its copy, ignoring system fields. Asset
+// IDs may differ (an upload can get a new ID in the target), so asset refs
+// only have to map consistently: every occurrence of a source ID must point
+// to the same target ID. `map` collects that mapping across documents.
 const SYSTEM_FIELDS = new Set(['_rev', '_createdAt', '_updatedAt'])
-const content = doc => JSON.stringify(doc, (k, v) => (SYSTEM_FIELDS.has(k) ? undefined : v))
+const isAssetRef = v => typeof v === 'string' && /^(image|file)-/.test(v)
+function sameContent(a, b, map, path = '') {
+  if (Array.isArray(a) || Array.isArray(b)) {
+    if (!Array.isArray(a) || !Array.isArray(b) || a.length !== b.length) return `${path}: array differs`
+    for (let i = 0; i < a.length; i++) {
+      const diff = sameContent(a[i], b[i], map, `${path}[${i}]`)
+      if (diff) return diff
+    }
+    return null
+  }
+  if (a && b && typeof a === 'object' && typeof b === 'object') {
+    const keys = new Set([...Object.keys(a), ...Object.keys(b)].filter(k => !(path === '' && SYSTEM_FIELDS.has(k))))
+    for (const k of keys) {
+      if (k === '_ref' && isAssetRef(a[k]) && isAssetRef(b[k])) {
+        if ((map.get(a[k]) ?? b[k]) !== b[k]) return `${path}._ref: ${a[k]} maps to both ${map.get(a[k])} and ${b[k]}`
+        map.set(a[k], b[k])
+        continue
+      }
+      const diff = sameContent(a[k], b[k], map, `${path}.${k}`)
+      if (diff) return diff
+    }
+    return null
+  }
+  return a === b ? null : `${path}: ${JSON.stringify(a)} ≠ ${JSON.stringify(b)}`
+}
 
 async function copy() {
   const docs = await src.fetch(DOC_QUERY, { types: TYPES })
@@ -96,8 +123,11 @@ async function copy() {
   for (const ref of refs) {
     const asset = await src.getDocument(ref)
     if (!asset?.url) throw new Error(`Asset ${ref} not found in ${source}`)
-    if (await dst.getDocument(ref)) continue // already copied
-    if (dryRun) { console.log(`  [dry-run] would copy asset ${ref}`); continue }
+    if (await dst.getDocument(ref)) continue // already in the target under the same ID
+    // Otherwise upload. Sanity de-duplicates by content, so re-running the
+    // copy reuses an earlier upload (possibly under a different ID) instead
+    // of creating a duplicate.
+    if (dryRun) { console.log(`  [dry-run] would upload (or reuse) asset ${ref}`); continue }
     const res = await fetch(asset.url)
     if (!res.ok) throw new Error(`Download failed for ${ref}: HTTP ${res.status}`)
     const uploaded = await dst.assets.upload(
@@ -135,10 +165,16 @@ async function removeFromSource() {
   console.log(`Delete from ${source}${dryRun ? ' (dry run)' : ''}: ${docs.length} documents`)
 
   // Same content in the target, or stop: something was edited after the copy.
+  const assetMap = new Map()
   for (const doc of docs) {
     const copy = await dst.getDocument(doc._id)
     if (!copy) throw new Error(`${doc._id} is missing in ${target} — run the copy step first.`)
-    if (content(copy) !== content(doc)) throw new Error(`${doc._id} differs between ${source} and ${target} — re-run the copy step first.`)
+    const diff = sameContent(doc, copy, assetMap)
+    if (diff) throw new Error(`${doc._id} differs between ${source} and ${target} (${diff}) — re-run the copy step first.`)
+  }
+  // Every mapped asset must actually exist in the target.
+  for (const [from, to] of assetMap) {
+    if (!(await dst.getDocument(to))) throw new Error(`Asset ${to} (copy of ${from}) is missing in ${target}.`)
   }
   console.log(`  ✓ all ${docs.length} documents are identical in ${target}`)
 
