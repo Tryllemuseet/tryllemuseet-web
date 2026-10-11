@@ -147,6 +147,7 @@ export const structure: StructureResolver = (S) =>
               S.documentTypeListItem('historiskeKlippNb').title('Historisk avisartikkel'),
               S.documentTypeListItem('worldRecordTrick').title('Verdensrekord-triks'),
               S.documentTypeListItem('competitionResult').title('Konkurranseresultat'),
+              S.documentTypeListItem('magicEffect').title('Trylleeffekt'),
               S.documentTypeListItem('book').title('Bok'),
               S.documentTypeListItem('source').title('Kilde'),
             ]),

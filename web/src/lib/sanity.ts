@@ -1536,6 +1536,7 @@ export interface SiteConfig {
   youtube?:          string
   seoDescription:    string
   laerEtTriksActive: boolean
+  trylleeffekterActive: boolean
 }
 
 // Kun e-post og adresse — til personvernsiden
@@ -1558,7 +1559,7 @@ export async function getSiteConfig(): Promise<SiteConfig> {
         }
       },
       facebook, instagram, youtube,
-      seoDescription, laerEtTriksActive
+      seoDescription, laerEtTriksActive, trylleeffekterActive
     }
   `)
   const base = config ?? {
@@ -1576,6 +1577,7 @@ export async function getSiteConfig(): Promise<SiteConfig> {
     instagram:         'https://www.instagram.com/tryllemuseet',
     seoDescription:    'Norges minste, merkeligste og mest magiske museum. Besøk oss på Årvoll gård i Oslo — søndager 12–15. Gratis inngang.',
     laerEtTriksActive: false,
+    trylleeffekterActive: false,
   }
   // donationLabel/donationText er nye felter (2026-08) — dekk eksisterende
   // siteConfig-dokumenter som ennå ikke har fylt dem inn i Studio.
@@ -1584,6 +1586,7 @@ export async function getSiteConfig(): Promise<SiteConfig> {
     donationLabel: config?.donationLabel ?? 'Gi en gave →',
     donationText:  config?.donationText?.length ? config.donationText : [ptParagraph('Museet drives i stor grad av frivillige. En gave bidrar til å bevare samlingen, utvikle utstillingene og holde museet gratis og tilgjengelig for alle.', 'donation-fallback')],
     laerEtTriksActive: config?.laerEtTriksActive === true,
+    trylleeffekterActive: config?.trylleeffekterActive === true,
   }
 }
 
@@ -3438,6 +3441,76 @@ export async function getKitTrickBySlug(client: SanityClientLike, slug: string):
         "fileUrl": file.asset->url, "fileSize": file.asset->size
       },
       "kitIds": *[${KIT_FILTER} && ^._id in tricks[]._ref]._id
+    }
+  `, { slug })
+}
+
+// ── Trylleeffekter (/tryllehistorie/trylleeffekter) ──────────
+//
+// Public catalogue of magic effects (magicEffect). Never the method — see
+// docs/trylleeffekter-concept.md. Launch-gated by siteConfig.trylleeffekterActive
+// (noindex while off; the pages still build so they can be tested).
+
+type MagicEffectImage = { asset: { _ref: string; url: string }; alt?: string; caption?: string }
+
+export interface MagicEffectCard {
+  _id:          string
+  title:        string
+  slug:         string
+  summary?:     string
+  year?:        number
+  yearNote?:    string
+  countries?:   string[]
+  categories?:  string[]
+  image?:       MagicEffectImage
+}
+
+export interface MagicEffect extends MagicEffectCard {
+  alternativeNames?: string[]
+  effect?:      PortableTextBlock[]
+  history?:     PortableTextBlock[]
+  creators?:    { name: string; slug?: string }[]
+  creatorNote?: string
+  producers?:   { _key: string; name: string; years?: string; biography?: { name: string; slug?: string } }[]
+  images?:      (MagicEffectImage & { _key: string })[]
+  artifacts?:   { title: string; slug: string; image?: MagicEffectImage }[]
+  books?:       { title: string; year?: number; authors?: (string | null)[] }[]
+  sources?:     SourceRef[]
+}
+
+const MAGIC_EFFECT_FILTER = `_type == "magicEffect" && isVisible != false && defined(slug.current)`
+const MAGIC_EFFECT_CARD = `
+  _id, title, "slug": slug.current, summary, year, yearNote, countries, categories,
+  "image": images[0]{ asset->{ _ref, url }, alt, caption }
+`
+const MAGIC_EFFECT_RICH_TEXT = `
+  ...,
+  _type == "image" => { ..., asset->{ _ref, url } },
+  markDefs[]{ ..., "reference": reference->{ "slug": slug.current } }
+`
+
+export async function getAllMagicEffects(): Promise<MagicEffectCard[]> {
+  return sanityClient.fetch(`
+    *[${MAGIC_EFFECT_FILTER}] | order(coalesce(year, 9999) asc, title asc) { ${MAGIC_EFFECT_CARD} }
+  `)
+}
+
+// Linked docs are fetched with sub-queries so they can be sorted and hidden
+// ones (isVisible == false) dropped in one step.
+export async function getMagicEffectBySlug(slug: string): Promise<MagicEffect | null> {
+  return sanityClient.fetch(`
+    *[${MAGIC_EFFECT_FILTER} && slug.current == $slug][0] {
+      ${MAGIC_EFFECT_CARD},
+      alternativeNames,
+      effect[]{ ${MAGIC_EFFECT_RICH_TEXT} },
+      history[]{ ${MAGIC_EFFECT_RICH_TEXT} },
+      "creators": *[_type == "biography" && _id in ^.creators[]._ref && isVisible != false]{ "name": coalesce(artistName, name), "slug": slug.current },
+      creatorNote,
+      producers[]{ _key, name, years, "biography": select(biography->isVisible != false => biography->{ "name": coalesce(artistName, name), "slug": slug.current }) },
+      images[]{ _key, asset->{ _ref, url }, alt, caption },
+      "artifacts": *[_type == "artifact" && _id in ^.artifacts[]._ref && isVisible != false && defined(slug.current)] | order(title asc) { title, "slug": slug.current, "image": mainImage{ asset->{ _ref, url }, alt } },
+      "books": *[_type == "book" && _id in ^.books[]._ref && isVisible != false] | order(year asc) { title, year, "authors": authors[]{ "name": coalesce(personRef->name, nameText) }.name },
+      sources[] { label, url, sourceRef-> { title, author, type, year, url } }
     }
   `, { slug })
 }

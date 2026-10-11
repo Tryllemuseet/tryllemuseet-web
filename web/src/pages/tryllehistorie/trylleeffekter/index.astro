@@ -1,0 +1,161 @@
+---
+// src/pages/tryllehistorie/trylleeffekter/index.astro
+//
+// Trylleeffekter: public catalogue of magic effects, Norwegian-produced ones
+// first (docs/trylleeffekter-concept.md). Hidden behind
+// siteConfig.trylleeffekterActive: while off the page still builds (so it can
+// be tested by URL) but gets noindex and isn't linked from anywhere.
+import BaseLayout from '../../../layouts/BaseLayout.astro'
+import PageHero from '../../../components/PageHero.astro'
+import { getAllMagicEffects, getSiteConfig, urlFor } from '../../../lib/sanity'
+
+const [effects, config] = await Promise.all([getAllMagicEffects(), getSiteConfig()])
+
+const CATEGORY_LABELS: Record<string, string> = {
+  kort: 'Kort', mynter: 'Mynter', tau: 'Tau', ringer: 'Ringer', baller: 'Baller og kuler',
+  papir: 'Papir og sedler', mentalisme: 'Mentalisme', forsvinning: 'Forsvinning og forvandling',
+  illusjon: 'Illusjon', barnetriks: 'Barnetriks', annet: 'Annet',
+}
+
+// Only offer category chips that at least one effect uses.
+const usedCategories = Object.keys(CATEGORY_LABELS).filter(c => effects.some(e => e.categories?.includes(c)))
+const hasNorwegian = effects.some(e => e.countries?.includes('no'))
+---
+
+<BaseLayout
+  title="Trylleeffekter — Tryllemuseet"
+  description="Trylleeffekter og triks i Tryllemuseets oversikt, med norskproduserte effekter først: hva publikum ser, hvem som laget dem og når."
+  noindex={!config.trylleeffekterActive}
+>
+
+  <nav class="breadcrumb container">
+    <a href="/tryllehistorie">Tryllehistorie</a>
+    <span>›</span>
+    <span aria-current="page">Trylleeffekter</span>
+  </nav>
+
+  <PageHero
+    label="Arkivet"
+    title="Trylleeffekter"
+    intro="Effekter og triks i museets oversikt, med vekt på det som er laget i Norge. Her står hva publikum ser, hvem som laget effekten og når, men aldri hvordan den gjøres."
+    theme="light"
+    compact
+  />
+
+  <section class="te-list section-pad">
+    <div class="container">
+
+      {effects.length === 0 ? (
+        <p class="te-empty">Vi jobber med å legge inn trylleeffekter her. Kom tilbake litt senere!</p>
+      ) : (
+        <>
+          <div class="te-filters" role="group" aria-label="Filtrer trylleeffekter">
+            {hasNorwegian && (
+              <label class="te-toggle">
+                <input type="checkbox" data-te-norsk /> Bare norskproduserte
+              </label>
+            )}
+            {usedCategories.length > 1 && (
+              <div class="te-chips">
+                <button type="button" class="te-chip is-active" data-te-cat="">Alle</button>
+                {usedCategories.map(c => (
+                  <button type="button" class="te-chip" data-te-cat={c}>{CATEGORY_LABELS[c]}</button>
+                ))}
+              </div>
+            )}
+          </div>
+
+          <ul class="te-grid">
+            {effects.map(e => (
+              <li
+                class="te-item"
+                data-norsk={e.countries?.includes('no') ? 'ja' : 'nei'}
+                data-cats={(e.categories ?? []).join(' ')}
+              >
+                <a class="te-card" href={`/tryllehistorie/trylleeffekter/${e.slug}`}>
+                  {e.image?.asset ? (
+                    <img
+                      class="te-img"
+                      src={urlFor(e.image).width(480).height(320).fit('crop').format('webp').url()}
+                      alt=""
+                      loading="lazy"
+                    />
+                  ) : (
+                    <span class="te-img te-img--empty" aria-hidden="true">✨</span>
+                  )}
+                  <span class="te-body">
+                    <span class="te-title">{e.title}</span>
+                    <span class="te-meta">
+                      {[e.yearNote ?? e.year, e.countries?.includes('no') ? 'Norsk' : null].filter(Boolean).join(' · ')}
+                    </span>
+                    {e.summary && <span class="te-summary">{e.summary}</span>}
+                  </span>
+                </a>
+              </li>
+            ))}
+          </ul>
+          <p class="te-none" hidden>Ingen trylleeffekter passer filteret.</p>
+        </>
+      )}
+
+    </div>
+  </section>
+
+</BaseLayout>
+
+<script>
+  // Client-side filter: the list is small, so no search or paging.
+  const norsk = document.querySelector<HTMLInputElement>('[data-te-norsk]')
+  const chips = Array.from(document.querySelectorAll<HTMLButtonElement>('[data-te-cat]'))
+  const items = Array.from(document.querySelectorAll<HTMLElement>('.te-item'))
+  const none = document.querySelector<HTMLElement>('.te-none')
+  let category = ''
+
+  function apply() {
+    let shown = 0
+    for (const item of items) {
+      const ok = (!norsk?.checked || item.dataset.norsk === 'ja')
+        && (!category || (item.dataset.cats ?? '').split(' ').includes(category))
+      item.hidden = !ok
+      if (ok) shown++
+    }
+    if (none) none.hidden = shown > 0
+  }
+
+  norsk?.addEventListener('change', apply)
+  for (const chip of chips) {
+    chip.addEventListener('click', () => {
+      category = chip.dataset.teCat ?? ''
+      chips.forEach(c => c.classList.toggle('is-active', c === chip))
+      apply()
+    })
+  }
+</script>
+
+<style>
+  .te-empty, .te-none { font-family: var(--font-ui); color: var(--grey); }
+  .te-filters { display: flex; flex-wrap: wrap; align-items: center; gap: 1rem 1.5rem; margin-bottom: 2rem; font-family: var(--font-ui); }
+  .te-toggle { display: inline-flex; align-items: center; gap: 0.5rem; font-weight: 600; cursor: pointer; }
+  .te-chips { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+  .te-chip {
+    font: inherit; font-size: var(--text-sm); padding: 0.35rem 0.9rem; cursor: pointer;
+    border: 1px solid var(--grey-light); border-radius: 999px; background: #fff; color: var(--ink-mid);
+  }
+  .te-chip.is-active { background: var(--burgundy); border-color: var(--burgundy); color: #fff; }
+  .te-chip:focus-visible, .te-toggle input:focus-visible { outline: var(--focus-ring); outline-offset: 2px; }
+
+  .te-grid { list-style: none; padding: 0; margin: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr)); gap: 1.5rem; }
+  .te-item[hidden] { display: none; }
+  .te-card {
+    display: flex; flex-direction: column; height: 100%; text-decoration: none; color: inherit;
+    background: #fff; border: 1px solid var(--cream-dark); border-radius: var(--radius-md); overflow: hidden;
+    transition: box-shadow var(--transition), border-color var(--transition);
+  }
+  .te-card:hover { box-shadow: var(--shadow); border-color: var(--gold); }
+  .te-img { display: block; width: 100%; aspect-ratio: 3 / 2; object-fit: cover; background: var(--cream); }
+  .te-img--empty { display: grid; place-items: center; font-size: 2.5rem; color: var(--gold); }
+  .te-body { display: flex; flex-direction: column; gap: 0.3rem; padding: 1rem 1.1rem 1.2rem; }
+  .te-title { font-family: var(--font-display); font-size: 1.15rem; color: var(--burgundy); }
+  .te-meta { font-family: var(--font-ui); font-size: var(--text-sm); color: var(--grey); }
+  .te-summary { font-size: 0.95rem; line-height: 1.5; color: var(--ink-mid); }
+</style>

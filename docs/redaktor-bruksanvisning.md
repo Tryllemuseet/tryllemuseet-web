@@ -25,6 +25,7 @@ Denne bruksanvisningen dekker de oppgavene en redaktør utfører til daglig.
 9. [Bokregisteret](#9-bokregisteret)
    - [9b. Verdens mest… og Norden i FISM](#9b-verdens-mest-og-norden-i-fism)
    - [9c. Kilderegisteret](#9c-kilderegisteret)
+   - [9d. Trylleeffekter](#9d-trylleeffekter)
 10. [Artefakter](#10-artefakter)
 11. [Partnere og sponsorer](#11-partnere-og-sponsorer)
 12. [Infoskjerm](#12-infoskjerm)
@@ -742,6 +743,39 @@ En gjenbrukbar liste over kilder. I stedet for å skrive den samme kilden om og 
 | Interne notater | Nei | Vises ikke på nettsiden |
 
 > **Merk:** Kilder-feltet på **Hvem er hvem**-biografier er unntaket — det er alltid en direkte liste av kilde-koblinger til denne registertypen, ikke fritekst med et valgfritt kobling-alternativ. Se [6. Hvem er hvem](#6-hvem-er-hvem--biografiregisteret).
+
+---
+
+## 9d. Trylleeffekter
+
+**Meny:** Arkivet → Trylleeffekt
+**På nettsiden:** `tryllemuseet.no/tryllehistorie/trylleeffekter` — **skjult til lansering** (se under)
+
+Museets oversikt over trylleeffekter og triks, med vekt på det som er laget i Norge: hva publikum ser, hvem som laget effekten, når og hvor, og hvilke gjenstander, bøker og kilder som hører til.
+
+> **Viktig:** Siden er åpen for alle. Skriv **aldri** hvordan trikset gjøres, og bruk ikke bilder som avslører det. Metoden hører hjemme i Bak teppet (tryllebeskrivelser).
+
+| Felt | Merknad |
+|---|---|
+| Navn, Andre navn | Det norske navnet, og f.eks. originalnavnet («Cups and Balls») |
+| Kort beskrivelse | Én–to setninger til kortet i oversikten |
+| Effekten — hva publikum ser | Bare det publikum opplever |
+| Historikk | Opphav, varianter, kjente utøvere |
+| Kategorier | Kort, mynter, tau … — brukes til filteret på oversiktssiden |
+| Skaper / oppfinner | Personer i Hvem er hvem. «Skaper (fritekst)» når personen ikke finnes der, eller «Tradisjonell» |
+| Produsent / forhandler | Hvem som laget eller solgte effekten, med periode |
+| År / Tidfesting | Året brukes til sortering; fritekst («ca. 1950-tallet») vises i stedet når den er fylt ut |
+| Land | Kryss av **Norge** for norskproduserte effekter — da vises de under «Bare norskproduserte» |
+| Bilder | Rekvisitter, reklame, emballasje. Første bilde brukes på kortet |
+| Gjenstander, Litteratur, Kilder | Koblinger til samlingen, biblioteket og kilderegisteret |
+| Internt notat | Vises aldri, f.eks. hvor metoden er beskrevet i Bak teppet |
+
+### Lansering
+
+Sidene er skjult til det er nok innhold. Mens bryteren er av, kan du se dem på den fulle adressen (f.eks. på test.tryllemuseet.no), men de lenkes ikke fra noe sted og vises ikke i søkemotorer. Når du vil lansere:
+
+1. Slå på **«Trylleeffekter» er aktiv** i **Globale innstillinger**.
+2. Legg til «Trylleeffekter» (`/tryllehistorie/trylleeffekter`) under Tryllehistorie i **Sitenavigasjon**.
 
 ---
 
