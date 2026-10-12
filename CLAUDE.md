@@ -19,7 +19,7 @@ The schema defines 35 registered content types in `/schemaTypes` (see `schemaTyp
 **Page Types** (singletons):
 - `homepage.ts` — Hero, exhibitions focus, sections, partnerships
 - `barnPage.ts` — Children's section landing page
-- `omOssPage.ts` — "About Us" page with museum history
+- `omOssPage.ts` — "About Us" page with museum history. Each `styret.medlemmer` entry (board members and daglig leder) has optional `bilde`, `kortTekst`, `biografiRef` (→ `biography`; card links to Hvem er hvem and falls back to its `mainImage`) and external `lenke` (used only without `biografiRef`)
 - `besokPage.ts` — Visit page (opening hours, prices, transport)
 - `kontaktPage.ts` — Contact page (form URL, FAQ)
 - `tryllehistoriePage.ts` — Magic history landing page (sections, timeline)

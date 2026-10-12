@@ -689,13 +689,26 @@ export interface BarnPage {
 }
 
 // ── Typer: Om oss ────────────────────────────────────────────────
+export interface StyreMedlem {
+  navn: string
+  rolle: string
+  kortTekst?: string
+  lenke?: string
+  bilde?: { asset: { _ref: string; url: string }; alt?: string; hotspot?: any; crop?: any }
+  // Null when no biography is linked, or the linked one is hidden.
+  biografi?: {
+    slug: string
+    mainImage?: { asset: { _ref: string; url: string }; alt?: string; hotspot?: any; crop?: any }
+  } | null
+}
+
 export interface OmOssPage {
   hero: { label: string; heading: string; headingEm: string; ingress: string }
   omMuseet: { historieHeading: string; historieTekst: any[]; formalHeading: string; formalTekst: any[] }
   faktaboks: { stiftet: string; organisasjonsform: string; tilknytning: string; adresse: string; orgnr: string }
   styret: {
     heading: string; ingress: string
-    medlemmer: { navn: string; rolle: string }[]
+    medlemmer: StyreMedlem[]
   }
   medlemskap: {
     heading: string; ingress: string; motivasjonsTekst: any[]
@@ -950,7 +963,17 @@ export async function getOmOssPage(): Promise<OmOssPage | null> {
         }
       },
       faktaboks { stiftet, organisasjonsform, tilknytning, adresse, orgnr },
-      styret { heading, ingress, medlemmer[] { navn, rolle } },
+      styret {
+        heading, ingress,
+        medlemmer[] {
+          navn, rolle, kortTekst, lenke,
+          bilde { asset->{ _ref, url }, alt, hotspot, crop },
+          "biografi": select(biografiRef->isVisible != false => biografiRef->{
+            "slug": slug.current,
+            mainImage { asset->{ _ref, url }, alt, hotspot, crop }
+          })
+        }
+      },
       medlemskap {
         heading, ingress,
         motivasjonsTekst[]{
