@@ -670,7 +670,8 @@ export interface CompetitionResult {
   category?: string
   placement: string
   source?: string
-  // Set when the result belongs to a table on /tryllehistorie/tabeller
+  // Set when the result belongs to a table (historicalSection); such results
+  // are shown in that table's tab instead of the FISM/«Andre» tabs
   section?: string
 }
 
@@ -931,7 +932,7 @@ export async function getAllWorldRecordTricks(): Promise<WorldRecordTrick[]> {
 
 // ── Spørringer: Konkurranseresultater ─────────────────────────────
 
-// Alle resultater, nyeste år først — til Norden-i-FISM-siden
+// Alle resultater, nyeste år først — til Konkurransehistorie-siden
 export async function getAllCompetitionResults(): Promise<CompetitionResult[]> {
   return sanityClient.fetch(`
     *[_type == "competitionResult" && isVisible != false] | order(year desc) {
@@ -1677,7 +1678,8 @@ const DEFAULT_MAIN_AREAS: NavMainArea[] = [
       { label: 'Got Talent',            link: '/tryllehistorie/got-talent',           isVisible: true },
       { label: 'Penn & Teller: Fool Us', link: '/tryllehistorie/fool-us',             isVisible: true },
       { label: 'Verdens mest…',         link: '/tryllehistorie/verdens-mest',         isVisible: true },
-      { label: 'Norden i FISM',         link: '/tryllehistorie/norden-i-fism',        isVisible: true },
+      { label: 'Konkurransehistorie',   link: '/tryllehistorie/konkurransehistorie',  isVisible: true },
+      { label: 'Foreningshistorie',     link: '/tryllehistorie/foreningshistorie',    isVisible: true },
       { label: 'Bibliotek',             link: '/ressurser/bibliotek',                 isVisible: true },
       { label: 'Ressurser',             link: '/ressurser',                           isVisible: true },
     ],
@@ -3064,8 +3066,8 @@ export interface MagicOrganization {
   articles?:       MagicOrgArticle[]
   gallery?:        { asset: { _ref: string; url: string }; alt?: string; caption?: string; year?: number }[]
   sources?:        SourceRef[]
-  // Tables on /tryllehistorie/tabeller tied to this organization (presidents, honours …)
-  historicalSections?: { title: string; slug: string }[]
+  // Tables (presidents, honours, NM …) tied to this organization; link with historicalSectionHref()
+  historicalSections?: { title: string; slug: string; tab?: string }[]
 }
 
 // ── Spørringer: MagicOrganization ────────────────────────────────
@@ -3119,7 +3121,7 @@ export async function getMagicOrganizationBySlug(slug: string): Promise<MagicOrg
       "historicalSections": *[_type == "historicalSection" && isVisible != false
           && relatedOrganization._ref == ^._id
           && count(*[_type in ["organizationRole", "competitionResult"] && isVisible != false && references(^._id)]) > 0]
-        | order(order asc) { title, "slug": slug.current }
+        | order(order asc) { title, "slug": slug.current, tab }
     }
   `, { slug })
 }
@@ -3135,8 +3137,41 @@ export async function getMagicOrganizationPaths() {
 
 // ── Historiske tabeller («Mystikk som underholdning») ────────────
 // One historicalSection per table in the book; organizationRole and
-// competitionResult rows point at their section. Rendered by
-// /tryllehistorie/tabeller in the book's order.
+// competitionResult rows point at their section. Each section's `tab` places
+// it on one of two tabbed pages, Konkurransehistorie or Foreningshistorie
+// (the tab values must match the options in schemaTypes/historicalSection.ts).
+
+export const KONKURRANSE_PATH = '/tryllehistorie/konkurransehistorie'
+export const FORENING_PATH = '/tryllehistorie/foreningshistorie'
+
+// 'fism' and 'andre' are filled from competitionResult docs without a section.
+export const KONKURRANSE_TABS = [
+  { id: 'fism',       label: 'FISM' },
+  { id: 'nordisk',    label: 'Nordisk mesterskap' },
+  { id: 'kongresser', label: 'Nordiske kongresser' },
+  { id: 'nm',         label: 'NM' },
+  { id: 'junior',     label: 'Junior-NM' },
+  { id: 'andre',      label: 'Andre' },
+] as const
+
+export const FORENING_TABS = [
+  { id: 'ledere',           label: 'Ledere' },
+  { id: 'aeresbevisninger', label: 'Æresbevisninger' },
+  { id: 'priser',           label: 'Priser' },
+  { id: 'besok',            label: 'Utenlandske besøk' },
+  { id: 'kilder',           label: 'Kilder' },
+] as const
+
+export type HistoryTabId =
+  | (typeof KONKURRANSE_TABS)[number]['id']
+  | (typeof FORENING_TABS)[number]['id']
+
+// Link to one table: the page its tab lives on, anchored at the section (the
+// page's tab script opens the right tab for a section anchor).
+export function historicalSectionHref(section: { slug: string; tab?: string }): string {
+  const onKonkurranse = KONKURRANSE_TABS.some(t => t.id === section.tab)
+  return `${onKonkurranse ? KONKURRANSE_PATH : FORENING_PATH}#${section.slug}`
+}
 
 export interface HistoricalTableRole {
   _id:        string
@@ -3165,6 +3200,7 @@ export interface HistoricalSection {
   _id:          string
   title:        string
   slug:         string
+  tab?:         HistoryTabId
   order?:       number
   introText?:   PortableTextBlock[]
   footnote?:    string
@@ -3178,7 +3214,7 @@ export interface HistoricalSection {
 export async function getHistoricalSections(): Promise<HistoricalSection[]> {
   const sections: HistoricalSection[] = await sanityClient.fetch(`
     *[_type == "historicalSection" && isVisible != false] | order(order asc) {
-      _id, title, "slug": slug.current, order, footnote,
+      _id, title, "slug": slug.current, tab, order, footnote,
       introText[]{
         ...,
         markDefs[]{
@@ -3190,13 +3226,13 @@ export async function getHistoricalSections(): Promise<HistoricalSection[]> {
       "source": source->{ title, author, year },
       "totalRows": count(*[_type in ["organizationRole", "competitionResult"] && section._ref == ^._id]),
       "roles": *[_type == "organizationRole" && isVisible != false && section._ref == ^._id]
-        | order(yearFrom asc, _createdAt asc) {
+        | order(coalesce(tableOrder, 100000) asc, yearFrom asc, _createdAt asc) {
           _id, roleTitle, category, yearFrom, yearTo, country, note,
           "name": coalesce(personNameFallback, person->name),
           "person": person->{ name, "slug": slug.current }
         },
       "results": *[_type == "competitionResult" && isVisible != false && section._ref == ^._id]
-        | order(year asc, _createdAt asc) {
+        | order(coalesce(tableOrder, 100000) asc, year asc, _createdAt asc) {
           _id, personName, country, year, location, category, placement,
           "personRef": personRef->{ name, "slug": slug.current }
         }

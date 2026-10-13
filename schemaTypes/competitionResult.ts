@@ -100,7 +100,14 @@ export const competitionResult = defineType({
       title: 'Seksjon (tabell)',
       type: 'reference',
       to: [{ type: 'historicalSection' }],
-      description: 'Sett for resultater som hører til en tabell på /tryllehistorie/tabeller (f.eks. «Norgesmestere»). Slike resultater vises der i stedet for i «Andre»-tabellen på Norden i FISM.',
+      description: 'Sett for resultater som hører til en tabell (f.eks. «Norgesmestere»). Uten seksjon vises FISM-resultater i FISM-fanen og alt annet i «Andre»-fanen på Konkurransehistorie.',
+    }),
+
+    defineField({
+      name: 'tableOrder',
+      title: 'Rekkefølge i tabellen',
+      type: 'number',
+      description: 'Plassering i tabellen (Seksjon), lavest først. Tom = sortert etter år etter de nummererte.',
     }),
 
     // ── 3. KILDE ─────────────────────────────────────────────────

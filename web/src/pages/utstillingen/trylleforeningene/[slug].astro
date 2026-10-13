@@ -6,6 +6,7 @@ import AnimateIn from '../../../components/AnimateIn.astro'
 import {
   getMagicOrganizationBySlug,
   getMagicOrganizationPaths,
+  historicalSectionHref,
   portableTextToHtml,
   portableTextToPlainText,
   urlFor,
@@ -210,7 +211,7 @@ function yearRange(): string {
       <h2 class="section-heading">Verv, priser og mesterskap</h2>
       <ul class="tables-list">
         {org.historicalSections.map((t) => (
-          <li><a href={`/tryllehistorie/tabeller#${t.slug}`}>{t.title}</a></li>
+          <li><a href={historicalSectionHref(t)}>{t.title}</a></li>
         ))}
       </ul>
     </section>

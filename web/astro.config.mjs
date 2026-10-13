@@ -28,6 +28,9 @@ export default defineConfig({
     '/tryllehistorie/hvem-er-hvem': '/tryllehistorie/magiens-hvem-er-hvem',
     // Library moved under /ressurser (2026-07); short URL kept working
     '/bibliotek':                   '/ressurser/bibliotek',
+    // Competition and organisation tables split into two tabbed pages (2026-10)
+    '/tryllehistorie/norden-i-fism': '/tryllehistorie/konkurransehistorie',
+    '/tryllehistorie/tabeller':      '/tryllehistorie/foreningshistorie',
     // Info screen lives as a static file in public/
     '/skjerm':                      '/skjerm.html',
     // Norwegian spelling with "ø" — page route itself uses the ASCII slug
