@@ -28,6 +28,10 @@ export default defineConfig({
     '/tryllehistorie/hvem-er-hvem': '/tryllehistorie/magiens-hvem-er-hvem',
     // Library moved under /ressurser (2026-07); short URL kept working
     '/bibliotek':                   '/ressurser/bibliotek',
+    // Short-lived test URL of the organisation tables (2026-10). /norden-i-fism
+    // is not redirected here: its page redirects itself once
+    // siteConfig.historietabellerActive is on.
+    '/tryllehistorie/tabeller':      '/tryllehistorie/foreningshistorie',
     // Info screen lives as a static file in public/
     '/skjerm':                      '/skjerm.html',
     // Norwegian spelling with "ø" — page route itself uses the ASCII slug

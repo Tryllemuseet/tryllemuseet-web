@@ -1,6 +1,7 @@
 // schemaTypes/historicalSection.ts
-// Sideoverskriftene fra kildematerialet (Formenn/presidenter, Æresmedlemmer,
-// NM-vinnere, osv.)
+// One table from the source material (Formenn/presidenter, Æresmedlemmer,
+// NM-vinnere, …). Rendered on /tryllehistorie/konkurransehistorie or
+// /tryllehistorie/foreningshistorie, in the tab chosen in `tab`.
 
 import { defineType, defineField } from 'sanity'
 import { richBlockContent } from './richBlockContent'
@@ -29,6 +30,27 @@ export const historicalSection = defineType({
       title: 'URL-slug',
       type: 'slug',
       options: { source: 'title' },
+      validation: (Rule) => Rule.required(),
+    }),
+    defineField({
+      name: 'tab',
+      title: 'Fane',
+      type: 'string',
+      description:
+        'Hvilken side og fane tabellen vises i. Rekkefølgen innenfor fanen styres av «Rekkefølge».',
+      options: {
+        list: [
+          { title: 'Konkurransehistorie → Nordisk mesterskap', value: 'nordisk' },
+          { title: 'Konkurransehistorie → Nordiske kongresser', value: 'kongresser' },
+          { title: 'Konkurransehistorie → NM', value: 'nm' },
+          { title: 'Konkurransehistorie → Junior-NM', value: 'junior' },
+          { title: 'Foreningshistorie → Ledere', value: 'ledere' },
+          { title: 'Foreningshistorie → Æresbevisninger', value: 'aeresbevisninger' },
+          { title: 'Foreningshistorie → Priser', value: 'priser' },
+          { title: 'Foreningshistorie → Utenlandske besøk', value: 'besok' },
+          { title: 'Foreningshistorie → Kilder', value: 'kilder' },
+        ],
+      },
       validation: (Rule) => Rule.required(),
     }),
     defineField({

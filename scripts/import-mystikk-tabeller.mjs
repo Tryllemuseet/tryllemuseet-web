@@ -9,8 +9,9 @@
  *     sections with rich text only
  *   - organizationRole docs (verv + æresbevisninger)
  *   - competitionResult docs (NM, junior-NM, Nordic congresses/champions)
- * Every role/result points at its section, which is what
- * /tryllehistorie/tabeller renders.
+ * Every role/result points at its section; each section's `tab` decides where
+ * it is rendered (/tryllehistorie/konkurransehistorie or
+ * /tryllehistorie/foreningshistorie).
  *
  * Everything is created hidden (isVisible: false; roles also needsReview:
  * true), so nothing reaches the website before it is switched on.
@@ -87,6 +88,14 @@ function slugify(s) {
 }
 
 const ref = (_ref) => ({ _type: 'reference', _ref })
+
+// Book order within a table. Several data-file lists can feed one section
+// (MJC presidents + MCN's junior consultant), so offset by the list's position
+// among the lists for that section.
+function tableOrder(list, entry) {
+  const lists = [...data.organizationRoles, ...data.competitionResults].filter(l => l.section === list.section)
+  return lists.indexOf(list) * 1000 + (list.entries.indexOf(entry) + 1) * 10
+}
 const sectionId = (slug) => `histsection-msu-${slug}`
 
 // Data-file blocks ({ style, parts: [{ text, strong?, em? }] }) → Portable Text.
@@ -113,7 +122,7 @@ async function run() {
     "bios": *[_type == "biography" && !(_id in path("drafts.**"))]._id,
     "source": defined(*[_id == $sourceId][0]._id),
     "existingComp": *[_type == "competitionResult" && !(_id in path("drafts.**"))]{
-      _id, year, competition, personName, category, location, "bio": personRef._ref, "section": section._ref
+      _id, year, competition, personName, category, location, tableOrder, "bio": personRef._ref, "section": section._ref
     },
     "mine": *[(_id match "orgrole-*" || _id match "compresult-msu-*" || _id match "histsection-msu-*")
               && !(_id in path("drafts.**"))]{ _id, _createdAt, _updatedAt },
@@ -162,6 +171,7 @@ async function run() {
       title: s.title,
       slug: { _type: 'slug', current: s.slug },
       order: s.order,
+      tab: s.tab,
       source: ref(SOURCE_ID),
     }
     if (intro.length) doc.introText = toPortableText(intro, `${slugify(s.slug).slice(0, 12)}-`)
@@ -183,6 +193,7 @@ async function run() {
         category: list.category,
         roleTitle: e.roleTitle ?? list.roleTitle,
         section: ref(sectionId(list.section)),
+        tableOrder: tableOrder(list, e),
         source: ref(SOURCE_ID),
       }
       if (e.bio) doc.person = ref(e.bio)
@@ -214,6 +225,7 @@ async function run() {
         if (!existing.section) set.section = ref(sectionId(list.section))
         if (!existing.category && category) set.category = category
         if (!existing.location && e.location) set.location = e.location
+        if (existing.tableOrder == null) set.tableOrder = tableOrder(list, e)
         legacyPatches.push({ id: existing._id, set, label: `${e.year} ${e.name}` })
         continue
       }
@@ -227,6 +239,7 @@ async function run() {
         year: e.year,
         placement: e.placement ?? list.placement,
         section: ref(sectionId(list.section)),
+        tableOrder: tableOrder(list, e),
         source: `${SOURCE_LABEL}, s. ${list.page}`,
       }
       if (e.bio) doc.personRef = ref(e.bio)
@@ -252,6 +265,12 @@ async function run() {
     else edited.push(doc._id)
   }
   const legacyToPatch = legacyPatches.filter(p => Object.keys(p.set).length && !drafts.has(p.id))
+  // Fields added to the data file after a doc was created reach edited docs
+  // too, but only where the doc doesn't have them yet.
+  const ADDED_LATER = { historicalSection: ['tab'], organizationRole: ['tableOrder'], competitionResult: ['tableOrder'] }
+  const fillMissing = docs
+    .filter(d => edited.includes(d._id) && ADDED_LATER[d._type] && !drafts.has(d._id))
+    .map(d => ({ id: d._id, setIfMissing: Object.fromEntries(ADDED_LATER[d._type].map(k => [k, d[k]]).filter(([, v]) => v != null)) }))
 
   const count = (arr, type) => arr.filter(d => d._type === type).length
   for (const type of ['historicalSection', 'organizationRole', 'competitionResult']) {
@@ -259,6 +278,7 @@ async function run() {
       `${docs.filter(d => d._type === type && edited.includes(d._id)).length} endret siden opprettelse (røres ikke)`)
   }
   console.log(`Eldre konkurranseresultater som kobles til seksjon: ${legacyToPatch.length} av ${legacyPatches.length}`)
+  if (fillMissing.length) console.log(`Endrede dokumenter som får nye felt der de mangler: ${fillMissing.length}`)
   for (const p of legacyPatches) console.log(`   - ${p.label} → ${p.id} ${Object.keys(p.set).length ? JSON.stringify(Object.keys(p.set)) : '(allerede satt)'}`)
   if (edited.length) {
     console.log('\nEndret siden opprettelse (i Studio eller av en tidligere kjøring) — oppdateres ikke:')
@@ -283,6 +303,7 @@ async function run() {
       ...(d._type === 'organizationRole' && !d.note ? { unset: ['note'] } : {}),
     })),
     ...legacyToPatch.map(p => tx => tx.patch(p.id, { set: p.set })),
+    ...fillMissing.map(p => tx => tx.patch(p.id, { setIfMissing: p.setIfMissing })),
   ]
   for (let i = 0; i < ops.length; i += 50) {
     const tx = client.transaction()

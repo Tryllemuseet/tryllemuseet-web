@@ -1,13 +1,19 @@
 ---
 // src/pages/tryllehistorie/norden-i-fism.astro
 import BaseLayout from '../../layouts/BaseLayout.astro'
-import { getAllCompetitionResults } from '../../lib/sanity'
+import { getAllCompetitionResults, getSiteConfig, KONKURRANSE_PATH } from '../../lib/sanity'
+
+// Superseded by /tryllehistorie/konkurransehistorie once
+// siteConfig.historietabellerActive is on; until then this stays the public
+// page, exactly as before the tables from «Mystikk som underholdning» arrived.
+const config = await getSiteConfig()
+if (config.historietabellerActive) return Astro.redirect(KONKURRANSE_PATH, 301)
 
 const allResults = await getAllCompetitionResults()
 const fismResults = allResults.filter(r => r.competition === 'fism')
-// Results that belong to a table on /tryllehistorie/tabeller (NM, Nordic
-// championships from «Mystikk som underholdning») are shown there instead.
-const otherResults = allResults.filter(r => r.competition !== 'fism' && !r.section)
+// Keep the rows imported for the new tables (compresult-msu-*) off this page
+// while it's the public one; the older hand-entered NM/Nordic rows stay.
+const otherResults = allResults.filter(r => r.competition !== 'fism' && !r._id.startsWith('compresult-msu-'))
 
 const COUNTRY_FLAGS: Record<string, string> = {
   NO: '🇳🇴', SE: '🇸🇪', DK: '🇩🇰', FI: '🇫🇮', IS: '🇮🇸',
@@ -79,10 +85,6 @@ const COUNTRY_FLAGS: Record<string, string> = {
       <p class="fotnote">
         Ingen registrerte nordiske vinnere finnes fra Island i FISMs offisielle lister.
         Kilde: fism.org/championships/winners.
-      </p>
-      <p class="fotnote">
-        Norgesmestere, juniormestere og nordiske mestere finner du i
-        <a href="/tryllehistorie/tabeller#norgesmestere">Tryllehistorie i tabeller</a>.
       </p>
 
       {otherResults.length > 0 && (
@@ -157,6 +159,5 @@ const COUNTRY_FLAGS: Record<string, string> = {
   .rad-norsk { background: rgba(212,168,67,0.08); font-weight: 600; }
 
   .fotnote { font-family: var(--font-ui); font-size: 0.82rem; color: #888; margin-top: 0.5rem; }
-  .fotnote a { color: var(--burgundy); }
   .delheading { font-family: var(--font-display); font-size: 1.4rem; color: var(--burgundy); margin: 3rem 0 1.5rem; }
 </style>

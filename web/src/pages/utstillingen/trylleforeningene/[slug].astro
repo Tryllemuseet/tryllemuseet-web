@@ -6,6 +6,8 @@ import AnimateIn from '../../../components/AnimateIn.astro'
 import {
   getMagicOrganizationBySlug,
   getMagicOrganizationPaths,
+  historicalSectionHref,
+  getSiteConfig,
   portableTextToHtml,
   portableTextToPlainText,
   urlFor,
@@ -16,7 +18,9 @@ export async function getStaticPaths() {
 }
 
 const { slug } = Astro.params
-const org = await getMagicOrganizationBySlug(slug!)
+const [org, siteConfig] = await Promise.all([getMagicOrganizationBySlug(slug!), getSiteConfig()])
+// Links to the history tables only once those pages are launched.
+const historietabellerActive = siteConfig.historietabellerActive
 
 if (!org) return Astro.redirect('/utstillingen/trylleforeningene', 301)
 
@@ -204,13 +208,13 @@ function yearRange(): string {
   )}
 
   <!-- TABELLER (verv, æresbevisninger, mesterskap) ──────────────── -->
-  {org.historicalSections && org.historicalSections.length > 0 && (
+  {historietabellerActive && org.historicalSections && org.historicalSections.length > 0 && (
     <AnimateIn>
     <section class="container tables-section">
       <h2 class="section-heading">Verv, priser og mesterskap</h2>
       <ul class="tables-list">
         {org.historicalSections.map((t) => (
-          <li><a href={`/tryllehistorie/tabeller#${t.slug}`}>{t.title}</a></li>
+          <li><a href={historicalSectionHref(t)}>{t.title}</a></li>
         ))}
       </ul>
     </section>

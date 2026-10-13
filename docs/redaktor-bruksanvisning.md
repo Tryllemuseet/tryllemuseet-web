@@ -23,7 +23,7 @@ Denne bruksanvisningen dekker de oppgavene en redaktør utfører til daglig.
    - [7b. Magic Club — kvelder](#7b-magic-club--kvelder)
 8. [TV-opptredener](#8-tv-opptredener)
 9. [Bokregisteret](#9-bokregisteret)
-   - [9b. Verdens mest… og Norden i FISM](#9b-verdens-mest-og-norden-i-fism)
+   - [9b. Verdens mest…, Konkurransehistorie og Foreningshistorie](#9b-verdens-mest-konkurransehistorie-og-foreningshistorie)
    - [9c. Kilderegisteret](#9c-kilderegisteret)
    - [9d. Trylleeffekter](#9d-trylleeffekter)
 10. [Artefakter](#10-artefakter)
@@ -685,7 +685,7 @@ Bibliotekskatalogen over bøker om tryllekunst. Vises på `/ressurser/bibliotek`
 
 ---
 
-## 9b. Verdens mest… og Norden i FISM
+## 9b. Verdens mest…, Konkurransehistorie og Foreningshistorie
 
 To dokumenttyper med korte, kategoriserte fakta-/rekordhistorier fra tryllekunstens verden, hver på sin egen side.
 
@@ -710,7 +710,12 @@ Vises gruppert på `/tryllehistorie/verdens-mest`.
 
 **Meny:** Konkurranseresultat — under Arkivet
 
-Nordiske pallplasseringer og andre konkurranseresultater. Vises på `/tryllehistorie/norden-i-fism`: FISM-resultater i én tabell øverst, øvrige (Nordisk/NM/Annet) i en egen tabell under.
+Nordiske pallplasseringer og andre konkurranseresultater. Vises på `/tryllehistorie/norden-i-fism` (FISM øverst, andre resultater under) og, når den er lansert (se «Lansering» under), på `/tryllehistorie/konkurransehistorie`, en side med faner:
+
+- **FISM**: alle resultater med Konkurranse = FISM.
+- **Nordisk mesterskap / Nordiske kongresser / NM / Junior-NM**: resultater som er koblet til en *Historisk seksjon* (feltet «Seksjon (tabell)»), se under.
+- **Andre**: alt annet som ikke er FISM og ikke hører til en tabell.
+- **Vis alle**: alle fanene under hverandre (nyttig for å søke med Ctrl+F).
 
 | Felt | Påkrevd | Merknad |
 |---|---|---|
@@ -723,6 +728,29 @@ Nordiske pallplasseringer og andre konkurranseresultater. Vises på `/tryllehist
 | Kategori/disiplin | Nei | Fritekst, f.eks. «Manipulasjon», «Korttriks», «Scenemagi» |
 | Resultat/plassering | Ja | F.eks. «1. plass (Verdensmester)», «2. plass», «Grand Prix» |
 | Kilde | Nei | F.eks. «fism.org/championships/winners» |
+| Seksjon (tabell) | Nei | Kobler resultatet til en tabell (Historisk seksjon). Da vises det i den tabellens fane i stedet for under «Andre». |
+
+### Historisk seksjon (tabell) og Verv og æresbevisninger
+
+**Meny:** Utstillingen → «Historisk seksjon (tabell)» og «Verv og æresbevisninger»
+
+Tabellene fra boken «Mystikk som underholdning» (presidenter, æresmedlemmer, priser, norgesmestere, nordiske mestere, utenlandske besøkende, kildeliste). Hver tabell er én **Historisk seksjon** med tittel, innledning og fotnote, slik i boken. Radene er enten *Verv og æresbevisninger* (personer i foreningene) eller *Konkurranseresultat*, og peker til sin seksjon med feltet «Seksjon (tabell)».
+
+Feltet **Fane** på seksjonen bestemmer hvor tabellen vises:
+
+- `/tryllehistorie/konkurransehistorie`: Nordisk mesterskap, Nordiske kongresser, NM, Junior-NM
+- `/tryllehistorie/foreningshistorie`: Ledere, Æresbevisninger, Priser, Utenlandske besøk, Kilder
+
+Innenfor en fane vises seksjonene i rekkefølge etter «Rekkefølge». En tabell vises bare når den har minst én synlig rad. Seksjoner uten rader (f.eks. kildelisten) vises med teksten sin.
+
+På *Verv og æresbevisninger* vises «Merknad» på nettsiden, mens «Intern merknad» bare er for redaktører (usikre koblinger, trykkfeil i kilden o.l.). «Trenger gjennomgang» er en huskelapp i Studio og påvirker ikke nettsiden.
+
+**Lansering.** Sidene styres av bryteren **«Konkurranse- og foreningshistorie» er aktiv** i *Innstillinger* (siteConfig):
+
+- **Av** (standard): Sidene finnes og kan testes på adressene over, men har et gult «Forhåndsvisning – ikke publisert»-banner, vises ikke i søkemotorer og lenkes ikke fra menyen eller foreningssidene. «Norden i FISM» er den vanlige siden.
+- **På**: Menypunktene «Konkurransehistorie» og «Foreningshistorie» vises, «Norden i FISM» forsvinner fra menyen og sender videre til Konkurransehistorie, og foreningssidene lenker til tabellene sine.
+
+Menypunktene styres av feltet «Koblet til funksjonsbryter» i Navigasjon: «Konkurranse-/foreningshistorie» for de nye punktene, «Erstattes av konkurranse-/foreningshistorie» for «Norden i FISM». Bryteren virker etter neste bygg av nettstedet.
 
 ---
 

@@ -4,7 +4,7 @@
     "Transcribed from photos 2026-10-13. Names and prose are spelled exactly as printed (incl. apparent typos).",
     "'note' is shown on the website (remarks from the book itself); 'internalNote' is editorial and stays in Studio only.",
     "'bio' = _id of a matching biography doc, only where the match is unambiguous.",
-    "'section' = slug of the historicalSection (one per table in the book) the list belongs to; rendered at /tryllehistorie/tabeller.",
+    "'section' = slug of the historicalSection (one per table in the book) the list belongs to; rendered on /tryllehistorie/konkurransehistorie or /tryllehistorie/foreningshistorie in the section's 'tab'.",
     "Consumed by scripts/import-mystikk-tabeller.mjs."
   ],
   "sections": [
@@ -13,7 +13,8 @@
       "title": "Formenn i MCO / fra 1949 presidenter i MCN",
       "organization": "MCN",
       "page": 175,
-      "order": 10
+      "order": 10,
+      "tab": "ledere"
     },
     {
       "slug": "mjc-presidenter",
@@ -21,21 +22,24 @@
       "organization": "MJC",
       "page": 175,
       "footnote": "Etter 1996 har MJC ikke hatt noen fast president. MCN har vært behjelpelig bl.a. med møtelokale og har i tillegg utnevnt en juniorkonsulent. Jørn Hjulstad har vervet med ansvar for møteopplegg og møteledelse.",
-      "order": 20
+      "order": 20,
+      "tab": "ledere"
     },
     {
       "slug": "dmro-presidenter",
       "title": "Formann/presidenter i DMRO",
       "organization": "DMR",
       "page": 175,
-      "order": 30
+      "order": 30,
+      "tab": "ledere"
     },
     {
       "slug": "mcn-aeresmedlemmer",
       "title": "Æresmedlemmer i MCN",
       "organization": "MCN",
       "page": "175–176",
-      "order": 40
+      "order": 40,
+      "tab": "aeresbevisninger"
     },
     {
       "slug": "mcn-evig-medlem",
@@ -43,7 +47,8 @@
       "organization": "MCN",
       "page": 176,
       "footnote": "Erik Diesen ble utnevnt til «Magisk Ridder» i forbindelse med at han gikk av som underholdningssjef i NRK. I praksis er «Magisk Ridder» det samme som «Evig Medlem».",
-      "order": 50
+      "order": 50,
+      "tab": "aeresbevisninger"
     },
     {
       "slug": "mcn-magisk-knekt",
@@ -51,7 +56,8 @@
       "organization": "MCN",
       "page": 176,
       "footnote": "Dag Johansen ga avkall på hedersbevisningen i protest mot styret.",
-      "order": 60
+      "order": 60,
+      "tab": "aeresbevisninger"
     },
     {
       "slug": "sandors-pris",
@@ -61,14 +67,16 @@
       "intro": [
         "I 1937 foreslo MCOs svenske medlem Ernst Sandor (f. 22.07.1909 – d. 22.10.1968) at det burde opprettes en pris eller et hederstegn som skulle tildeles medlemmer som jevnlig sendte stoff til medlemsbladet, Magikeren. Sandor påtok seg å lage en medalje, samt å bekoste alle utgifter. Forslaget ble godt mottatt og prisen fikk derfor navnet «Sandors pris»."
       ],
-      "order": 70
+      "order": 70,
+      "tab": "priser"
     },
     {
       "slug": "dmro-aeresmedlemmer",
       "title": "Æresmedlem i DMRO",
       "organization": "DMR",
       "page": 177,
-      "order": 80
+      "order": 80,
+      "tab": "aeresbevisninger"
     },
     {
       "slug": "dmro-aerespris",
@@ -78,7 +86,8 @@
       "intro": [
         "Den Magiske Rings Ærespris har kun vært delt ut to ganger. Prisen er gitt til magikere som har et langt og aktivt magisk liv bak seg."
       ],
-      "order": 90
+      "order": 90,
+      "tab": "priser"
     },
     {
       "slug": "arets-tryllekunstner",
@@ -88,7 +97,8 @@
       "intro": [
         "I 1992 innførte MCN en ny pris, en pris som skulle tilfalle en tryllekunstner om har gjort seg spesielt bemerket i det foregående år. «Årets Tryllekunstner» får som gave et innrammet grafisk blad av en kjent kunstner. De som til nå har mottatt denne prisen er følgende:"
       ],
-      "order": 100
+      "order": 100,
+      "tab": "priser"
     },
     {
       "slug": "norgesmestere",
@@ -99,7 +109,8 @@
         "Siden 1973 har MCN arrangert årlige norgesmesterskap. Det har vært de lokale kreftene i det enkelte distrikt som har stått som arrangør, da i nært samarbeidd med MCNs hovedstyre. Listen nedenfor viser arrangørstedet og navn på norgesmesteren:"
       ],
       "footnote": "Det ble ikke arrangert NM i 1992, 1995, 1997 og 1998.",
-      "order": 110
+      "order": 110,
+      "tab": "nm"
     },
     {
       "slug": "norgesmestere-junior",
@@ -107,7 +118,8 @@
       "organization": "MJC",
       "page": 178,
       "footnote": "Det har ikke være arrangert NM for juniorer siste årene. Fra 1965 det arranger årskonkurranser, tittelen Norgesmester tatt i bruk fra 1965.",
-      "order": 120
+      "order": 120,
+      "tab": "junior"
     },
     {
       "slug": "kongresser-1-pris",
@@ -115,7 +127,8 @@
       "organization": null,
       "page": 179,
       "footnote": "Nordisk mester ble kåret fra 1958.",
-      "order": 130
+      "order": 130,
+      "tab": "kongresser"
     },
     {
       "slug": "nordiske-mestere",
@@ -123,7 +136,8 @@
       "organization": null,
       "page": "179–180",
       "footnote": "1996 (SMCs 50 års kongress i Stockholm): Det ble ikke kåret nordisk mester. 1999: Det ble ikke kåret nordisk mester, kun 1. pris vinnere. Det ble ikke arrangert kjedekongress i 1992, 1997 og 1998.",
-      "order": 140
+      "order": 140,
+      "tab": "nordisk"
     },
     {
       "slug": "magiens-trofaste-riddere",
@@ -134,7 +148,8 @@
         "NMUs hederspris «Magiens trofaste riddere» ble innstiftet i 1971, og skulle være en hedersbevisning til en person som på en eller annen måte støttet aktivt opp i det nordiske magiarbeidet. Blant ridderne finner vi arrangører og medarrangører, aktive deltagere, dealere, artister og andre som NMU finner verdige. Det har vært en tradisjon at årets ridder kommer fra arrangørlandet. Listen nedenfor viser «de trofaste»:"
       ],
       "footnote": "Ikke utdelt i 1992, 1997 og 1998: Det ble ikke arrangert kjedekongress disse årene.",
-      "order": 150
+      "order": 150,
+      "tab": "priser"
     },
     {
       "slug": "utenlandske-tryllekunstnere",
@@ -1395,7 +1410,8 @@
           ]
         }
       ],
-      "order": 160
+      "order": 160,
+      "tab": "besok"
     },
     {
       "slug": "kilder-og-litteraturliste",
@@ -1740,7 +1756,8 @@
           ]
         }
       ],
-      "order": 170
+      "order": 170,
+      "tab": "kilder"
     }
   ],
   "organizationRoles": [
