@@ -24,6 +24,11 @@
  * _id format for brand-new documents: ytclip-<youtubeId> (stable, idempotent).
  * Existing documents keep whatever _id they already have.
  *
+ * Unchanged documents are not written. Every write fires the Sanity "Deploy
+ * test" webhook, so rewriting all clips daily caused a burst of ~20 Vercel
+ * deployments in two minutes, which tripped GitHub's secondary rate limit
+ * ("Git provider error … 403") on the deploys.
+ *
  * Required env vars:
  *   YOUTUBE_API_KEY   — YouTube Data API v3 key
  *   SANITY_TOKEN      — Sanity API token (editor or write)
@@ -141,6 +146,16 @@ function bestThumbnail(thumbnails) {
   )
 }
 
+// Key-order-independent JSON, so a document read back from Sanity compares
+// equal to the one we'd write when no field value differs.
+function stableStringify(value) {
+  if (Array.isArray(value)) return `[${value.map(stableStringify).join(',')}]`
+  if (value && typeof value === 'object') {
+    return `{${Object.keys(value).sort().map(k => `${JSON.stringify(k)}:${stableStringify(value[k])}`).join(',')}}`
+  }
+  return JSON.stringify(value)
+}
+
 // Mirrors the project's existing Norwegian-slug convention (æ/ø/å spelled out
 // as single ASCII letters, not stripped) — see historicalclip-*-froken-*,
 // historicalclip-*-lordagskveld-* etc. for the observed pattern.
@@ -171,6 +186,7 @@ async function getActiveSources() {
 async function importClips(snippets, sourceLabel) {
   let created = 0
   let updated = 0
+  let unchanged = 0
   let skipped = 0
 
   for (const snippet of snippets) {
@@ -228,6 +244,11 @@ async function importClips(snippets, sourceLabel) {
       if (doc[k] === undefined) delete doc[k]
     }
 
+    if (existing && stableStringify(doc) === stableStringify(preserved)) {
+      unchanged++
+      continue
+    }
+
     await client.createOrReplace(doc)
 
     if (existing) {
@@ -239,7 +260,7 @@ async function importClips(snippets, sourceLabel) {
     }
   }
 
-  return { created, updated, skipped }
+  return { created, updated, unchanged, skipped }
 }
 
 // ── Main ──────────────────────────────────────────────────────────────────────
@@ -252,7 +273,7 @@ if (!sources.length) {
 }
 console.log(`     Fant ${sources.length} aktiv(e) kilde(r): ${sources.map(s => s.name).join(', ')}\n`)
 
-let totalCreated = 0, totalUpdated = 0, totalSkipped = 0
+let totalCreated = 0, totalUpdated = 0, totalUnchanged = 0, totalSkipped = 0
 
 for (const source of sources) {
   console.log(`── ${source.name} (${source.channelId}) ──────────────────────────`)
@@ -266,13 +287,14 @@ for (const source of sources) {
   console.log(`     Fant ${snippets.length} videoer\n`)
 
   console.log('4/4  Importerer til Sanity…')
-  const { created, updated, skipped } = await importClips(snippets, source.sourceLabel)
+  const { created, updated, unchanged, skipped } = await importClips(snippets, source.sourceLabel)
   totalCreated += created
   totalUpdated += updated
+  totalUnchanged += unchanged
   totalSkipped += skipped
 
-  console.log(`     ${source.name}: ${created} opprettet, ${updated} oppdatert, ${skipped} hoppet over\n`)
+  console.log(`     ${source.name}: ${created} opprettet, ${updated} oppdatert, ${unchanged} uendret, ${skipped} hoppet over\n`)
 }
 
-console.log(`✅  Ferdig — ${totalCreated} opprettet, ${totalUpdated} oppdatert, ${totalSkipped} hoppet over totalt`)
+console.log(`✅  Ferdig — ${totalCreated} opprettet, ${totalUpdated} oppdatert, ${totalUnchanged} uendret, ${totalSkipped} hoppet over totalt`)
 console.log(`    Dataset: ${SANITY_DATASET}`)

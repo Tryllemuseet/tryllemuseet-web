@@ -187,7 +187,7 @@ async function importFile(file) {
   const origLine = clean($('header .orig').first().text())
   const norwegian = /^På norsk:\s*/i.test(origLine) ? origLine.replace(/^På norsk:\s*/i, '') : null
   const title = norwegian ?? h1
-  const originalTitle = norwegian ? h1 : origLine.replace(/^(Originaltittel|På engelsk|Original):\s*/i, '')
+  const originalTitle = norwegian ? h1 : origLine.replace(/^(Originaltittel|Originaltitler|På engelsk|Original):\s*/i, '')
   const slug = slugify(title)
   console.log(`\n${basename(file)} → «${title}» (${slug})`)
   let imgCount = 0
@@ -220,6 +220,17 @@ async function importFile(file) {
       alt: clean($(img).attr('alt') ?? ''),
       ...(caption ? { caption } : {}),
     }
+  }
+
+  // A figure between the header and a section (e.g. a photo of the box)
+  // belongs to the section that follows it: move it in right after the heading.
+  for (const fig of $('figure').toArray()) {
+    if ($(fig).closest('section, header, footer').length) continue
+    const next = $(fig).nextAll('section').first()
+    if (!next.length) continue
+    const heading = next.children('h2').first()
+    if (heading.length) heading.after(fig)
+    else next.prepend(fig)
   }
 
   for (const sectionEl of $('section').toArray()) {

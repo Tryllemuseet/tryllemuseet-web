@@ -664,12 +664,15 @@ export interface CompetitionResult {
   personName: string
   personRef?: { slug: string; name: string }
   country: 'NO' | 'SE' | 'DK' | 'FI' | 'IS'
-  competition: 'fism' | 'nordisk' | 'nm' | 'annet'
+  competition: 'fism' | 'nordisk' | 'nordiskKongress' | 'nm' | 'annet'
   year: number
   location?: string
   category?: string
   placement: string
   source?: string
+  // Set when the result belongs to a table (historicalSection); such results
+  // are shown in that table's tab instead of the FISM/«Andre» tabs
+  section?: string
 }
 
 // ── Typer: Barn & unge ───────────────────────────────────────────
@@ -689,13 +692,26 @@ export interface BarnPage {
 }
 
 // ── Typer: Om oss ────────────────────────────────────────────────
+export interface StyreMedlem {
+  navn: string
+  rolle: string
+  kortTekst?: string
+  lenke?: string
+  bilde?: { asset: { _ref: string; url: string }; alt?: string; hotspot?: any; crop?: any }
+  // Null when no biography is linked, or the linked one is hidden.
+  biografi?: {
+    slug: string
+    mainImage?: { asset: { _ref: string; url: string }; alt?: string; hotspot?: any; crop?: any }
+  } | null
+}
+
 export interface OmOssPage {
   hero: { label: string; heading: string; headingEm: string; ingress: string }
   omMuseet: { historieHeading: string; historieTekst: any[]; formalHeading: string; formalTekst: any[] }
   faktaboks: { stiftet: string; organisasjonsform: string; tilknytning: string; adresse: string; orgnr: string }
   styret: {
     heading: string; ingress: string
-    medlemmer: { navn: string; rolle: string }[]
+    medlemmer: StyreMedlem[]
   }
   medlemskap: {
     heading: string; ingress: string; motivasjonsTekst: any[]
@@ -916,13 +932,14 @@ export async function getAllWorldRecordTricks(): Promise<WorldRecordTrick[]> {
 
 // ── Spørringer: Konkurranseresultater ─────────────────────────────
 
-// Alle resultater, nyeste år først — til Norden-i-FISM-siden
+// Alle resultater, nyeste år først — til Konkurransehistorie-siden
 export async function getAllCompetitionResults(): Promise<CompetitionResult[]> {
   return sanityClient.fetch(`
     *[_type == "competitionResult" && isVisible != false] | order(year desc) {
       _id, personName,
       "personRef": personRef-> { "slug": slug.current, name },
-      country, competition, year, location, category, placement, source
+      country, competition, year, location, category, placement, source,
+      "section": section._ref
     }
   `)
 }
@@ -950,7 +967,17 @@ export async function getOmOssPage(): Promise<OmOssPage | null> {
         }
       },
       faktaboks { stiftet, organisasjonsform, tilknytning, adresse, orgnr },
-      styret { heading, ingress, medlemmer[] { navn, rolle } },
+      styret {
+        heading, ingress,
+        medlemmer[] {
+          navn, rolle, kortTekst, lenke,
+          bilde { asset->{ _ref, url }, alt, hotspot, crop },
+          "biografi": select(biografiRef->isVisible != false => biografiRef->{
+            "slug": slug.current,
+            mainImage { asset->{ _ref, url }, alt, hotspot, crop }
+          })
+        }
+      },
       medlemskap {
         heading, ingress,
         motivasjonsTekst[]{
@@ -1537,6 +1564,8 @@ export interface SiteConfig {
   seoDescription:    string
   laerEtTriksActive: boolean
   trylleeffekterActive: boolean
+  // Konkurransehistorie/Foreningshistorie launched (see historicalSection)
+  historietabellerActive: boolean
 }
 
 // Kun e-post og adresse — til personvernsiden
@@ -1559,7 +1588,7 @@ export async function getSiteConfig(): Promise<SiteConfig> {
         }
       },
       facebook, instagram, youtube,
-      seoDescription, laerEtTriksActive, trylleeffekterActive
+      seoDescription, laerEtTriksActive, trylleeffekterActive, historietabellerActive
     }
   `)
   const base = config ?? {
@@ -1578,6 +1607,7 @@ export async function getSiteConfig(): Promise<SiteConfig> {
     seoDescription:    'Norges minste, merkeligste og mest magiske museum. Besøk oss på Årvoll gård i Oslo — søndager 12–15. Gratis inngang.',
     laerEtTriksActive: false,
     trylleeffekterActive: false,
+    historietabellerActive: false,
   }
   // donationLabel/donationText er nye felter (2026-08) — dekk eksisterende
   // siteConfig-dokumenter som ennå ikke har fylt dem inn i Studio.
@@ -1587,6 +1617,7 @@ export async function getSiteConfig(): Promise<SiteConfig> {
     donationText:  config?.donationText?.length ? config.donationText : [ptParagraph('Museet drives i stor grad av frivillige. En gave bidrar til å bevare samlingen, utvikle utstillingene og holde museet gratis og tilgjengelig for alle.', 'donation-fallback')],
     laerEtTriksActive: config?.laerEtTriksActive === true,
     trylleeffekterActive: config?.trylleeffekterActive === true,
+    historietabellerActive: config?.historietabellerActive === true,
   }
 }
 
@@ -1595,7 +1626,7 @@ export interface NavSubArea {
   label:        string
   link:         string
   isVisible:    boolean
-  featureFlag?: 'none' | 'quiz' | 'game'
+  featureFlag?: 'none' | 'quiz' | 'game' | 'historietabeller' | 'historietabellerAv'
 }
 
 export interface NavMainArea {
@@ -1651,7 +1682,9 @@ const DEFAULT_MAIN_AREAS: NavMainArea[] = [
       { label: 'Got Talent',            link: '/tryllehistorie/got-talent',           isVisible: true },
       { label: 'Penn & Teller: Fool Us', link: '/tryllehistorie/fool-us',             isVisible: true },
       { label: 'Verdens mest…',         link: '/tryllehistorie/verdens-mest',         isVisible: true },
-      { label: 'Norden i FISM',         link: '/tryllehistorie/norden-i-fism',        isVisible: true },
+      { label: 'Norden i FISM',         link: '/tryllehistorie/norden-i-fism',        isVisible: true, featureFlag: 'historietabellerAv' },
+      { label: 'Konkurransehistorie',   link: '/tryllehistorie/konkurransehistorie',  isVisible: true, featureFlag: 'historietabeller' },
+      { label: 'Foreningshistorie',     link: '/tryllehistorie/foreningshistorie',    isVisible: true, featureFlag: 'historietabeller' },
       { label: 'Bibliotek',             link: '/ressurser/bibliotek',                 isVisible: true },
       { label: 'Ressurser',             link: '/ressurser',                           isVisible: true },
     ],
@@ -3038,6 +3071,8 @@ export interface MagicOrganization {
   articles?:       MagicOrgArticle[]
   gallery?:        { asset: { _ref: string; url: string }; alt?: string; caption?: string; year?: number }[]
   sources?:        SourceRef[]
+  // Tables (presidents, honours, NM …) tied to this organization; link with historicalSectionHref()
+  historicalSections?: { title: string; slug: string; tab?: string }[]
 }
 
 // ── Spørringer: MagicOrganization ────────────────────────────────
@@ -3087,7 +3122,11 @@ export async function getMagicOrganizationBySlug(slug: string): Promise<MagicOrg
         }
       },
       gallery[] { asset->{ _ref, url }, alt, caption, year },
-      sources[] { label, url, sourceRef-> { title, author, type, year, url } }
+      sources[] { label, url, sourceRef-> { title, author, type, year, url } },
+      "historicalSections": *[_type == "historicalSection" && isVisible != false
+          && relatedOrganization._ref == ^._id
+          && count(*[_type in ["organizationRole", "competitionResult"] && isVisible != false && references(^._id)]) > 0]
+        | order(order asc) { title, "slug": slug.current, tab }
     }
   `, { slug })
 }
@@ -3099,6 +3138,116 @@ export async function getMagicOrganizationPaths() {
   return orgs
     .filter((o: { slug?: string }) => o.slug)
     .map((o: { slug: string }) => ({ params: { slug: o.slug } }))
+}
+
+// ── Historiske tabeller («Mystikk som underholdning») ────────────
+// One historicalSection per table in the book; organizationRole and
+// competitionResult rows point at their section. Each section's `tab` places
+// it on one of two tabbed pages, Konkurransehistorie or Foreningshistorie
+// (the tab values must match the options in schemaTypes/historicalSection.ts).
+
+export const KONKURRANSE_PATH = '/tryllehistorie/konkurransehistorie'
+export const FORENING_PATH = '/tryllehistorie/foreningshistorie'
+
+// 'fism' and 'andre' are filled from competitionResult docs without a section.
+export const KONKURRANSE_TABS = [
+  { id: 'fism',       label: 'FISM' },
+  { id: 'nordisk',    label: 'Nordisk mesterskap' },
+  { id: 'kongresser', label: 'Nordiske kongresser' },
+  { id: 'nm',         label: 'NM' },
+  { id: 'junior',     label: 'Junior-NM' },
+  { id: 'andre',      label: 'Andre' },
+] as const
+
+export const FORENING_TABS = [
+  { id: 'ledere',           label: 'Ledere' },
+  { id: 'aeresbevisninger', label: 'Æresbevisninger' },
+  { id: 'priser',           label: 'Priser' },
+  { id: 'besok',            label: 'Utenlandske besøk' },
+  { id: 'kilder',           label: 'Kilder' },
+] as const
+
+export type HistoryTabId =
+  | (typeof KONKURRANSE_TABS)[number]['id']
+  | (typeof FORENING_TABS)[number]['id']
+
+// Link to one table: the page its tab lives on, anchored at the section (the
+// page's tab script opens the right tab for a section anchor).
+export function historicalSectionHref(section: { slug: string; tab?: string }): string {
+  const onKonkurranse = KONKURRANSE_TABS.some(t => t.id === section.tab)
+  return `${onKonkurranse ? KONKURRANSE_PATH : FORENING_PATH}#${section.slug}`
+}
+
+export interface HistoricalTableRole {
+  _id:        string
+  name:       string
+  person?:    { name: string; slug: string }
+  roleTitle:  string
+  category:   'verv' | 'aeresbevisning'
+  yearFrom?:  number
+  yearTo?:    number
+  country?:   string
+  note?:      string
+}
+
+export interface HistoricalTableResult {
+  _id:        string
+  personName: string
+  personRef?: { name: string; slug: string }
+  country:    string
+  year:       number
+  location?:  string
+  category?:  string
+  placement:  string
+}
+
+export interface HistoricalSection {
+  _id:          string
+  title:        string
+  slug:         string
+  tab?:         HistoryTabId
+  order?:       number
+  introText?:   PortableTextBlock[]
+  footnote?:    string
+  organization?: { name: string; abbreviation?: string; slug?: string }
+  source?:      { title: string; author?: string; year?: number }
+  totalRows:    number   // incl. hidden rows; 0 = text-only section
+  roles:        HistoricalTableRole[]
+  results:      HistoricalTableResult[]
+}
+
+export async function getHistoricalSections(): Promise<HistoricalSection[]> {
+  const sections: HistoricalSection[] = await sanityClient.fetch(`
+    *[_type == "historicalSection" && isVisible != false] | order(order asc) {
+      _id, title, "slug": slug.current, tab, order, footnote,
+      introText[]{
+        ...,
+        markDefs[]{
+          ...,
+          "reference": reference->{ "slug": slug.current }
+        }
+      },
+      "organization": relatedOrganization->{ name, abbreviation, "slug": slug.current },
+      "source": source->{ title, author, year },
+      "totalRows": count(*[_type in ["organizationRole", "competitionResult"] && section._ref == ^._id]),
+      "roles": *[_type == "organizationRole" && isVisible != false && section._ref == ^._id]
+        | order(coalesce(tableOrder, 100000) asc, yearFrom asc, _createdAt asc) {
+          _id, roleTitle, category, yearFrom, yearTo, country, note,
+          "name": coalesce(personNameFallback, person->name),
+          "person": person->{ name, "slug": slug.current }
+        },
+      "results": *[_type == "competitionResult" && isVisible != false && section._ref == ^._id]
+        | order(coalesce(tableOrder, 100000) asc, year asc, _createdAt asc) {
+          _id, personName, country, year, location, category, placement,
+          "personRef": personRef->{ name, "slug": slug.current }
+        }
+    }
+  `)
+  // A table whose rows are all still hidden is left out; text-only sections
+  // (foreign visitors, bibliography — no rows at all) only need their text.
+  return sections.filter(s =>
+    s.roles.length > 0 || s.results.length > 0 || (s.totalRows === 0 && (s.introText?.length ?? 0) > 0),
+  )
 }
 
 // ── Typer: Tryllequiz ────────────────────────────────────────────

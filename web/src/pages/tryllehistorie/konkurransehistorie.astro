@@ -1,0 +1,210 @@
+---
+// src/pages/tryllehistorie/konkurransehistorie.astro
+// Competition history in tabs: FISM podiums (competitionResult, competition
+// 'fism'), the tables from «Mystikk som underholdning» whose historicalSection
+// has a competition tab (Nordic championships, congresses, NM, junior NM), and
+// «Andre» for any other result without a table. Launch-gated by
+// siteConfig.historietabellerActive; once on, it replaces /norden-i-fism.
+import BaseLayout from '../../layouts/BaseLayout.astro'
+import HistoryTabs from '../../components/HistoryTabs.astro'
+import HistoricalSectionBlock from '../../components/HistoricalSectionBlock.astro'
+import {
+  getAllCompetitionResults,
+  getHistoricalSections,
+  getSiteConfig,
+  KONKURRANSE_TABS,
+  FORENING_PATH,
+} from '../../lib/sanity'
+
+const [allResults, sections, config] = await Promise.all([getAllCompetitionResults(), getHistoricalSections(), getSiteConfig()])
+// Launch flag: while off the page builds for testing but is noindex and unlinked.
+const launched = config.historietabellerActive
+
+const fismResults = allResults.filter(r => r.competition === 'fism' && !r.section)
+const otherResults = allResults.filter(r => r.competition !== 'fism' && !r.section)
+const sectionsByTab = (id: string) => sections.filter(s => s.tab === id)
+
+const COUNTRY_FLAGS: Record<string, string> = {
+  NO: '🇳🇴', SE: '🇸🇪', DK: '🇩🇰', FI: '🇫🇮', IS: '🇮🇸',
+}
+const COMPETITION_LABELS: Record<string, string> = {
+  nordisk: 'Nordisk', nordiskKongress: 'Nordisk kongress', nm: 'NM', annet: 'Annet',
+}
+const BIO_BASE = '/tryllehistorie/magiens-hvem-er-hvem/'
+
+// A tab is shown only when it has something in it.
+const tabs = KONKURRANSE_TABS.filter(t =>
+  t.id === 'fism' ? fismResults.length > 0 :
+  t.id === 'andre' ? otherResults.length > 0 :
+  sectionsByTab(t.id).length > 0,
+)
+const bookSource = sections.find(s => s.source)?.source
+---
+
+<BaseLayout
+  title="Konkurransehistorie — Tryllemuseet"
+  description="Nordiske pallplasseringer i FISM, nordiske mestere, norgesmestere og juniormestere i tryllekunst."
+  noindex={!launched}
+>
+  {!launched && (
+    <div class="forhandsvisning" role="note">
+      <div class="container">
+        <strong>Forhåndsvisning – ikke publisert.</strong>
+        Siden er ikke lenket fra menyen og vises ikke i søkemotorer. Den publiseres når
+        «Konkurranse- og foreningshistorie er aktiv» slås på i Innstillinger i Studio.
+      </div>
+    </div>
+  )}
+
+
+  <nav class="breadcrumb container">
+    <a href="/tryllehistorie">Tryllehistorie</a>
+    <span>›</span>
+    <span aria-current="page">Konkurransehistorie</span>
+  </nav>
+
+  <section class="hero">
+    <div class="container">
+      <span class="hero-label">Arkivet</span>
+      <h1>Konkurransehistorie</h1>
+      <p class="hero-ingress">
+        Nordiske pallplasseringer i FISM — tryllekunstens verdensmesterskap — og vinnerne av nordiske
+        mesterskap, tryllekongresser, norgesmesterskap og juniormesterskap.
+      </p>
+    </div>
+  </section>
+
+  <section class="innhold section-pad">
+    <div class="container">
+
+      {tabs.length === 0 && (
+        <p class="tom-liste">Vi jobber med å legge inn resultater her — kom tilbake litt senere!</p>
+      )}
+
+      {tabs.length > 0 && (
+        <HistoryTabs tabs={tabs} label="Konkurranser">
+          {tabs.map(t => (
+            <section data-tab-panel id={t.id}>
+              <h2 class="panel-title">{t.label}</h2>
+
+              {t.id === 'fism' && (
+                <>
+                  <p class="panel-ingress">
+                    FISM — Fédération Internationale des Sociétés Magiques — er tryllekunstens uoffisielle
+                    verdensmesterskap, avholdt siden 1948. Her er alle registrerte nordiske pallplasseringer.
+                  </p>
+                  <div class="tabell-wrap">
+                    <table class="resultat-tabell">
+                      <thead>
+                        <tr>
+                          <th scope="col">År</th>
+                          <th scope="col">Sted</th>
+                          <th scope="col">Navn</th>
+                          <th scope="col">Land</th>
+                          <th scope="col">Kategori</th>
+                          <th scope="col">Resultat</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {fismResults.map(r => (
+                          <tr class={r.country === 'NO' ? 'rad-norsk' : ''}>
+                            <td>{r.year}</td>
+                            <td>{r.location}</td>
+                            <td>{r.personRef?.slug ? <a href={`${BIO_BASE}${r.personRef.slug}`}>{r.personName}</a> : r.personName}</td>
+                            <td>{COUNTRY_FLAGS[r.country] ?? r.country} {r.country}</td>
+                            <td>{r.category}</td>
+                            <td>{r.placement}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                  <p class="fotnote">
+                    Ingen registrerte nordiske vinnere finnes fra Island i FISMs offisielle lister.
+                    Kilde: fism.org/championships/winners.
+                  </p>
+                </>
+              )}
+
+              {t.id === 'andre' && (
+                <div class="tabell-wrap">
+                  <table class="resultat-tabell">
+                    <thead>
+                      <tr>
+                        <th scope="col">År</th>
+                        <th scope="col">Konkurranse</th>
+                        <th scope="col">Navn</th>
+                        <th scope="col">Kategori</th>
+                        <th scope="col">Resultat</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {otherResults.map(r => (
+                        <tr>
+                          <td>{r.year}</td>
+                          <td>{COMPETITION_LABELS[r.competition] ?? r.competition}</td>
+                          <td>{r.personRef?.slug ? <a href={`${BIO_BASE}${r.personRef.slug}`}>{r.personName}</a> : r.personName}</td>
+                          <td>{r.category}</td>
+                          <td>{r.placement}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+
+              {sectionsByTab(t.id).map(s => <HistoricalSectionBlock section={s} />)}
+            </section>
+          ))}
+        </HistoryTabs>
+      )}
+
+      {bookSource && (
+        <p class="kilde">
+          Nordiske mesterskap, kongresser, NM og junior-NM: «{bookSource.title}»{bookSource.author ? `, ${bookSource.author}` : ''}{bookSource.year ? ` (${bookSource.year})` : ''}.
+          Navn og skrivemåter er gjengitt slik de står i boken. Se også <a href={FORENING_PATH}>Foreningshistorie</a>.
+        </p>
+      )}
+
+    </div>
+  </section>
+
+</BaseLayout>
+
+<style>
+  .forhandsvisning { background: #fff4d6; border-bottom: 1px solid var(--gold); font-family: var(--font-ui); font-size: 0.88rem; color: #5a4a20; padding-block: 0.75rem; }
+  .forhandsvisning strong { color: var(--burgundy); margin-right: 0.35rem; }
+  .breadcrumb { padding-block: 1.5rem 0; font-family: var(--font-ui); font-size: 0.85rem; color: #777; }
+  .breadcrumb a { color: var(--burgundy); text-decoration: none; }
+  .breadcrumb a:hover { text-decoration: underline; }
+  .breadcrumb span[aria-current] { color: #999; }
+
+  .hero { padding-block: 3rem 2rem; background: var(--cream); }
+  .hero-label {
+    display: inline-block; font-family: var(--font-ui); font-size: 0.75rem;
+    letter-spacing: 0.18em; text-transform: uppercase; color: var(--gold);
+    border-bottom: 1px solid var(--gold); padding-bottom: 0.2em; margin-bottom: 1rem;
+  }
+  .hero h1 { font-family: var(--font-display); font-size: clamp(1.8rem, 4vw, 2.6rem); color: var(--burgundy); margin-bottom: 1rem; }
+  .hero-ingress { font-family: var(--font-body); font-size: 1.05rem; color: #555; line-height: 1.7; max-width: 640px; }
+
+  .section-pad { padding-block: 2rem 5rem; }
+  .tom-liste { font-family: var(--font-body); font-size: 1.05rem; color: #777; text-align: center; padding: 3rem 0; }
+  .panel-ingress { font-family: var(--font-body); font-size: 1rem; line-height: 1.7; color: #444; max-width: 720px; margin: 0 0 1rem; }
+
+  .tabell-wrap { overflow-x: auto; margin-bottom: 1rem; }
+  .resultat-tabell { width: 100%; border-collapse: collapse; font-family: var(--font-body); font-size: 0.92rem; }
+  .resultat-tabell th {
+    text-align: left; font-family: var(--font-ui); font-size: 0.78rem; letter-spacing: 0.05em;
+    text-transform: uppercase; color: var(--gold); border-bottom: 2px solid var(--gold);
+    padding: 0.6rem 0.75rem;
+  }
+  .resultat-tabell td { padding: 0.6rem 0.75rem; border-bottom: 1px solid rgba(107,15,26,0.08); color: #444; }
+  .resultat-tabell a { color: var(--burgundy); text-decoration: none; border-bottom: 1px solid var(--gold); }
+  .resultat-tabell a:hover { color: var(--gold-dark, var(--gold)); }
+  .rad-norsk { background: rgba(212,168,67,0.08); font-weight: 600; }
+
+  .fotnote { font-family: var(--font-ui); font-size: 0.82rem; color: #888; margin: 0.5rem 0 3rem; }
+  .kilde { font-family: var(--font-ui); font-size: 0.85rem; color: #777; border-top: 1px solid rgba(107,15,26,0.12); padding-top: 1.25rem; max-width: 820px; margin-top: 2rem; }
+  .kilde a { color: var(--burgundy); }
+</style>
