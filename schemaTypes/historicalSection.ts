@@ -10,6 +10,7 @@ export const historicalSection = defineType({
   title: 'Historisk seksjon',
   type: 'document',
   icon: () => '📜',
+  orderings: [{ title: 'Rekkefølge', name: 'orderAsc', by: [{ field: 'order', direction: 'asc' }] }],
   fields: [
     defineField({
       name: 'isVisible',
@@ -37,12 +38,18 @@ export const historicalSection = defineType({
       of: richBlockContent(),
     }),
     defineField({
+      name: 'footnote',
+      title: 'Fotnote',
+      type: 'text',
+      rows: 3,
+      description: 'Vises under tabellen, f.eks. «Det ble ikke arrangert NM i 1992, 1995, 1997 og 1998.»',
+    }),
+    defineField({
       name: 'source',
       title: 'Kilde',
       type: 'reference',
       to: [{ type: 'source' }],
-      description:
-        'Peker foreløpig mot «source-magiens-hvem-er-hvem-terje-nordheim-2005» — dette source-dokumentet finnes ikke ennå og må opprettes med nøyaktig denne _id-en før referansen kan løses.',
+      description: 'Standard: «Mystikk som underholdning» (Nordheim & Berthelsen).',
       initialValue: { _ref: 'source-magiens-hvem-er-hvem-terje-nordheim-2005' },
     }),
     defineField({
@@ -58,9 +65,9 @@ export const historicalSection = defineType({
     }),
   ],
   preview: {
-    select: { title: 'title' },
-    prepare({ title }: { title?: string }) {
-      return { title: title ?? '(uten tittel)' }
+    select: { title: 'title', order: 'order' },
+    prepare({ title, order }: { title?: string; order?: number }) {
+      return { title: title ?? '(uten tittel)', subtitle: order != null ? `Nr. ${order}` : undefined }
     },
   },
 })

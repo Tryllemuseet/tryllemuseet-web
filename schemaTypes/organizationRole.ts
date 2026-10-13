@@ -95,6 +95,20 @@ export const organizationRole = defineType({
       description: 'Fritekst-merknad fra kildematerialet (fotnoter e.l.).',
     }),
     defineField({
+      name: 'internalNotes',
+      title: 'Intern merknad',
+      type: 'text',
+      rows: 2,
+      description: 'Vises ikke på nettstedet. F.eks. usikre koblinger eller trykkfeil i kilden.',
+    }),
+    defineField({
+      name: 'section',
+      title: 'Seksjon (tabell)',
+      type: 'reference',
+      to: [{ type: 'historicalSection' }],
+      description: 'Hvilken tabell på /tryllehistorie/tabeller raden hører til.',
+    }),
+    defineField({
       name: 'source',
       title: 'Kilde',
       type: 'reference',

@@ -1,32 +1,37 @@
 /**
  * import-mystikk-tabeller.mjs
  *
- * Phase 2 of the "Mystikk som underholdning" digitization: imports the
- * "Tabeller" appendix (pp. 175–181) transcribed in
- * scripts/data/mystikk-som-underholdning-tabeller.json as
- *   - organizationRole docs (verv + æresbevisninger: MCN/MJC/DMRO presidents,
- *     æresmedlemmer, Evig medlem, Magisk Knekt, Sandors Pris, DMROs Ærespris,
- *     Årets Tryllekunstner, Magiens trofaste riddere)
- *   - competitionResult docs (NM, junior-NM, Nordic congress 1st prizes,
- *     Nordic champions)
+ * Phase 2 of the "Mystikk som underholdning" digitization: imports the book's
+ * tables (pp. 175–186), transcribed in
+ * scripts/data/mystikk-som-underholdning-tabeller.json, as
+ *   - historicalSection docs — one per table in the book (title, intro text,
+ *     footnote, book order); pp. 182–186 (foreign visitors, bibliography) are
+ *     sections with rich text only
+ *   - organizationRole docs (verv + æresbevisninger)
+ *   - competitionResult docs (NM, junior-NM, Nordic congresses/champions)
+ * Every role/result points at its section, which is what
+ * /tryllehistorie/tabeller renders.
  *
- * Everything is created hidden (isVisible: false) — organizationRole also gets
- * needsReview: true — so nothing reaches the website before an editor has
- * checked it against the book. competitionResult has no review flag; a hidden
- * result does not show on /tryllehistorie/norden-i-fism until it is switched on.
+ * Everything is created hidden (isVisible: false; roles also needsReview:
+ * true), so nothing reaches the website before it is switched on.
  *
- * Idempotent: deterministic _ids + createIfNotExists, so re-runs never
- * overwrite anything edited in Studio. Competition results that already exist
- * (same year + same person, from the earlier "Norden i FISM" seed) are skipped
- * and listed, not duplicated or modified.
+ * Re-runs are safe:
+ *   - docs that don't exist yet are created
+ *   - docs this script created earlier are brought up to date with the data
+ *     file ONLY if nothing has changed them since they were created (no
+ *     draft, _updatedAt within TOUCH_TOLERANCE_MS of _createdAt); anything
+ *     edited since — in Studio or by an earlier update run — is left alone
+ *     and listed
+ *   - competition results that pre-date this import (same year + person, from
+ *     the earlier "Norden i FISM" seed) are not duplicated; they only get
+ *     `section` (and the congress name as `category`) set if missing
  *
  * Usage:
  *   node scripts/import-mystikk-tabeller.mjs --dry-run
  *   node scripts/import-mystikk-tabeller.mjs            (writes to production)
  *   SANITY_DATASET=development node scripts/import-mystikk-tabeller.mjs
  *   (token from SANITY_API_TOKEN, SANITY_TOKEN, SANITY_AUTH_TOKEN or the
- *    local Sanity CLI login; a dry run still reads from Sanity to validate
- *    references, so it needs read access too)
+ *    local Sanity CLI login; a dry run still reads from Sanity)
  */
 
 import { createClient } from '@sanity/client'
@@ -39,9 +44,12 @@ const dryRun = process.argv.includes('--dry-run')
 const dataset = process.env.SANITY_DATASET ?? 'production'
 
 const SOURCE_ID = 'source-magiens-hvem-er-hvem-terje-nordheim-2005'
-const SOURCE_LABEL = 'Mystikk som underholdning (Nordheim & Berthelsen), Tabeller'
+const SOURCE_LABEL = 'Mystikk som underholdning (Nordheim & Berthelsen)'
+const COUNTRY_CODES = ['NO', 'SE', 'DK', 'FI', 'IS']
 
-const COUNTRY_CODES = { Norge: 'NO', Sverige: 'SE', Danmark: 'DK', Finland: 'FI', Island: 'IS' }
+// A doc whose _updatedAt is within this window of its _createdAt counts as
+// untouched (a fresh create stamps both at commit time).
+const TOUCH_TOLERANCE_MS = 5_000
 
 function getStoredToken() {
   try {
@@ -78,33 +86,55 @@ function slugify(s) {
 }
 
 const ref = (_ref) => ({ _type: 'reference', _ref })
+const sectionId = (slug) => `histsection-msu-${slug}`
+
+// Data-file blocks ({ style, parts: [{ text, strong?, em? }] }) → Portable Text.
+function toPortableText(blocks, keyPrefix) {
+  return blocks.map((b, i) => ({
+    _type: 'block',
+    _key: `${keyPrefix}b${i}`,
+    style: b.style ?? 'normal',
+    markDefs: [],
+    children: b.parts.map((part, j) => ({
+      _type: 'span',
+      _key: `${keyPrefix}b${i}s${j}`,
+      text: part.text,
+      marks: [part.strong && 'strong', part.em && 'em'].filter(Boolean),
+    })),
+  }))
+}
 
 async function run() {
   console.log(`Dataset: ${dataset}${dryRun ? ' (tørrkjøring — ingenting skrives)' : ''}`)
 
-  // ── Validate everything the data file points at before writing anything ──
   const lookup = await client.fetch(`{
     "orgs": *[_type == "magicOrganization" && !(_id in path("drafts.**"))]{ _id, abbreviation },
     "bios": *[_type == "biography" && !(_id in path("drafts.**"))]._id,
     "source": defined(*[_id == $sourceId][0]._id),
-    "existingComp": *[_type == "competitionResult" && !(_id in path("drafts.**"))]{ _id, year, competition, personName, "bio": personRef._ref }
+    "existingComp": *[_type == "competitionResult" && !(_id in path("drafts.**"))]{
+      _id, year, competition, personName, category, "bio": personRef._ref, "section": section._ref
+    },
+    "mine": *[(_id match "orgrole-*" || _id match "compresult-msu-*" || _id match "histsection-msu-*")
+              && !(_id in path("drafts.**"))]{ _id, _createdAt, _updatedAt },
+    "drafts": *[_id in path("drafts.**") && (_id match "drafts.orgrole-*" || _id match "drafts.compresult-*"
+                || _id match "drafts.histsection-*" || _id match "drafts.comp-*")]._id
   }`, { sourceId: SOURCE_ID })
 
   const orgId = Object.fromEntries(lookup.orgs.map(o => [o.abbreviation, o._id]))
   const bioIds = new Set(lookup.bios)
+  const sectionSlugs = new Set(data.sections.map(s => s.slug))
   const problems = []
 
   if (!lookup.source) problems.push(`source-dokumentet ${SOURCE_ID} finnes ikke`)
-
-  for (const list of data.organizationRoles) {
-    if (!orgId[list.organization]) problems.push(`organisasjon ${list.organization} finnes ikke (${list.list})`)
+  for (const s of data.sections) {
+    if (s.organization && !orgId[s.organization]) problems.push(`organisasjon ${s.organization} finnes ikke (seksjon ${s.slug})`)
   }
-  const allEntries = [
-    ...data.organizationRoles.flatMap(l => l.entries),
-    ...data.competitionResults.flatMap(l => l.entries),
-  ]
-  for (const e of allEntries) {
-    if (e.bio && !bioIds.has(e.bio)) problems.push(`biografi ${e.bio} finnes ikke (${e.name})`)
+  for (const list of [...data.organizationRoles, ...data.competitionResults]) {
+    if (!sectionSlugs.has(list.section)) problems.push(`seksjon ${list.section} mangler i datafilen (${list.list})`)
+    if (list.organization && !orgId[list.organization]) problems.push(`organisasjon ${list.organization} finnes ikke (${list.list})`)
+    for (const e of list.entries) {
+      if (e.bio && !bioIds.has(e.bio)) problems.push(`biografi ${e.bio} finnes ikke (${e.name})`)
+    }
   }
   if (problems.length) {
     console.error('❌ Avbryter — datafilen peker på ting som ikke finnes:')
@@ -112,7 +142,6 @@ async function run() {
     process.exit(1)
   }
 
-  // ── Build organizationRole docs ──
   const docs = []
   const seenIds = new Set()
   const uniqueId = (base) => {
@@ -122,9 +151,27 @@ async function run() {
     return id
   }
 
+  // ── historicalSection ──
+  for (const s of data.sections) {
+    const intro = s.blocks ?? (s.intro ?? []).map(t => ({ style: 'normal', parts: [{ text: t }] }))
+    const doc = {
+      _id: sectionId(s.slug),
+      _type: 'historicalSection',
+      isVisible: false,
+      title: s.title,
+      slug: { _type: 'slug', current: s.slug },
+      order: s.order,
+      source: ref(SOURCE_ID),
+    }
+    if (intro.length) doc.introText = toPortableText(intro, `${slugify(s.slug).slice(0, 12)}-`)
+    if (s.footnote) doc.footnote = s.footnote
+    if (s.organization) doc.relatedOrganization = ref(orgId[s.organization])
+    docs.push(doc)
+  }
+
+  // ── organizationRole ──
   for (const list of data.organizationRoles) {
     for (const e of list.entries) {
-      const roleTitle = e.roleTitle ?? list.roleTitle
       const doc = {
         _id: uniqueId(`orgrole-${slugify(list.organization)}-${slugify(list.roleTitle)}-${e.from ?? 'x'}-${slugify(e.name)}`),
         _type: 'organizationRole',
@@ -133,31 +180,39 @@ async function run() {
         personNameFallback: e.name,
         organization: ref(orgId[list.organization]),
         category: list.category,
-        roleTitle,
+        roleTitle: e.roleTitle ?? list.roleTitle,
+        section: ref(sectionId(list.section)),
         source: ref(SOURCE_ID),
-        note: [e.note, `Kilde: ${SOURCE_LABEL}, s. ${list.page} («${list.list}»).`].filter(Boolean).join(' '),
       }
       if (e.bio) doc.person = ref(e.bio)
       if (e.from != null) doc.yearFrom = e.from
       if (e.to != null) doc.yearTo = e.to
       if (e.country) doc.country = e.country
+      if (e.note) doc.note = e.note
+      const internal = [e.internalNote, `Kilde: ${SOURCE_LABEL}, s. ${list.page} («${list.list}»).`].filter(Boolean)
+      doc.internalNotes = internal.join(' ')
       docs.push(doc)
     }
   }
 
-  // ── Build competitionResult docs, skipping ones that already exist ──
-  const skipped = []
+  // ── competitionResult ──
+  const legacyPatches = []
   for (const list of data.competitionResults) {
     for (const e of list.entries) {
       const competition = e.competition ?? list.competition
+      const category = e.category ?? list.category
       const existing = lookup.existingComp.find(c =>
+        !c._id.startsWith('compresult-msu-') &&
         c.year === e.year &&
         // 'annet' covers older seed docs filed before nordiskKongress existed
         (c.competition === competition || c.competition === 'annet') &&
         (e.bio ? c.bio === e.bio : c.personName === e.name),
       )
       if (existing) {
-        skipped.push({ year: e.year, name: e.name, list: list.list, existing })
+        const set = {}
+        if (!existing.section) set.section = ref(sectionId(list.section))
+        if (!existing.category && category) set.category = category
+        legacyPatches.push({ id: existing._id, set, label: `${e.year} ${e.name}` })
         continue
       }
       const doc = {
@@ -169,54 +224,77 @@ async function run() {
         competition,
         year: e.year,
         placement: e.placement ?? list.placement,
-        source: `${SOURCE_LABEL}, s. ${list.page}${e.host ? ` — ${e.host}` : ''}`,
+        section: ref(sectionId(list.section)),
+        source: `${SOURCE_LABEL}, s. ${list.page}`,
       }
       if (e.bio) doc.personRef = ref(e.bio)
       if (e.location) doc.location = e.location
-      if (list.category) doc.category = list.category
-      if (!Object.values(COUNTRY_CODES).includes(doc.country)) {
-        throw new Error(`Ugyldig landkode ${doc.country} for ${e.name} ${e.year}`)
-      }
+      if (category) doc.category = category
+      if (!COUNTRY_CODES.includes(doc.country)) throw new Error(`Ugyldig landkode ${doc.country} for ${e.name} ${e.year}`)
       docs.push(doc)
     }
   }
 
-  const roles = docs.filter(d => d._type === 'organizationRole')
-  const comps = docs.filter(d => d._type === 'competitionResult')
-  console.log(`Klar: ${roles.length} organizationRole (${roles.filter(d => d.person).length} koblet til biografi), ` +
-    `${comps.length} competitionResult (${comps.filter(d => d.personRef).length} koblet til biografi)`)
+  // ── Decide create / update / leave alone ──
+  const mine = new Map(lookup.mine.map(d => [d._id, d]))
+  const drafts = new Set(lookup.drafts.map(id => id.replace(/^drafts\./, '')))
+  const toCreate = []
+  const toReplace = []
+  const edited = []
+  for (const doc of docs) {
+    const current = mine.get(doc._id)
+    if (!current) { toCreate.push(doc); continue }
+    const untouched = !drafts.has(doc._id) &&
+      Math.abs(Date.parse(current._updatedAt) - Date.parse(current._createdAt)) <= TOUCH_TOLERANCE_MS
+    if (untouched) toReplace.push(doc)
+    else edited.push(doc._id)
+  }
+  const legacyToPatch = legacyPatches.filter(p => Object.keys(p.set).length && !drafts.has(p.id))
 
-  if (skipped.length) {
-    console.log(`\nHoppet over ${skipped.length} konkurranseresultat som allerede finnes (ikke endret):`)
-    for (const s of skipped) {
-      console.log(`   - ${s.year} ${s.name} (${s.list}) → finnes som ${s.existing._id} [${s.existing.competition}]`)
-    }
+  const count = (arr, type) => arr.filter(d => d._type === type).length
+  for (const type of ['historicalSection', 'organizationRole', 'competitionResult']) {
+    console.log(`${type}: ${count(toCreate, type)} nye, ${count(toReplace, type)} oppdateres, ` +
+      `${docs.filter(d => d._type === type && edited.includes(d._id)).length} redigert i Studio (røres ikke)`)
+  }
+  console.log(`Eldre konkurranseresultater som kobles til seksjon: ${legacyToPatch.length} av ${legacyPatches.length}`)
+  for (const p of legacyPatches) console.log(`   - ${p.label} → ${p.id} ${Object.keys(p.set).length ? JSON.stringify(Object.keys(p.set)) : '(allerede satt)'}`)
+  if (edited.length) {
+    console.log('\nRedigert i Studio siden forrige import — oppdateres ikke:')
+    for (const id of edited) console.log('   - ' + id)
   }
 
-  if (dryRun) {
-    console.log('\nEksempler:')
-    console.log(JSON.stringify([roles[0], comps[0]], null, 2))
-    return
-  }
+  if (dryRun) return
 
   if (dataset === 'production') {
-    console.log('\n⚠️  Skriver til PRODUKSJONSDATASETTET om 5 sekunder (alt skjult, isVisible: false)...')
+    console.log('\n⚠️  Skriver til PRODUKSJONSDATASETTET om 5 sekunder (alt nytt er skjult, isVisible: false)...')
     await new Promise(r => setTimeout(r, 5000))
   }
 
-  // createIfNotExists in chunks — never overwrites a doc that already exists.
-  for (let i = 0; i < docs.length; i += 50) {
+  const ops = [
+    ...toCreate.map(d => tx => tx.createIfNotExists(d)),
+    // Untouched since our own last write: bring fully up to date, but keep
+    // isVisible as-is in case it has already been switched on via a script.
+    ...toReplace.map(d => tx => tx.patch(d._id, {
+      set: Object.fromEntries(
+        Object.entries(d).filter(([k]) => !k.startsWith('_') && k !== 'isVisible' && k !== 'needsReview'),
+      ),
+      ...(d._type === 'organizationRole' && !d.note ? { unset: ['note'] } : {}),
+    })),
+    ...legacyToPatch.map(p => tx => tx.patch(p.id, { set: p.set })),
+  ]
+  for (let i = 0; i < ops.length; i += 50) {
     const tx = client.transaction()
-    for (const d of docs.slice(i, i + 50)) tx.createIfNotExists(d)
+    for (const op of ops.slice(i, i + 50)) op(tx)
     await tx.commit()
-    console.log(`   skrevet ${Math.min(i + 50, docs.length)}/${docs.length}`)
+    console.log(`   skrevet ${Math.min(i + 50, ops.length)}/${ops.length}`)
   }
 
   const counts = await client.fetch(`{
-    "roles": count(*[_type == "organizationRole" && _id match "orgrole-*"]),
-    "comps": count(*[_type == "competitionResult" && _id match "compresult-msu-*"])
+    "sections": count(*[_type == "historicalSection" && _id match "histsection-msu-*"]),
+    "roles": count(*[_type == "organizationRole" && defined(section)]),
+    "comps": count(*[_type == "competitionResult" && defined(section)])
   }`)
-  console.log(`\n✅ Ferdig. I datasettet nå: ${counts.roles} organizationRole, ${counts.comps} competitionResult fra denne importen.`)
+  console.log(`\n✅ Ferdig. ${counts.sections} seksjoner, ${counts.roles} verv/æresbevisninger og ${counts.comps} konkurranseresultater koblet til en seksjon.`)
 }
 
 run().catch(err => {
