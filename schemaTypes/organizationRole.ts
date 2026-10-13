@@ -99,8 +99,7 @@ export const organizationRole = defineType({
       title: 'Kilde',
       type: 'reference',
       to: [{ type: 'source' }],
-      description:
-        'Peker foreløpig mot «source-magiens-hvem-er-hvem-terje-nordheim-2005» — dette source-dokumentet finnes ikke ennå og må opprettes med nøyaktig denne _id-en før referansen kan løses.',
+      description: 'Standard: «Mystikk som underholdning» (Nordheim & Berthelsen).',
       initialValue: { _ref: 'source-magiens-hvem-er-hvem-terje-nordheim-2005' },
     }),
   ],
