@@ -24,7 +24,8 @@
  *     and listed
  *   - competition results that pre-date this import (same year + person, from
  *     the earlier "Norden i FISM" seed) are not duplicated; they only get
- *     `section` (and the congress name as `category`) set if missing
+ *     `section` (and the congress name as `category`, the city as
+ *     `location`) set where missing
  *
  * Usage:
  *   node scripts/import-mystikk-tabeller.mjs --dry-run
@@ -112,7 +113,7 @@ async function run() {
     "bios": *[_type == "biography" && !(_id in path("drafts.**"))]._id,
     "source": defined(*[_id == $sourceId][0]._id),
     "existingComp": *[_type == "competitionResult" && !(_id in path("drafts.**"))]{
-      _id, year, competition, personName, category, "bio": personRef._ref, "section": section._ref
+      _id, year, competition, personName, category, location, "bio": personRef._ref, "section": section._ref
     },
     "mine": *[(_id match "orgrole-*" || _id match "compresult-msu-*" || _id match "histsection-msu-*")
               && !(_id in path("drafts.**"))]{ _id, _createdAt, _updatedAt },
@@ -212,6 +213,7 @@ async function run() {
         const set = {}
         if (!existing.section) set.section = ref(sectionId(list.section))
         if (!existing.category && category) set.category = category
+        if (!existing.location && e.location) set.location = e.location
         legacyPatches.push({ id: existing._id, set, label: `${e.year} ${e.name}` })
         continue
       }
@@ -254,12 +256,12 @@ async function run() {
   const count = (arr, type) => arr.filter(d => d._type === type).length
   for (const type of ['historicalSection', 'organizationRole', 'competitionResult']) {
     console.log(`${type}: ${count(toCreate, type)} nye, ${count(toReplace, type)} oppdateres, ` +
-      `${docs.filter(d => d._type === type && edited.includes(d._id)).length} redigert i Studio (røres ikke)`)
+      `${docs.filter(d => d._type === type && edited.includes(d._id)).length} endret siden opprettelse (røres ikke)`)
   }
   console.log(`Eldre konkurranseresultater som kobles til seksjon: ${legacyToPatch.length} av ${legacyPatches.length}`)
   for (const p of legacyPatches) console.log(`   - ${p.label} → ${p.id} ${Object.keys(p.set).length ? JSON.stringify(Object.keys(p.set)) : '(allerede satt)'}`)
   if (edited.length) {
-    console.log('\nRedigert i Studio siden forrige import — oppdateres ikke:')
+    console.log('\nEndret siden opprettelse (i Studio eller av en tidligere kjøring) — oppdateres ikke:')
     for (const id of edited) console.log('   - ' + id)
   }
 

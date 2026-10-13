@@ -42,12 +42,22 @@ function roleColumns(rows: HistoricalTableRole[]) {
   }
 }
 
+// The placement every row shares (e.g. «1. plass (Norgesmester)») is implied
+// by the table title; only rows that differ get a remark, as in the book.
+function usualPlacement(rows: HistoricalTableResult[]): string | undefined {
+  const counts = new Map<string, number>()
+  for (const r of rows) counts.set(r.placement, (counts.get(r.placement) ?? 0) + 1)
+  return [...counts.entries()].sort((a, b) => b[1] - a[1])[0]?.[0]
+}
+
 function resultColumns(rows: HistoricalTableResult[]) {
+  const usual = usualPlacement(rows)
   return {
     category: anyValue(rows, r => r.category) && varies(rows, r => r.category),
     location: anyValue(rows, r => r.location),
     country: rows.some(r => r.country !== 'NO'),
-    placement: varies(rows, r => r.placement),
+    placement: rows.some(r => r.placement !== usual),
+    usual,
   }
 }
 
@@ -165,7 +175,7 @@ const bookSource = sections.map(sourceLine).find(Boolean)
                         <td class="tall">{r.year}</td>
                         <td class="navn">{r.personRef?.slug ? <a href={`${BIO_BASE}${r.personRef.slug}`}>{r.personName}</a> : r.personName}</td>
                         {cc.country && <td>{COUNTRY_NAMES[r.country] ?? r.country}</td>}
-                        {cc.placement && <td class="merknad">{r.placement}</td>}
+                        {cc.placement && <td class="merknad">{r.placement !== cc.usual ? r.placement : ''}</td>}
                       </tr>
                     ))}
                   </tbody>
