@@ -710,7 +710,7 @@ Vises gruppert på `/tryllehistorie/verdens-mest`.
 
 **Meny:** Konkurranseresultat — under Arkivet
 
-Nordiske pallplasseringer og andre konkurranseresultater. Vises på `/tryllehistorie/konkurransehistorie` (den gamle adressen `/tryllehistorie/norden-i-fism` sender videre dit), en side med faner:
+Nordiske pallplasseringer og andre konkurranseresultater. Vises på `/tryllehistorie/norden-i-fism` (FISM øverst, andre resultater under) og, når den er lansert (se «Lansering» under), på `/tryllehistorie/konkurransehistorie`, en side med faner:
 
 - **FISM**: alle resultater med Konkurranse = FISM.
 - **Nordisk mesterskap / Nordiske kongresser / NM / Junior-NM**: resultater som er koblet til en *Historisk seksjon* (feltet «Seksjon (tabell)»), se under.
@@ -744,6 +744,13 @@ Feltet **Fane** på seksjonen bestemmer hvor tabellen vises:
 Innenfor en fane vises seksjonene i rekkefølge etter «Rekkefølge». En tabell vises bare når den har minst én synlig rad. Seksjoner uten rader (f.eks. kildelisten) vises med teksten sin.
 
 På *Verv og æresbevisninger* vises «Merknad» på nettsiden, mens «Intern merknad» bare er for redaktører (usikre koblinger, trykkfeil i kilden o.l.). «Trenger gjennomgang» er en huskelapp i Studio og påvirker ikke nettsiden.
+
+**Lansering.** Sidene styres av bryteren **«Konkurranse- og foreningshistorie» er aktiv** i *Innstillinger* (siteConfig):
+
+- **Av** (standard): Sidene finnes og kan testes på adressene over, men har et gult «Forhåndsvisning – ikke publisert»-banner, vises ikke i søkemotorer og lenkes ikke fra menyen eller foreningssidene. «Norden i FISM» er den vanlige siden.
+- **På**: Menypunktene «Konkurransehistorie» og «Foreningshistorie» vises, «Norden i FISM» forsvinner fra menyen og sender videre til Konkurransehistorie, og foreningssidene lenker til tabellene sine.
+
+Menypunktene styres av feltet «Koblet til funksjonsbryter» i Navigasjon: «Konkurranse-/foreningshistorie» for de nye punktene, «Erstattes av konkurranse-/foreningshistorie» for «Norden i FISM». Bryteren virker etter neste bygg av nettstedet.
 
 ---
 

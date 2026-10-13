@@ -46,7 +46,11 @@ const leftAreas  = mainAreas.filter(a => a.column !== 'right')
 const rightAreas = mainAreas.filter(a => a.column === 'right')
 
 const isFeatureActive = (flag?: NavSubArea['featureFlag']) =>
-  flag === 'quiz' ? quizActive : flag === 'game' ? gameActive : true
+  flag === 'quiz' ? quizActive :
+  flag === 'game' ? gameActive :
+  flag === 'historietabeller' ? site.historietabellerActive :
+  flag === 'historietabellerAv' ? !site.historietabellerActive :
+  true
 
 const visibleSubAreas = (area: NavMainArea) =>
   area.subAreas.filter(s => s.isVisible !== false && isFeatureActive(s.featureFlag))

@@ -3,18 +3,22 @@
 // Competition history in tabs: FISM podiums (competitionResult, competition
 // 'fism'), the tables from «Mystikk som underholdning» whose historicalSection
 // has a competition tab (Nordic championships, congresses, NM, junior NM), and
-// «Andre» for any other result without a table. Replaces /norden-i-fism.
+// «Andre» for any other result without a table. Launch-gated by
+// siteConfig.historietabellerActive; once on, it replaces /norden-i-fism.
 import BaseLayout from '../../layouts/BaseLayout.astro'
 import HistoryTabs from '../../components/HistoryTabs.astro'
 import HistoricalSectionBlock from '../../components/HistoricalSectionBlock.astro'
 import {
   getAllCompetitionResults,
   getHistoricalSections,
+  getSiteConfig,
   KONKURRANSE_TABS,
   FORENING_PATH,
 } from '../../lib/sanity'
 
-const [allResults, sections] = await Promise.all([getAllCompetitionResults(), getHistoricalSections()])
+const [allResults, sections, config] = await Promise.all([getAllCompetitionResults(), getHistoricalSections(), getSiteConfig()])
+// Launch flag: while off the page builds for testing but is noindex and unlinked.
+const launched = config.historietabellerActive
 
 const fismResults = allResults.filter(r => r.competition === 'fism' && !r.section)
 const otherResults = allResults.filter(r => r.competition !== 'fism' && !r.section)
@@ -40,7 +44,18 @@ const bookSource = sections.find(s => s.source)?.source
 <BaseLayout
   title="Konkurransehistorie — Tryllemuseet"
   description="Nordiske pallplasseringer i FISM, nordiske mestere, norgesmestere og juniormestere i tryllekunst."
+  noindex={!launched}
 >
+  {!launched && (
+    <div class="forhandsvisning" role="note">
+      <div class="container">
+        <strong>Forhåndsvisning – ikke publisert.</strong>
+        Siden er ikke lenket fra menyen og vises ikke i søkemotorer. Den publiseres når
+        «Konkurranse- og foreningshistorie er aktiv» slås på i Innstillinger i Studio.
+      </div>
+    </div>
+  )}
+
 
   <nav class="breadcrumb container">
     <a href="/tryllehistorie">Tryllehistorie</a>
@@ -157,6 +172,8 @@ const bookSource = sections.find(s => s.source)?.source
 </BaseLayout>
 
 <style>
+  .forhandsvisning { background: #fff4d6; border-bottom: 1px solid var(--gold); font-family: var(--font-ui); font-size: 0.88rem; color: #5a4a20; padding-block: 0.75rem; }
+  .forhandsvisning strong { color: var(--burgundy); margin-right: 0.35rem; }
   .breadcrumb { padding-block: 1.5rem 0; font-family: var(--font-ui); font-size: 0.85rem; color: #777; }
   .breadcrumb a { color: var(--burgundy); text-decoration: none; }
   .breadcrumb a:hover { text-decoration: underline; }

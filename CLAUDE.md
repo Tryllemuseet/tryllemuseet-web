@@ -83,7 +83,7 @@ The schema defines 35 registered content types in `/schemaTypes` (see `schemaTyp
   - `historiske-opptak/` (+ `[slug]`) — archival TV clips
   - `historiske-artikler/` — press clipping archive
   - `nordisk-tv-magi/` — combined overview; its `[slug]` route 301-redirects to got-talent/fool-us
-  - `konkurransehistorie` and `foreningshistorie` — two tabbed pages (`HistoryTabs.astro`) built from `historicalSection` tables (one per table in the book «Mystikk som underholdning»; each section's `tab` field picks page + tab, see `KONKURRANSE_TABS`/`FORENING_TABS` in `sanity.ts`) with `organizationRole`/`competitionResult` rows pointing at their section; Konkurransehistorie also has the FISM tab (`competitionResult` with `competition == 'fism'`) and «Andre» (results without a section). Old URLs `norden-i-fism` and `tabeller` redirect. Data import: `scripts/import-mystikk-tabeller.mjs`
+  - `konkurransehistorie` and `foreningshistorie` — two tabbed pages (`HistoryTabs.astro`) built from `historicalSection` tables (one per table in the book «Mystikk som underholdning»; each section's `tab` field picks page + tab, see `KONKURRANSE_TABS`/`FORENING_TABS` in `sanity.ts`) with `organizationRole`/`competitionResult` rows pointing at their section; Konkurransehistorie also has the FISM tab (`competitionResult` with `competition == 'fism'`) and «Andre» (results without a section). Launch-gated by `siteConfig.historietabellerActive` (off: `noindex` + preview banner, unlinked; `norden-i-fism` stays the public page and only redirects to Konkurransehistorie once the flag is on). `tabeller` (short-lived test URL) redirects to Foreningshistorie. Data import: `scripts/import-mystikk-tabeller.mjs`
 - `bak-teppet/` (`index`, `[slug]` for a kit, `triks/[slug]` for a tryllebeskrivelse): closed area for kit buyers, and the only on-demand (`prerender = false`) pages on the site. See "Closed area" under Key Patterns.
 - `web/public/skjerm.html` — physical info screen; fetches Sanity client-side (live, not SSG) plus Entur bus departures. `/skjerm` redirects to it.
 - Legacy/short URL redirects (QR codes, print) are defined in `web/astro.config.mjs` under `redirects`.
@@ -216,7 +216,7 @@ urlFor(image).width(800).format('webp').url()
 
 ### Feature Flags
 
-A built, content-complete feature that isn't ready for public launch gets a boolean singleton flag (`quizConfig.isActive`, `gameConfig.isActive`, `siteConfig.laerEtTriksActive`, `siteConfig.trylleeffekterActive`) rather than being deleted or commented out — content, schema, and routes stay fully intact, and turning it on later needs no code change, just a rebuild. See `docs/architecture.md` § Feature Flags for the full list and behavior.
+A built, content-complete feature that isn't ready for public launch gets a boolean singleton flag (`quizConfig.isActive`, `gameConfig.isActive`, `siteConfig.laerEtTriksActive`, `siteConfig.trylleeffekterActive`, `siteConfig.historietabellerActive`) rather than being deleted or commented out — content, schema, and routes stay fully intact, and turning it on later needs no code change, just a rebuild. See `docs/architecture.md` § Feature Flags for the full list and behavior.
 
 When editor content (`relatedLinks` on `legend`/`comicStory`, `barnPage.hero`) already links into a flagged-off feature, filter those links out at render time rather than asking editors to avoid linking there early:
 

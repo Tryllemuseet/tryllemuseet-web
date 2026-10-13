@@ -7,9 +7,11 @@
 import BaseLayout from '../../layouts/BaseLayout.astro'
 import HistoryTabs from '../../components/HistoryTabs.astro'
 import HistoricalSectionBlock from '../../components/HistoricalSectionBlock.astro'
-import { getHistoricalSections, FORENING_TABS, KONKURRANSE_PATH } from '../../lib/sanity'
+import { getHistoricalSections, getSiteConfig, FORENING_TABS, KONKURRANSE_PATH } from '../../lib/sanity'
 
-const sections = await getHistoricalSections()
+const [sections, config] = await Promise.all([getHistoricalSections(), getSiteConfig()])
+// Launch flag: while off the page builds for testing but is noindex and unlinked.
+const launched = config.historietabellerActive
 const sectionsByTab = (id: string) => sections.filter(s => s.tab === id)
 const tabs = FORENING_TABS.filter(t => sectionsByTab(t.id).length > 0)
 const bookSource = sections.find(s => s.source)?.source
@@ -18,7 +20,18 @@ const bookSource = sections.find(s => s.source)?.source
 <BaseLayout
   title="Foreningshistorie — Tryllemuseet"
   description="Formenn og presidenter, æresmedlemmer, priser og hedersbevisninger i norske og nordiske trylleforeninger — tabellene fra boken «Mystikk som underholdning»."
+  noindex={!launched}
 >
+  {!launched && (
+    <div class="forhandsvisning" role="note">
+      <div class="container">
+        <strong>Forhåndsvisning – ikke publisert.</strong>
+        Siden er ikke lenket fra menyen og vises ikke i søkemotorer. Den publiseres når
+        «Konkurranse- og foreningshistorie er aktiv» slås på i Innstillinger i Studio.
+      </div>
+    </div>
+  )}
+
 
   <nav class="breadcrumb container">
     <a href="/tryllehistorie">Tryllehistorie</a>
@@ -70,6 +83,8 @@ const bookSource = sections.find(s => s.source)?.source
 </BaseLayout>
 
 <style>
+  .forhandsvisning { background: #fff4d6; border-bottom: 1px solid var(--gold); font-family: var(--font-ui); font-size: 0.88rem; color: #5a4a20; padding-block: 0.75rem; }
+  .forhandsvisning strong { color: var(--burgundy); margin-right: 0.35rem; }
   .breadcrumb { padding-block: 1.5rem 0; font-family: var(--font-ui); font-size: 0.85rem; color: #777; }
   .breadcrumb a { color: var(--burgundy); text-decoration: none; }
   .breadcrumb a:hover { text-decoration: underline; }

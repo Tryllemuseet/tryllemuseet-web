@@ -1564,6 +1564,8 @@ export interface SiteConfig {
   seoDescription:    string
   laerEtTriksActive: boolean
   trylleeffekterActive: boolean
+  // Konkurransehistorie/Foreningshistorie launched (see historicalSection)
+  historietabellerActive: boolean
 }
 
 // Kun e-post og adresse — til personvernsiden
@@ -1586,7 +1588,7 @@ export async function getSiteConfig(): Promise<SiteConfig> {
         }
       },
       facebook, instagram, youtube,
-      seoDescription, laerEtTriksActive, trylleeffekterActive
+      seoDescription, laerEtTriksActive, trylleeffekterActive, historietabellerActive
     }
   `)
   const base = config ?? {
@@ -1605,6 +1607,7 @@ export async function getSiteConfig(): Promise<SiteConfig> {
     seoDescription:    'Norges minste, merkeligste og mest magiske museum. Besøk oss på Årvoll gård i Oslo — søndager 12–15. Gratis inngang.',
     laerEtTriksActive: false,
     trylleeffekterActive: false,
+    historietabellerActive: false,
   }
   // donationLabel/donationText er nye felter (2026-08) — dekk eksisterende
   // siteConfig-dokumenter som ennå ikke har fylt dem inn i Studio.
@@ -1614,6 +1617,7 @@ export async function getSiteConfig(): Promise<SiteConfig> {
     donationText:  config?.donationText?.length ? config.donationText : [ptParagraph('Museet drives i stor grad av frivillige. En gave bidrar til å bevare samlingen, utvikle utstillingene og holde museet gratis og tilgjengelig for alle.', 'donation-fallback')],
     laerEtTriksActive: config?.laerEtTriksActive === true,
     trylleeffekterActive: config?.trylleeffekterActive === true,
+    historietabellerActive: config?.historietabellerActive === true,
   }
 }
 
@@ -1622,7 +1626,7 @@ export interface NavSubArea {
   label:        string
   link:         string
   isVisible:    boolean
-  featureFlag?: 'none' | 'quiz' | 'game'
+  featureFlag?: 'none' | 'quiz' | 'game' | 'historietabeller' | 'historietabellerAv'
 }
 
 export interface NavMainArea {
@@ -1678,8 +1682,9 @@ const DEFAULT_MAIN_AREAS: NavMainArea[] = [
       { label: 'Got Talent',            link: '/tryllehistorie/got-talent',           isVisible: true },
       { label: 'Penn & Teller: Fool Us', link: '/tryllehistorie/fool-us',             isVisible: true },
       { label: 'Verdens mest…',         link: '/tryllehistorie/verdens-mest',         isVisible: true },
-      { label: 'Konkurransehistorie',   link: '/tryllehistorie/konkurransehistorie',  isVisible: true },
-      { label: 'Foreningshistorie',     link: '/tryllehistorie/foreningshistorie',    isVisible: true },
+      { label: 'Norden i FISM',         link: '/tryllehistorie/norden-i-fism',        isVisible: true, featureFlag: 'historietabellerAv' },
+      { label: 'Konkurransehistorie',   link: '/tryllehistorie/konkurransehistorie',  isVisible: true, featureFlag: 'historietabeller' },
+      { label: 'Foreningshistorie',     link: '/tryllehistorie/foreningshistorie',    isVisible: true, featureFlag: 'historietabeller' },
       { label: 'Bibliotek',             link: '/ressurser/bibliotek',                 isVisible: true },
       { label: 'Ressurser',             link: '/ressurser',                           isVisible: true },
     ],
