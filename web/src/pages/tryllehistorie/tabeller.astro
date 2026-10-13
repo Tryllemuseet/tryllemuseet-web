@@ -1,0 +1,254 @@
+---
+// src/pages/tryllehistorie/tabeller.astro
+// The tables appendix of «Mystikk som underholdning», one section per table in
+// the book's own order. Data: historicalSection + organizationRole +
+// competitionResult (see getHistoricalSections()).
+import BaseLayout from '../../layouts/BaseLayout.astro'
+import NarrateButton from '../../components/NarrateButton.astro'
+import {
+  getHistoricalSections,
+  portableTextToHtml,
+  portableTextToPlainText,
+  type HistoricalSection,
+  type HistoricalTableRole,
+  type HistoricalTableResult,
+} from '../../lib/sanity'
+
+const sections = await getHistoricalSections()
+
+const COUNTRY_NAMES: Record<string, string> = {
+  NO: 'Norge', SE: 'Sverige', DK: 'Danmark', FI: 'Finland', IS: 'Island',
+}
+const BIO_BASE = '/tryllehistorie/magiens-hvem-er-hvem/'
+
+// A column is only worth showing when it says something: some rows have a
+// value, and (for labels like title/placement) the value isn't the same on
+// every row.
+const anyValue = <T,>(rows: T[], get: (r: T) => unknown) => rows.some(r => get(r) != null && get(r) !== '')
+const varies = <T,>(rows: T[], get: (r: T) => unknown) => new Set(rows.map(get)).size > 1
+
+function period(r: HistoricalTableRole): string {
+  if (r.yearFrom == null) return '—'
+  if (r.yearTo == null) return r.category === 'verv' ? `${r.yearFrom} –` : String(r.yearFrom)
+  return r.yearTo === r.yearFrom ? String(r.yearFrom) : `${r.yearFrom} – ${r.yearTo}`
+}
+
+function roleColumns(rows: HistoricalTableRole[]) {
+  return {
+    verv: rows.some(r => r.category === 'verv'),
+    title: varies(rows, r => r.roleTitle),
+    country: anyValue(rows, r => r.country),
+    note: anyValue(rows, r => r.note),
+  }
+}
+
+// The placement every row shares (e.g. «1. plass (Norgesmester)») is implied
+// by the table title; only rows that differ get a remark, as in the book.
+function usualPlacement(rows: HistoricalTableResult[]): string | undefined {
+  const counts = new Map<string, number>()
+  for (const r of rows) counts.set(r.placement, (counts.get(r.placement) ?? 0) + 1)
+  return [...counts.entries()].sort((a, b) => b[1] - a[1])[0]?.[0]
+}
+
+function resultColumns(rows: HistoricalTableResult[]) {
+  const usual = usualPlacement(rows)
+  return {
+    category: anyValue(rows, r => r.category) && varies(rows, r => r.category),
+    location: anyValue(rows, r => r.location),
+    country: rows.some(r => r.country !== 'NO'),
+    placement: rows.some(r => r.placement !== usual),
+    usual,
+  }
+}
+
+const sourceLine = (s: HistoricalSection) =>
+  s.source ? `${s.source.title}${s.source.author ? `, ${s.source.author}` : ''}${s.source.year ? ` (${s.source.year})` : ''}` : null
+const bookSource = sections.map(sourceLine).find(Boolean)
+---
+
+<BaseLayout
+  title="Tryllehistorie i tabeller — Tryllemuseet"
+  description="Formenn og presidenter, æresmedlemmer, priser, norgesmestere og nordiske mestere i norsk tryllekunst — tabellene fra boken «Mystikk som underholdning»."
+>
+
+  <nav class="breadcrumb container">
+    <a href="/tryllehistorie">Tryllehistorie</a>
+    <span>›</span>
+    <span aria-current="page">Tabeller</span>
+  </nav>
+
+  <section class="hero">
+    <div class="container">
+      <span class="hero-label">Foreningshistorie</span>
+      <h1>Tryllehistorie i tabeller</h1>
+      <p class="hero-ingress">
+        Ledere, æresbevisninger, priser og mesterskap i norsk og nordisk tryllekunst gjennom 1900-tallet,
+        slik de er gjengitt i tabellene bakerst i boken «Mystikk som underholdning».
+      </p>
+    </div>
+  </section>
+
+  <section class="innhold section-pad">
+    <div class="container">
+
+      {sections.length === 0 && (
+        <p class="tom-liste">Vi jobber med å legge inn tabellene her — kom tilbake litt senere!</p>
+      )}
+
+      {sections.length > 0 && (
+        <nav class="toc" aria-label="Innhold">
+          <h2 class="toc-heading">Innhold</h2>
+          <ol>
+            {sections.map(s => <li><a href={`#${s.slug}`}>{s.title}</a></li>)}
+          </ol>
+        </nav>
+      )}
+
+      {sections.map(s => {
+        const introHtml = portableTextToHtml(s.introText)
+        const textOnly = s.roles.length === 0 && s.results.length === 0
+        const rc = roleColumns(s.roles)
+        const cc = resultColumns(s.results)
+        return (
+          <section class="tabell-seksjon" id={s.slug} aria-labelledby={`${s.slug}-h`}>
+            <div class="seksjon-head">
+              <h2 class="seksjon-tittel" id={`${s.slug}-h`}>{s.title}</h2>
+              {textOnly && introHtml && (
+                <NarrateButton text={portableTextToPlainText(s.introText)} label={`Les «${s.title}» høyt`} />
+              )}
+            </div>
+            {s.organization?.slug && (
+              <p class="seksjon-org">
+                <a href={`/utstillingen/trylleforeningene/${s.organization.slug}`}>{s.organization.name}</a>
+              </p>
+            )}
+
+            {introHtml && <div class={textOnly ? 'seksjon-tekst seksjon-tekst--liste' : 'seksjon-tekst'} set:html={introHtml} />}
+
+            {s.roles.length > 0 && (
+              <div class="tabell-wrap">
+                <table class="bok-tabell">
+                  <thead>
+                    <tr>
+                      {rc.verv && <th scope="col">Periode</th>}
+                      <th scope="col">Navn</th>
+                      {!rc.verv && <th scope="col">År</th>}
+                      {rc.title && <th scope="col">Tittel</th>}
+                      {rc.country && <th scope="col">Land</th>}
+                      {rc.note && <th scope="col">Merknad</th>}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {s.roles.map(r => (
+                      <tr>
+                        {rc.verv && <td class="tall">{period(r)}</td>}
+                        <td class="navn">{r.person?.slug ? <a href={`${BIO_BASE}${r.person.slug}`}>{r.name}</a> : r.name}</td>
+                        {!rc.verv && <td class="tall">{period(r)}</td>}
+                        {rc.title && <td>{r.roleTitle}</td>}
+                        {rc.country && <td>{r.country}</td>}
+                        {rc.note && <td class="merknad">{r.note}</td>}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+
+            {s.results.length > 0 && (
+              <div class="tabell-wrap">
+                <table class="bok-tabell">
+                  <thead>
+                    <tr>
+                      {cc.category && <th scope="col">Kongress</th>}
+                      {cc.location && <th scope="col">Sted</th>}
+                      <th scope="col">År</th>
+                      <th scope="col">Navn</th>
+                      {cc.country && <th scope="col">Land</th>}
+                      {cc.placement && <th scope="col">Merknad</th>}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {s.results.map(r => (
+                      <tr>
+                        {cc.category && <td>{r.category}</td>}
+                        {cc.location && <td>{r.location}</td>}
+                        <td class="tall">{r.year}</td>
+                        <td class="navn">{r.personRef?.slug ? <a href={`${BIO_BASE}${r.personRef.slug}`}>{r.personName}</a> : r.personName}</td>
+                        {cc.country && <td>{COUNTRY_NAMES[r.country] ?? r.country}</td>}
+                        {cc.placement && <td class="merknad">{r.placement !== cc.usual ? r.placement : ''}</td>}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+
+            {s.footnote && <p class="fotnote">{s.footnote}</p>}
+          </section>
+        )
+      })}
+
+      {bookSource && (
+        <p class="kilde">
+          Kilde: {bookSource}. Navn og skrivemåter er gjengitt slik de står i boken.
+          Se også <a href="/tryllehistorie/norden-i-fism">Norden i FISM</a>.
+        </p>
+      )}
+
+    </div>
+  </section>
+
+</BaseLayout>
+
+<style>
+  .breadcrumb { padding-block: 1.5rem 0; font-family: var(--font-ui); font-size: 0.85rem; color: #777; }
+  .breadcrumb a { color: var(--burgundy); text-decoration: none; }
+  .breadcrumb a:hover { text-decoration: underline; }
+  .breadcrumb span[aria-current] { color: #999; }
+
+  .hero { padding-block: 3rem 2rem; background: var(--cream); }
+  .hero-label {
+    display: inline-block; font-family: var(--font-ui); font-size: 0.75rem;
+    letter-spacing: 0.18em; text-transform: uppercase; color: var(--gold);
+    border-bottom: 1px solid var(--gold); padding-bottom: 0.2em; margin-bottom: 1rem;
+  }
+  .hero h1 { font-family: var(--font-display); font-size: clamp(1.8rem, 4vw, 2.6rem); color: var(--burgundy); margin-bottom: 1rem; }
+  .hero-ingress { font-family: var(--font-body); font-size: 1.05rem; color: #555; line-height: 1.7; max-width: 640px; }
+
+  .section-pad { padding-block: 3rem 5rem; }
+  .tom-liste { font-family: var(--font-body); font-size: 1.05rem; color: #777; text-align: center; padding: 3rem 0; }
+
+  .toc { background: var(--cream); border-left: 3px solid var(--gold); padding: 1.25rem 1.5rem; margin-bottom: 3rem; max-width: 720px; }
+  .toc-heading { font-family: var(--font-ui); font-size: 0.78rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--gold); margin: 0 0 0.75rem; }
+  .toc ol { margin: 0; padding-left: 1.4rem; columns: 2 18rem; column-gap: 2rem; font-family: var(--font-body); font-size: 0.95rem; line-height: 1.8; }
+  .toc a { color: var(--burgundy); text-decoration: none; }
+  .toc a:hover { text-decoration: underline; }
+
+  .tabell-seksjon { margin-bottom: 3.5rem; max-width: 820px; scroll-margin-top: 6rem; }
+  .seksjon-head { display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap; }
+  .seksjon-tittel { font-family: var(--font-display); font-size: 1.45rem; color: var(--burgundy); margin: 0; }
+  .seksjon-org { font-family: var(--font-ui); font-size: 0.82rem; margin: 0.3rem 0 0; }
+  .seksjon-org a { color: var(--gold-dark, var(--gold)); text-decoration: none; }
+  .seksjon-org a:hover { text-decoration: underline; }
+  .seksjon-tekst { font-family: var(--font-body); font-size: 1rem; line-height: 1.7; color: #444; margin-top: 1rem; }
+  .seksjon-tekst--liste :global(p) { margin: 0 0 0.6rem; }
+  .seksjon-tekst :global(h3) { font-family: var(--font-display); font-size: 1.1rem; color: var(--burgundy); margin: 1.5rem 0 0.6rem; }
+
+  .tabell-wrap { overflow-x: auto; margin-top: 1rem; }
+  .bok-tabell { width: 100%; border-collapse: collapse; font-family: var(--font-body); font-size: 0.95rem; }
+  .bok-tabell th {
+    text-align: left; font-family: var(--font-ui); font-size: 0.75rem; letter-spacing: 0.05em;
+    text-transform: uppercase; color: var(--gold); border-bottom: 2px solid var(--gold);
+    padding: 0.5rem 0.75rem; white-space: nowrap;
+  }
+  .bok-tabell td { padding: 0.45rem 0.75rem; border-bottom: 1px dotted rgba(107,15,26,0.25); color: #444; vertical-align: top; }
+  .bok-tabell .tall { white-space: nowrap; font-variant-numeric: tabular-nums; }
+  .bok-tabell .navn { color: #222; }
+  .bok-tabell .merknad { font-size: 0.85rem; color: #777; }
+  .bok-tabell a { color: var(--burgundy); text-decoration: none; border-bottom: 1px solid var(--gold); }
+  .bok-tabell a:hover { color: var(--gold-dark, var(--gold)); }
+
+  .fotnote { font-family: var(--font-ui); font-size: 0.82rem; color: #888; margin-top: 0.75rem; line-height: 1.6; }
+  .kilde { font-family: var(--font-ui); font-size: 0.85rem; color: #777; border-top: 1px solid rgba(107,15,26,0.12); padding-top: 1.25rem; max-width: 820px; }
+  .kilde a { color: var(--burgundy); }
+</style>

@@ -95,6 +95,14 @@ export const competitionResult = defineType({
       validation: R => R.required(),
     }),
 
+    defineField({
+      name: 'section',
+      title: 'Seksjon (tabell)',
+      type: 'reference',
+      to: [{ type: 'historicalSection' }],
+      description: 'Sett for resultater som hører til en tabell på /tryllehistorie/tabeller (f.eks. «Norgesmestere»). Slike resultater vises der i stedet for i «Andre»-tabellen på Norden i FISM.',
+    }),
+
     // ── 3. KILDE ─────────────────────────────────────────────────
     defineField({
       name: 'source',

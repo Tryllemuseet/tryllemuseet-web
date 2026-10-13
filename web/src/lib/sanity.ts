@@ -664,12 +664,14 @@ export interface CompetitionResult {
   personName: string
   personRef?: { slug: string; name: string }
   country: 'NO' | 'SE' | 'DK' | 'FI' | 'IS'
-  competition: 'fism' | 'nordisk' | 'nm' | 'annet'
+  competition: 'fism' | 'nordisk' | 'nordiskKongress' | 'nm' | 'annet'
   year: number
   location?: string
   category?: string
   placement: string
   source?: string
+  // Set when the result belongs to a table on /tryllehistorie/tabeller
+  section?: string
 }
 
 // ── Typer: Barn & unge ───────────────────────────────────────────
@@ -935,7 +937,8 @@ export async function getAllCompetitionResults(): Promise<CompetitionResult[]> {
     *[_type == "competitionResult" && isVisible != false] | order(year desc) {
       _id, personName,
       "personRef": personRef-> { "slug": slug.current, name },
-      country, competition, year, location, category, placement, source
+      country, competition, year, location, category, placement, source,
+      "section": section._ref
     }
   `)
 }
@@ -3061,6 +3064,8 @@ export interface MagicOrganization {
   articles?:       MagicOrgArticle[]
   gallery?:        { asset: { _ref: string; url: string }; alt?: string; caption?: string; year?: number }[]
   sources?:        SourceRef[]
+  // Tables on /tryllehistorie/tabeller tied to this organization (presidents, honours …)
+  historicalSections?: { title: string; slug: string }[]
 }
 
 // ── Spørringer: MagicOrganization ────────────────────────────────
@@ -3110,7 +3115,11 @@ export async function getMagicOrganizationBySlug(slug: string): Promise<MagicOrg
         }
       },
       gallery[] { asset->{ _ref, url }, alt, caption, year },
-      sources[] { label, url, sourceRef-> { title, author, type, year, url } }
+      sources[] { label, url, sourceRef-> { title, author, type, year, url } },
+      "historicalSections": *[_type == "historicalSection" && isVisible != false
+          && relatedOrganization._ref == ^._id
+          && count(*[_type in ["organizationRole", "competitionResult"] && isVisible != false && references(^._id)]) > 0]
+        | order(order asc) { title, "slug": slug.current }
     }
   `, { slug })
 }
@@ -3122,6 +3131,82 @@ export async function getMagicOrganizationPaths() {
   return orgs
     .filter((o: { slug?: string }) => o.slug)
     .map((o: { slug: string }) => ({ params: { slug: o.slug } }))
+}
+
+// ── Historiske tabeller («Mystikk som underholdning») ────────────
+// One historicalSection per table in the book; organizationRole and
+// competitionResult rows point at their section. Rendered by
+// /tryllehistorie/tabeller in the book's order.
+
+export interface HistoricalTableRole {
+  _id:        string
+  name:       string
+  person?:    { name: string; slug: string }
+  roleTitle:  string
+  category:   'verv' | 'aeresbevisning'
+  yearFrom?:  number
+  yearTo?:    number
+  country?:   string
+  note?:      string
+}
+
+export interface HistoricalTableResult {
+  _id:        string
+  personName: string
+  personRef?: { name: string; slug: string }
+  country:    string
+  year:       number
+  location?:  string
+  category?:  string
+  placement:  string
+}
+
+export interface HistoricalSection {
+  _id:          string
+  title:        string
+  slug:         string
+  order?:       number
+  introText?:   PortableTextBlock[]
+  footnote?:    string
+  organization?: { name: string; abbreviation?: string; slug?: string }
+  source?:      { title: string; author?: string; year?: number }
+  totalRows:    number   // incl. hidden rows; 0 = text-only section
+  roles:        HistoricalTableRole[]
+  results:      HistoricalTableResult[]
+}
+
+export async function getHistoricalSections(): Promise<HistoricalSection[]> {
+  const sections: HistoricalSection[] = await sanityClient.fetch(`
+    *[_type == "historicalSection" && isVisible != false] | order(order asc) {
+      _id, title, "slug": slug.current, order, footnote,
+      introText[]{
+        ...,
+        markDefs[]{
+          ...,
+          "reference": reference->{ "slug": slug.current }
+        }
+      },
+      "organization": relatedOrganization->{ name, abbreviation, "slug": slug.current },
+      "source": source->{ title, author, year },
+      "totalRows": count(*[_type in ["organizationRole", "competitionResult"] && section._ref == ^._id]),
+      "roles": *[_type == "organizationRole" && isVisible != false && section._ref == ^._id]
+        | order(yearFrom asc, _createdAt asc) {
+          _id, roleTitle, category, yearFrom, yearTo, country, note,
+          "name": coalesce(personNameFallback, person->name),
+          "person": person->{ name, "slug": slug.current }
+        },
+      "results": *[_type == "competitionResult" && isVisible != false && section._ref == ^._id]
+        | order(year asc, _createdAt asc) {
+          _id, personName, country, year, location, category, placement,
+          "personRef": personRef->{ name, "slug": slug.current }
+        }
+    }
+  `)
+  // A table whose rows are all still hidden is left out; text-only sections
+  // (foreign visitors, bibliography — no rows at all) only need their text.
+  return sections.filter(s =>
+    s.roles.length > 0 || s.results.length > 0 || (s.totalRows === 0 && (s.introText?.length ?? 0) > 0),
+  )
 }
 
 // ── Typer: Tryllequiz ────────────────────────────────────────────
