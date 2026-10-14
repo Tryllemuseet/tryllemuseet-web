@@ -100,6 +100,7 @@ export const structure: StructureResolver = (S) =>
               S.documentTypeListItem('artifact').title('Artefakt'),
               S.documentTypeListItem('magicOrganization').title('Trylleforening'),
               S.documentTypeListItem('organizationRole').title('Verv og æresbevisninger'),
+              S.documentTypeListItem('historicalSection').title('Historisk seksjon (tabell)'),
               S.documentTypeListItem('qrCode').title('QR-kode'),
             ]),
         ),

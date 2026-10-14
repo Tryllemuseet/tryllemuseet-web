@@ -1,11 +1,19 @@
 ---
 // src/pages/tryllehistorie/norden-i-fism.astro
 import BaseLayout from '../../layouts/BaseLayout.astro'
-import { getAllCompetitionResults } from '../../lib/sanity'
+import { getAllCompetitionResults, getSiteConfig, KONKURRANSE_PATH } from '../../lib/sanity'
+
+// Superseded by /tryllehistorie/konkurransehistorie once
+// siteConfig.historietabellerActive is on; until then this stays the public
+// page, exactly as before the tables from «Mystikk som underholdning» arrived.
+const config = await getSiteConfig()
+if (config.historietabellerActive) return Astro.redirect(KONKURRANSE_PATH, 301)
 
 const allResults = await getAllCompetitionResults()
 const fismResults = allResults.filter(r => r.competition === 'fism')
-const otherResults = allResults.filter(r => r.competition !== 'fism')
+// Keep the rows imported for the new tables (compresult-msu-*) off this page
+// while it's the public one; the older hand-entered NM/Nordic rows stay.
+const otherResults = allResults.filter(r => r.competition !== 'fism' && !r._id.startsWith('compresult-msu-'))
 
 const COUNTRY_FLAGS: Record<string, string> = {
   NO: '🇳🇴', SE: '🇸🇪', DK: '🇩🇰', FI: '🇫🇮', IS: '🇮🇸',

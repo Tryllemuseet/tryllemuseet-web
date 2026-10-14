@@ -95,6 +95,21 @@ export const competitionResult = defineType({
       validation: R => R.required(),
     }),
 
+    defineField({
+      name: 'section',
+      title: 'Seksjon (tabell)',
+      type: 'reference',
+      to: [{ type: 'historicalSection' }],
+      description: 'Sett for resultater som hører til en tabell (f.eks. «Norgesmestere»). Uten seksjon vises FISM-resultater i FISM-fanen og alt annet i «Andre»-fanen på Konkurransehistorie.',
+    }),
+
+    defineField({
+      name: 'tableOrder',
+      title: 'Rekkefølge i tabellen',
+      type: 'number',
+      description: 'Plassering i tabellen (Seksjon), lavest først. Tom = sortert etter år etter de nummererte.',
+    }),
+
     // ── 3. KILDE ─────────────────────────────────────────────────
     defineField({
       name: 'source',

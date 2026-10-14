@@ -95,6 +95,26 @@ export const organizationRole = defineType({
       description: 'Fritekst-merknad fra kildematerialet (fotnoter e.l.).',
     }),
     defineField({
+      name: 'internalNotes',
+      title: 'Intern merknad',
+      type: 'text',
+      rows: 2,
+      description: 'Vises ikke på nettstedet. F.eks. usikre koblinger eller trykkfeil i kilden.',
+    }),
+    defineField({
+      name: 'section',
+      title: 'Seksjon (tabell)',
+      type: 'reference',
+      to: [{ type: 'historicalSection' }],
+      description: 'Hvilken tabell (Historisk seksjon) raden hører til — styrer hvor den vises på Foreningshistorie/Konkurransehistorie.',
+    }),
+    defineField({
+      name: 'tableOrder',
+      title: 'Rekkefølge i tabellen',
+      type: 'number',
+      description: 'Plassering i tabellen (Seksjon), lavest først. Tom = sortert etter år etter de nummererte.',
+    }),
+    defineField({
       name: 'source',
       title: 'Kilde',
       type: 'reference',

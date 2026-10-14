@@ -1,0 +1,106 @@
+---
+// src/pages/tryllehistorie/foreningshistorie.astro
+// The organisation tables from «Mystikk som underholdning» in tabs: leaders,
+// honours, prizes, foreign visitors and the book's bibliography. Each
+// historicalSection's `tab` decides where it goes; book order within a tab.
+// Replaces /tryllehistorie/tabeller.
+import BaseLayout from '../../layouts/BaseLayout.astro'
+import HistoryTabs from '../../components/HistoryTabs.astro'
+import HistoricalSectionBlock from '../../components/HistoricalSectionBlock.astro'
+import { getHistoricalSections, getSiteConfig, FORENING_TABS, KONKURRANSE_PATH } from '../../lib/sanity'
+
+const [sections, config] = await Promise.all([getHistoricalSections(), getSiteConfig()])
+// Launch flag: while off the page builds for testing but is noindex and unlinked.
+const launched = config.historietabellerActive
+const sectionsByTab = (id: string) => sections.filter(s => s.tab === id)
+const tabs = FORENING_TABS.filter(t => sectionsByTab(t.id).length > 0)
+const bookSource = sections.find(s => s.source)?.source
+---
+
+<BaseLayout
+  title="Foreningshistorie — Tryllemuseet"
+  description="Formenn og presidenter, æresmedlemmer, priser og hedersbevisninger i norske og nordiske trylleforeninger — tabellene fra boken «Mystikk som underholdning»."
+  noindex={!launched}
+>
+  {!launched && (
+    <div class="forhandsvisning" role="note">
+      <div class="container">
+        <strong>Forhåndsvisning – ikke publisert.</strong>
+        Siden er ikke lenket fra menyen og vises ikke i søkemotorer. Den publiseres når
+        «Konkurranse- og foreningshistorie er aktiv» slås på i Innstillinger i Studio.
+      </div>
+    </div>
+  )}
+
+
+  <nav class="breadcrumb container">
+    <a href="/tryllehistorie">Tryllehistorie</a>
+    <span>›</span>
+    <span aria-current="page">Foreningshistorie</span>
+  </nav>
+
+  <section class="hero">
+    <div class="container">
+      <span class="hero-label">Arkivet</span>
+      <h1>Foreningshistorie</h1>
+      <p class="hero-ingress">
+        Ledere, æresbevisninger og priser i norske og nordiske trylleforeninger gjennom 1900-tallet,
+        og utenlandske tryllekunstnere som har besøkt Norge — slik det er gjengitt bakerst i boken
+        «Mystikk som underholdning».
+      </p>
+    </div>
+  </section>
+
+  <section class="innhold section-pad">
+    <div class="container">
+
+      {tabs.length === 0 && (
+        <p class="tom-liste">Vi jobber med å legge inn tabellene her — kom tilbake litt senere!</p>
+      )}
+
+      {tabs.length > 0 && (
+        <HistoryTabs tabs={tabs} label="Foreningshistorie">
+          {tabs.map(t => (
+            <section data-tab-panel id={t.id}>
+              <h2 class="panel-title">{t.label}</h2>
+              {sectionsByTab(t.id).map(s => <HistoricalSectionBlock section={s} />)}
+            </section>
+          ))}
+        </HistoryTabs>
+      )}
+
+      {bookSource && (
+        <p class="kilde">
+          Kilde: «{bookSource.title}»{bookSource.author ? `, ${bookSource.author}` : ''}{bookSource.year ? ` (${bookSource.year})` : ''}.
+          Navn og skrivemåter er gjengitt slik de står i boken.
+          Norgesmestere, nordiske mestere og FISM finner du under <a href={KONKURRANSE_PATH}>Konkurransehistorie</a>.
+        </p>
+      )}
+
+    </div>
+  </section>
+
+</BaseLayout>
+
+<style>
+  .forhandsvisning { background: #fff4d6; border-bottom: 1px solid var(--gold); font-family: var(--font-ui); font-size: 0.88rem; color: #5a4a20; padding-block: 0.75rem; }
+  .forhandsvisning strong { color: var(--burgundy); margin-right: 0.35rem; }
+  .breadcrumb { padding-block: 1.5rem 0; font-family: var(--font-ui); font-size: 0.85rem; color: #777; }
+  .breadcrumb a { color: var(--burgundy); text-decoration: none; }
+  .breadcrumb a:hover { text-decoration: underline; }
+  .breadcrumb span[aria-current] { color: #999; }
+
+  .hero { padding-block: 3rem 2rem; background: var(--cream); }
+  .hero-label {
+    display: inline-block; font-family: var(--font-ui); font-size: 0.75rem;
+    letter-spacing: 0.18em; text-transform: uppercase; color: var(--gold);
+    border-bottom: 1px solid var(--gold); padding-bottom: 0.2em; margin-bottom: 1rem;
+  }
+  .hero h1 { font-family: var(--font-display); font-size: clamp(1.8rem, 4vw, 2.6rem); color: var(--burgundy); margin-bottom: 1rem; }
+  .hero-ingress { font-family: var(--font-body); font-size: 1.05rem; color: #555; line-height: 1.7; max-width: 640px; }
+
+  .section-pad { padding-block: 2rem 5rem; }
+  .tom-liste { font-family: var(--font-body); font-size: 1.05rem; color: #777; text-align: center; padding: 3rem 0; }
+  .kilde { font-family: var(--font-ui); font-size: 0.85rem; color: #777; border-top: 1px solid rgba(107,15,26,0.12); padding-top: 1.25rem; max-width: 820px; margin-top: 2rem; }
+  .kilde a { color: var(--burgundy); }
+</style>

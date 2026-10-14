@@ -30,10 +30,12 @@ const navSubArea = {
           { title: 'Ingen', value: 'none' },
           { title: 'Tryllequiz (quizConfig.isActive)', value: 'quiz' },
           { title: 'Det trettende kabinett (gameConfig.isActive)', value: 'game' },
+          { title: 'Konkurranse-/foreningshistorie (vises når siteConfig.historietabellerActive er på)', value: 'historietabeller' },
+          { title: 'Erstattes av konkurranse-/foreningshistorie (vises bare FØR siteConfig.historietabellerActive er på)', value: 'historietabellerAv' },
         ],
       },
       initialValue: 'none',
-      description: 'Kun for de to spillene: punktet vises bare når BÅDE dette er «Synlig» OG hovedbryteren i quizConfig/gameConfig er aktiv.',
+      description: 'Knytter punktet til en hovedbryter: det vises bare når BÅDE dette er «Synlig» OG bryteren står slik valget sier. Brukes for spillene og for konkurranse-/foreningshistorie (der «Norden i FISM» bruker «Erstattes av …», så lanseringen er én bryter).',
     }),
   ],
   preview: {

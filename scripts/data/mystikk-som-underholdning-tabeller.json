@@ -1,11 +1,1765 @@
 {
   "_comment": [
-    "Transcription of the 'Tabeller' appendix (pp. 175-181) of «Mystikk som underholdning» (Nordheim & Berthelsen).",
-    "Transcribed from photos 2026-10-13. Names are spelled exactly as printed (incl. apparent typos), corrections go in 'note'.",
-    "'bio' = _id of a matching biography doc. Only set where the match is unambiguous; everything is created with needsReview/isVisible:false anyway.",
-    "Consumed by scripts/import-mystikk-tabeller.mjs. Pages 182-184 (utenlandske tryllekunstnere i Norge) and 185-186 (kildeliste) are NOT included yet."
+    "Transcription of the 'Tabeller' appendix (pp. 175-181), the list of foreign magicians who visited Norway (pp. 182-184) and the bibliography (pp. 185-186) of «Mystikk som underholdning» (Nordheim & Berthelsen, ca. 2000).",
+    "Transcribed from photos 2026-10-13. Names and prose are spelled exactly as printed (incl. apparent typos).",
+    "'note' is shown on the website (remarks from the book itself); 'internalNote' is editorial and stays in Studio only.",
+    "'bio' = _id of a matching biography doc, only where the match is unambiguous.",
+    "'section' = slug of the historicalSection (one per table in the book) the list belongs to; rendered on /tryllehistorie/konkurransehistorie or /tryllehistorie/foreningshistorie in the section's 'tab'.",
+    "Consumed by scripts/import-mystikk-tabeller.mjs."
   ],
-
+  "sections": [
+    {
+      "slug": "mcn-presidenter",
+      "title": "Formenn i MCO / fra 1949 presidenter i MCN",
+      "organization": "MCN",
+      "page": 175,
+      "order": 10,
+      "tab": "ledere"
+    },
+    {
+      "slug": "mjc-presidenter",
+      "title": "Presidenter i MJC",
+      "organization": "MJC",
+      "page": 175,
+      "footnote": "Etter 1996 har MJC ikke hatt noen fast president. MCN har vært behjelpelig bl.a. med møtelokale og har i tillegg utnevnt en juniorkonsulent. Jørn Hjulstad har vervet med ansvar for møteopplegg og møteledelse.",
+      "order": 20,
+      "tab": "ledere"
+    },
+    {
+      "slug": "dmro-presidenter",
+      "title": "Formann/presidenter i DMRO",
+      "organization": "DMR",
+      "page": 175,
+      "order": 30,
+      "tab": "ledere"
+    },
+    {
+      "slug": "mcn-aeresmedlemmer",
+      "title": "Æresmedlemmer i MCN",
+      "organization": "MCN",
+      "page": "175–176",
+      "order": 40,
+      "tab": "aeresbevisninger"
+    },
+    {
+      "slug": "mcn-evig-medlem",
+      "title": "Evig Medlem i MCN",
+      "organization": "MCN",
+      "page": 176,
+      "footnote": "Erik Diesen ble utnevnt til «Magisk Ridder» i forbindelse med at han gikk av som underholdningssjef i NRK. I praksis er «Magisk Ridder» det samme som «Evig Medlem».",
+      "order": 50,
+      "tab": "aeresbevisninger"
+    },
+    {
+      "slug": "mcn-magisk-knekt",
+      "title": "Magisk Knekt i MCN",
+      "organization": "MCN",
+      "page": 176,
+      "footnote": "Dag Johansen ga avkall på hedersbevisningen i protest mot styret.",
+      "order": 60,
+      "tab": "aeresbevisninger"
+    },
+    {
+      "slug": "sandors-pris",
+      "title": "Sandors Pris",
+      "organization": "MCN",
+      "page": "176–177",
+      "intro": [
+        "I 1937 foreslo MCOs svenske medlem Ernst Sandor (f. 22.07.1909 – d. 22.10.1968) at det burde opprettes en pris eller et hederstegn som skulle tildeles medlemmer som jevnlig sendte stoff til medlemsbladet, Magikeren. Sandor påtok seg å lage en medalje, samt å bekoste alle utgifter. Forslaget ble godt mottatt og prisen fikk derfor navnet «Sandors pris»."
+      ],
+      "order": 70,
+      "tab": "priser"
+    },
+    {
+      "slug": "dmro-aeresmedlemmer",
+      "title": "Æresmedlem i DMRO",
+      "organization": "DMR",
+      "page": 177,
+      "order": 80,
+      "tab": "aeresbevisninger"
+    },
+    {
+      "slug": "dmro-aerespris",
+      "title": "DMROs Ærespris",
+      "organization": "DMR",
+      "page": 177,
+      "intro": [
+        "Den Magiske Rings Ærespris har kun vært delt ut to ganger. Prisen er gitt til magikere som har et langt og aktivt magisk liv bak seg."
+      ],
+      "order": 90,
+      "tab": "priser"
+    },
+    {
+      "slug": "arets-tryllekunstner",
+      "title": "Årets Tryllekunstner",
+      "organization": "MCN",
+      "page": 177,
+      "intro": [
+        "I 1992 innførte MCN en ny pris, en pris som skulle tilfalle en tryllekunstner om har gjort seg spesielt bemerket i det foregående år. «Årets Tryllekunstner» får som gave et innrammet grafisk blad av en kjent kunstner. De som til nå har mottatt denne prisen er følgende:"
+      ],
+      "order": 100,
+      "tab": "priser"
+    },
+    {
+      "slug": "norgesmestere",
+      "title": "Norgesmestere og Norgesmesterskap",
+      "organization": "MCN",
+      "page": 177,
+      "intro": [
+        "Siden 1973 har MCN arrangert årlige norgesmesterskap. Det har vært de lokale kreftene i det enkelte distrikt som har stått som arrangør, da i nært samarbeidd med MCNs hovedstyre. Listen nedenfor viser arrangørstedet og navn på norgesmesteren:"
+      ],
+      "footnote": "Det ble ikke arrangert NM i 1992, 1995, 1997 og 1998.",
+      "order": 110,
+      "tab": "nm"
+    },
+    {
+      "slug": "norgesmestere-junior",
+      "title": "MJCs norgesmesterskap for juniortryllere",
+      "organization": "MJC",
+      "page": 178,
+      "footnote": "Det har ikke være arrangert NM for juniorer siste årene. Fra 1965 det arranger årskonkurranser, tittelen Norgesmester tatt i bruk fra 1965.",
+      "order": 120,
+      "tab": "junior"
+    },
+    {
+      "slug": "kongresser-1-pris",
+      "title": "Tryllekongresser i Norden: 1. pris vinnere",
+      "organization": null,
+      "page": 179,
+      "footnote": "Nordisk mester ble kåret fra 1958.",
+      "order": 130,
+      "tab": "kongresser"
+    },
+    {
+      "slug": "nordiske-mestere",
+      "title": "Kjedekongressene – Nordiske mestere",
+      "organization": null,
+      "page": "179–180",
+      "footnote": "1996 (SMCs 50 års kongress i Stockholm): Det ble ikke kåret nordisk mester. 1999: Det ble ikke kåret nordisk mester, kun 1. pris vinnere. Det ble ikke arrangert kjedekongress i 1992, 1997 og 1998.",
+      "order": 140,
+      "tab": "nordisk"
+    },
+    {
+      "slug": "magiens-trofaste-riddere",
+      "title": "Magiens trofaste riddere",
+      "organization": "NMU",
+      "page": "180–181",
+      "intro": [
+        "NMUs hederspris «Magiens trofaste riddere» ble innstiftet i 1971, og skulle være en hedersbevisning til en person som på en eller annen måte støttet aktivt opp i det nordiske magiarbeidet. Blant ridderne finner vi arrangører og medarrangører, aktive deltagere, dealere, artister og andre som NMU finner verdige. Det har vært en tradisjon at årets ridder kommer fra arrangørlandet. Listen nedenfor viser «de trofaste»:"
+      ],
+      "footnote": "Ikke utdelt i 1992, 1997 og 1998: Det ble ikke arrangert kjedekongress disse årene.",
+      "order": 150,
+      "tab": "priser"
+    },
+    {
+      "slug": "utenlandske-tryllekunstnere",
+      "title": "En del utenlandske tryllekunstnere som har besøkt Norge",
+      "organization": null,
+      "page": "182–184",
+      "blocks": [
+        {
+          "style": "normal",
+          "parts": [
+            {
+              "text": "(De som har vært spesielt engasjert i forbindelse med kongresser og møter i MCN m.m. ikke tatt med.)",
+              "em": true
+            }
+          ]
+        },
+        {
+          "style": "normal",
+          "parts": [
+            {
+              "text": "Hector el Neco",
+              "strong": true
+            },
+            {
+              "text": " fra Sverige på «De to små kroner» og på «Landsutstillingens teater» i Bergen 1928, turné i Trøndelag og nordover til Tromsø – 1931 og i 1934.",
+              "strong": false
+            }
+          ]
+        },
+        {
+          "style": "normal",
+          "parts": [
+            {
+              "text": "Aage Darling og Ilka",
+              "strong": true
+            },
+            {
+              "text": " fra Danmark på Colosseum i Oslo 1928 på turné i Norge – 1933 og 1934.",
+              "strong": false
+            }
+          ]
+        },
+        {
+          "style": "normal",
+          "parts": [
+            {
+              "text": "Moro",
+              "strong": true
+            },
+            {
+              "text": " fra Tyskland på Dovrehallen i Oslo 1929.",
+              "strong": false
+            }
+          ]
+        },
+        {
+          "style": "normal",
+          "parts": [
+            {
+              "text": "Rügheimer og With",
+              "strong": true
+            },
+            {
+              "text": " fra Tyskland på «Turnraketten» (Turnforeningens marked) – 1928.",
+              "strong": false
+            }
+          ]
+        },
+        {
+          "style": "normal",
+          "parts": [
+            {
+              "text": "Louis Brink",
+              "strong": true
+            },
+            {
+              "text": " fra Danmark på Skansen i Oslo 1929.",
+              "strong": false
+            }
+          ]
+        },
+        {
+          "style": "normal",
+          "parts": [
+            {
+              "text": "Geovanni Otto",
+              "strong": true
+            },
+            {
+              "text": " fra Danmark på Dovrehallen 1929, på Chat Noir – 1931–1945.",
+              "strong": false
+            }
+          ]
+        },
+        {
+          "style": "normal",
+          "parts": [
+            {
+              "text": "Franz & Franze",
+              "strong": true
+            },
+            {
+              "text": " fra Tyskland på Dovrehallen 1930.",
+              "strong": false
+            }
+          ]
+        },
+        {
+          "style": "normal",
+          "parts": [
+            {
+              "text": "Dante",
+              "strong": true
+            },
+            {
+              "text": " fra Danmark/USA på Cirkus Verdensteater i Oslo og på Drammensutstillingen, i Sandefjord, på Lillehammer og i Bergen 1930, og på Scala i Oslo 1935.",
+              "strong": false
+            }
+          ]
+        },
+        {
+          "style": "normal",
+          "parts": [
+            {
+              "text": "Cortini",
+              "strong": true
+            },
+            {
+              "text": " på Colosseum i Oslo i 1933 og i Oslo Fornøyelsespark 1936.",
+              "strong": false
+            }
+          ]
+        },
+        {
+          "style": "normal",
+          "parts": [
+            {
+              "text": "Brødrene Gogila",
+              "strong": true
+            },
+            {
+              "text": " fra Egypt på Tivoli i Oslo i 1933.",
+              "strong": false
+            }
+          ]
+        },
+        {
+          "style": "normal",
+          "parts": [
+            {
+              "text": "Solimann og Solimanné",
+              "strong": true
+            },
+            {
+              "text": " på Scala i Oslo 1934.",
+              "strong": false
+            }
+          ]
+        },
+        {
+          "style": "normal",
+          "parts": [
+            {
+              "text": "Gy Cross",
+              "strong": true
+            },
+            {
+              "text": " fra Ungarn på Cecil i Oslo 1934.",
+              "strong": false
+            }
+          ]
+        },
+        {
+          "style": "normal",
+          "parts": [
+            {
+              "text": "Harry Goldin",
+              "strong": true
+            },
+            {
+              "text": " fra Tyskland i Oslo Fornøyelsespark på Kontraskjæret i 1934.",
+              "strong": false
+            }
+          ]
+        },
+        {
+          "style": "normal",
+          "parts": [
+            {
+              "text": "Max von Rhodin",
+              "strong": true
+            },
+            {
+              "text": " fra Sverige på turné i Norge 1935 og 1941.",
+              "strong": false
+            }
+          ]
+        },
+        {
+          "style": "normal",
+          "parts": [
+            {
+              "text": "Chefalo",
+              "strong": true
+            },
+            {
+              "text": " i Oslo 1935.",
+              "strong": false
+            }
+          ]
+        },
+        {
+          "style": "normal",
+          "parts": [
+            {
+              "text": "Francardi",
+              "strong": true
+            },
+            {
+              "text": " i Oslo Fornøyelsespark 1936.",
+              "strong": false
+            }
+          ]
+        },
+        {
+          "style": "normal",
+          "parts": [
+            {
+              "text": "Keith Clark",
+              "strong": true
+            },
+            {
+              "text": " fra Frankrike på Regnbuen 1939.",
+              "strong": false
+            }
+          ]
+        },
+        {
+          "style": "normal",
+          "parts": [
+            {
+              "text": "Beité",
+              "strong": true
+            },
+            {
+              "text": " fra Sverige på turné i Norge bl.a. Stavanger og Bergen.",
+              "strong": false
+            }
+          ]
+        },
+        {
+          "style": "normal",
+          "parts": [
+            {
+              "text": "Erik Bang",
+              "strong": true
+            },
+            {
+              "text": " (Truxa) på Stratos i Oslo 1940 og på Bygdøynes i 1941.",
+              "strong": false
+            }
+          ]
+        },
+        {
+          "style": "normal",
+          "parts": [
+            {
+              "text": "Håkon Edeling",
+              "strong": true
+            },
+            {
+              "text": " fra Danmark på Regnbuen 1940 og 1942.",
+              "strong": false
+            }
+          ]
+        },
+        {
+          "style": "normal",
+          "parts": [
+            {
+              "text": "Karl Edler",
+              "strong": true
+            },
+            {
+              "text": " fra Tyskland på turné i Norge 1940.",
+              "strong": false
+            }
+          ]
+        },
+        {
+          "style": "normal",
+          "parts": [
+            {
+              "text": "Barry",
+              "strong": true
+            },
+            {
+              "text": " fra Tyskland på turné i Norge 1940.",
+              "strong": false
+            }
+          ]
+        },
+        {
+          "style": "normal",
+          "parts": [
+            {
+              "text": "Viggo Jahn",
+              "strong": true
+            },
+            {
+              "text": " på «Løwenbräu» i Oslo 1942.",
+              "strong": false
+            }
+          ]
+        },
+        {
+          "style": "normal",
+          "parts": [
+            {
+              "text": "Kurt Drössler",
+              "strong": true
+            },
+            {
+              "text": " fra Tyskland på turné i Norge 1943.",
+              "strong": false
+            }
+          ]
+        },
+        {
+          "style": "normal",
+          "parts": [
+            {
+              "text": "Zitzmann-Zirini",
+              "strong": true
+            },
+            {
+              "text": " fra Tyskland på turné i Norge 1943.",
+              "strong": false
+            }
+          ]
+        },
+        {
+          "style": "normal",
+          "parts": [
+            {
+              "text": "Dr. Egolar",
+              "strong": true
+            },
+            {
+              "text": " fra Danmark på Maxim i Oslo 1944–1947.",
+              "strong": false
+            }
+          ]
+        },
+        {
+          "style": "normal",
+          "parts": [
+            {
+              "text": "Matchcannelli",
+              "strong": true
+            },
+            {
+              "text": " fra Tyskland på Variete Nordland i Oslo 1944.",
+              "strong": false
+            }
+          ]
+        },
+        {
+          "style": "normal",
+          "parts": [
+            {
+              "text": "Geovanni Ottos",
+              "strong": true
+            },
+            {
+              "text": " åtte år gamle datter ",
+              "strong": false
+            },
+            {
+              "text": "Yvonne Otto",
+              "strong": true
+            },
+            {
+              "text": " opptrer i Oslo i nov./des. 1945.",
+              "strong": false
+            }
+          ]
+        },
+        {
+          "style": "normal",
+          "parts": [
+            {
+              "text": "Spinoza",
+              "strong": true
+            },
+            {
+              "text": " turnerer i Nord-Norge i 1946.",
+              "strong": false
+            }
+          ]
+        },
+        {
+          "style": "normal",
+          "parts": [
+            {
+              "text": "Louis Brinkfort",
+              "strong": true
+            },
+            {
+              "text": " fra Danmark på Bygdøy Sjøbad 1946.",
+              "strong": false
+            }
+          ]
+        },
+        {
+          "style": "normal",
+          "parts": [
+            {
+              "text": "Egolar & Verner",
+              "strong": true
+            },
+            {
+              "text": " på Casino Non Stop Show 1947.",
+              "strong": false
+            }
+          ]
+        },
+        {
+          "style": "normal",
+          "parts": [
+            {
+              "text": "Howard de Courcy",
+              "strong": true
+            },
+            {
+              "text": " på Casino Non Stop Show 1947.",
+              "strong": false
+            }
+          ]
+        },
+        {
+          "style": "normal",
+          "parts": [
+            {
+              "text": "Manioli og Madame Daneell",
+              "strong": true
+            },
+            {
+              "text": " på Cirkus Empress 1947.",
+              "strong": false
+            }
+          ]
+        },
+        {
+          "style": "normal",
+          "parts": [
+            {
+              "text": "Glen Pope",
+              "strong": true
+            },
+            {
+              "text": " fra U.S.A. på Casino Non Stop Show 1948.",
+              "strong": false
+            }
+          ]
+        },
+        {
+          "style": "normal",
+          "parts": [
+            {
+              "text": "Roxy",
+              "strong": true
+            },
+            {
+              "text": " fra Sverige på Casino Non Stop Show 1948.",
+              "strong": false
+            }
+          ]
+        },
+        {
+          "style": "normal",
+          "parts": [
+            {
+              "text": "Borra",
+              "strong": true
+            },
+            {
+              "text": " på Cirkus Berny 1951.",
+              "strong": false
+            }
+          ]
+        },
+        {
+          "style": "normal",
+          "parts": [
+            {
+              "text": "Manioli",
+              "strong": true
+            },
+            {
+              "text": " i Rosekjelleren 1951.",
+              "strong": false
+            }
+          ]
+        },
+        {
+          "style": "normal",
+          "parts": [
+            {
+              "text": "Recha",
+              "strong": true
+            },
+            {
+              "text": " på Cirkus Berny i 1952.",
+              "strong": false
+            }
+          ]
+        },
+        {
+          "style": "normal",
+          "parts": [
+            {
+              "text": "Viggo Spaar",
+              "strong": true
+            },
+            {
+              "text": " fra Danmark på Lillehammer 1952.",
+              "strong": false
+            }
+          ]
+        },
+        {
+          "style": "normal",
+          "parts": [
+            {
+              "text": "Gally-Gally",
+              "strong": true
+            },
+            {
+              "text": " fra Egypt på Cabaret Telle 1953 og på turné med Book-Jenssen 1954.",
+              "strong": false
+            }
+          ]
+        },
+        {
+          "style": "normal",
+          "parts": [
+            {
+              "text": "Donald B. Stuart",
+              "strong": true
+            },
+            {
+              "text": " på Edderkoppens Non Stop Show i Oslo 1953.",
+              "strong": false
+            }
+          ]
+        },
+        {
+          "style": "normal",
+          "parts": [
+            {
+              "text": "Tornedo",
+              "strong": true
+            },
+            {
+              "text": " på Edderkoppens Non Stop Show i Oslo 1953.",
+              "strong": false
+            }
+          ]
+        },
+        {
+          "style": "normal",
+          "parts": [
+            {
+              "text": "Cortini",
+              "strong": true
+            },
+            {
+              "text": " på Regnbuen 1954, senere Casino non Stop Show.",
+              "strong": false
+            }
+          ]
+        },
+        {
+          "style": "normal",
+          "parts": [
+            {
+              "text": "Viggo Spaar",
+              "strong": true
+            },
+            {
+              "text": " fra Danmark 1954.",
+              "strong": false
+            }
+          ]
+        },
+        {
+          "style": "normal",
+          "parts": [
+            {
+              "text": "George Braund",
+              "strong": true
+            },
+            {
+              "text": " 1954.",
+              "strong": false
+            }
+          ]
+        },
+        {
+          "style": "normal",
+          "parts": [
+            {
+              "text": "Yamo",
+              "strong": true
+            },
+            {
+              "text": " 1954.",
+              "strong": false
+            }
+          ]
+        },
+        {
+          "style": "normal",
+          "parts": [
+            {
+              "text": "Ferry Forst",
+              "strong": true
+            },
+            {
+              "text": " på Cirkus Berny 1955.",
+              "strong": false
+            }
+          ]
+        },
+        {
+          "style": "normal",
+          "parts": [
+            {
+              "text": "Niberco Brothers",
+              "strong": true
+            },
+            {
+              "text": " på Regnbuen 1955.",
+              "strong": false
+            }
+          ]
+        },
+        {
+          "style": "normal",
+          "parts": [
+            {
+              "text": "Leonhardt Taki",
+              "strong": true
+            },
+            {
+              "text": " i Rosekjellern i Oslo 1955.",
+              "strong": false
+            }
+          ]
+        },
+        {
+          "style": "normal",
+          "parts": [
+            {
+              "text": "Borra",
+              "strong": true
+            },
+            {
+              "text": " på Cirkus Scott 1955.",
+              "strong": false
+            }
+          ]
+        },
+        {
+          "style": "normal",
+          "parts": [
+            {
+              "text": "Rumbar",
+              "strong": true
+            },
+            {
+              "text": " i Rosekjelleren 1956.",
+              "strong": false
+            }
+          ]
+        },
+        {
+          "style": "normal",
+          "parts": [
+            {
+              "text": "Inge Pedro",
+              "strong": true
+            },
+            {
+              "text": " på Regnbuen 1956.",
+              "strong": false
+            }
+          ]
+        },
+        {
+          "style": "normal",
+          "parts": [
+            {
+              "text": "Tornedo",
+              "strong": true
+            },
+            {
+              "text": " på hotel Bristol 1957.",
+              "strong": false
+            }
+          ]
+        },
+        {
+          "style": "normal",
+          "parts": [
+            {
+              "text": "Olav Martin",
+              "strong": true
+            },
+            {
+              "text": " fra Danmark 1957.",
+              "strong": false
+            }
+          ]
+        },
+        {
+          "style": "normal",
+          "parts": [
+            {
+              "text": "Uffe Rasmussen",
+              "strong": true
+            },
+            {
+              "text": ", fra Danmark 1957.",
+              "strong": false
+            }
+          ]
+        },
+        {
+          "style": "normal",
+          "parts": [
+            {
+              "text": "Magini",
+              "strong": true
+            },
+            {
+              "text": " fra Sverige 1957.",
+              "strong": false
+            }
+          ]
+        },
+        {
+          "style": "normal",
+          "parts": [
+            {
+              "text": "Hillenius",
+              "strong": true
+            },
+            {
+              "text": " fra Sverige 1957.",
+              "strong": false
+            }
+          ]
+        },
+        {
+          "style": "normal",
+          "parts": [
+            {
+              "text": "Aage Darling",
+              "strong": true
+            },
+            {
+              "text": " fra Danmark på turné med Cirkus Herberth-revyen.",
+              "strong": false
+            }
+          ]
+        },
+        {
+          "style": "normal",
+          "parts": [
+            {
+              "text": "Viggo Spaar",
+              "strong": true
+            },
+            {
+              "text": " i Rosekjelleren 1957.",
+              "strong": false
+            }
+          ]
+        },
+        {
+          "style": "normal",
+          "parts": [
+            {
+              "text": "Bialla",
+              "strong": true
+            },
+            {
+              "text": " fra Sveits på Casino Non stop Show 1957.",
+              "strong": false
+            }
+          ]
+        },
+        {
+          "style": "normal",
+          "parts": [
+            {
+              "text": "Salminen",
+              "strong": true
+            },
+            {
+              "text": " fra Finland på Casino Non Stop Show 1958.",
+              "strong": false
+            }
+          ]
+        },
+        {
+          "style": "normal",
+          "parts": [
+            {
+              "text": "Pedro",
+              "strong": true
+            },
+            {
+              "text": " fra Sverige på Casino Non Stop Show 1958.",
+              "strong": false
+            }
+          ]
+        },
+        {
+          "style": "normal",
+          "parts": [
+            {
+              "text": "Viggo Spaar",
+              "strong": true
+            },
+            {
+              "text": " tryllet på Regnbuen 1959 og turné i Norge i 1963.",
+              "strong": false
+            }
+          ]
+        },
+        {
+          "style": "normal",
+          "parts": [
+            {
+              "text": "Jørgen Samson",
+              "strong": true
+            },
+            {
+              "text": " på Regnbuen i Oslo 1960.",
+              "strong": false
+            }
+          ]
+        },
+        {
+          "style": "normal",
+          "parts": [
+            {
+              "text": "2 Nicklass",
+              "strong": true
+            },
+            {
+              "text": " (danske tankeleserpar) var aktive Norge rundt på 1960-tallet.",
+              "strong": false
+            }
+          ]
+        },
+        {
+          "style": "normal",
+          "parts": [
+            {
+              "text": "Fred Kaps",
+              "strong": true
+            },
+            {
+              "text": " på Casino Non Stop Show 1962.",
+              "strong": false
+            }
+          ]
+        },
+        {
+          "style": "normal",
+          "parts": [
+            {
+              "text": "Fakiren Tagora and partner",
+              "strong": true
+            },
+            {
+              "text": " hos Berny 1962.",
+              "strong": false
+            }
+          ]
+        },
+        {
+          "style": "normal",
+          "parts": [
+            {
+              "text": "René September",
+              "strong": true
+            },
+            {
+              "text": " fra Frankrike på Regnbuen 1963.",
+              "strong": false
+            }
+          ]
+        },
+        {
+          "style": "normal",
+          "parts": [
+            {
+              "text": "Gentleman Jack",
+              "strong": true
+            },
+            {
+              "text": " hos Berny 1964 og 1965.",
+              "strong": false
+            }
+          ]
+        },
+        {
+          "style": "normal",
+          "parts": [
+            {
+              "text": "Harold and his Beauties",
+              "strong": true
+            },
+            {
+              "text": " (fransk illusjonist) hos Cirkus Scott 1965.",
+              "strong": false
+            }
+          ]
+        },
+        {
+          "style": "normal",
+          "parts": [
+            {
+              "text": "Grigor Pankov",
+              "strong": true
+            },
+            {
+              "text": " fra Russland besøkte Oslo i 1965 med blant annet en forestilling i Folkets Hus.",
+              "strong": false
+            }
+          ]
+        },
+        {
+          "style": "normal",
+          "parts": [
+            {
+              "text": "The Keeners",
+              "strong": true
+            },
+            {
+              "text": " på Casino Non Stop Show 1966.",
+              "strong": false
+            }
+          ]
+        },
+        {
+          "style": "normal",
+          "parts": [
+            {
+              "text": "Le Magicain Blance",
+              "strong": true
+            },
+            {
+              "text": " fra Frankrike hos Berny 1966.",
+              "strong": false
+            }
+          ]
+        },
+        {
+          "style": "normal",
+          "parts": [
+            {
+              "text": "Georges Schlick",
+              "strong": true
+            },
+            {
+              "text": " (buktaler) på Casino Non Stop Show 1967.",
+              "strong": false
+            }
+          ]
+        },
+        {
+          "style": "normal",
+          "parts": [
+            {
+              "text": "Emerson & Jayne",
+              "strong": true
+            },
+            {
+              "text": " på Casino Non Stop Show 1967.",
+              "strong": false
+            }
+          ]
+        },
+        {
+          "style": "normal",
+          "parts": [
+            {
+              "text": "Jo Kartys",
+              "strong": true
+            },
+            {
+              "text": " fra Frankrike på Regnbuen i 1967.",
+              "strong": false
+            }
+          ]
+        },
+        {
+          "style": "normal",
+          "parts": [
+            {
+              "text": "Duo Amos",
+              "strong": true
+            },
+            {
+              "text": " fra Sverige på Regnbuen i Oslo 1967.",
+              "strong": false
+            }
+          ]
+        },
+        {
+          "style": "normal",
+          "parts": [
+            {
+              "text": "Los Facito",
+              "strong": true
+            },
+            {
+              "text": " fra Danmark på Rosekjelleren i Oslo 1967 og på turné i Nord Norge 1968.",
+              "strong": false
+            }
+          ]
+        },
+        {
+          "style": "normal",
+          "parts": [
+            {
+              "text": "Kassagi",
+              "strong": true
+            },
+            {
+              "text": " fra Tunis på Casino Non Stop Show i 1968.",
+              "strong": false
+            }
+          ]
+        },
+        {
+          "style": "normal",
+          "parts": [
+            {
+              "text": "Viggo Jahn",
+              "strong": true
+            },
+            {
+              "text": " fra Danmark på Regnbuen i Oslo 1969 og 1971, på tivoli i Kristiansand 1975.",
+              "strong": false
+            }
+          ]
+        },
+        {
+          "style": "normal",
+          "parts": [
+            {
+              "text": "Brahma",
+              "strong": true
+            },
+            {
+              "text": " på Casino Non Stop Show 1969.",
+              "strong": false
+            }
+          ]
+        },
+        {
+          "style": "normal",
+          "parts": [
+            {
+              "text": "Panzero",
+              "strong": true
+            },
+            {
+              "text": " fra Tyskland på Casino Non Stop Show i 1969.",
+              "strong": false
+            }
+          ]
+        },
+        {
+          "style": "normal",
+          "parts": [
+            {
+              "text": "Spinoza",
+              "strong": true
+            },
+            {
+              "text": " fra Danmark på turné i Norge med Cirkus Løwe 1970.",
+              "strong": false
+            }
+          ]
+        },
+        {
+          "style": "normal",
+          "parts": [
+            {
+              "text": "Ilja Simvolokova",
+              "strong": true
+            },
+            {
+              "text": " fra Russland har besøkt Oslo, Bergen og Stavanger med Moskva statssirkus 1970.",
+              "strong": false
+            }
+          ]
+        },
+        {
+          "style": "normal",
+          "parts": [
+            {
+              "text": "John Wisney",
+              "strong": true
+            },
+            {
+              "text": " på Victoria hotell i Stavanger, Bellevue i Haugesund og Rosekjelleren i Oslo 1970.",
+              "strong": false
+            }
+          ]
+        },
+        {
+          "style": "normal",
+          "parts": [
+            {
+              "text": "Chariman",
+              "strong": true
+            },
+            {
+              "text": " fra Sverige på turné i Norge bl.a. Fredrikstad, Drammen , Moss, Larvik og Sarpsborg 1970.",
+              "strong": false
+            }
+          ]
+        },
+        {
+          "style": "normal",
+          "parts": [
+            {
+              "text": "Malika og Mils",
+              "strong": true
+            },
+            {
+              "text": " på turné med Cirkus Berny 1971.",
+              "strong": false
+            }
+          ]
+        },
+        {
+          "style": "normal",
+          "parts": [
+            {
+              "text": "Magini",
+              "strong": true
+            },
+            {
+              "text": " fra Sverige på Hardanger hotell 1972.",
+              "strong": false
+            }
+          ]
+        },
+        {
+          "style": "normal",
+          "parts": [
+            {
+              "text": "Harold & Pin up girls",
+              "strong": true
+            },
+            {
+              "text": " på restaurant Rozenkrantz i Bergen 1973.",
+              "strong": false
+            }
+          ]
+        },
+        {
+          "style": "normal",
+          "parts": [
+            {
+              "text": "Igor Kio",
+              "strong": true
+            },
+            {
+              "text": " fra Russland har besøkt Oslo, med det russiske statssirkus 1973.",
+              "strong": false
+            }
+          ]
+        },
+        {
+          "style": "normal",
+          "parts": [
+            {
+              "text": "Wicktor Burnet",
+              "strong": true
+            },
+            {
+              "text": " fra England på El Toro (Bristol) i Oslo 1978.",
+              "strong": false
+            }
+          ]
+        },
+        {
+          "style": "normal",
+          "parts": [
+            {
+              "text": "Toledo",
+              "strong": true
+            },
+            {
+              "text": " fra Sverige på Lillestrøm med et tivoli 1978.",
+              "strong": false
+            }
+          ]
+        },
+        {
+          "style": "normal",
+          "parts": [
+            {
+              "text": "Joe Labero",
+              "strong": true
+            },
+            {
+              "text": " fra Sverige på Chat Noir 1993.",
+              "strong": false
+            }
+          ]
+        },
+        {
+          "style": "normal",
+          "parts": [
+            {
+              "text": "David Copperfield",
+              "strong": true
+            },
+            {
+              "text": " fra U.S.A. i Oslo Spektrum 1997.",
+              "strong": false
+            }
+          ]
+        },
+        {
+          "style": "normal",
+          "parts": [
+            {
+              "text": "Nick Nockolas",
+              "strong": true
+            },
+            {
+              "text": " fra New Zealand, gatetryller på Karl Johan i Oslo 1997 og 1998.",
+              "strong": false
+            }
+          ]
+        }
+      ],
+      "order": 160,
+      "tab": "besok"
+    },
+    {
+      "slug": "kilder-og-litteraturliste",
+      "title": "Kilder og litteraturliste",
+      "organization": null,
+      "page": "185–186",
+      "blocks": [
+        {
+          "style": "h3",
+          "parts": [
+            {
+              "text": "Kilder"
+            }
+          ]
+        },
+        {
+          "style": "normal",
+          "parts": [
+            {
+              "text": "Ansteinsson, Eli: Teater i Norge, Oslo, 1968"
+            }
+          ]
+        },
+        {
+          "style": "normal",
+          "parts": [
+            {
+              "text": "Berthelsen, Herman: Bibliografi, norske tryllebøker 1798–1982, Oslo, 1985"
+            }
+          ]
+        },
+        {
+          "style": "normal",
+          "parts": [
+            {
+              "text": "Bjerke, André: Samlede dikt II, Oslo, 1977"
+            }
+          ]
+        },
+        {
+          "style": "normal",
+          "parts": [
+            {
+              "text": "Bjørnsen, Bjørn: Sirkusliv, Oslo, 1962"
+            }
+          ]
+        },
+        {
+          "style": "normal",
+          "parts": [
+            {
+              "text": "Christopher, Milbourne: Panorama of Magic, New York, 1962"
+            }
+          ]
+        },
+        {
+          "style": "normal",
+          "parts": [
+            {
+              "text": "Christopher, Milbourne: The Illustrated History of Magic, New York, 1973"
+            }
+          ]
+        },
+        {
+          "style": "normal",
+          "parts": [
+            {
+              "text": "Crosby, Jan: Sannheten om Uri Geller, Oslo, 1974"
+            }
+          ]
+        },
+        {
+          "style": "normal",
+          "parts": [
+            {
+              "text": "DMRO: Medlemsmatrikler. div. årg."
+            }
+          ]
+        },
+        {
+          "style": "normal",
+          "parts": [
+            {
+              "text": "Encyclopaedia Britiannica: 15. utgave, 1988"
+            }
+          ]
+        },
+        {
+          "style": "normal",
+          "parts": [
+            {
+              "text": "Fredriksen, Tore: Søkelys på det mystiske og uforklarlige, Oslo, 1989"
+            }
+          ]
+        },
+        {
+          "style": "normal",
+          "parts": [
+            {
+              "text": "Huitfeldt, H.J.: Christiania Theaterhistorie, København, 1876"
+            }
+          ]
+        },
+        {
+          "style": "normal",
+          "parts": [
+            {
+              "text": "Jensson, Liv: Biografisk skuspillerleksikon, Oslo, 1981"
+            }
+          ]
+        },
+        {
+          "style": "normal",
+          "parts": [
+            {
+              "text": "Jensson, Liv: Teater i Drammen inntil 1840, Oslo, 1974"
+            }
+          ]
+        },
+        {
+          "style": "normal",
+          "parts": [
+            {
+              "text": "Jensson, Liv: Teaterliv i Trondhjem 1800–1835, Oslo, 1965"
+            }
+          ]
+        },
+        {
+          "style": "normal",
+          "parts": [
+            {
+              "text": "Jor, Finn og Jørgensen, Jørn-Kr.: I livets manesje, Oslo, 1998"
+            }
+          ]
+        },
+        {
+          "style": "normal",
+          "parts": [
+            {
+              "text": "Knudsen, Hans P. S.: Folkeskribenten Rudolf Muus og hans forleggere, Oslo, 1995"
+            }
+          ]
+        },
+        {
+          "style": "normal",
+          "parts": [
+            {
+              "text": "Lønnebotten, Petter: Hvem er hvem i radio og TV, Oslo, 1968"
+            }
+          ]
+        },
+        {
+          "style": "normal",
+          "parts": [
+            {
+              "text": "MCN: Medlemsmatrikler. div. årg."
+            }
+          ]
+        },
+        {
+          "style": "normal",
+          "parts": [
+            {
+              "text": "Muus, Rudolf: Gamle Kristiania minder, Kristiania, 1923"
+            }
+          ]
+        },
+        {
+          "style": "normal",
+          "parts": [
+            {
+              "text": "Muus, Rudolf: Kristiania forstadsscener og deres skuespillere, Kristiania, 1924"
+            }
+          ]
+        },
+        {
+          "style": "normal",
+          "parts": [
+            {
+              "text": "Nilsson, Christer: Trollare och andre Underhållare, Halmstad, 1990"
+            }
+          ]
+        },
+        {
+          "style": "normal",
+          "parts": [
+            {
+              "text": "Nelms, Henning: Magic and Showmanship, USA, 1969"
+            }
+          ]
+        },
+        {
+          "style": "normal",
+          "parts": [
+            {
+              "text": "Norberg, Svein Nic.: Katter og Hermelin, Trondheim, 1988"
+            }
+          ]
+        },
+        {
+          "style": "normal",
+          "parts": [
+            {
+              "text": "Nordheim, Terje: Tryllekunst og gjøgling på byens torg. St. Hallvard, Oslo, 1994"
+            }
+          ]
+        },
+        {
+          "style": "normal",
+          "parts": [
+            {
+              "text": "Nystrøm, Ejler: Offentlige forlystelser i Fredrik den Sjettes tid, København, 1913"
+            }
+          ]
+        },
+        {
+          "style": "normal",
+          "parts": [
+            {
+              "text": "Parmer, Vidar: Teater på Fredrikshald, Halden, 1965"
+            }
+          ]
+        },
+        {
+          "style": "normal",
+          "parts": [
+            {
+              "text": "Price, David: Magic: A Pictorial History of Conjurers in the Theatre, London, 1985"
+            }
+          ]
+        },
+        {
+          "style": "normal",
+          "parts": [
+            {
+              "text": "Reynolds, Charles og Regina: 100 års plakater om magi og trylleri, København, 1976"
+            }
+          ]
+        },
+        {
+          "style": "normal",
+          "parts": [
+            {
+              "text": "Store Norske Leksikon: Kunnskapsforlaget, Oslo, 1993"
+            }
+          ]
+        },
+        {
+          "style": "normal",
+          "parts": [
+            {
+              "text": "Stenman, Börje: Litet trollerilexikon, Helsingfors, 1952"
+            }
+          ]
+        },
+        {
+          "style": "normal",
+          "parts": [
+            {
+              "text": "Truxa: En hilsen fra jubilaren, København, 1969"
+            }
+          ]
+        },
+        {
+          "style": "normal",
+          "parts": [
+            {
+              "text": "Øisang, Ole: Teater i Trondheim gjennom 125 år, Trondheim, 1941"
+            }
+          ]
+        },
+        {
+          "style": "h3",
+          "parts": [
+            {
+              "text": "Tidsskrifter"
+            }
+          ]
+        },
+        {
+          "style": "normal",
+          "parts": [
+            {
+              "text": "Aladin, Illusjonisten, Magiens Verden/Nordisk Magi, Magikeren, Pegasus, Ringen, Tryllestaven, Kulturnytt, og St. Hallvard"
+            }
+          ]
+        },
+        {
+          "style": "h3",
+          "parts": [
+            {
+              "text": "Arkiv/bibliotek"
+            }
+          ]
+        },
+        {
+          "style": "normal",
+          "parts": [
+            {
+              "text": "Det Glade Arkiv, Magiske Rings Arkiv og Norsk Tryle-Arkiv"
+            }
+          ]
+        },
+        {
+          "style": "normal",
+          "parts": [
+            {
+              "text": "MCNs bibliotek og Universitetsbiblioteket"
+            }
+          ]
+        },
+        {
+          "style": "normal",
+          "parts": [
+            {
+              "text": "Skriftlig informasjon og brosjyrer innsendt fra en del tryllekunstnere"
+            }
+          ]
+        },
+        {
+          "style": "normal",
+          "parts": [
+            {
+              "text": "Utklippsbøker og fotoalbum"
+            }
+          ]
+        },
+        {
+          "style": "normal",
+          "parts": [
+            {
+              "text": "Programmer fra Casino Non Stop Show"
+            }
+          ]
+        },
+        {
+          "style": "normal",
+          "parts": [
+            {
+              "text": "Samtaler med en rekke norske tryllekunstnere, artister og artistagenter"
+            }
+          ]
+        }
+      ],
+      "order": 170,
+      "tab": "kilder"
+    }
+  ],
   "organizationRoles": [
     {
       "list": "Formenn i MCO / fra 1949 presidenter i MCN",
@@ -14,26 +1768,126 @@
       "category": "verv",
       "roleTitle": "President",
       "entries": [
-        { "name": "Ingvald Iversen", "from": 1928, "to": 1931, "bio": "biography-iversen-ingvald", "roleTitle": "Formann (MCO)" },
-        { "name": "Gudbrand Lorentzen", "from": 1931, "to": 1934, "roleTitle": "Formann (MCO)" },
-        { "name": "Lagert Sander", "from": 1934, "to": 1935, "roleTitle": "Formann (MCO)" },
-        { "name": "Hans Buberg", "from": 1935, "to": 1937, "roleTitle": "Formann (MCO)" },
-        { "name": "Ingvald Iversen", "from": 1937, "to": 1946, "bio": "biography-iversen-ingvald", "roleTitle": "Formann (MCO)" },
-        { "name": "Gudbrand Lorentzen", "from": 1946, "to": 1948, "roleTitle": "Formann (MCO)" },
-        { "name": "Ragnar Øye", "from": 1948, "to": 1949, "bio": "biography-oeye-ragnar", "roleTitle": "Formann (MCO)" },
-        { "name": "Hilding Eriksson", "from": 1949, "to": 1951, "bio": "biography-eriksson-hilding", "note": "Første president." },
-        { "name": "Ingvald Iversen", "from": 1951, "to": 1954, "bio": "biography-iversen-ingvald" },
-        { "name": "Øystein Strømnes", "from": 1954, "to": 1956, "bio": "biography-stroemnes-oeystein" },
-        { "name": "Bjørn Thuv", "from": 1956, "to": 1959, "bio": "biography-thuv-bjoern" },
-        { "name": "Øystein Strømnes", "from": 1959, "to": 1960, "bio": "biography-stroemnes-oeystein" },
-        { "name": "Tore Larsen", "from": 1960, "to": 1961, "bio": "biography-larsen-tore" },
-        { "name": "Zakken Osther", "from": 1961, "to": 1963, "bio": "biography-osther-zakken" },
-        { "name": "Hilding Eriksson", "from": 1963, "to": 1965, "bio": "biography-eriksson-hilding" },
-        { "name": "Arne Iversen", "from": 1965, "to": 1967, "bio": "biography-iversen-arne-t-arne-iveren" },
-        { "name": "Bjørn Sørum", "from": 1967, "to": 1986, "bio": "biography-soerum-bjoern-a" },
-        { "name": "Helge Steensen", "from": 1986, "to": 1988, "bio": "biography-steensen-helge" },
-        { "name": "Bjørn Ræder Dahl", "from": 1988, "bio": "biography-dahl-bjoern-raeder", "note": "Oppført som sittende ved bokens utgivelse («1988 –», 12 år)." }
-      ]
+        {
+          "name": "Ingvald Iversen",
+          "from": 1928,
+          "to": 1931,
+          "bio": "biography-iversen-ingvald",
+          "roleTitle": "Formann (MCO)"
+        },
+        {
+          "name": "Gudbrand Lorentzen",
+          "from": 1931,
+          "to": 1934,
+          "roleTitle": "Formann (MCO)"
+        },
+        {
+          "name": "Lagert Sander",
+          "from": 1934,
+          "to": 1935,
+          "roleTitle": "Formann (MCO)"
+        },
+        {
+          "name": "Hans Buberg",
+          "from": 1935,
+          "to": 1937,
+          "roleTitle": "Formann (MCO)"
+        },
+        {
+          "name": "Ingvald Iversen",
+          "from": 1937,
+          "to": 1946,
+          "bio": "biography-iversen-ingvald",
+          "roleTitle": "Formann (MCO)"
+        },
+        {
+          "name": "Gudbrand Lorentzen",
+          "from": 1946,
+          "to": 1948,
+          "roleTitle": "Formann (MCO)"
+        },
+        {
+          "name": "Ragnar Øye",
+          "from": 1948,
+          "to": 1949,
+          "bio": "biography-oeye-ragnar",
+          "roleTitle": "Formann (MCO)"
+        },
+        {
+          "name": "Hilding Eriksson",
+          "from": 1949,
+          "to": 1951,
+          "bio": "biography-eriksson-hilding",
+          "note": "Første president."
+        },
+        {
+          "name": "Ingvald Iversen",
+          "from": 1951,
+          "to": 1954,
+          "bio": "biography-iversen-ingvald"
+        },
+        {
+          "name": "Øystein Strømnes",
+          "from": 1954,
+          "to": 1956,
+          "bio": "biography-stroemnes-oeystein"
+        },
+        {
+          "name": "Bjørn Thuv",
+          "from": 1956,
+          "to": 1959,
+          "bio": "biography-thuv-bjoern"
+        },
+        {
+          "name": "Øystein Strømnes",
+          "from": 1959,
+          "to": 1960,
+          "bio": "biography-stroemnes-oeystein"
+        },
+        {
+          "name": "Tore Larsen",
+          "from": 1960,
+          "to": 1961,
+          "bio": "biography-larsen-tore"
+        },
+        {
+          "name": "Zakken Osther",
+          "from": 1961,
+          "to": 1963,
+          "bio": "biography-osther-zakken"
+        },
+        {
+          "name": "Hilding Eriksson",
+          "from": 1963,
+          "to": 1965,
+          "bio": "biography-eriksson-hilding"
+        },
+        {
+          "name": "Arne Iversen",
+          "from": 1965,
+          "to": 1967,
+          "bio": "biography-iversen-arne-t-arne-iveren"
+        },
+        {
+          "name": "Bjørn Sørum",
+          "from": 1967,
+          "to": 1986,
+          "bio": "biography-soerum-bjoern-a"
+        },
+        {
+          "name": "Helge Steensen",
+          "from": 1986,
+          "to": 1988,
+          "bio": "biography-steensen-helge"
+        },
+        {
+          "name": "Bjørn Ræder Dahl",
+          "from": 1988,
+          "bio": "biography-dahl-bjoern-raeder",
+          "note": "Sittende president ved bokens utgivelse."
+        }
+      ],
+      "section": "mcn-presidenter"
     },
     {
       "list": "Presidenter i MJC",
@@ -42,27 +1896,121 @@
       "category": "verv",
       "roleTitle": "President",
       "entries": [
-        { "name": "Fred Johnny Osther", "from": 1958, "to": 1962, "bio": "biography-osther-fred-johnny" },
-        { "name": "Robert (Bobby) Chr. Johnsen", "from": 1962, "to": 1963, "bio": "biography-johnsen-robert-chr" },
-        { "name": "Erik Ruud jr.", "from": 1963, "to": 1964 },
-        { "name": "Helge Steensen", "from": 1964, "to": 1965, "bio": "biography-steensen-helge" },
-        { "name": "Sten Steensen", "from": 1965, "to": 1967, "bio": "biography-steensen-sten" },
-        { "name": "Jon Erik Jensen", "from": 1967, "to": 1967 },
-        { "name": "Per Magnus Berg", "from": 1967, "to": 1970, "bio": "biography-berg-per-magnus" },
-        { "name": "Per Harald Lindahl", "from": 1970, "to": 1970, "bio": "biography-lindahl-per-harald" },
-        { "name": "Torger Bjørnstad", "from": 1971, "to": 1975, "bio": "biography-bjoernstad-torger" },
-        { "name": "Tor Arnesen", "from": 1975, "to": 1976 },
-        { "name": "Jan Magne Ødegård", "from": 1976, "to": 1977, "bio": "biography-oedegaard-jan-magne" },
-        { "name": "Geir Olav Gjelten", "from": 1977, "to": 1979, "bio": "biography-gjelten-geir" },
-        { "name": "Truls Nygård", "from": 1980, "to": 1981 },
-        { "name": "Hakon Adler", "from": 1981, "to": 1983, "note": "Trykket som «1981 – 1883» i boken (åpenbar trykkfeil for 1983)." },
-        { "name": "Colin Bevan", "from": 1983, "to": 1986 },
-        { "name": "Hakon Adler", "from": 1986, "to": 1990 },
-        { "name": "Sigmund Clementz", "from": 1990, "to": 1991, "bio": "biography-clementz-sigmund" },
-        { "name": "Roy Bjerke", "from": 1991, "to": 1992, "bio": "biography-bjerke-roy" },
-        { "name": "Henning Warlo", "from": 1992, "to": 1995, "bio": "biography-warlo-henning" },
-        { "name": "Håkon Esplo", "from": 1995, "to": 1996, "note": "Etter 1996 har MJC ikke hatt noen fast president (bokens tekst)." }
-      ]
+        {
+          "name": "Fred Johnny Osther",
+          "from": 1958,
+          "to": 1962,
+          "bio": "biography-osther-fred-johnny"
+        },
+        {
+          "name": "Robert (Bobby) Chr. Johnsen",
+          "from": 1962,
+          "to": 1963,
+          "bio": "biography-johnsen-robert-chr"
+        },
+        {
+          "name": "Erik Ruud jr.",
+          "from": 1963,
+          "to": 1964
+        },
+        {
+          "name": "Helge Steensen",
+          "from": 1964,
+          "to": 1965,
+          "bio": "biography-steensen-helge"
+        },
+        {
+          "name": "Sten Steensen",
+          "from": 1965,
+          "to": 1967,
+          "bio": "biography-steensen-sten"
+        },
+        {
+          "name": "Jon Erik Jensen",
+          "from": 1967,
+          "to": 1967
+        },
+        {
+          "name": "Per Magnus Berg",
+          "from": 1967,
+          "to": 1970,
+          "bio": "biography-berg-per-magnus"
+        },
+        {
+          "name": "Per Harald Lindahl",
+          "from": 1970,
+          "to": 1970,
+          "bio": "biography-lindahl-per-harald"
+        },
+        {
+          "name": "Torger Bjørnstad",
+          "from": 1971,
+          "to": 1975,
+          "bio": "biography-bjoernstad-torger"
+        },
+        {
+          "name": "Tor Arnesen",
+          "from": 1975,
+          "to": 1976
+        },
+        {
+          "name": "Jan Magne Ødegård",
+          "from": 1976,
+          "to": 1977,
+          "bio": "biography-oedegaard-jan-magne"
+        },
+        {
+          "name": "Geir Olav Gjelten",
+          "from": 1977,
+          "to": 1979,
+          "bio": "biography-gjelten-geir"
+        },
+        {
+          "name": "Truls Nygård",
+          "from": 1980,
+          "to": 1981
+        },
+        {
+          "name": "Hakon Adler",
+          "from": 1981,
+          "to": 1983,
+          "internalNote": "Trykket som «1981 – 1883» i boken (åpenbar trykkfeil for 1983)."
+        },
+        {
+          "name": "Colin Bevan",
+          "from": 1983,
+          "to": 1986
+        },
+        {
+          "name": "Hakon Adler",
+          "from": 1986,
+          "to": 1990
+        },
+        {
+          "name": "Sigmund Clementz",
+          "from": 1990,
+          "to": 1991,
+          "bio": "biography-clementz-sigmund"
+        },
+        {
+          "name": "Roy Bjerke",
+          "from": 1991,
+          "to": 1992,
+          "bio": "biography-bjerke-roy"
+        },
+        {
+          "name": "Henning Warlo",
+          "from": 1992,
+          "to": 1995,
+          "bio": "biography-warlo-henning"
+        },
+        {
+          "name": "Håkon Esplo",
+          "from": 1995,
+          "to": 1996
+        }
+      ],
+      "section": "mjc-presidenter"
     },
     {
       "list": "MCNs juniorkonsulent (etter MJC)",
@@ -71,8 +2019,14 @@
       "category": "verv",
       "roleTitle": "Juniorkonsulent",
       "entries": [
-        { "name": "Jørn Hjulstad", "bio": "biography-hjulstad-joern", "note": "Etter 1996 har MCN utnevnt en juniorkonsulent med ansvar for møteopplegg og møteledelse for MJC. Startår ikke oppgitt." }
-      ]
+        {
+          "name": "Jørn Hjulstad",
+          "bio": "biography-hjulstad-joern",
+          "note": "Juniorkonsulent med ansvar for møteopplegg og møteledelse etter 1996.",
+          "internalNote": "Startår ikke oppgitt i boken."
+        }
+      ],
+      "section": "mjc-presidenter"
     },
     {
       "list": "Formann/presidenter i DMRO",
@@ -81,13 +2035,45 @@
       "category": "verv",
       "roleTitle": "President",
       "entries": [
-        { "name": "Ragnar Andresen", "from": 1947, "to": 1950, "roleTitle": "Formann" },
-        { "name": "Ivar Brunnstrøm", "from": 1950, "to": 1973, "bio": "biography-brunnstroem-ivar", "note": "Første president." },
-        { "name": "Roald Løvaas", "from": 1973, "to": 1984, "bio": "biography-loevaas-roald" },
-        { "name": "Torger Bjørnstad", "from": 1984, "to": 1995, "bio": "biography-bjoernstad-torger" },
-        { "name": "Mark Flemming Andersen", "from": 1995, "to": 1997, "bio": "biography-andersen-mark-flemming" },
-        { "name": "Per Fossum", "from": 1997, "bio": "biography-fossum-per", "note": "Oppført som sittende ved bokens utgivelse («1997 –», 2 år)." }
-      ]
+        {
+          "name": "Ragnar Andresen",
+          "from": 1947,
+          "to": 1950,
+          "roleTitle": "Formann"
+        },
+        {
+          "name": "Ivar Brunnstrøm",
+          "from": 1950,
+          "to": 1973,
+          "bio": "biography-brunnstroem-ivar",
+          "note": "Første president."
+        },
+        {
+          "name": "Roald Løvaas",
+          "from": 1973,
+          "to": 1984,
+          "bio": "biography-loevaas-roald"
+        },
+        {
+          "name": "Torger Bjørnstad",
+          "from": 1984,
+          "to": 1995,
+          "bio": "biography-bjoernstad-torger"
+        },
+        {
+          "name": "Mark Flemming Andersen",
+          "from": 1995,
+          "to": 1997,
+          "bio": "biography-andersen-mark-flemming"
+        },
+        {
+          "name": "Per Fossum",
+          "from": 1997,
+          "bio": "biography-fossum-per",
+          "note": "Sittende president ved bokens utgivelse."
+        }
+      ],
+      "section": "dmro-presidenter"
     },
     {
       "list": "Æresmedlemmer i MCN",
@@ -96,24 +2082,91 @@
       "category": "aeresbevisning",
       "roleTitle": "Æresmedlem",
       "entries": [
-        { "name": "Oscar Jørgensen", "from": 1929, "note": "Utmeldt 1930." },
-        { "name": "Bernadotte Nordenstam", "from": 1929, "note": "Utmeldt 1932. Ikke koblet: flere Nordenstam-biografier i registeret." },
-        { "name": "Clement de Lion", "from": 1930 },
-        { "name": "Terje Nordnes", "from": 1933, "bio": "biography-nordnes-terje" },
-        { "name": "Einar Aasen", "from": 1936, "bio": "biography-aasen-einar" },
-        { "name": "Ingvald Iversen", "from": 1938, "bio": "biography-iversen-ingvald" },
-        { "name": "Ragnar Øye", "from": 1960, "bio": "biography-oeye-ragnar" },
-        { "name": "Carl M. Olsen", "from": 1960, "bio": "biography-olsen-carl-m" },
-        { "name": "Nils Simonson", "from": 1958 },
-        { "name": "Joachim Printz", "from": 1958, "bio": "biography-printz-joachim" },
-        { "name": "Hilding Eriksson", "from": 1968, "bio": "biography-eriksson-hilding" },
-        { "name": "Bjørn Sørum", "from": 1978, "bio": "biography-soerum-bjoern-a" },
-        { "name": "Egil Berg", "from": 1982, "bio": "biography-berg-egil" },
-        { "name": "Tore Larsen", "from": 1985, "bio": "biography-larsen-tore" },
-        { "name": "Zakken Osther", "from": 1991, "bio": "biography-osther-zakken" },
-        { "name": "Eva Nordnes", "from": 1991 },
-        { "name": "Arne Iversen", "from": 1994, "bio": "biography-iversen-arne-t-arne-iveren" }
-      ]
+        {
+          "name": "Oscar Jørgensen",
+          "from": 1929,
+          "note": "Utmeldt 1930."
+        },
+        {
+          "name": "Bernadotte Nordenstam",
+          "from": 1929,
+          "note": "Utmeldt 1932.",
+          "internalNote": "Ikke koblet: flere Nordenstam-biografier i registeret."
+        },
+        {
+          "name": "Clement de Lion",
+          "from": 1930
+        },
+        {
+          "name": "Terje Nordnes",
+          "from": 1933,
+          "bio": "biography-nordnes-terje"
+        },
+        {
+          "name": "Einar Aasen",
+          "from": 1936,
+          "bio": "biography-aasen-einar"
+        },
+        {
+          "name": "Ingvald Iversen",
+          "from": 1938,
+          "bio": "biography-iversen-ingvald"
+        },
+        {
+          "name": "Ragnar Øye",
+          "from": 1960,
+          "bio": "biography-oeye-ragnar"
+        },
+        {
+          "name": "Carl M. Olsen",
+          "from": 1960,
+          "bio": "biography-olsen-carl-m"
+        },
+        {
+          "name": "Nils Simonson",
+          "from": 1958
+        },
+        {
+          "name": "Joachim Printz",
+          "from": 1958,
+          "bio": "biography-printz-joachim"
+        },
+        {
+          "name": "Hilding Eriksson",
+          "from": 1968,
+          "bio": "biography-eriksson-hilding"
+        },
+        {
+          "name": "Bjørn Sørum",
+          "from": 1978,
+          "bio": "biography-soerum-bjoern-a"
+        },
+        {
+          "name": "Egil Berg",
+          "from": 1982,
+          "bio": "biography-berg-egil"
+        },
+        {
+          "name": "Tore Larsen",
+          "from": 1985,
+          "bio": "biography-larsen-tore"
+        },
+        {
+          "name": "Zakken Osther",
+          "from": 1991,
+          "bio": "biography-osther-zakken"
+        },
+        {
+          "name": "Eva Nordnes",
+          "from": 1991
+        },
+        {
+          "name": "Arne Iversen",
+          "from": 1994,
+          "bio": "biography-iversen-arne-t-arne-iveren"
+        }
+      ],
+      "section": "mcn-aeresmedlemmer"
     },
     {
       "list": "Evig Medlem i MCN",
@@ -122,18 +2175,59 @@
       "category": "aeresbevisning",
       "roleTitle": "Evig medlem",
       "entries": [
-        { "name": "Arne Arnardo", "from": 1958, "bio": "biography-arnardo-arne" },
-        { "name": "Milbourne Christopher", "from": 1966 },
-        { "name": "Gene Anderson", "from": 1969 },
-        { "name": "Erik Diesen", "from": 1978, "bio": "biography-diesen-erik", "roleTitle": "Magisk Ridder", "note": "Utnevnt til «Magisk Ridder» da han gikk av som underholdningssjef i NRK. I praksis det samme som «Evig Medlem» (bokens fotnote)." },
-        { "name": "Toreno", "from": 1978, "bio": "biography-fredriksen-tore" },
-        { "name": "Slydini", "from": 1978 },
-        { "name": "Finn Jon", "from": 1979, "bio": "biography-hauger-finn-jon" },
-        { "name": "Ivardo", "from": 1990, "bio": "biography-brunnstroem-ivar" },
-        { "name": "Viggo Jahn", "from": 1990 },
-        { "name": "Arild Arnardo", "from": 1997 },
-        { "name": "David Copperfield", "from": 1997 }
-      ]
+        {
+          "name": "Arne Arnardo",
+          "from": 1958,
+          "bio": "biography-arnardo-arne"
+        },
+        {
+          "name": "Milbourne Christopher",
+          "from": 1966
+        },
+        {
+          "name": "Gene Anderson",
+          "from": 1969
+        },
+        {
+          "name": "Erik Diesen",
+          "from": 1978,
+          "bio": "biography-diesen-erik",
+          "roleTitle": "Magisk Ridder",
+          "note": "Utnevnt til «Magisk Ridder». I praksis det samme som «Evig Medlem»."
+        },
+        {
+          "name": "Toreno",
+          "from": 1978,
+          "bio": "biography-fredriksen-tore"
+        },
+        {
+          "name": "Slydini",
+          "from": 1978
+        },
+        {
+          "name": "Finn Jon",
+          "from": 1979,
+          "bio": "biography-hauger-finn-jon"
+        },
+        {
+          "name": "Ivardo",
+          "from": 1990,
+          "bio": "biography-brunnstroem-ivar"
+        },
+        {
+          "name": "Viggo Jahn",
+          "from": 1990
+        },
+        {
+          "name": "Arild Arnardo",
+          "from": 1997
+        },
+        {
+          "name": "David Copperfield",
+          "from": 1997
+        }
+      ],
+      "section": "mcn-evig-medlem"
     },
     {
       "list": "Magisk Knekt i MCN",
@@ -143,28 +2237,114 @@
       "roleTitle": "Magisk Knekt",
       "_comment": "The list continues without a heading at the top of the right-hand column on p. 176 (Egil «Egelo» Berg 1969 …); read as a continuation because the years run on from 1968. Verify against the book.",
       "entries": [
-        { "name": "Terje Nordnes", "from": 1943, "bio": "biography-nordnes-terje" },
-        { "name": "Tore Larsen", "from": 1968, "bio": "biography-larsen-tore" },
-        { "name": "Egil «Egelo» Berg", "from": 1969, "bio": "biography-berg-egil" },
-        { "name": "Arne Iversen", "from": 1971, "bio": "biography-iversen-arne-t-arne-iveren" },
-        { "name": "Zakken Osther", "from": 1972, "bio": "biography-osther-zakken" },
-        { "name": "Bjørn Sørum", "from": 1973, "bio": "biography-soerum-bjoern-a" },
-        { "name": "Pieter Stam", "from": 1974, "bio": "biography-stam-pieter" },
-        { "name": "Jan Crosby", "from": 1978, "bio": "biography-krosby-jan" },
-        { "name": "Dag Johansen", "from": 1978, "bio": "biography-johansen-dag", "note": "Han ga avkall på hedersbevisningen i protest mot styret (bokens fotnote)." },
-        { "name": "John «Cardo» Vaage Søfteland", "from": 1979, "bio": "biography-soefteland-john-vaage" },
-        { "name": "Helge Steensen", "from": 1980, "bio": "biography-steensen-helge" },
-        { "name": "Dag «Dana» Nathan", "from": 1981, "bio": "biography-nathan-dag" },
-        { "name": "Sten Steensen", "from": 1983, "bio": "biography-steensen-sten" },
-        { "name": "Herman Berthelsen", "from": 1984, "bio": "biography-berthelsen-herman" },
-        { "name": "Per Fossum", "from": 1985, "bio": "biography-fossum-per" },
-        { "name": "Vigleik Kleven", "from": 1986, "bio": "biography-kleven-vigleik" },
-        { "name": "Flemming Andersen", "from": 1988, "note": "Ikke koblet: kan være Mark Flemming Andersen (DMRO-president 1995–97) — avklar." },
-        { "name": "Erik Berge", "from": 1994, "bio": "biography-berge-erik" },
-        { "name": "Trygve Andresen", "from": 1995, "bio": "biography-andresen-trygve" },
-        { "name": "Bjørn Ræder Dahl", "from": 1996, "bio": "biography-dahl-bjoern-raeder" },
-        { "name": "Bernt Frydenberg", "from": 1998, "bio": "biography-frydenberg-bernt" }
-      ]
+        {
+          "name": "Terje Nordnes",
+          "from": 1943,
+          "bio": "biography-nordnes-terje"
+        },
+        {
+          "name": "Tore Larsen",
+          "from": 1968,
+          "bio": "biography-larsen-tore"
+        },
+        {
+          "name": "Egil «Egelo» Berg",
+          "from": 1969,
+          "bio": "biography-berg-egil"
+        },
+        {
+          "name": "Arne Iversen",
+          "from": 1971,
+          "bio": "biography-iversen-arne-t-arne-iveren"
+        },
+        {
+          "name": "Zakken Osther",
+          "from": 1972,
+          "bio": "biography-osther-zakken"
+        },
+        {
+          "name": "Bjørn Sørum",
+          "from": 1973,
+          "bio": "biography-soerum-bjoern-a"
+        },
+        {
+          "name": "Pieter Stam",
+          "from": 1974,
+          "bio": "biography-stam-pieter"
+        },
+        {
+          "name": "Jan Crosby",
+          "from": 1978,
+          "bio": "biography-krosby-jan"
+        },
+        {
+          "name": "Dag Johansen",
+          "from": 1978,
+          "bio": "biography-johansen-dag",
+          "note": "Ga avkall på hedersbevisningen i protest mot styret."
+        },
+        {
+          "name": "John «Cardo» Vaage Søfteland",
+          "from": 1979,
+          "bio": "biography-soefteland-john-vaage"
+        },
+        {
+          "name": "Helge Steensen",
+          "from": 1980,
+          "bio": "biography-steensen-helge"
+        },
+        {
+          "name": "Dag «Dana» Nathan",
+          "from": 1981,
+          "bio": "biography-nathan-dag"
+        },
+        {
+          "name": "Sten Steensen",
+          "from": 1983,
+          "bio": "biography-steensen-sten"
+        },
+        {
+          "name": "Herman Berthelsen",
+          "from": 1984,
+          "bio": "biography-berthelsen-herman"
+        },
+        {
+          "name": "Per Fossum",
+          "from": 1985,
+          "bio": "biography-fossum-per"
+        },
+        {
+          "name": "Vigleik Kleven",
+          "from": 1986,
+          "bio": "biography-kleven-vigleik"
+        },
+        {
+          "name": "Flemming Andersen",
+          "from": 1988,
+          "internalNote": "Ikke koblet: kan være Mark Flemming Andersen (DMRO-president 1995–97) — avklar."
+        },
+        {
+          "name": "Erik Berge",
+          "from": 1994,
+          "bio": "biography-berge-erik"
+        },
+        {
+          "name": "Trygve Andresen",
+          "from": 1995,
+          "bio": "biography-andresen-trygve"
+        },
+        {
+          "name": "Bjørn Ræder Dahl",
+          "from": 1996,
+          "bio": "biography-dahl-bjoern-raeder"
+        },
+        {
+          "name": "Bernt Frydenberg",
+          "from": 1998,
+          "bio": "biography-frydenberg-bernt"
+        }
+      ],
+      "section": "mcn-magisk-knekt"
     },
     {
       "list": "Sandors Pris",
@@ -174,22 +2354,80 @@
       "roleTitle": "Sandors Pris",
       "_comment": "Foreslått 1937 av MCOs svenske medlem Ernst Sandor (22.07.1909–22.10.1968), som tegnet og bekostet medaljen; tildelt medlemmer som jevnlig sendte stoff til medlemsbladet Magikeren.",
       "entries": [
-        { "name": "Knut Körling", "from": 1938 },
-        { "name": "Arne Peterson", "from": 1938 },
-        { "name": "Waldemiro", "from": 1938 },
-        { "name": "Ernst Sandor", "from": 1939, "bio": "biography-sandor-ernst" },
-        { "name": "Anders Nilsen", "from": 1940, "note": "Kasserer i MCO." },
-        { "name": "Erik Valsgaard", "from": 1940, "country": "Danmark" },
-        { "name": "Zakken Hurwitz", "from": 1942, "bio": "biography-hurwitz-isak-axel-zakken" },
-        { "name": "Nils Simonson", "from": 1942, "country": "Sverige" },
-        { "name": "Chevalier Nic.", "from": 1942, "country": "Danmark" },
-        { "name": "Ingvald Iversen", "from": 1943, "bio": "biography-iversen-ingvald" },
-        { "name": "Terje Nordnes", "from": 1943, "bio": "biography-nordnes-terje" },
-        { "name": "Ewald Berggren", "from": 1943, "country": "Sverige" },
-        { "name": "Carl M. Olsen", "from": 1946, "bio": "biography-olsen-carl-m" },
-        { "name": "Joachim Printz", "from": 1947, "bio": "biography-printz-joachim" },
-        { "name": "Hilding Eriksson", "from": 1947, "bio": "biography-eriksson-hilding" }
-      ]
+        {
+          "name": "Knut Körling",
+          "from": 1938
+        },
+        {
+          "name": "Arne Peterson",
+          "from": 1938
+        },
+        {
+          "name": "Waldemiro",
+          "from": 1938
+        },
+        {
+          "name": "Ernst Sandor",
+          "from": 1939,
+          "bio": "biography-sandor-ernst"
+        },
+        {
+          "name": "Anders Nilsen",
+          "from": 1940,
+          "note": "Kasserer i MCO."
+        },
+        {
+          "name": "Erik Valsgaard",
+          "from": 1940,
+          "country": "Danmark"
+        },
+        {
+          "name": "Zakken Hurwitz",
+          "from": 1942,
+          "bio": "biography-hurwitz-isak-axel-zakken"
+        },
+        {
+          "name": "Nils Simonson",
+          "from": 1942,
+          "country": "Sverige"
+        },
+        {
+          "name": "Chevalier Nic.",
+          "from": 1942,
+          "country": "Danmark"
+        },
+        {
+          "name": "Ingvald Iversen",
+          "from": 1943,
+          "bio": "biography-iversen-ingvald"
+        },
+        {
+          "name": "Terje Nordnes",
+          "from": 1943,
+          "bio": "biography-nordnes-terje"
+        },
+        {
+          "name": "Ewald Berggren",
+          "from": 1943,
+          "country": "Sverige"
+        },
+        {
+          "name": "Carl M. Olsen",
+          "from": 1946,
+          "bio": "biography-olsen-carl-m"
+        },
+        {
+          "name": "Joachim Printz",
+          "from": 1947,
+          "bio": "biography-printz-joachim"
+        },
+        {
+          "name": "Hilding Eriksson",
+          "from": 1947,
+          "bio": "biography-eriksson-hilding"
+        }
+      ],
+      "section": "sandors-pris"
     },
     {
       "list": "Æresmedlem i DMRO",
@@ -198,10 +2436,23 @@
       "category": "aeresbevisning",
       "roleTitle": "Æresmedlem",
       "entries": [
-        { "name": "Ivar Brunnstrøm", "from": 1972, "bio": "biography-brunnstroem-ivar" },
-        { "name": "Roald Løvaas", "from": 1997, "bio": "biography-loevaas-roald" },
-        { "name": "Torger Bjørnstad", "from": 1997, "bio": "biography-bjoernstad-torger" }
-      ]
+        {
+          "name": "Ivar Brunnstrøm",
+          "from": 1972,
+          "bio": "biography-brunnstroem-ivar"
+        },
+        {
+          "name": "Roald Løvaas",
+          "from": 1997,
+          "bio": "biography-loevaas-roald"
+        },
+        {
+          "name": "Torger Bjørnstad",
+          "from": 1997,
+          "bio": "biography-bjoernstad-torger"
+        }
+      ],
+      "section": "dmro-aeresmedlemmer"
     },
     {
       "list": "DMROs Ærespris",
@@ -210,9 +2461,18 @@
       "category": "aeresbevisning",
       "roleTitle": "Den Magiske Rings Ærespris",
       "entries": [
-        { "name": "Arne Arnardo", "from": 1990, "bio": "biography-arnardo-arne" },
-        { "name": "Ben Hur", "from": 1997, "bio": "biography-hurwitz-isak-axel-zakken" }
-      ]
+        {
+          "name": "Arne Arnardo",
+          "from": 1990,
+          "bio": "biography-arnardo-arne"
+        },
+        {
+          "name": "Ben Hur",
+          "from": 1997,
+          "bio": "biography-hurwitz-isak-axel-zakken"
+        }
+      ],
+      "section": "dmro-aerespris"
     },
     {
       "list": "Årets Tryllekunstner",
@@ -222,17 +2482,60 @@
       "roleTitle": "Årets Tryllekunstner",
       "_comment": "The book says the prize was introduced in 1992, but the list starts with 1991 (probably the year the prize applies to). Kept as printed.",
       "entries": [
-        { "name": "Per Inge Torkelsen", "from": 1991, "bio": "biography-torkelsen-per-inge" },
-        { "name": "Finn Jon", "from": 1992, "bio": "biography-hauger-finn-jon" },
-        { "name": "Melini", "from": 1993, "bio": "biography-meloe-bjoern" },
-        { "name": "Davido", "from": 1994, "bio": "biography-fevaag-bjoern-david" },
-        { "name": "Egelo", "from": 1995, "bio": "biography-berg-egil" },
-        { "name": "Erling Solland", "from": 1996, "bio": "biography-solland-erling" },
-        { "name": "Jarle Leirpoll", "from": 1997, "bio": "biography-leirpoll-jarle" },
-        { "name": "Roy Bjerke", "from": 1998, "bio": "biography-bjerke-roy" },
-        { "name": "Kaptein X", "from": 1999, "bio": "biography-downham-nigel", "note": "Delt pris: «Kaptein X og Fabedulla»." },
-        { "name": "Fabedulla", "from": 1999, "bio": "biography-ingulstad-tone", "note": "Delt pris: «Kaptein X og Fabedulla»." }
-      ]
+        {
+          "name": "Per Inge Torkelsen",
+          "from": 1991,
+          "bio": "biography-torkelsen-per-inge"
+        },
+        {
+          "name": "Finn Jon",
+          "from": 1992,
+          "bio": "biography-hauger-finn-jon"
+        },
+        {
+          "name": "Melini",
+          "from": 1993,
+          "bio": "biography-meloe-bjoern"
+        },
+        {
+          "name": "Davido",
+          "from": 1994,
+          "bio": "biography-fevaag-bjoern-david"
+        },
+        {
+          "name": "Egelo",
+          "from": 1995,
+          "bio": "biography-berg-egil"
+        },
+        {
+          "name": "Erling Solland",
+          "from": 1996,
+          "bio": "biography-solland-erling"
+        },
+        {
+          "name": "Jarle Leirpoll",
+          "from": 1997,
+          "bio": "biography-leirpoll-jarle"
+        },
+        {
+          "name": "Roy Bjerke",
+          "from": 1998,
+          "bio": "biography-bjerke-roy"
+        },
+        {
+          "name": "Kaptein X",
+          "from": 1999,
+          "bio": "biography-downham-nigel",
+          "note": "Delt pris med Fabedulla."
+        },
+        {
+          "name": "Fabedulla",
+          "from": 1999,
+          "bio": "biography-ingulstad-tone",
+          "note": "Delt pris med Kaptein X."
+        }
+      ],
+      "section": "arets-tryllekunstner"
     },
     {
       "list": "Magiens trofaste riddere (NMU)",
@@ -242,65 +2545,281 @@
       "roleTitle": "Magiens trofaste ridder",
       "_comment": "Instituted 1971. Not awarded 1992, 1997, 1998 (no chain congress those years); 1994-1995 not listed in the book. Country column on p. 181 is slanted in the photo; paired by row order.",
       "entries": [
-        { "name": "Magini", "from": 1971, "country": "Sverige" },
-        { "name": "Terje Nordnes", "from": 1972, "country": "Sverige/Norge", "bio": "biography-nordnes-terje" },
-        { "name": "Aage Rasmussen", "from": 1973, "country": "Danmark" },
-        { "name": "Max Torello", "from": 1974, "country": "Sverige" },
-        { "name": "Birger Törner", "from": 1975, "country": "Finland" },
-        { "name": "Ivardo", "from": 1976, "country": "Norge", "bio": "biography-brunnstroem-ivar" },
-        { "name": "Christer Nilsson", "from": 1977, "country": "Sverige" },
-        { "name": "Hildini", "from": 1978, "country": "Norge", "bio": "biography-eriksson-hilding" },
-        { "name": "Paul Arland", "from": 1979, "country": "Danmark" },
-        { "name": "Solmu Mäkelä", "from": 1980, "country": "Finland" },
-        { "name": "Jean Cannard", "from": 1981, "country": "Sverige", "note": "Karl Erik Jeppson." },
-        { "name": "Bjørn Sørum", "from": 1982, "country": "Norge", "bio": "biography-soerum-bjoern-a" },
-        { "name": "Gentelman Jack", "from": 1983, "country": "Sverige/Danmark", "note": "Stavet «Gentelman» i tabellen, «Gentleman Jack» på s. 184." },
-        { "name": "Platan", "from": 1984, "country": "Danmark", "note": "Carl-Johan Engelbrechtsen." },
-        { "name": "Eva Nordnes", "from": 1985, "country": "Sverige" },
-        { "name": "Topper Martyn", "from": 1986, "country": "Sverige" },
-        { "name": "Viggo Jahn", "from": 1987, "country": "Danmark" },
-        { "name": "Egelo", "from": 1988, "country": "Norge", "bio": "biography-berg-egil" },
-        { "name": "Lennard Elvin", "from": 1989, "country": "Sverige" },
-        { "name": "Reijo Salminen", "from": 1990, "country": "Finland" },
-        { "name": "Ernst Trillingstad", "from": 1991, "country": "Danmark" },
-        { "name": "Dana", "from": 1993, "country": "Norge", "bio": "biography-nathan-dag" },
-        { "name": "El Duco", "from": 1996, "country": "Sverige" },
-        { "name": "Michael Leslie", "from": 1999, "country": "Danmark" }
-      ]
+        {
+          "name": "Magini",
+          "from": 1971,
+          "country": "Sverige"
+        },
+        {
+          "name": "Terje Nordnes",
+          "from": 1972,
+          "country": "Sverige/Norge",
+          "bio": "biography-nordnes-terje"
+        },
+        {
+          "name": "Aage Rasmussen",
+          "from": 1973,
+          "country": "Danmark"
+        },
+        {
+          "name": "Max Torello",
+          "from": 1974,
+          "country": "Sverige"
+        },
+        {
+          "name": "Birger Törner",
+          "from": 1975,
+          "country": "Finland"
+        },
+        {
+          "name": "Ivardo",
+          "from": 1976,
+          "country": "Norge",
+          "bio": "biography-brunnstroem-ivar"
+        },
+        {
+          "name": "Christer Nilsson",
+          "from": 1977,
+          "country": "Sverige"
+        },
+        {
+          "name": "Hildini",
+          "from": 1978,
+          "country": "Norge",
+          "bio": "biography-eriksson-hilding"
+        },
+        {
+          "name": "Paul Arland",
+          "from": 1979,
+          "country": "Danmark"
+        },
+        {
+          "name": "Solmu Mäkelä",
+          "from": 1980,
+          "country": "Finland"
+        },
+        {
+          "name": "Jean Cannard",
+          "from": 1981,
+          "country": "Sverige",
+          "note": "Karl Erik Jeppson."
+        },
+        {
+          "name": "Bjørn Sørum",
+          "from": 1982,
+          "country": "Norge",
+          "bio": "biography-soerum-bjoern-a"
+        },
+        {
+          "name": "Gentelman Jack",
+          "from": 1983,
+          "country": "Sverige/Danmark",
+          "internalNote": "Stavet «Gentelman» i tabellen, «Gentleman Jack» på s. 184."
+        },
+        {
+          "name": "Platan",
+          "from": 1984,
+          "country": "Danmark",
+          "note": "Carl-Johan Engelbrechtsen."
+        },
+        {
+          "name": "Eva Nordnes",
+          "from": 1985,
+          "country": "Sverige"
+        },
+        {
+          "name": "Topper Martyn",
+          "from": 1986,
+          "country": "Sverige"
+        },
+        {
+          "name": "Viggo Jahn",
+          "from": 1987,
+          "country": "Danmark"
+        },
+        {
+          "name": "Egelo",
+          "from": 1988,
+          "country": "Norge",
+          "bio": "biography-berg-egil"
+        },
+        {
+          "name": "Lennard Elvin",
+          "from": 1989,
+          "country": "Sverige"
+        },
+        {
+          "name": "Reijo Salminen",
+          "from": 1990,
+          "country": "Finland"
+        },
+        {
+          "name": "Ernst Trillingstad",
+          "from": 1991,
+          "country": "Danmark"
+        },
+        {
+          "name": "Dana",
+          "from": 1993,
+          "country": "Norge",
+          "bio": "biography-nathan-dag"
+        },
+        {
+          "name": "El Duco",
+          "from": 1996,
+          "country": "Sverige"
+        },
+        {
+          "name": "Michael Leslie",
+          "from": 1999,
+          "country": "Danmark"
+        }
+      ],
+      "section": "magiens-trofaste-riddere"
     }
   ],
-
   "competitionResults": [
     {
       "list": "Norgesmestere (MCN)",
       "page": 177,
       "competition": "nm",
       "placement": "1. plass (Norgesmester)",
-      "_comment": "MCN has arranged annual NM since 1973. No NM in 1992, 1995, 1997, 1998.",
+      "_comment": "MCN has arranged annual NM since 1973.",
       "entries": [
-        { "year": 1973, "location": "Tønsberg", "name": "Jan Crosby", "bio": "biography-krosby-jan" },
-        { "year": 1974, "location": "Sarpsborg", "name": "Jan Crosby", "bio": "biography-krosby-jan" },
-        { "year": 1975, "location": "Bergen", "name": "Jan Crosby", "bio": "biography-krosby-jan" },
-        { "year": 1976, "location": "Trondheim", "name": "Odelo", "bio": "biography-fjeld-odd-willy" },
-        { "year": 1977, "location": "Skien", "name": "Perino", "bio": "biography-fossum-per" },
-        { "year": 1978, "location": "Lillestrøm", "name": "Perino", "bio": "biography-fossum-per" },
-        { "year": 1979, "location": "Gjøvik", "name": "Perino", "bio": "biography-fossum-per" },
-        { "year": 1980, "location": "Voss", "name": "Perino", "bio": "biography-fossum-per" },
-        { "year": 1981, "location": "Oslo", "name": "Davido", "bio": "biography-fevaag-bjoern-david" },
-        { "year": 1982, "location": "Larvik", "name": "Davido", "bio": "biography-fevaag-bjoern-david" },
-        { "year": 1983, "location": "Voss", "name": "Davido", "bio": "biography-fevaag-bjoern-david" },
-        { "year": 1984, "location": "Skien", "name": "Davido", "bio": "biography-fevaag-bjoern-david" },
-        { "year": 1985, "location": "Stavanger", "name": "Bjørn Haldor", "bio": "biography-haldorsen-bjoern" },
-        { "year": 1986, "location": "Tønsberg", "name": "Williano", "bio": "biography-andersen-willy" },
-        { "year": 1987, "location": "Oslo", "name": "Davido", "bio": "biography-fevaag-bjoern-david" },
-        { "year": 1988, "location": "Sandefjord", "name": "Bjørn Haldor", "bio": "biography-haldorsen-bjoern" },
-        { "year": 1989, "location": "Bergen", "name": "Vidello", "bio": "biography-kjetilstad-vidar" },
-        { "year": 1990, "location": "Drammen", "name": "Ray Speedy", "bio": "biography-sandberg-hans-petter" },
-        { "year": 1991, "location": "Ålesund", "name": "Ray Speedy", "bio": "biography-sandberg-hans-petter" },
-        { "year": 1993, "location": "Bergen", "name": "Jan Crosby", "bio": "biography-krosby-jan" },
-        { "year": 1994, "location": "Trondheim", "name": "Radini", "bio": "biography-olsen-axel" },
-        { "year": 1996, "location": "Kristiansand", "name": "Radini", "bio": "biography-olsen-axel" }
-      ]
+        {
+          "year": 1973,
+          "location": "Tønsberg",
+          "name": "Jan Crosby",
+          "bio": "biography-krosby-jan"
+        },
+        {
+          "year": 1974,
+          "location": "Sarpsborg",
+          "name": "Jan Crosby",
+          "bio": "biography-krosby-jan"
+        },
+        {
+          "year": 1975,
+          "location": "Bergen",
+          "name": "Jan Crosby",
+          "bio": "biography-krosby-jan"
+        },
+        {
+          "year": 1976,
+          "location": "Trondheim",
+          "name": "Odelo",
+          "bio": "biography-fjeld-odd-willy"
+        },
+        {
+          "year": 1977,
+          "location": "Skien",
+          "name": "Perino",
+          "bio": "biography-fossum-per"
+        },
+        {
+          "year": 1978,
+          "location": "Lillestrøm",
+          "name": "Perino",
+          "bio": "biography-fossum-per"
+        },
+        {
+          "year": 1979,
+          "location": "Gjøvik",
+          "name": "Perino",
+          "bio": "biography-fossum-per"
+        },
+        {
+          "year": 1980,
+          "location": "Voss",
+          "name": "Perino",
+          "bio": "biography-fossum-per"
+        },
+        {
+          "year": 1981,
+          "location": "Oslo",
+          "name": "Davido",
+          "bio": "biography-fevaag-bjoern-david"
+        },
+        {
+          "year": 1982,
+          "location": "Larvik",
+          "name": "Davido",
+          "bio": "biography-fevaag-bjoern-david"
+        },
+        {
+          "year": 1983,
+          "location": "Voss",
+          "name": "Davido",
+          "bio": "biography-fevaag-bjoern-david"
+        },
+        {
+          "year": 1984,
+          "location": "Skien",
+          "name": "Davido",
+          "bio": "biography-fevaag-bjoern-david"
+        },
+        {
+          "year": 1985,
+          "location": "Stavanger",
+          "name": "Bjørn Haldor",
+          "bio": "biography-haldorsen-bjoern"
+        },
+        {
+          "year": 1986,
+          "location": "Tønsberg",
+          "name": "Williano",
+          "bio": "biography-andersen-willy"
+        },
+        {
+          "year": 1987,
+          "location": "Oslo",
+          "name": "Davido",
+          "bio": "biography-fevaag-bjoern-david"
+        },
+        {
+          "year": 1988,
+          "location": "Sandefjord",
+          "name": "Bjørn Haldor",
+          "bio": "biography-haldorsen-bjoern"
+        },
+        {
+          "year": 1989,
+          "location": "Bergen",
+          "name": "Vidello",
+          "bio": "biography-kjetilstad-vidar"
+        },
+        {
+          "year": 1990,
+          "location": "Drammen",
+          "name": "Ray Speedy",
+          "bio": "biography-sandberg-hans-petter"
+        },
+        {
+          "year": 1991,
+          "location": "Ålesund",
+          "name": "Ray Speedy",
+          "bio": "biography-sandberg-hans-petter"
+        },
+        {
+          "year": 1993,
+          "location": "Bergen",
+          "name": "Jan Crosby",
+          "bio": "biography-krosby-jan"
+        },
+        {
+          "year": 1994,
+          "location": "Trondheim",
+          "name": "Radini",
+          "bio": "biography-olsen-axel"
+        },
+        {
+          "year": 1996,
+          "location": "Kristiansand",
+          "name": "Radini",
+          "bio": "biography-olsen-axel"
+        }
+      ],
+      "section": "norgesmestere"
     },
     {
       "list": "MJCs norgesmesterskap for juniortryllere",
@@ -310,38 +2829,155 @@
       "placement": "1. plass (Norgesmester junior)",
       "_comment": "Footnotes: * årskonkurranse before 1965 (title Norgesmester used from 1965); ** best junior in joint NM with MCN; *** 1st prize junior at Egelo's «Magi Treff». No junior NM after 1994.",
       "entries": [
-        { "year": 1959, "name": "Leon King", "bio": "biography-langebeck-per-h", "placement": "1. plass (MJCs årskonkurranse)" },
-        { "year": 1960, "name": "Leon King", "bio": "biography-langebeck-per-h", "placement": "1. plass (MJCs årskonkurranse)" },
-        { "year": 1962, "name": "Leon King", "bio": "biography-langebeck-per-h", "placement": "1. plass (MJCs årskonkurranse)" },
-        { "year": 1965, "name": "Torando" },
-        { "year": 1966, "name": "Torando" },
-        { "year": 1968, "name": "Aston" },
-        { "year": 1969, "name": "Per M. Berg og The Two Gallys" },
-        { "year": 1970, "name": "Don Carlo", "bio": "biography-lund-carl-lorentz" },
-        { "year": 1971, "name": "Don Carlo", "bio": "biography-lund-carl-lorentz" },
-        { "year": 1972, "name": "Monsieur M." },
-        { "year": 1973, "name": "Don Carlo", "bio": "biography-lund-carl-lorentz" },
-        { "year": 1975, "name": "Anita Wagner", "bio": "biography-wagner-anita" },
-        { "year": 1976, "name": "Davido", "bio": "biography-fevaag-bjoern-david" },
-        { "year": 1977, "name": "Davido", "bio": "biography-fevaag-bjoern-david" },
-        { "year": 1978, "name": "Davido", "bio": "biography-fevaag-bjoern-david" },
-        { "year": 1979, "name": "Max Erlingso", "bio": "biography-solland-erling" },
-        { "year": 1980, "name": "Henning Warloe", "bio": "biography-warlo-henning" },
-        { "year": 1981, "name": "Max Erlingso", "bio": "biography-solland-erling" },
-        { "year": 1982, "name": "Max Erlingso", "bio": "biography-solland-erling" },
-        { "year": 1983, "name": "Erico" },
-        { "year": 1984, "name": "Colin Bevan" },
-        { "year": 1985, "name": "Erico" },
-        { "year": 1986, "name": "Vidello", "bio": "biography-kjetilstad-vidar" },
-        { "year": 1987, "name": "Vincini" },
-        { "year": 1988, "name": "André Mikalsen" },
-        { "year": 1989, "name": "Gary Glitter" },
-        { "year": 1990, "name": "El Steno", "bio": "biography-sulesund-stene", "placement": "Beste junior (felles NM med MCN)" },
-        { "year": 1991, "name": "El Steno", "bio": "biography-sulesund-stene" },
-        { "year": 1992, "name": "Joachim Setsaas", "bio": "biography-setsaas-joachim", "placement": "1. pris junior (Egelos «Magi Treff»)" },
-        { "year": 1993, "name": "Henning Bogen" },
-        { "year": 1994, "name": "Simono" }
-      ]
+        {
+          "year": 1959,
+          "name": "Leon King",
+          "bio": "biography-langebeck-per-h",
+          "placement": "1. plass (MJCs årskonkurranse)"
+        },
+        {
+          "year": 1960,
+          "name": "Leon King",
+          "bio": "biography-langebeck-per-h",
+          "placement": "1. plass (MJCs årskonkurranse)"
+        },
+        {
+          "year": 1962,
+          "name": "Leon King",
+          "bio": "biography-langebeck-per-h",
+          "placement": "1. plass (MJCs årskonkurranse)"
+        },
+        {
+          "year": 1965,
+          "name": "Torando"
+        },
+        {
+          "year": 1966,
+          "name": "Torando"
+        },
+        {
+          "year": 1968,
+          "name": "Aston"
+        },
+        {
+          "year": 1969,
+          "name": "Per M. Berg og The Two Gallys"
+        },
+        {
+          "year": 1970,
+          "name": "Don Carlo",
+          "bio": "biography-lund-carl-lorentz"
+        },
+        {
+          "year": 1971,
+          "name": "Don Carlo",
+          "bio": "biography-lund-carl-lorentz"
+        },
+        {
+          "year": 1972,
+          "name": "Monsieur M."
+        },
+        {
+          "year": 1973,
+          "name": "Don Carlo",
+          "bio": "biography-lund-carl-lorentz"
+        },
+        {
+          "year": 1975,
+          "name": "Anita Wagner",
+          "bio": "biography-wagner-anita"
+        },
+        {
+          "year": 1976,
+          "name": "Davido",
+          "bio": "biography-fevaag-bjoern-david"
+        },
+        {
+          "year": 1977,
+          "name": "Davido",
+          "bio": "biography-fevaag-bjoern-david"
+        },
+        {
+          "year": 1978,
+          "name": "Davido",
+          "bio": "biography-fevaag-bjoern-david"
+        },
+        {
+          "year": 1979,
+          "name": "Max Erlingso",
+          "bio": "biography-solland-erling"
+        },
+        {
+          "year": 1980,
+          "name": "Henning Warloe",
+          "bio": "biography-warlo-henning"
+        },
+        {
+          "year": 1981,
+          "name": "Max Erlingso",
+          "bio": "biography-solland-erling"
+        },
+        {
+          "year": 1982,
+          "name": "Max Erlingso",
+          "bio": "biography-solland-erling"
+        },
+        {
+          "year": 1983,
+          "name": "Erico"
+        },
+        {
+          "year": 1984,
+          "name": "Colin Bevan"
+        },
+        {
+          "year": 1985,
+          "name": "Erico"
+        },
+        {
+          "year": 1986,
+          "name": "Vidello",
+          "bio": "biography-kjetilstad-vidar"
+        },
+        {
+          "year": 1987,
+          "name": "Vincini"
+        },
+        {
+          "year": 1988,
+          "name": "André Mikalsen"
+        },
+        {
+          "year": 1989,
+          "name": "Gary Glitter"
+        },
+        {
+          "year": 1990,
+          "name": "El Steno",
+          "bio": "biography-sulesund-stene",
+          "placement": "Beste junior (felles NM med MCN)"
+        },
+        {
+          "year": 1991,
+          "name": "El Steno",
+          "bio": "biography-sulesund-stene"
+        },
+        {
+          "year": 1992,
+          "name": "Joachim Setsaas",
+          "bio": "biography-setsaas-joachim",
+          "placement": "1. pris junior (Egelos «Magi Treff»)"
+        },
+        {
+          "year": 1993,
+          "name": "Henning Bogen"
+        },
+        {
+          "year": 1994,
+          "name": "Simono"
+        }
+      ],
+      "section": "norgesmestere-junior"
     },
     {
       "list": "Tryllekongresser i Norden — 1. pris vinnere (før Nordisk mester)",
@@ -349,19 +2985,82 @@
       "competition": "nordiskKongress",
       "placement": "1. pris",
       "entries": [
-        { "year": 1950, "host": "SMCs kongress", "name": "Tornedo", "country": "SE" },
-        { "year": 1951, "host": "MCDs kongress", "name": "Tornedo", "country": "SE" },
-        { "year": 1953, "host": "SMCs kongress", "name": "Tornedo", "country": "SE" },
-        { "year": 1954, "host": "SMCs kongress", "name": "Håkon Edeling", "country": "DK" },
-        { "year": 1954, "host": "MCDs kongress", "name": "Geo Magini", "country": "SE" },
-        { "year": 1955, "host": "SMCs kongress", "name": "Salminen", "country": "FI" },
-        { "year": 1955, "host": "MCDs kongress", "name": "Bengt Bergöö", "country": "SE" },
-        { "year": 1955, "host": "MCNs kongress", "name": "Egelo", "country": "NO", "bio": "biography-berg-egil" },
-        { "year": 1956, "host": "SMCs kongress", "name": "Henry Philip", "country": "NO" },
-        { "year": 1956, "host": "MCNs kongress", "name": "Toreno", "country": "NO", "bio": "biography-fredriksen-tore" },
-        { "year": 1957, "host": "SMCs kongress", "name": "Bengt Bergöö", "country": "SE" },
-        { "year": 1957, "host": "DMROs kongress", "name": "Håkon Edeling", "country": "DK" }
-      ]
+        {
+          "year": 1950,
+          "name": "Tornedo",
+          "country": "SE",
+          "category": "SMCs kongress"
+        },
+        {
+          "year": 1951,
+          "name": "Tornedo",
+          "country": "SE",
+          "category": "MCDs kongress"
+        },
+        {
+          "year": 1953,
+          "name": "Tornedo",
+          "country": "SE",
+          "category": "SMCs kongress"
+        },
+        {
+          "year": 1954,
+          "name": "Håkon Edeling",
+          "country": "DK",
+          "category": "SMCs kongress"
+        },
+        {
+          "year": 1954,
+          "name": "Geo Magini",
+          "country": "SE",
+          "category": "MCDs kongress"
+        },
+        {
+          "year": 1955,
+          "name": "Salminen",
+          "country": "FI",
+          "category": "SMCs kongress"
+        },
+        {
+          "year": 1955,
+          "name": "Bengt Bergöö",
+          "country": "SE",
+          "category": "MCDs kongress"
+        },
+        {
+          "year": 1955,
+          "name": "Egelo",
+          "country": "NO",
+          "bio": "biography-berg-egil",
+          "category": "MCNs kongress"
+        },
+        {
+          "year": 1956,
+          "name": "Henry Philip",
+          "country": "NO",
+          "category": "SMCs kongress"
+        },
+        {
+          "year": 1956,
+          "name": "Toreno",
+          "country": "NO",
+          "bio": "biography-fredriksen-tore",
+          "category": "MCNs kongress"
+        },
+        {
+          "year": 1957,
+          "name": "Bengt Bergöö",
+          "country": "SE",
+          "category": "SMCs kongress"
+        },
+        {
+          "year": 1957,
+          "name": "Håkon Edeling",
+          "country": "DK",
+          "category": "DMROs kongress"
+        }
+      ],
+      "section": "kongresser-1-pris"
     },
     {
       "list": "Kjedekongressene — Nordiske mestere",
@@ -370,45 +3069,290 @@
       "placement": "1. plass (Nordisk mester)",
       "_comment": "Nordic champion crowned from 1958. No chain congress 1992, 1997, 1998. 1996: no Nordic champion crowned. 1999: only 1st prize winner, no Nordic champion. Both pages are slanted in the photos; rows paired by count (17 + 20 rows).",
       "entries": [
-        { "year": 1958, "host": "MCNs 30 års kongress", "location": "Oslo", "name": "H. Edeling", "country": "DK" },
-        { "year": 1959, "host": "MCDs 25 års kongress", "location": "København", "name": "H. Edeling", "country": "DK" },
-        { "year": 1960, "host": "SMCs kongress", "location": "Stockholm", "name": "B. Bergöö", "country": "SE" },
-        { "year": 1961, "host": "DMROs kongress", "location": "Oslo", "name": "Marillo", "country": "SE" },
-        { "year": 1962, "host": "MCDs kongress", "location": "København", "name": "Finn Jon", "country": "NO", "bio": "biography-hauger-finn-jon" },
-        { "year": 1963, "host": "SMCs kongress", "location": "Stockholm", "name": "Finn Jon", "country": "NO", "bio": "biography-hauger-finn-jon" },
-        { "year": 1964, "host": "MCN/DMROs kongress", "location": "Oslo", "name": "Toreno", "country": "NO", "bio": "biography-fredriksen-tore" },
-        { "year": 1965, "host": "MCDs kongress", "location": "København", "name": "Finn Jon", "country": "NO", "bio": "biography-hauger-finn-jon" },
-        { "year": 1966, "host": "SMCs kongress", "location": "Stockholm", "name": "Finn Jon", "country": "NO", "bio": "biography-hauger-finn-jon" },
-        { "year": 1967, "host": "DMRO/MCNs kongress", "location": "Oslo", "name": "Ken Hardy", "country": "SE" },
-        { "year": 1968, "host": "MCDs kongress", "location": "København", "name": "Ken Hardy", "country": "SE" },
-        { "year": 1969, "host": "GMKs kongress", "location": "Göteborg", "name": "Johnny Lonn", "country": "SE" },
-        { "year": 1970, "host": "Taikapiiris kongress", "location": "Helsingfors", "name": "Ken Hardy", "country": "SE" },
-        { "year": 1971, "host": "SMCs 25 års kongress", "location": "Stockholm", "name": "Jan Crosby", "country": "NO", "bio": "biography-krosby-jan" },
-        { "year": 1972, "host": "MCN/DMROs kongress", "location": "Oslo", "name": "Yan Swahn", "country": "SE" },
-        { "year": 1973, "host": "MCDs kongress", "location": "København", "name": "Jan Crosby", "country": "NO", "bio": "biography-krosby-jan" },
-        { "year": 1974, "host": "SMCs kongress", "location": "Örebro", "name": "Marillo", "country": "SE" },
-        { "year": 1975, "host": "Taikapiiris kongress", "location": "Helsingfors", "name": "Airaksinen", "country": "FI" },
-        { "year": 1976, "host": "DMRO/MCNs kongress", "location": "Oslo", "name": "Airaksinen", "country": "FI" },
-        { "year": 1977, "host": "GMKs kongress", "location": "Göteborg", "name": "Perino", "country": "NO", "bio": "biography-fossum-per" },
-        { "year": 1978, "host": "MCNs 50 års kongress", "location": "Sandefjord", "name": "Hugo Dønjar", "country": "NO", "bio": "biography-doenjar-hugo" },
-        { "year": 1979, "host": "MCDs 45 års kongress", "location": "København", "name": "Perino", "country": "NO", "bio": "biography-fossum-per" },
-        { "year": 1980, "host": "Taikapiiris kongress", "location": "Helsingfors", "name": "Roberto", "country": "SE" },
-        { "year": 1981, "host": "SMCs 35 års kongress", "location": "Södertälje", "name": "Davido", "country": "NO", "bio": "biography-fevaag-bjoern-david" },
-        { "year": 1982, "host": "DMROs 35 årskongress", "location": "Fagernes", "name": "Davido", "country": "NO", "bio": "biography-fevaag-bjoern-david" },
-        { "year": 1983, "host": "ÖMCs 35 årskongress", "location": "Örebro", "name": "Roberto", "country": "SE" },
-        { "year": 1984, "host": "MCDs kongress", "location": "København", "name": "Davido", "country": "NO", "bio": "biography-fevaag-bjoern-david" },
-        { "year": 1985, "host": "Taikapiiris kongress", "location": "Helsingfors", "name": "Roberto", "country": "SE" },
-        { "year": 1986, "host": "SMCs 40 års kongress", "location": "Stockholm", "name": "Finn Aspen", "country": "FI" },
-        { "year": 1987, "host": "MCDs kongress", "location": "Odense", "name": "Decard", "country": "DK" },
-        { "year": 1988, "host": "MCNs 60 års kongress", "location": "Sandefjord", "name": "Roberto", "country": "SE" },
-        { "year": 1989, "host": "SMCs kongress", "location": "Nyköping", "name": "Riku & Maarit", "country": "FI" },
-        { "year": 1990, "host": "Taikapiiris kongress", "location": "Helsingfors", "name": "Markku Karvo", "country": "FI" },
-        { "year": 1991, "host": "MCDs kongress", "location": "Aalborg", "name": "Michael Deutsch", "country": "DK" },
-        { "year": 1993, "host": "DMROs kongress", "location": "Lørenskog", "name": "Michael Deutsch", "country": "DK" },
-        { "year": 1994, "host": "SMCs kongress", "location": "Lindköping", "name": "Markko & Elena Karvo", "country": "FI", "_comment": "Printed 'Lindköping' (likely Linköping)." },
-        { "year": 1995, "host": "Taikapiiris kongress", "location": "Helsingfors", "name": "Simo Aalto", "country": "FI" },
-        { "year": 1999, "host": "MCDs kongress", "location": "København", "name": "Hans Ulrik & Dina", "country": "DK", "competition": "nordiskKongress", "placement": "1. pris (ingen nordisk mester kåret)" }
-      ]
+        {
+          "year": 1958,
+          "location": "Oslo",
+          "name": "H. Edeling",
+          "country": "DK",
+          "category": "MCNs 30 års kongress"
+        },
+        {
+          "year": 1959,
+          "location": "København",
+          "name": "H. Edeling",
+          "country": "DK",
+          "category": "MCDs 25 års kongress"
+        },
+        {
+          "year": 1960,
+          "location": "Stockholm",
+          "name": "B. Bergöö",
+          "country": "SE",
+          "category": "SMCs kongress"
+        },
+        {
+          "year": 1961,
+          "location": "Oslo",
+          "name": "Marillo",
+          "country": "SE",
+          "category": "DMROs kongress"
+        },
+        {
+          "year": 1962,
+          "location": "København",
+          "name": "Finn Jon",
+          "country": "NO",
+          "bio": "biography-hauger-finn-jon",
+          "category": "MCDs kongress"
+        },
+        {
+          "year": 1963,
+          "location": "Stockholm",
+          "name": "Finn Jon",
+          "country": "NO",
+          "bio": "biography-hauger-finn-jon",
+          "category": "SMCs kongress"
+        },
+        {
+          "year": 1964,
+          "location": "Oslo",
+          "name": "Toreno",
+          "country": "NO",
+          "bio": "biography-fredriksen-tore",
+          "category": "MCN/DMROs kongress"
+        },
+        {
+          "year": 1965,
+          "location": "København",
+          "name": "Finn Jon",
+          "country": "NO",
+          "bio": "biography-hauger-finn-jon",
+          "category": "MCDs kongress"
+        },
+        {
+          "year": 1966,
+          "location": "Stockholm",
+          "name": "Finn Jon",
+          "country": "NO",
+          "bio": "biography-hauger-finn-jon",
+          "category": "SMCs kongress"
+        },
+        {
+          "year": 1967,
+          "location": "Oslo",
+          "name": "Ken Hardy",
+          "country": "SE",
+          "category": "DMRO/MCNs kongress"
+        },
+        {
+          "year": 1968,
+          "location": "København",
+          "name": "Ken Hardy",
+          "country": "SE",
+          "category": "MCDs kongress"
+        },
+        {
+          "year": 1969,
+          "location": "Göteborg",
+          "name": "Johnny Lonn",
+          "country": "SE",
+          "category": "GMKs kongress"
+        },
+        {
+          "year": 1970,
+          "location": "Helsingfors",
+          "name": "Ken Hardy",
+          "country": "SE",
+          "category": "Taikapiiris kongress"
+        },
+        {
+          "year": 1971,
+          "location": "Stockholm",
+          "name": "Jan Crosby",
+          "country": "NO",
+          "bio": "biography-krosby-jan",
+          "category": "SMCs 25 års kongress"
+        },
+        {
+          "year": 1972,
+          "location": "Oslo",
+          "name": "Yan Swahn",
+          "country": "SE",
+          "category": "MCN/DMROs kongress"
+        },
+        {
+          "year": 1973,
+          "location": "København",
+          "name": "Jan Crosby",
+          "country": "NO",
+          "bio": "biography-krosby-jan",
+          "category": "MCDs kongress"
+        },
+        {
+          "year": 1974,
+          "location": "Örebro",
+          "name": "Marillo",
+          "country": "SE",
+          "category": "SMCs kongress"
+        },
+        {
+          "year": 1975,
+          "location": "Helsingfors",
+          "name": "Airaksinen",
+          "country": "FI",
+          "category": "Taikapiiris kongress"
+        },
+        {
+          "year": 1976,
+          "location": "Oslo",
+          "name": "Airaksinen",
+          "country": "FI",
+          "category": "DMRO/MCNs kongress"
+        },
+        {
+          "year": 1977,
+          "location": "Göteborg",
+          "name": "Perino",
+          "country": "NO",
+          "bio": "biography-fossum-per",
+          "category": "GMKs kongress"
+        },
+        {
+          "year": 1978,
+          "location": "Sandefjord",
+          "name": "Hugo Dønjar",
+          "country": "NO",
+          "bio": "biography-doenjar-hugo",
+          "category": "MCNs 50 års kongress"
+        },
+        {
+          "year": 1979,
+          "location": "København",
+          "name": "Perino",
+          "country": "NO",
+          "bio": "biography-fossum-per",
+          "category": "MCDs 45 års kongress"
+        },
+        {
+          "year": 1980,
+          "location": "Helsingfors",
+          "name": "Roberto",
+          "country": "SE",
+          "category": "Taikapiiris kongress"
+        },
+        {
+          "year": 1981,
+          "location": "Södertälje",
+          "name": "Davido",
+          "country": "NO",
+          "bio": "biography-fevaag-bjoern-david",
+          "category": "SMCs 35 års kongress"
+        },
+        {
+          "year": 1982,
+          "location": "Fagernes",
+          "name": "Davido",
+          "country": "NO",
+          "bio": "biography-fevaag-bjoern-david",
+          "category": "DMROs 35 årskongress"
+        },
+        {
+          "year": 1983,
+          "location": "Örebro",
+          "name": "Roberto",
+          "country": "SE",
+          "category": "ÖMCs 35 årskongress"
+        },
+        {
+          "year": 1984,
+          "location": "København",
+          "name": "Davido",
+          "country": "NO",
+          "bio": "biography-fevaag-bjoern-david",
+          "category": "MCDs kongress"
+        },
+        {
+          "year": 1985,
+          "location": "Helsingfors",
+          "name": "Roberto",
+          "country": "SE",
+          "category": "Taikapiiris kongress"
+        },
+        {
+          "year": 1986,
+          "location": "Stockholm",
+          "name": "Finn Aspen",
+          "country": "FI",
+          "category": "SMCs 40 års kongress"
+        },
+        {
+          "year": 1987,
+          "location": "Odense",
+          "name": "Decard",
+          "country": "DK",
+          "category": "MCDs kongress"
+        },
+        {
+          "year": 1988,
+          "location": "Sandefjord",
+          "name": "Roberto",
+          "country": "SE",
+          "category": "MCNs 60 års kongress"
+        },
+        {
+          "year": 1989,
+          "location": "Nyköping",
+          "name": "Riku & Maarit",
+          "country": "FI",
+          "category": "SMCs kongress"
+        },
+        {
+          "year": 1990,
+          "location": "Helsingfors",
+          "name": "Markku Karvo",
+          "country": "FI",
+          "category": "Taikapiiris kongress"
+        },
+        {
+          "year": 1991,
+          "location": "Aalborg",
+          "name": "Michael Deutsch",
+          "country": "DK",
+          "category": "MCDs kongress"
+        },
+        {
+          "year": 1993,
+          "location": "Lørenskog",
+          "name": "Michael Deutsch",
+          "country": "DK",
+          "category": "DMROs kongress"
+        },
+        {
+          "year": 1994,
+          "location": "Lindköping",
+          "name": "Markko & Elena Karvo",
+          "country": "FI",
+          "_comment": "Printed 'Lindköping' (likely Linköping).",
+          "category": "SMCs kongress"
+        },
+        {
+          "year": 1995,
+          "location": "Helsingfors",
+          "name": "Simo Aalto",
+          "country": "FI",
+          "category": "Taikapiiris kongress"
+        },
+        {
+          "year": 1999,
+          "location": "København",
+          "name": "Hans Ulrik & Dina",
+          "country": "DK",
+          "competition": "nordiskKongress",
+          "placement": "1. pris (ingen nordisk mester kåret)",
+          "category": "MCDs kongress"
+        }
+      ],
+      "section": "nordiske-mestere"
     }
   ]
 }

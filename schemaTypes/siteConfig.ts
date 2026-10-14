@@ -165,6 +165,14 @@ export const siteConfig = defineType({
       description:
         'Hovedbryteren for Trylleeffekter (/tryllehistorie/trylleeffekter). Av: sidene får noindex og lenkes ikke fra noe sted, men kan testes på den fulle URL-en. På: sidene indekseres. Legg samtidig til «Trylleeffekter» under Tryllehistorie i navigasjonen.',
     }),
+    defineField({
+      name:         'historietabellerActive',
+      title:        '«Konkurranse- og foreningshistorie» er aktiv',
+      type:         'boolean',
+      initialValue: false,
+      description:
+        'Hovedbryteren for /tryllehistorie/konkurransehistorie og /tryllehistorie/foreningshistorie (tabellene fra «Mystikk som underholdning»). Av: sidene får noindex og et «Forhåndsvisning»-banner, lenkes ikke fra menyen eller foreningssidene, men kan testes på den fulle URL-en; «Norden i FISM» er uendret. På: menypunktene vises, foreningssidene lenker til tabellene, og «Norden i FISM» sender videre til Konkurransehistorie. Krever et nytt bygg av nettstedet.',
+    }),
   ],
 
   preview: {
