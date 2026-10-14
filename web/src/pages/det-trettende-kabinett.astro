@@ -15,6 +15,7 @@
 export const prerender = false
 
 import BaseLayout from '../layouts/BaseLayout.astro'
+import art from '../lib/kabinett-art.json'
 import { getGameConfig, getAllGameChapters, getSiteConfig, privateUrlFor, portableTextToHtml } from '../lib/sanity'
 import { getPrivateClient } from '../lib/bakTeppet'
 
@@ -68,9 +69,13 @@ const plainToHtml = (s: string) =>
 // What the game engine receives per room and language: only what is shown
 // before the room is solved.
 interface RoomLang { title: string; introHtml: string }
-interface RoomPayload { nb: RoomLang; en: RoomLang; imageUrl?: string; imageAlt?: string; imageAltEn?: string }
+interface RoomPayload { nb: RoomLang; en: RoomLang; imageUrl?: string; imageAlt?: string; imageAltEn?: string; imageSrcSet?: string; imageWidth?: number; imageHeight?: number; curiosityUrl?: string }
 
-const rooms: Record<string, RoomPayload> = {}
+const rooms: Record<string, RoomPayload> = Object.fromEntries(
+  Object.entries(art.rooms).map(([key, image]) => [key, {
+    nb: { title: '', introHtml: '' }, en: { title: '', introHtml: '' }, ...image,
+  }]),
+)
 for (const c of chapters) {
   const introNbHtml = portableTextToHtml(c.introRich, privateUrlFor) || plainToHtml(c.intro || '')
   rooms[c.key] = {
@@ -80,9 +85,13 @@ for (const c of chapters) {
       title: c.titleEn || c.title || '',
       introHtml: portableTextToHtml(c.introRichEn, privateUrlFor) || (c.introEn ? plainToHtml(c.introEn) : introNbHtml),
     },
+    ...(art.rooms[c.key as keyof typeof art.rooms] ?? {}),
+    ...(c.curiosityImage?.asset ? { curiosityUrl: privateUrlFor(c.curiosityImage).width(120).format('webp').url() } : {}),
     ...(c.image?.asset
       ? {
-          imageUrl: privateUrlFor(c.image).width(760).format('webp').url(),
+          imageUrl: privateUrlFor(c.image).width(1280).format('webp').url(),
+          imageSrcSet: `${privateUrlFor(c.image).width(760).format('webp').url()} 760w, ${privateUrlFor(c.image).width(1280).format('webp').url()} 1280w`,
+          imageWidth: undefined, imageHeight: undefined,
           imageAlt: c.image.alt || '',
           imageAltEn: c.image.altEn || c.image.alt || '',
         }
@@ -99,6 +108,7 @@ const gameIntroEn = config?.introEn ||
 const museumAddress = siteConfig?.address || 'Årvoll gård, Årvollveien 35\n0590 Oslo'
 const payload = {
   rooms,
+  directors: art.directors,
   museumAddress,
   englishEnabled,
   hero: {
@@ -1242,9 +1252,10 @@ const payloadJson = JSON.stringify(payload).replace(/</g, '\\u003c')
 <script>
   interface GFact { text: string; linkUrl?: string; linkLabel?: string; imageUrl?: string; imageAlt?: string }
   interface GRoomLang { title: string; introHtml: string }
-  interface GRoom { nb: GRoomLang; en: GRoomLang; imageUrl?: string; imageAlt?: string; imageAltEn?: string }
+  interface GRoom { nb: GRoomLang; en: GRoomLang; imageUrl?: string; imageAlt?: string; imageAltEn?: string; imageSrcSet?: string; imageWidth?: number; imageHeight?: number; curiosityUrl?: string }
   interface GHeroLang { title: string; intro: string }
   interface GData {
+    directors: Record<string, string>
     rooms: Record<string, GRoom>
     museumAddress?: string
     englishEnabled?: boolean
@@ -1277,7 +1288,7 @@ const payloadJson = JSON.stringify(payload).replace(/</g, '\\u003c')
     // This page carries no answers, hints, explanations or facts: the server
     // checks every answer and hands those out (src/lib/kabinett.ts) — the
     // explanation and facts of a puzzle room only after a correct answer.
-    interface GSolution { html: string; facts: GFact[] }
+    interface GSolution { html: string; facts: GFact[]; imageUrl?: string; imageAlt?: string }
     interface GCheck { ok: boolean; msg?: string; early?: boolean; invalid?: boolean; solved?: GSolution }
     interface GStart { lines: Record<string, string>; answer?: string }
 
@@ -1298,8 +1309,22 @@ const payloadJson = JSON.stringify(payload).replace(/</g, '\\u003c')
         return null
       }
     }
-    const check = (room: string, answer: Record<string, unknown> = {}) =>
-      ask<GCheck>({ action: 'check', room, ...answer })
+    const check = async (room: string, answer: Record<string, unknown> = {}) => {
+      const result = await ask<GCheck>({ action: 'check', room, ...answer })
+      if (result && Object.keys(answer).length) setDirector(room, result.solved ? 'solved' : result.ok ? 'point' : 'think')
+      return result
+    }
+
+    // A decorative portrait beside the copy, never over a puzzle or an illusion.
+    function setDirector(room: string, pose: string) {
+      const scene = document.getElementById(`sc-${room}`)
+      const figure = scene?.querySelector<HTMLElement>('.director-portrait')
+      const img = figure?.querySelector<HTMLImageElement>('img')
+      const url = data.directors?.[pose]
+      if (!figure || !img || !url) return
+      img.src = url
+      figure.hidden = false
+    }
 
     // The texts a room needs when it opens (the Director's whisper for the
     // chosen path etc.), fetched once per room.
@@ -1679,24 +1704,67 @@ const payloadJson = JSON.stringify(payload).replace(/</g, '\\u003c')
       if (!scene) continue
       if (lang === 'en') {
         const heading = scene.querySelector('.scene-heading')
-        if (heading) heading.textContent = room.en.title
+        if (heading && room.en.title) heading.textContent = room.en.title
         const intro = scene.querySelector('.scene-intro')
-        if (intro) intro.innerHTML = room.en.introHtml
+        if (intro && room.en.introHtml) intro.innerHTML = room.en.introHtml
       }
       if (room.imageUrl) {
-        const intro = scene.querySelector('.scene-intro')
+        const intro = scene.querySelector('.scene-intro') || scene.querySelector('.letter-sign')
         if (intro) {
           const fig = document.createElement('figure')
           fig.className = 'scene-image'
           const img = document.createElement('img')
-          img.src = room.imageUrl
+          img.dataset.src = room.imageUrl
+          if (room.imageSrcSet) img.dataset.srcset = room.imageSrcSet
+          img.sizes = '(max-width: 560px) calc(100vw - 32px), 760px'
+          if (room.imageWidth && room.imageHeight) { img.width = room.imageWidth; img.height = room.imageHeight }
           img.alt = (lang === 'en' ? room.imageAltEn : room.imageAlt) || ''
           img.loading = 'lazy'
           img.decoding = 'async'
           fig.appendChild(img)
           intro.insertAdjacentElement('afterend', fig)
+          img.addEventListener('error', () => { fig.hidden = true })
         }
       }
+    }
+
+    const directorRooms: Record<string, string> = {
+      foajeen: 'welcome', sandrommet: 'point', markedsplassen: 'point',
+      biblioteket: 'point', salongen: 'point', seansen: 'point', teateret: 'point',
+      kinoen: 'point', verkstedet: 'point', studioet: 'point', gatehjornet: 'point',
+      vinterhagen: 'point', epilog: 'wait', epilog2: 'wait', epilog3: 'wait',
+      epilog4: 'door', porten: 'door', kabinettet: 'welcome', daggry: 'farewell',
+    }
+    for (const room of Object.keys(directorRooms)) {
+      const scene = document.getElementById(`sc-${room}`)
+      const intro = scene?.querySelector<HTMLElement>('.scene-intro')
+      if (!intro) continue
+      const copy = document.createElement('div')
+      copy.className = 'director-copy'
+      intro.before(copy)
+      copy.appendChild(intro)
+      const portrait = document.createElement('figure')
+      portrait.className = 'director-portrait'
+      portrait.hidden = true
+      portrait.setAttribute('aria-hidden', 'true')
+      const img = document.createElement('img')
+      img.alt = ''
+      img.decoding = 'async'
+      portrait.appendChild(img)
+      copy.appendChild(portrait)
+      img.addEventListener('error', () => { portrait.hidden = true })
+    }
+    // Keep the original accessible buttons and their existing reward handlers.
+    for (const [room, entry] of Object.entries(data.rooms)) {
+      const button = document.querySelector<HTMLButtonElement>(`#sc-${room} .curiosity`)
+      if (!button || !entry.curiosityUrl) continue
+      const fallback = button.textContent || ''
+      const img = document.createElement('img')
+      img.src = entry.curiosityUrl
+      img.alt = ''
+      img.width = 40; img.height = 40
+      img.addEventListener('error', () => { button.textContent = fallback })
+      button.replaceChildren(img)
     }
 
     // ── Kort og tilstand ─────────────────────────────────────────
@@ -1868,7 +1936,18 @@ const payloadJson = JSON.stringify(payload).replace(/</g, '\\u003c')
     // sends once a room is solved.
     function showSolution(prefix: string, sol: GSolution | undefined) {
       const box = document.getElementById(`${prefix}-solution`)
-      if (box) box.innerHTML = sol?.html ?? ''
+      if (box) {
+        box.innerHTML = sol?.html ?? ''
+        if (sol?.imageUrl) {
+          const img = document.createElement('img')
+          img.src = sol.imageUrl
+          img.alt = sol.imageAlt || ''
+          img.className = 'solution-image'
+          img.loading = 'lazy'
+          img.addEventListener('error', () => { img.hidden = true })
+          box.appendChild(img)
+        }
+      }
       renderFacts(`${prefix}-facts`, sol?.facts ?? [])
     }
 
@@ -1960,6 +2039,12 @@ const payloadJson = JSON.stringify(payload).replace(/</g, '\\u003c')
       for (const [key, el] of Object.entries(SCENES)) el.hidden = key !== stage
       // Re-trigger the slide-in animation for the scene's blocks
       const scene = SCENES[stage]
+      for (const img of scene.querySelectorAll<HTMLImageElement>('img[data-src]')) {
+        if (img.dataset.srcset) img.srcset = img.dataset.srcset
+        img.src = img.dataset.src!
+        delete img.dataset.src; delete img.dataset.srcset
+      }
+      if (directorRooms[stage]) setDirector(stage, directorRooms[stage])
       scene.classList.remove('scene-enter')
       void scene.offsetWidth
       scene.classList.add('scene-enter')
@@ -2194,6 +2279,7 @@ const payloadJson = JSON.stringify(payload).replace(/</g, '\\u003c')
         const li = document.createElement('li')
         li.textContent = lang === 'en' ? `“${r.text}”` : `«${r.text}»`
         list.appendChild(li)
+        setDirector(room, 'hint')
         idx++
         onUse()
         if (idx >= r.total) btn.disabled = true
@@ -2245,6 +2331,7 @@ const payloadJson = JSON.stringify(payload).replace(/</g, '\\u003c')
       updateDeckCount()
       toast(t('🃏 Fire nye kort: <strong>essene</strong> — Direktørens forskudd', '🃏 Four new cards: <strong>the aces</strong> — the Director’s advance'))
       $('fj-aces').hidden = false
+      setDirector('foajeen', 'cards')
     })
 
     $('fj-continue').addEventListener('click', () => goTo('sandrommet'))
@@ -4108,6 +4195,7 @@ const payloadJson = JSON.stringify(payload).replace(/</g, '\\u003c')
       check('kabinettet').then(r => renderFacts('kb-facts', r?.solved?.facts ?? []))
       $('kb-compose').hidden = true
       $('kb-performance').hidden = false
+      setDirector('kabinettet', 'applause')
       window.scrollTo({ top: 0, behavior: reducedMotion ? 'auto' : 'smooth' })
     })
 
@@ -4538,6 +4626,18 @@ const payloadJson = JSON.stringify(payload).replace(/</g, '\\u003c')
   .fact-modal-figure img { max-width: 100%; height: auto; border-radius: 6px; border: 2px solid var(--gold-dark); display: block; }
   .fact-modal-text { font-family: var(--font-body); font-size: 1.05rem; line-height: 1.7; margin: 0.5rem 0 0.75rem; }
   .fact-modal-note { font-family: var(--font-ui); font-size: 0.8rem; opacity: 0.7; margin-bottom: 0.25rem; }
+
+  :global(.director-copy) { display: flex; align-items: flex-start; gap: 1rem; }
+  :global(.director-copy .scene-intro) { flex: 1; min-width: 0; }
+  :global(.director-portrait) { flex: 0 0 90px; margin: 0; }
+  :global(.director-portrait[hidden]) { display: none; }
+  :global(.director-portrait img) { display: block; width: 100%; height: 160px; object-fit: contain; object-position: top; }
+  :global(.solution-image) { display: block; max-width: 100%; height: auto; margin-top: 1rem; border-radius: 8px; }
+  :global(.curiosity img) { display: block; width: 40px; height: 40px; object-fit: contain; }
+  @media (max-width: 560px) {
+    :global(.director-portrait) { flex-basis: 56px; }
+    :global(.director-portrait img) { height: 110px; }
+  }
 
   /* ── HJELP-MODAL ───────────────────────────────────────────────── */
   .help-body h3 { font-family: var(--font-ui); font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.12em; color: var(--gold); margin: 1.2rem 0 0.35rem; }

@@ -1,0 +1,29 @@
+name: Kabinett illustration checks
+
+on:
+  pull_request:
+    paths:
+      - 'web/src/pages/det-trettende-kabinett.astro'
+      - 'web/src/lib/kabinett*'
+      - 'web/src/lib/sanity.ts'
+      - 'web/public/images/kabinett/**'
+      - 'web/tests/**'
+      - 'web/package*.json'
+      - 'schemaTypes/gameChapter.ts'
+      - '.github/workflows/kabinett-checks.yml'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - run: npm ci
+        working-directory: web
+      - run: npm test
+        working-directory: web
+      - run: node scripts/check-schema-conventions.mjs

@@ -1,0 +1,232 @@
+{
+  "rooms": {
+    "brevet": {
+      "imageUrl": "/images/kabinett/brevet-1280.webp",
+      "imageSrcSet": "/images/kabinett/brevet-760.webp 760w, /images/kabinett/brevet-1280.webp 1280w",
+      "imageAlt": "Det forseglede brevet",
+      "imageAltEn": "A sealed letter before the cabinet door",
+      "imageWidth": 1672,
+      "imageHeight": 941
+    },
+    "foajeen": {
+      "imageUrl": "/images/kabinett/foajeen-1280.webp",
+      "imageSrcSet": "/images/kabinett/foajeen-760.webp 760w, /images/kabinett/foajeen-1280.webp 1280w",
+      "imageAlt": "Foajeen med den åpne gjesteboken",
+      "imageAltEn": "The foyer and its open guest book",
+      "imageWidth": 1672,
+      "imageHeight": 941
+    },
+    "sandrommet": {
+      "imageUrl": "/images/kabinett/sandrommet-1280.webp",
+      "imageSrcSet": "/images/kabinett/sandrommet-760.webp 760w, /images/kabinett/sandrommet-1280.webp 1280w",
+      "imageAlt": "Mannen ved bordet med tre kopper",
+      "imageAltEn": "A conjurer at a table with three cups",
+      "imageWidth": 1672,
+      "imageHeight": 941
+    },
+    "speilgangen": {
+      "imageUrl": "/images/kabinett/speilgangen-1280.webp",
+      "imageSrcSet": "/images/kabinett/speilgangen-760.webp 760w, /images/kabinett/speilgangen-1280.webp 1280w",
+      "imageAlt": "Speilgangen i det trettende kabinett",
+      "imageAltEn": "The blue mirror passage",
+      "imageWidth": 1672,
+      "imageHeight": 941
+    },
+    "markedsplassen": {
+      "imageUrl": "/images/kabinett/markedsplassen-1280.webp",
+      "imageSrcSet": "/images/kabinett/markedsplassen-760.webp 760w, /images/kabinett/markedsplassen-1280.webp 1280w",
+      "imageAlt": "Markedsplassens tre mystiske krus",
+      "imageAltEn": "A street conjurer with three cups",
+      "imageWidth": 1672,
+      "imageHeight": 941
+    },
+    "epilog": {
+      "imageUrl": "/images/kabinett/epilog-1280.webp",
+      "imageSrcSet": "/images/kabinett/epilog-760.webp 760w, /images/kabinett/epilog-1280.webp 1280w",
+      "imageAlt": "Bak det burgunderrøde forhenget",
+      "imageAltEn": "Behind the burgundy curtain",
+      "imageWidth": 1672,
+      "imageHeight": 941
+    },
+    "galleriet": {
+      "imageUrl": "/images/kabinett/galleriet-1280.webp",
+      "imageSrcSet": "/images/kabinett/galleriet-760.webp 760w, /images/kabinett/galleriet-1280.webp 1280w",
+      "imageAlt": "Seks tomme rammer i nattgalleriet",
+      "imageAltEn": "Six empty frames in the night gallery",
+      "imageWidth": 1672,
+      "imageHeight": 941
+    },
+    "biblioteket": {
+      "imageUrl": "/images/kabinett/biblioteket-1280.webp",
+      "imageSrcSet": "/images/kabinett/biblioteket-760.webp 760w, /images/kabinett/biblioteket-1280.webp 1280w",
+      "imageAlt": "Den åpne boken i biblioteket",
+      "imageAltEn": "An open book in the library",
+      "imageWidth": 1672,
+      "imageHeight": 941
+    },
+    "oyet": {
+      "imageUrl": "/images/kabinett/oyet-1280.webp",
+      "imageSrcSet": "/images/kabinett/oyet-760.webp 760w, /images/kabinett/oyet-1280.webp 1280w",
+      "imageAlt": "Det optiske kammeret",
+      "imageAltEn": "The optical chamber",
+      "imageWidth": 1672,
+      "imageHeight": 941
+    },
+    "salongen": {
+      "imageUrl": "/images/kabinett/salongen-1280.webp",
+      "imageSrcSet": "/images/kabinett/salongen-760.webp 760w, /images/kabinett/salongen-1280.webp 1280w",
+      "imageAlt": "Den mekaniske tyrken i salongen",
+      "imageAltEn": "The mechanical Turk in the salon",
+      "imageWidth": 1672,
+      "imageHeight": 941
+    },
+    "seansen": {
+      "imageUrl": "/images/kabinett/seansen-1280.webp",
+      "imageSrcSet": "/images/kabinett/seansen-760.webp 760w, /images/kabinett/seansen-1280.webp 1280w",
+      "imageAlt": "Den stille seansen ved rundbordet",
+      "imageAltEn": "A quiet séance at a round table",
+      "imageWidth": 1672,
+      "imageHeight": 941
+    },
+    "epilog2": {
+      "imageUrl": "/images/kabinett/epilog2-1280.webp",
+      "imageSrcSet": "/images/kabinett/epilog2-760.webp 760w, /images/kabinett/epilog2-1280.webp 1280w",
+      "imageAlt": "Trappen videre mot scenen",
+      "imageAltEn": "Stairs leading towards the stage",
+      "imageWidth": 1672,
+      "imageHeight": 941
+    },
+    "frievalget": {
+      "imageUrl": "/images/kabinett/frievalget-1280.webp",
+      "imageSrcSet": "/images/kabinett/frievalget-760.webp 760w, /images/kabinett/frievalget-1280.webp 1280w",
+      "imageAlt": "Tre valg i det trettende kabinett",
+      "imageAltEn": "Three objects on a table",
+      "imageWidth": 1672,
+      "imageHeight": 941
+    },
+    "teateret": {
+      "imageUrl": "/images/kabinett/teateret-1280.webp",
+      "imageSrcSet": "/images/kabinett/teateret-760.webp 760w, /images/kabinett/teateret-1280.webp 1280w",
+      "imageAlt": "Åpen rømningskiste på varietéscenen",
+      "imageAltEn": "An open escape trunk on stage",
+      "imageWidth": 1672,
+      "imageHeight": 941
+    },
+    "kinoen": {
+      "imageUrl": "/images/kabinett/kinoen-1280.webp",
+      "imageSrcSet": "/images/kabinett/kinoen-760.webp 760w, /images/kabinett/kinoen-1280.webp 1280w",
+      "imageAlt": "Håndsveivet projektor i den gamle kinosalen",
+      "imageAltEn": "A hand-cranked projector in the cinema",
+      "imageWidth": 1672,
+      "imageHeight": 941
+    },
+    "lerretet": {
+      "imageUrl": "/images/kabinett/lerretet-1280.webp",
+      "imageSrcSet": "/images/kabinett/lerretet-760.webp 760w, /images/kabinett/lerretet-1280.webp 1280w",
+      "imageAlt": "Stille kammer med blankt lerret",
+      "imageAltEn": "A quiet chamber with a blank canvas",
+      "imageWidth": 1672,
+      "imageHeight": 941
+    },
+    "verkstedet": {
+      "imageUrl": "/images/kabinett/verkstedet-1280.webp",
+      "imageSrcSet": "/images/kabinett/verkstedet-760.webp 760w, /images/kabinett/verkstedet-1280.webp 1280w",
+      "imageAlt": "Det hemmelige illusjonsverkstedet",
+      "imageAltEn": "The illusion workshop",
+      "imageWidth": 1672,
+      "imageHeight": 941
+    },
+    "epilog3": {
+      "imageUrl": "/images/kabinett/epilog3-1280.webp",
+      "imageSrcSet": "/images/kabinett/epilog3-760.webp 760w, /images/kabinett/epilog3-1280.webp 1280w",
+      "imageAlt": "Dempet daggry ved speilgangen",
+      "imageAltEn": "Early light in the mirror passage",
+      "imageWidth": 1672,
+      "imageHeight": 941
+    },
+    "minnet": {
+      "imageUrl": "/images/kabinett/minnet-1280.webp",
+      "imageSrcSet": "/images/kabinett/minnet-760.webp 760w, /images/kabinett/minnet-1280.webp 1280w",
+      "imageAlt": "Minnedugg i speilgangen",
+      "imageAltEn": "A misted mirror",
+      "imageWidth": 1672,
+      "imageHeight": 941
+    },
+    "studioet": {
+      "imageUrl": "/images/kabinett/studioet-1280.webp",
+      "imageSrcSet": "/images/kabinett/studioet-760.webp 760w, /images/kabinett/studioet-1280.webp 1280w",
+      "imageAlt": "Mentalist i et blått TV-studio",
+      "imageAltEn": "A mentalist in a television studio",
+      "imageWidth": 1672,
+      "imageHeight": 941
+    },
+    "trekanten": {
+      "imageUrl": "/images/kabinett/trekanten-1280.webp",
+      "imageSrcSet": "/images/kabinett/trekanten-760.webp 760w, /images/kabinett/trekanten-1280.webp 1280w",
+      "imageAlt": "Den blanke plansjen i speilgangen",
+      "imageAltEn": "A blank board in the mirror passage",
+      "imageWidth": 1672,
+      "imageHeight": 941
+    },
+    "gatehjornet": {
+      "imageUrl": "/images/kabinett/gatehjornet-1280.webp",
+      "imageSrcSet": "/images/kabinett/gatehjornet-760.webp 760w, /images/kabinett/gatehjornet-1280.webp 1280w",
+      "imageAlt": "Gatemagikerens sølvmynt i nattelyset",
+      "imageAltEn": "A street magician holding a silver coin",
+      "imageWidth": 1672,
+      "imageHeight": 941
+    },
+    "fargene": {
+      "imageUrl": "/images/kabinett/fargene-1280.webp",
+      "imageSrcSet": "/images/kabinett/fargene-760.webp 760w, /images/kabinett/fargene-1280.webp 1280w",
+      "imageAlt": "Det tomme diagrammet bak den siste døren",
+      "imageAltEn": "A blank diagram board",
+      "imageWidth": 1672,
+      "imageHeight": 941
+    },
+    "vinterhagen": {
+      "imageUrl": "/images/kabinett/vinterhagen-1280.webp",
+      "imageSrcSet": "/images/kabinett/vinterhagen-760.webp 760w, /images/kabinett/vinterhagen-1280.webp 1280w",
+      "imageAlt": "Nordlys over vinterhagen",
+      "imageAltEn": "Northern lights above the winter garden",
+      "imageWidth": 1672,
+      "imageHeight": 941
+    },
+    "epilog4": {
+      "imageUrl": "/images/kabinett/epilog4-1280.webp",
+      "imageSrcSet": "/images/kabinett/epilog4-760.webp 760w, /images/kabinett/epilog4-1280.webp 1280w",
+      "imageAlt": "Den siste terskelen",
+      "imageAltEn": "The final threshold",
+      "imageWidth": 1672,
+      "imageHeight": 941
+    },
+    "porten": {
+      "imageUrl": "/images/kabinett/porten-1280.webp",
+      "imageSrcSet": "/images/kabinett/porten-760.webp 760w, /images/kabinett/porten-1280.webp 1280w",
+      "imageAlt": "Den siste terskelen",
+      "imageAltEn": "The final threshold",
+      "imageWidth": 1672,
+      "imageHeight": 941
+    },
+    "kabinettet": {
+      "imageUrl": "/images/kabinett/kabinettet-1280.webp",
+      "imageSrcSet": "/images/kabinett/kabinettet-760.webp 760w, /images/kabinett/kabinettet-1280.webp 1280w",
+      "imageAlt": "Den tomme scenen og arbeidslyset",
+      "imageAltEn": "An empty stage under a work light",
+      "imageWidth": 1672,
+      "imageHeight": 941
+    }
+  },
+  "directors": {
+    "welcome": "/images/kabinett/director-welcome.webp",
+    "hint": "/images/kabinett/director-hint.webp",
+    "point": "/images/kabinett/director-point.webp",
+    "think": "/images/kabinett/director-think.webp",
+    "solved": "/images/kabinett/director-solved.webp",
+    "wait": "/images/kabinett/director-wait.webp",
+    "cards": "/images/kabinett/director-cards.webp",
+    "applause": "/images/kabinett/director-applause.webp",
+    "farewell": "/images/kabinett/director-farewell.webp",
+    "door": "/images/kabinett/director-door.webp"
+  }
+}

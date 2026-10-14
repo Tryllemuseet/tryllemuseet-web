@@ -73,6 +73,8 @@ export interface KabinettFact {
 }
 
 export interface KabinettSolution {
+  imageUrl?: string
+  imageAlt?: string
   html:  string
   facts: KabinettFact[]
 }
@@ -132,6 +134,10 @@ function solution(room: GameRoomSecrets, lang: Lang): KabinettSolution {
   const blocks = (lang === 'en' && room.solutionEn?.length) ? room.solutionEn : room.solution
   return {
     html: portableTextToHtml(blocks, privateUrlFor),
+    ...(room.solutionImage?.asset ? {
+      imageUrl: privateUrlFor(room.solutionImage).width(1280).format('webp').url(),
+      imageAlt: (lang === 'en' && room.solutionImage.altEn) || room.solutionImage.alt || '',
+    } : {}),
     facts: (room.facts ?? []).map(f => ({
       text: (lang === 'en' && f.textEn) || f.text,
       linkUrl: f.linkUrl,
