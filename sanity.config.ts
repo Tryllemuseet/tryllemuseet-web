@@ -28,7 +28,8 @@ export default defineConfig([
     },
   },
   {
-    // Bak teppet: tryllesett and tryllebeskrivelser for kit buyers. A PRIVATE
+    // Bak teppet: tryllesett and tryllebeskrivelser for kit buyers, plus the
+    // rooms of "Det trettende kabinett" (answers and hints). A PRIVATE
     // dataset, so neither the documents nor their image/file assets can be
     // queried or listed without a token (see schemaTypes/kitCollection.ts).
     // Locally, SANITY_STUDIO_PRIVATE_DATASET=development points it at the
@@ -46,7 +47,7 @@ export default defineConfig([
     },
 
     document: {
-      // Tryllesett and tryllebeskrivelser keep a private ID (see
+      // Private types (PRIVATE_DOC_TYPES) keep a private ID (see
       // schemaTypes/privateDoc.ts) — only creatable from their own lists in
       // structure.ts, not from the global "+ Create" menu, and never by
       // "Duplicate", which would copy them to a plain UUID.

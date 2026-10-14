@@ -3346,6 +3346,7 @@ export interface GameFact {
 }
 
 export interface GameChapter {
+  curiosityImage?: GameImage
   key:          string
   title?:       string
   titleEn?:     string
@@ -3354,7 +3355,19 @@ export interface GameChapter {
   introRich?:   PortableTextBlock[]
   introRichEn?: PortableTextBlock[]
   image?:       GameImage
-  facts?:       GameFact[]
+}
+
+/** The parts of a room that would let a player skip its puzzle. Server-only:
+ *  read by src/lib/kabinett.ts and handed out piecemeal by /api/kabinett. */
+export interface GameRoomSecrets {
+  solutionImage?: GameImage
+  key:         string
+  answer?:     string
+  hints?:      { text: string; textEn?: string }[]
+  responses?:  { when: string; text?: string; textEn?: string }[]
+  solution?:   PortableTextBlock[]
+  solutionEn?: PortableTextBlock[]
+  facts?:      GameFact[]
 }
 
 export interface GameConfig {
@@ -3380,9 +3393,16 @@ export async function getGameConfig(): Promise<GameConfig | null> {
   `)
 }
 
-export async function getAllGameChapters(): Promise<GameChapter[]> {
-  return sanityClient.fetch(`
-    *[_type == "gameChapter" && isVisible != false && defined(key)] {
+// The rooms (gameChapter) live in the PRIVATE "lukket" dataset, like the Bak
+// teppet content below: their answers, hints, explanations and facts must
+// not be readable through the public API. Both queries take the token-bearing
+// client from createPrivateSanityClient(); image URLs need privateUrlFor().
+const GAME_CHAPTER_FILTER = `_type == "gameChapter" && _id in path("lukket.**") && isVisible != false && defined(key)`
+
+/** Public room copy for the game page: titles, intros, images. */
+export async function getAllGameChapters(client: SanityClientLike): Promise<GameChapter[]> {
+  return client.fetch(`
+    *[${GAME_CHAPTER_FILTER}] {
       key, title, titleEn, intro, introEn,
       introRich[] {
         ...,
@@ -3393,6 +3413,20 @@ export async function getAllGameChapters(): Promise<GameChapter[]> {
         _type == "image" => { ..., asset->{ _ref, url } }
       },
       image { asset->{ _ref, url }, alt, altEn },
+      curiosityImage { asset->{ _ref, url }, alt, altEn }
+    }
+  `)
+}
+
+/** Answers, hints, replies, explanations and facts — server-only. */
+export async function getGameRoomSecrets(client: SanityClientLike): Promise<GameRoomSecrets[]> {
+  return client.fetch(`
+    *[${GAME_CHAPTER_FILTER}] {
+      key, answer,
+      solutionImage { asset->{ _ref, url }, alt, altEn },
+      hints[] { text, textEn },
+      responses[] { when, text, textEn },
+      solution, solutionEn,
       facts[] {
         text, textEn, linkUrl, linkLabel, linkLabelEn,
         image { asset->{ _ref, url }, alt, altEn }

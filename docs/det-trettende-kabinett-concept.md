@@ -77,8 +77,8 @@ is real.
    Teaches the interface through one tiny puzzle (the guest book won't
    take your name until you look away).
 2. **Sandrommet** — *Antiquity.* Cups and balls, the legend of Dedi at
-   Pharaoh's court. Puzzle: follow the ball — and fail — until you learn to
-   watch the hand that *isn't* moving. Principle: **attention is steered,
+   Pharaoh's court. Puzzle: follow the ball — and fail — until you learn
+   where the trick really happens. Principle: **attention is steered,
    not outrun.**
 3. **Markedsplassen** — *Medieval street conjurers.* "Hocus pocus", patter,
    the fine line between entertainer and accused witch. Puzzle: decode a
@@ -207,8 +207,10 @@ client-side game engine, master switch:
 - **Page:** `web/src/pages/det-trettende-kabinett.astro` (linked from
   *Aktiviteter* when active). One page; chapters are client-side scenes,
   not routes.
-- **Engine:** vanilla TS, no backend. Progress (chapters, cards, hints,
-  stage name) in `localStorage`. No accounts, no tracking.
+- **Engine:** vanilla TS. Progress (chapters, cards, hints, stage name) in
+  `localStorage`. No accounts, no tracking. *(Superseded in October 2026:
+  answers are now checked by a small server endpoint — see "Answers live on
+  the server" below.)*
 - **Sanity types (new):** `gameConfig` (singleton with `isActive` master
   switch, intro/coming-soon copy, rank ladder), `gameChapter` (title, order,
   era intro, epilogue text, "visste du at" facts, learn-more links,
@@ -249,10 +251,9 @@ Innstillinger** document's `isActive` switch is on.
 
 - **Brevet** (title screen) → **Foajeen** (guest-book puzzle, grants the four
   aces and the player's stage name) → **Sandrommet** (cups-and-balls with
-  animated shuffle + text log; the final round's answer is the magician's
-  hand) → **Speilgangen** ("Kortet du valgte" — the princess card trick,
-  with an optional lift-the-curtain reveal) → **Markedsplassen** (the
-  mountebank's acrostic verse) → **Epilog** (soft reveal of the real museum,
+  animated shuffle + text log) → **Speilgangen** ("Kortet du valgte" — the
+  princess card trick, with an optional lift-the-curtain reveal) →
+  **Markedsplassen** (the mountebank's verse) → **Epilog** (soft reveal of the real museum,
   Act II tease).
 - Lærlingens/Mesterens vei per room, the three-step "Direktørens hvisken"
   hint ladder, gilded spade cards for hint-free master runs.
@@ -309,14 +310,14 @@ forhenget"):
 Speilgangen"):
 
 - **Minnet som dikter** (Speilgangen: false memory, DRM-style) — read
-  twelve sleep-themed words, then swear that «søvn» was on the list. It
-  wasn't. Grants ♦7. → **Studioet** (the tens; TV mentalism) — the studio
-  "reads your mind" (the ×9 digit-sum force → a cat in Denmark), then the
-  puzzle is to point at the step where your freedom disappeared. →
+  twelve words, then say which ones were on the list. Grants ♦7. →
+  **Studioet** (the tens; TV mentalism) — the studio "reads your mind" with
+  a classic mentalist force, then the puzzle is to point at the step where
+  your freedom disappeared. →
   **Trekanten som ikke finnes** (Speilgangen: Kanizsa illusory contours);
   grants ♦8. → **Gatehjørnet** (the jacks; close-up/street magic) — watch
   a coin-vanish routine beat by beat (replayable) and name the moment of
-  the move (the false transfer, sold by the relaxed hand). →
+  the move. →
   **Fargene som lyver** (Speilgangen: simultaneous contrast); grants ♦9.
   → **Vinterhagen** (the queens; the Nordic room, aurora styling) — the
   synthesis puzzle: match four scenarios to the room whose principle
@@ -348,10 +349,10 @@ døren"):
   downloadable **lærlingbrev** diploma (client-side SVG → PNG, like the
   poster). Sanity room keys `porten`, `kabinettet`, `daggry`.
 
-**Editorial model:** puzzle logic and default copy live in the page code;
-`gameChapter` documents (one per room key) override intro texts and replace
-the "visste du at" facts. The default facts in code need the museum's QA
-before activation — or replace them from Sanity.
+**Editorial model:** puzzle mechanics live in the page code; everything
+else lives in the `gameChapter` documents (one per room key): room copy,
+"visste du at" facts, and — since October 2026 — the answers, hints and
+explanations (see below). The facts need the museum's QA before activation.
 
 **Images and rich text (July 2026):** each `gameChapter` document can now
 carry an optional room image (shown under the room intro), an optional image
@@ -363,9 +364,9 @@ plain intro field. Rooms without images look exactly as before.
 UI, hints, poster and diploma — exists in English. Defaults live in the page
 code next to the Norwegian; editors override via the `*En` fields on
 `gameConfig`/`gameChapter`. Language-coupled puzzles were re-authored, not
-translated: the Market Square verse is a new English acrostic spelling
-M-I-D-D-L-E, the false-memory list is an English DRM "sleep" list, and the
-Studio's ×9 force ends on "a kitten in Denmark". The language toggle appears
+translated: the Market Square verse is a new English verse, the
+false-memory list is a new English word list, and the Studio's force has
+its own English punchline. The language toggle appears
 in the game bar only when `gameConfig.englishEnabled` is on (flip it after
 the museum has QA'd the English copy); switching reloads the page and keeps
 progress. There is still no `/en/` route — the toggle is per player, stored
@@ -382,18 +383,50 @@ unpublishing) in Studio — see the redaktør guide, §21. `main` is not yet on
 `englishEnabled` are off regardless, so nothing visible changes until the
 museum deliberately flips them.
 
+**Answers live on the server (October 2026).** The repository is public,
+and the game used to carry every answer in its page code and in the public
+Sanity dataset (several "visste du at" facts give the answer away), so
+anyone could read them in the page source. Now:
+
+- The `gameChapter` documents live in the **private `lukket` dataset**
+  (Studio workspace **Bak teppet (lukket)** → **Kabinettet: Rom**), with
+  `lukket.game-room-<key>` IDs. Besides room copy and facts they hold the
+  answer key (`answer`), the hints, the replies that depend on the answer
+  (`responses`) and the explanation (`solution`), in Norwegian and English.
+  `gameConfig` stays in the public dataset (nothing secret; every page reads
+  it for the menu).
+- The page (now rendered on demand and cached for 5 minutes at the CDN)
+  only gets each room's title, intro and image. Everything else comes from
+  `POST /api/kabinett` (`web/src/lib/kabinett.ts`) while the game is
+  played: room-start texts, one hint at a time, and answer checks. A puzzle
+  room's explanation and facts only come back with a correct, complete
+  answer; nothing is handed out while `isActive` is off.
+- The puzzle *mechanics* (the verse, the woodcuts, the strips, …) are still
+  in the page code — they are the questions, not the answers.
+- The answer formats per room are in the `ROOMS` table in `kabinett.ts`.
+  The answers themselves are only in Sanity. Before the move they were in
+  the page code (git history up to commit `a06953a`), which the public
+  repository still shows — only making the repository private removes them
+  from there.
+- The move was done with `scripts/move-kabinett-to-private-dataset.mjs`
+  (content file with the answers kept outside git).
+
 **Activation checklist** (mirrors the quiz):
 
 1. Deploy the studio so the new types appear: `npm run deploy` (repo root) —
    or confirm the automatic `deploy-sanity-studio.yml` run already did it.
-2. Review/override room copy via **Kabinettet: Rom** documents (optional).
+2. Review the rooms in the **Bak teppet (lukket)** workspace → **Kabinettet:
+   Rom** (optional).
 3. QA the "visste du at" facts (museum), in both languages if `englishEnabled`
    will be turned on.
 4. Open **Kabinettet: Innstillinger** and toggle **Spillet er aktivt** (and
    **Vis engelsk språkvalg i spillet**, once ready) on.
-5. Wait for the nightly rebuild or trigger **Daily rebuild** manually.
-   The game and its menu entry appear together. Remember this only reaches
-   tryllemuseet.no once `main` has been merged into `prod`.
+5. The game page picks up the switch within five minutes (it is rendered on
+   demand). The menu entry appears after the next rebuild — wait for the
+   nightly one or trigger **Daily rebuild** manually. Remember this only
+   reaches tryllemuseet.no once `main` has been merged into `prod`, and that
+   `SANITY_PRIVATE_READ_TOKEN` must be set in the Vercel project (it already
+   is for Bak teppet).
 
 **Files:**
 
@@ -402,4 +435,6 @@ museum deliberately flips them.
 | Schemas | `schemaTypes/gameConfig.ts`, `schemaTypes/gameChapter.ts` |
 | Queries & types | `web/src/lib/sanity.ts` ("Det trettende kabinett" section) |
 | Page + game engine | `web/src/pages/det-trettende-kabinett.astro` |
+| Answer checks (server) | `web/src/lib/kabinett.ts`, `web/src/pages/api/kabinett.ts` |
+| Move to the private dataset | `scripts/move-kabinett-to-private-dataset.mjs` |
 | Nav integration | `web/src/layouts/BaseLayout.astro` |

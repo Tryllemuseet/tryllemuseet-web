@@ -107,7 +107,9 @@ Short URLs used on print material and QR codes (e.g., `/got-talent`, `/hvem-er-h
 
 ### Closed Area: `/bak-teppet` (on-demand rendering)
 
-The only server-rendered pages. `@astrojs/vercel` is configured in `astro.config.mjs`, but output stays `static`: only `src/pages/bak-teppet/*.astro` opt out with `export const prerender = false` and run as a single Vercel function. They read `kitCollection`/`kitTrick` documents from the private `lukket` dataset (so neither the documents nor their images can be listed through the public Sanity API) with `SANITY_PRIVATE_READ_TOKEN`, and gate access with a per-kit-type shared code and an HMAC cookie (`web/src/lib/bakTeppet.ts`). Because they render per request, kit content changes in Sanity show up immediately, without a rebuild — unlike the rest of the site. See CLAUDE.md "Closed area" for details.
+Server-rendered pages. `@astrojs/vercel` is configured in `astro.config.mjs`, but output stays `static`: only `src/pages/bak-teppet/*.astro` (and the game, see below) opt out with `export const prerender = false` and run as a single Vercel function. They read `kitCollection`/`kitTrick` documents from the private `lukket` dataset (so neither the documents nor their images can be listed through the public Sanity API) with `SANITY_PRIVATE_READ_TOKEN`, and gate access with a per-kit-type shared code and an HMAC cookie (`web/src/lib/bakTeppet.ts`). Because they render per request, kit content changes in Sanity show up immediately, without a rebuild — unlike the rest of the site. See CLAUDE.md "Closed area" for details.
+
+The game *Det trettende kabinett* also renders on demand: `src/pages/det-trettende-kabinett.astro` reads its rooms (`gameChapter`) from the same private dataset, and `src/pages/api/kabinett.ts` checks answers and hands out hints, explanations and facts (`src/lib/kabinett.ts`), so the answers are neither in the page source nor in the public dataset. No access code: the game is open to everyone. See `docs/det-trettende-kabinett-concept.md` → "Answers live on the server".
 
 ### Feature Flags
 
