@@ -3346,6 +3346,7 @@ export interface GameFact {
 }
 
 export interface GameChapter {
+  curiosityImage?: GameImage
   key:          string
   title?:       string
   titleEn?:     string
@@ -3359,6 +3360,7 @@ export interface GameChapter {
 /** The parts of a room that would let a player skip its puzzle. Server-only:
  *  read by src/lib/kabinett.ts and handed out piecemeal by /api/kabinett. */
 export interface GameRoomSecrets {
+  solutionImage?: GameImage
   key:         string
   answer?:     string
   hints?:      { text: string; textEn?: string }[]
@@ -3410,7 +3412,8 @@ export async function getAllGameChapters(client: SanityClientLike): Promise<Game
         ...,
         _type == "image" => { ..., asset->{ _ref, url } }
       },
-      image { asset->{ _ref, url }, alt, altEn }
+      image { asset->{ _ref, url }, alt, altEn },
+      curiosityImage { asset->{ _ref, url }, alt, altEn }
     }
   `)
 }
@@ -3420,6 +3423,7 @@ export async function getGameRoomSecrets(client: SanityClientLike): Promise<Game
   return client.fetch(`
     *[${GAME_CHAPTER_FILTER}] {
       key, answer,
+      solutionImage { asset->{ _ref, url }, alt, altEn },
       hints[] { text, textEn },
       responses[] { when, text, textEn },
       solution, solutionEn,

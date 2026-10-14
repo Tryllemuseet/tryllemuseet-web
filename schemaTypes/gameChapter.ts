@@ -149,6 +149,20 @@ export const gameChapter = defineType({
       ],
     }),
 
+    defineField({
+      name: 'curiosityImage', title: 'Kuriositet (valgfritt)', type: 'image',
+      description: 'Separat rekvisitt med transparent bakgrunn. Erstatter emoji i rommets eksisterende klikkbare knapp. Skal ikke røpe svaret.',
+    }),
+    defineField({
+      name: 'solutionImage', title: 'Avsløringsbilde (hemmelig)', type: 'image',
+      fieldset: 'fasit', options: { hotspot: true },
+      description: 'Metodetegning eller avsløring. Leveres bare med forklaringen fra serveren, aldri ved inngangen til rommet.',
+      fields: [
+        defineField({ name: 'alt', title: 'Alternativ tekst', type: 'string' }),
+        defineField({ name: 'altEn', title: 'Alternativ tekst (engelsk)', type: 'string' }),
+      ],
+    }),
+
     // ── VISSTE DU AT ──────────────────────────────────────────────
     defineField({
       name: 'facts',
