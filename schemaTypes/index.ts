@@ -88,7 +88,6 @@ export const schemaTypes = [
   quizTheme,
   quizQuestion,
   gameConfig,
-  gameChapter,
   event,
 
   // Dokumenttyper — Opptredener
@@ -126,13 +125,15 @@ export const schemaTypes = [
   partialDate,
 ]
 
-// Bak teppet (closed area for kit buyers). These types live only in the
-// private "lukket" dataset, in their own Studio workspace (sanity.config.ts),
-// so the documents and their image/file assets can't be listed without a
-// token. They must not reference anything in `schemaTypes` above: references
-// can't cross datasets.
+// Private types: Bak teppet (closed area for kit buyers) and the rooms of
+// "Det trettende kabinett" (answers, hints, explanations). These types live
+// only in the private "lukket" dataset, in their own Studio workspace
+// (sanity.config.ts), so the documents and their image/file assets can't be
+// listed without a token. They must not reference anything in `schemaTypes`
+// above: references can't cross datasets.
 export const privateSchemaTypes = [
   kitCollection,
   kitTrick,
   kitOriginal,
+  gameChapter,
 ]

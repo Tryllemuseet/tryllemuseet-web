@@ -1,11 +1,17 @@
 // schemaTypes/gameChapter.ts
 import { defineType, defineField } from 'sanity'
 import { richBlockContent } from './richBlockContent'
+import { privateIdValidation } from './privateDoc'
 
-// Rooms in "Det trettende kabinett". The puzzle logic for each room lives in
-// the frontend code; these documents let editors override the visible copy
-// (intro text, "visste du at" facts) per room. A room works without a
-// document — the code ships sensible Norwegian defaults.
+// Rooms in "Det trettende kabinett". The puzzle mechanics live in the
+// frontend code; everything a player could use to skip a puzzle lives here:
+// the answer key, the hints, the answer-dependent replies, the explanation
+// shown once the room is solved, and the "visste du at" facts (several of
+// them give the answer away). The documents are in the PRIVATE "lukket"
+// dataset (Studio workspace "Bak teppet (lukket)"), and the web only hands
+// them out through /api/kabinett — the solution and facts of a puzzle room
+// only after a correct answer (web/src/lib/kabinett.ts). Room titles, intros
+// and images are shown on the (public) game page.
 const ROOM_KEYS = [
   { title: 'Foajeen (prolog — essene)',           value: 'foajeen' },
   { title: 'Sandrommet (oldtiden — 2)',           value: 'sandrommet' },
@@ -49,7 +55,8 @@ const richText = (name: string, title: string, description: string, fieldset?: s
     description,
     ...(fieldset ? { fieldset } : {}),
     of: [
-      richBlockContent()[0],
+      // No biography links: references can't cross datasets.
+      richBlockContent(undefined, { internalLinks: false })[0],
       {
         type: 'image',
         options: { hotspot: true },
@@ -75,6 +82,7 @@ export const gameChapter = defineType({
   title: 'Kabinettet: Rom',
   type: 'document',
   icon: () => '🚪',
+  validation: Rule => Rule.custom(privateIdValidation('«Kabinettet: Rom» → «Nytt rom»')),
   fields: [
 
     // ── SYNLIGHET ─────────────────────────────────────────────────
@@ -84,7 +92,7 @@ export const gameChapter = defineType({
       type:         'boolean',
       initialValue: true,
       description:
-        'Av: spillet bruker standardtekstene fra koden i stedet for dette dokumentet. Standard: på.',
+        'Skal stå på. Av: rommet vises uten tekst, og spillet kan verken sjekke svar, gi hint eller vise forklaringen i dette rommet.',
     }),
 
     defineField({
@@ -101,7 +109,7 @@ export const gameChapter = defineType({
       name: 'title',
       title: 'Romtittel',
       type: 'string',
-      description: 'Overstyrer romtittelen i spillet. Tomt felt = standardtekst fra koden.',
+      description: 'Romtittelen i spillet.',
     }),
 
     defineField({
@@ -109,8 +117,7 @@ export const gameChapter = defineType({
       title: 'Introtekst',
       type: 'text',
       rows: 4,
-      description:
-        'Direktørens introduksjon til rommet. Tomt felt = standardtekst fra koden.',
+      description: 'Direktørens introduksjon til rommet.',
     }),
 
     richText(
@@ -148,7 +155,7 @@ export const gameChapter = defineType({
       title: '«Visste du at …»-fakta',
       type: 'array',
       description:
-        'Historiske fakta som vises når rommet er løst. Kvalitetssikres av museet før publisering.',
+        'Historiske fakta som vises når rommet er løst — aldri før, siden flere av dem røper svaret. Kvalitetssikres av museet før publisering.',
       of: [{
         type: 'object',
         name: 'gameFact',
@@ -182,6 +189,66 @@ export const gameChapter = defineType({
       }],
     }),
 
+    // ── FASIT ─────────────────────────────────────────────────────
+    defineField({
+      name: 'answer',
+      title: 'Fasit (teknisk)',
+      type: 'string',
+      fieldset: 'fasit',
+      description:
+        'Svarnøkkelen spillet sjekker mot. Formatet er bestemt av gåten i koden (web/src/lib/kabinett.ts) — ikke endre uten å ha lest det. Tomt i rom uten gåte.',
+    }),
+    defineField({
+      name: 'hints',
+      title: 'Hint («Direktørens hvisken»)',
+      type: 'array',
+      fieldset: 'fasit',
+      description: 'Gis ett og ett når spilleren ber om det. Bruk tre, fra vagt til nesten svaret.',
+      of: [{
+        type: 'object',
+        name: 'gameLine',
+        fields: [
+          defineField({ name: 'text',   title: 'Hint',            type: 'text', rows: 2, validation: R => R.required() }),
+          defineField({ name: 'textEn', title: 'Hint (engelsk)',  type: 'text', rows: 2 }),
+        ],
+        preview: { select: { title: 'text' } },
+      }],
+    }),
+    defineField({
+      name: 'responses',
+      title: 'Replikker som avhenger av svaret',
+      type: 'array',
+      fieldset: 'fasit',
+      description:
+        'Det Direktøren (eller rommet) sier når spilleren svarer, og andre tekster som røper løsningen. «Når» er en teknisk nøkkel fra koden (f.eks. correct, wrong, wrong:urverk, start:laerling) — endre teksten, ikke nøkkelen. {n} byttes ut med antall riktige.',
+      of: [{
+        type: 'object',
+        name: 'gameResponse',
+        fields: [
+          defineField({ name: 'when',   title: 'Når (teknisk nøkkel)', type: 'string', validation: R => R.required() }),
+          defineField({ name: 'text',   title: 'Tekst',                type: 'text', rows: 2 }),
+          defineField({ name: 'textEn', title: 'Tekst (engelsk)',      type: 'text', rows: 2 }),
+        ],
+        preview: { select: { title: 'when', subtitle: 'text' } },
+      }],
+    }),
+    defineField({
+      name: 'solution',
+      title: 'Forklaringen',
+      type: 'array',
+      fieldset: 'fasit',
+      description:
+        'Prinsippet Direktøren forklarer når gåten er løst, eller avsløringen i Speilgangens rom.',
+      of: [richBlockContent([{ title: 'Normaltekst', value: 'normal' }], { internalLinks: false })[0]],
+    }),
+    defineField({
+      name: 'solutionEn',
+      title: 'Forklaringen (engelsk)',
+      type: 'array',
+      fieldset: 'fasit',
+      of: [richBlockContent([{ title: 'Normaltekst', value: 'normal' }], { internalLinks: false })[0]],
+    }),
+
     // ── ENGELSK (VALGFRITT) ───────────────────────────────────────
     defineField({
       name: 'titleEn',
@@ -206,6 +273,11 @@ export const gameChapter = defineType({
   ],
 
   fieldsets: [
+    {
+      name: 'fasit',
+      title: 'Fasit, hint og forklaring (hemmelig — vises bare i spillet)',
+      options: { collapsible: true, collapsed: true },
+    },
     {
       name: 'english',
       title: 'Engelsk (brukes når engelsk versjon lanseres)',

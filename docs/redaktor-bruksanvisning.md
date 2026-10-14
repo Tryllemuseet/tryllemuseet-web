@@ -1502,13 +1502,17 @@ Norge). Vises på `/utstillingen/trylleforeningene` med egen side per forening.
 
 ## 21. Det trettende kabinett (spillet)
 
-**Meny:** Kabinettet: Innstillinger / Kabinettet: Rom
+**Meny:** Kabinettet: Innstillinger (vanlig arbeidsområde) / Kabinettet: Rom
+(arbeidsområdet **Bak teppet (lukket)** — velg det i menyen ved siden av
+Studio-tittelen)
 
-Historiespillet på `/det-trettende-kabinett`. Selve gåtelogikken (puslespill,
-verset på Markedsplassen, ordlisten på Minnet som dikter osv.) ligger i koden
-og kan ikke endres i Sanity. Det redaktørene styrer er **teksten spilleren
-leser** i hvert rom, samt valgfrie bilder. Det er trygt å redigere fritt her
-uten å ødelegge noen gåte.
+Historiespillet på `/det-trettende-kabinett`. Selve gåtemekanikken (verset på
+Markedsplassen, ordlisten på Minnet som dikter osv.) ligger i koden. Alt annet
+— romtekstene, fakta, **fasit, hint og forklaringer** — ligger i
+rom-dokumentene i det private datasettet, slik at ingen kan finne svarene i
+kildekoden til nettsiden eller i Sanitys åpne API. Spillet henter dem fra
+serveren underveis: forklaringen og faktaene i et gåterom kommer først når
+gåten er løst.
 
 ### Kabinettet: Innstillinger (finnes kun ett dokument)
 
@@ -1521,18 +1525,23 @@ uten å ødelegge noen gåte.
 
 ### Kabinettet: Rom (ett dokument per rom — 27 stykker)
 
-Hvert dokument overstyrer standardteksten som ellers ligger i koden for ett
-navngitt rom. Et rom uten dokument (eller med tomme felt) viser bare
-standardteksten — helt trygt.
+Ligger i arbeidsområdet **Bak teppet (lukket)**. Alle 27 rommene finnes
+allerede — det er ingen standardtekst i koden lenger, så ikke slett noen.
+Trenger du et nytt rom-dokument, bruk «Nytt rom» i listen (ikke «+ Opprett»),
+ellers blir det ikke privat.
+
+Endringer vises i spillet innen fem minutter — siden trenger ikke bygges på
+nytt.
 
 | Felt | Merknad |
 |---|---|
-| Vis på nettsted | Av: spillet bruker kodens standardtekst i stedet |
+| Bruk på nettsted | Skal stå på. Av: rommet vises uten tekst, og spillet kan ikke sjekke svar i det |
 | Rom | Hvilket rom dokumentet gjelder. Opprett maks ett dokument per rom |
-| Romtittel / Introtekst | Overstyrer tittel og Direktørens introduksjon til rommet |
+| Romtittel / Introtekst | Tittel og Direktørens introduksjon til rommet |
 | Introtekst med formatering | **Nytt.** Rik tekst med lenker og innskutte bilder i selve teksten. Brukes i stedet for vanlig Introtekst når den er fylt ut |
 | Rombilde | **Nytt.** Valgfritt stemningsbilde vist under rommets intro — f.eks. en gjenstand eller plakat fra samlingen. Husk alt-tekst |
 | «Visste du at …»-fakta | Historiske fakta som vises når rommet er løst. Hvert faktum kan ha egen **tekst**, valgfritt **bilde** (nytt) og valgfri **lenke** + lenketekst |
+| **Fasit, hint og forklaring** | Hemmelig del (sammenslått som standard). **Hint** gis ett og ett. **Replikker** er det Direktøren sier når spilleren svarer — endre gjerne teksten, men ikke feltet «Når», som er en teknisk nøkkel. **Forklaringen** vises når gåten er løst. **Fasit (teknisk)** må bare endres sammen med koden |
 | **Engelsk**-seksjonen | Samme felt på engelsk (tittel, intro, rik intro) — og hvert faktum har egne engelske tekst-/lenkefelt |
 
 ### Viktig: navnet er «begerspillet», ikke «begre og kuler»
@@ -1545,8 +1554,7 @@ formuleringen «begre og kuler»:
 - **Sandrommet** — introtekst, første faktum og lenketeksten
 - **Gatehjørnet** — det første faktumet
 
-Rett teksten i disse to dokumentene (bytt til «begerspillet»), eller slå av
-**Vis på nettsted** på dem så kodens oppdaterte tekst vises i stedet.
+Rett teksten i disse to dokumentene (bytt til «begerspillet»).
 
 ### Aktivere spillet
 
@@ -1554,8 +1562,9 @@ Rett teksten i disse to dokumentene (bytt til «begerspillet»), eller slå av
    fungerer fint uten).
 2. Kvalitetssikre historiske fakta.
 3. Åpne **Kabinettet: Innstillinger** og slå på **Spillet er aktivt**.
-4. Vent på nattlig bygging, eller be teknisk ansvarlig kjøre **Daily
-   rebuild** i GitHub Actions. Spillet og menypunktet dukker opp sammen.
+4. Spillsiden åpner seg selv innen fem minutter. Menypunktet kommer ved neste
+   nattlige bygging, eller be teknisk ansvarlig kjøre **Daily rebuild** i
+   GitHub Actions.
 
 Slå på **Vis engelsk språkvalg i spillet** samme sted når det engelske
 innholdet er klart for besøkende.

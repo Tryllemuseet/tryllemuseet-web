@@ -1,25 +1,53 @@
 ---
 // src/pages/det-trettende-kabinett.astro
 // "Det trettende kabinett" — the museum's story game.
-// Concept: docs/det-trettende-kabinett-concept.md. Puzzle logic lives here;
-// editors override room copy via the gameChapter documents in Sanity.
+// Concept: docs/det-trettende-kabinett-concept.md. The puzzle mechanics live
+// here; the answers do NOT. Room copy, answer keys, hints, explanations and
+// facts are gameChapter documents in the private "lukket" dataset. This page
+// only gets each room's title, intro and image; everything else comes from
+// /api/kabinett (src/lib/kabinett.ts) while the game is played — the
+// explanation and facts of a puzzle room only after a correct answer.
 // All room copy exists in Norwegian and English; the English version is
 // exposed in-game once gameConfig.englishEnabled is on.
-import BaseLayout from '../layouts/BaseLayout.astro'
-import { getGameConfig, getAllGameChapters, getSiteConfig, urlFor, portableTextToHtml } from '../lib/sanity'
-import type { GameImage } from '../lib/sanity'
+//
+// Rendered on demand (it reads the private dataset at request time, so
+// editors' changes show up without a rebuild) and cached briefly at the CDN.
+export const prerender = false
 
-const [config, chapters, siteConfig] = await Promise.all([
-  getGameConfig(),
-  getAllGameChapters(),
-  getSiteConfig(),
-])
+import BaseLayout from '../layouts/BaseLayout.astro'
+import { getGameConfig, getAllGameChapters, getSiteConfig, privateUrlFor, portableTextToHtml } from '../lib/sanity'
+import { getPrivateClient } from '../lib/bakTeppet'
+
+const [config, siteConfig] = await Promise.all([getGameConfig(), getSiteConfig()])
 
 const isActive = config?.isActive === true
+const priv = isActive ? getPrivateClient() : null
+let chapters: Awaited<ReturnType<typeof getAllGameChapters>> = []
+let unavailable = false
+if (isActive) {
+  try {
+    if (!priv) throw new Error('SANITY_PRIVATE_READ_TOKEN is not set')
+    chapters = await getAllGameChapters(priv.client)
+  } catch (err) {
+    console.error('[kabinett] could not load the rooms', err)
+    unavailable = true
+  }
+}
 
-const comingSoonTitle = config?.comingSoonTitle ?? 'Dørene er ennå låst …'
-const comingSoonText  = config?.comingSoonText  ??
-  'Det trettende kabinett åpner snart for sin neste lærling. Kom tilbake litt senere — eller besøk oss på Årvoll gård i mellomtiden!'
+if (unavailable) {
+  Astro.response.status = 503
+  Astro.response.headers.set('Cache-Control', 'no-store')
+} else {
+  Astro.response.headers.set('Cache-Control', 'public, max-age=0, s-maxage=300, stale-while-revalidate=600')
+}
+
+const comingSoonTitle = unavailable
+  ? 'Kabinettet er stengt et øyeblikk …'
+  : (config?.comingSoonTitle ?? 'Dørene er ennå låst …')
+const comingSoonText = unavailable
+  ? 'Noe har gått galt bak forhenget. Prøv igjen om litt.'
+  : (config?.comingSoonText ??
+    'Det trettende kabinett åpner snart for sin neste lærling. Kom tilbake litt senere — eller besøk oss på Årvoll gård i mellomtiden!')
 
 const gameTitle = config?.title ?? 'Det trettende kabinett'
 const gameIntro = config?.intro ??
@@ -37,745 +65,31 @@ const plainToHtml = (s: string) =>
     .map(p => `<p>${escapeHtml(p).replace(/\n/g, '<br>')}</p>`)
     .join('')
 
-// Portable Text (the rich intro fields) → HTML with links and inline images.
-// portableTextToHtml() (lib/sanity.ts) now handles both — kept as a thin
-// alias here so call sites below don't need to change.
-const richToHtml = portableTextToHtml
-
-// Default room copy, Norwegian + English. A gameChapter document with the
-// same key overrides title/intro and replaces the facts list; missing
-// English fields fall back to these defaults.
-interface DefaultFact { text: string; linkUrl?: string; linkLabel?: string }
-interface DefaultRoomLang { title: string; intro: string; facts: DefaultFact[] }
-interface RoomCopy extends DefaultRoomLang { en: DefaultRoomLang }
-
-const DEFAULT_ROOMS: Record<string, RoomCopy> = {
-  foajeen: {
-    title: 'Foajeen',
-    intro:
-      'Porten gir etter, og du står i en foajé av fløyel og gull. Ingen mennesker — bare en talerstol med en oppslått gjestebok, og en stemme som ser ut til å komme fra lysekronen: «Velkommen, lærling. Skriv deg inn. Kabinettet liker å vite hvem det lurer.»',
-    facts: [],
-    en: {
-      title: 'The Foyer',
-      intro:
-        'The gate gives way, and you stand in a foyer of velvet and gold. No people — only a lectern with an open guest book, and a voice that seems to come from the chandelier: “Welcome, apprentice. Sign your name. The Cabinet likes to know whom it is fooling.”',
-      facts: [],
-    },
-  },
-  sandrommet: {
-    title: 'Sandrommet',
-    intro:
-      'Rommet lukter varm sand og gammelt krydder. På et lavt bord står tre kopper av leire, og bak bordet: en skikkelse i skygge som stokker dem med hender eldre enn skrift. «Begerspillet,» hvisker Direktøren. «Verdens eldste triks. Følg kulen — om du klarer.»',
-    facts: [
-      {
-        text: 'Et rundt 4000 år gammelt gravmaleri fra Beni Hasan i Egypt er blitt tolket som verdens eldste avbildning av begerspillet — selv om forskere fortsatt diskuterer hva maleriet egentlig viser.',
-        linkUrl: 'https://en.wikipedia.org/wiki/Cups_and_balls',
-        linkLabel: 'Om begerspillet — Wikipedia (engelsk)',
-      },
-      {
-        text: 'I Westcar-papyrusen fortelles det om magikeren Dedi, som skal ha opptrådt for farao Khufu for om lag 4500 år siden — historiens eldste navngitte tryllekunstner.',
-        linkUrl: '/utstillingen',
-        linkLabel: 'Utforsk utstillingen',
-      },
-    ],
-    en: {
-      title: 'The Sand Room',
-      intro:
-        'The room smells of warm sand and old spice. On a low table stand three cups of clay, and behind the table: a figure in shadow, shuffling them with hands older than writing. “The cups and balls,” whispers the Director. “The oldest trick in the world. Follow the ball — if you can.”',
-      facts: [
-        {
-          text: 'a roughly 4,000-year-old tomb painting from Beni Hasan in Egypt has been interpreted as the world’s oldest depiction of the cups and balls — though scholars still debate what the painting actually shows.',
-          linkUrl: 'https://en.wikipedia.org/wiki/Cups_and_balls',
-          linkLabel: 'About the cups and balls — Wikipedia',
-        },
-        {
-          text: 'the Westcar Papyrus tells of the magician Dedi, said to have performed for Pharaoh Khufu some 4,500 years ago — the oldest named magician in history.',
-          linkUrl: '/utstillingen',
-          linkLabel: 'Explore the exhibition',
-        },
-      ],
-    },
-  },
-  speilgangen: {
-    title: 'Speilgangen',
-    intro:
-      'En smal gang kledd med speil i gullrammer. Ett av speilene er ikke et speil. «Her opptrer Kabinettet for deg,» sier Direktøren. «Du skal ikke løse noe. Du skal bare bli lurt.»',
-    facts: [
-      {
-        text: 'Hjernen din lagrer bare det du gir oppmerksomhet. Resten fyller den inn selv — og merker ikke engang at den gjør det.',
-        linkUrl: 'https://en.wikipedia.org/wiki/Inattentional_blindness',
-        linkLabel: 'Om uoppmerksomhetsblindhet — Wikipedia (engelsk)',
-      },
-    ],
-    en: {
-      title: 'The Mirror Passage',
-      intro:
-        'A narrow passage lined with mirrors in gilded frames. One of the mirrors is not a mirror. “Here, the Cabinet performs for you,” says the Director. “You are not here to solve anything. You are only here to be fooled.”',
-      facts: [
-        {
-          text: 'your brain only stores what you pay attention to. The rest it fills in by itself — without even noticing that it does.',
-          linkUrl: 'https://en.wikipedia.org/wiki/Inattentional_blindness',
-          linkLabel: 'About inattentional blindness — Wikipedia',
-        },
-      ],
-    },
-  },
-  markedsplassen: {
-    title: 'Markedsplassen',
-    intro:
-      'Du trer ut på en middelaldersk markedsplass — inne i museet, umulig nok. En gjøgler i fillete fløyel roper over mengden du ikke kan se, og tre krus står på tønna foran ham. «Taskenspillerne,» sier Direktøren. «De gjemte aldri noe i hendene. De gjemte det i ordene.»',
-    facts: [
-      {
-        text: 'Ordet «hokus pokus» dukker opp i england på 1600-tallet — trolig fra en gjøglers liksom-latin, laget for å høres magisk ut.',
-      },
-      {
-        text: 'Middelalderens taskenspillere balanserte på en farlig grense: det samme trikset kunne gi applaus på markedet og en anklage om trolldom i retten.',
-        linkUrl: '/tryllehistorie',
-        linkLabel: 'Dykk ned i tryllehistorien',
-      },
-    ],
-    en: {
-      title: 'The Market Square',
-      intro:
-        'You step out onto a medieval market square — inside the museum, impossibly enough. A mountebank in ragged velvet shouts over a crowd you cannot see, and three mugs stand on the barrel before him. “The street conjurers,” says the Director. “They never hid anything in their hands. They hid it in their words.”',
-      facts: [
-        {
-          text: 'the words “hocus pocus” first appear in England in the 1600s — probably from a conjurer’s mock Latin, made up to sound magical.',
-        },
-        {
-          text: 'the medieval street conjurers balanced on a dangerous line: the same trick could earn applause at the market and an accusation of witchcraft in court.',
-          linkUrl: '/tryllehistorie',
-          linkLabel: 'Dive into the history of magic',
-        },
-      ],
-    },
-  },
-  epilog: {
-    title: 'Bak forhenget',
-    intro:
-      'Direktøren møter deg ved et tungt, rødt forheng. Bak det: en trapp videre opp i mørket. «Du har kommet lenger enn de fleste, lærling. Men Kabinettet har tretten rom, og natten er ikke lang nok for dem alle. Kom tilbake — dørene husker deg nå.»',
-    facts: [],
-    en: {
-      title: 'Behind the Curtain',
-      intro:
-        'The Director meets you by a heavy red curtain. Behind it: a staircase climbing on into the dark. “You have come further than most, apprentice. But the Cabinet has thirteen rooms, and the night is not long enough for them all. Come back — the doors remember you now.”',
-      facts: [],
-    },
-  },
-  galleriet: {
-    title: 'Galleriet som endrer seg',
-    intro:
-      'Speilgangen har fått nye vegger siden sist: et galleri av malerier i tunge gullrammer. «Velkommen tilbake dit du ikke skal løse noe,» sier Direktøren. «Bare se. Se så godt du kan — og stol ikke på at det holder.»',
-    facts: [
-      {
-        text: 'fenomenet kalles endringsblindhet: selv store endringer rett foran øynene dine kan forsvinne helt når de skjer i et blunk eller bak en kort forstyrrelse. Hjernen lagrer en grov skisse — ikke bildet.',
-        linkUrl: 'https://en.wikipedia.org/wiki/Change_blindness',
-        linkLabel: 'Om endringsblindhet — Wikipedia (engelsk)',
-      },
-    ],
-    en: {
-      title: 'The Gallery That Changes',
-      intro:
-        'The Mirror Passage has new walls tonight: a gallery of paintings in heavy gilded frames. “Welcome back to where nothing needs solving,” says the Director. “Just look. Look as closely as you can — and do not trust that to be enough.”',
-      facts: [
-        {
-          text: 'the phenomenon is called change blindness: even large changes right before your eyes can vanish completely when they happen in a blink or behind a brief interruption. The brain stores a rough sketch — not the picture.',
-          linkUrl: 'https://en.wikipedia.org/wiki/Change_blindness',
-          linkLabel: 'About change blindness — Wikipedia',
-        },
-      ],
-    },
-  },
-  biblioteket: {
-    title: 'Biblioteket',
-    intro:
-      'Rommet er en katedral av bokrygger, og støvet står som røkelse i lyset fra én eneste lampe. På lesepulten ligger en bok slått opp, trykt i 1584. «Her,» sier Direktøren, «skjedde det farligste som kan skje et triks: noen skrev det ned.»',
-    facts: [
-      {
-        text: 'Reginald Scots «The Discoverie of Witchcraft» (1584) regnes som den første trykte boken som forklarer tryllekunster i detalj — skrevet for å forsvare mennesker som var anklaget for trolldom.',
-        linkUrl: 'https://en.wikipedia.org/wiki/The_Discoverie_of_Witchcraft',
-        linkLabel: 'Om boken — Wikipedia (engelsk)',
-      },
-      {
-        text: 'samme år, 1584, kom også franskmannen Jean Prévosts bok om «subtile og fornøyelige oppfinnelser» — den eldste kjente boken viet utelukkende tryllekunst.',
-        linkUrl: '/ressurser/bibliotek',
-        linkLabel: 'Besøk museets bibliotek',
-      },
-    ],
-    en: {
-      title: 'The Library',
-      intro:
-        'The room is a cathedral of book spines, and the dust hangs like incense in the light of a single lamp. On the reading desk lies a book, open, printed in 1584. “Here,” says the Director, “happened the most dangerous thing that can happen to a trick: someone wrote it down.”',
-      facts: [
-        {
-          text: 'Reginald Scot’s “The Discoverie of Witchcraft” (1584) is considered the first printed book to explain conjuring tricks in detail — written to defend people accused of witchcraft.',
-          linkUrl: 'https://en.wikipedia.org/wiki/The_Discoverie_of_Witchcraft',
-          linkLabel: 'About the book — Wikipedia',
-        },
-        {
-          text: 'the same year, 1584, the Frenchman Jean Prévost published his book of “subtle and pleasant inventions” — the oldest known book devoted entirely to conjuring.',
-          linkUrl: '/ressurser/bibliotek',
-          linkLabel: 'Visit the museum library',
-        },
-      ],
-    },
-  },
-  oyet: {
-    title: 'Øyet som lyver',
-    intro:
-      'Speilgangen smalner, og på veggene henger ikke speil lenger, men plansjer og instrumenter. «Nå skal du få se med dine egne øyne,» sier Direktøren. «Det er nettopp det som er problemet.»',
-    facts: [
-      {
-        text: 'synsbedrag ikke oppstår i øyet, men i hjernen: den tolker alt du ser ut fra erfaring — og lar seg ikke overstyre selv når du vet fasiten.',
-        linkUrl: 'https://en.wikipedia.org/wiki/M%C3%BCller-Lyer_illusion',
-        linkLabel: 'Om Müller-Lyer-illusjonen — Wikipedia (engelsk)',
-      },
-    ],
-    en: {
-      title: 'The Eye That Lies',
-      intro:
-        'The Mirror Passage narrows, and the walls no longer hold mirrors, but charts and instruments. “Now you shall see with your own eyes,” says the Director. “That is precisely the problem.”',
-      facts: [
-        {
-          text: 'optical illusions do not arise in the eye, but in the brain: it interprets everything you see through experience — and refuses to be overruled even when you know the answer.',
-          linkUrl: 'https://en.wikipedia.org/wiki/M%C3%BCller-Lyer_illusion',
-          linkLabel: 'About the Müller-Lyer illusion — Wikipedia',
-        },
-      ],
-    },
-  },
-  salongen: {
-    title: 'Salongen',
-    intro:
-      'En salong fra en annen tid: silketapet, kandelabre — og midt i rommet en skikkelse i turban bak et sjakkbrett, montert på et skap av lakkert tre. Det tikker. «Maskinen som tenker,» sier Direktøren tørt. «Eller: det var det folk betalte for å tro.»',
-    facts: [
-      {
-        text: 'Wolfgang von Kempelens «sjakktyrker» (1770) forbløffet Europa i over 60 år og spilte mot både Napoleon og Benjamin Franklin — med en menneskelig sjakkspiller skjult i skapet.',
-        linkUrl: 'https://en.wikipedia.org/wiki/Mechanical_Turk',
-        linkLabel: 'Om sjakktyrkeren — Wikipedia (engelsk)',
-      },
-      {
-        text: 'urmakeren Jean-Eugène Robert-Houdin, «den moderne tryllekunstens far», fylte 1800-tallets salonger med automater — og en ung amerikaner tok senere navn etter ham: Houdini.',
-        linkUrl: '/tryllehistorie',
-        linkLabel: 'Dykk ned i tryllehistorien',
-      },
-    ],
-    en: {
-      title: 'The Salon',
-      intro:
-        'A salon from another age: silk wallpaper, candelabras — and in the middle of the room, a turbaned figure behind a chessboard, mounted on a cabinet of lacquered wood. It ticks. “The machine that thinks,” says the Director drily. “Or rather: that is what people paid to believe.”',
-      facts: [
-        {
-          text: 'Wolfgang von Kempelen’s “chess Turk” (1770) astonished Europe for over 60 years and played against both Napoleon and Benjamin Franklin — with a human chess player hidden in the cabinet.',
-          linkUrl: 'https://en.wikipedia.org/wiki/Mechanical_Turk',
-          linkLabel: 'About the Mechanical Turk — Wikipedia',
-        },
-        {
-          text: 'the clockmaker Jean-Eugène Robert-Houdin, “the father of modern magic”, filled the salons of the 1800s with automata — and a young American later took his name: Houdini.',
-          linkUrl: '/tryllehistorie',
-          linkLabel: 'Dive into the history of magic',
-        },
-      ],
-    },
-  },
-  seansen: {
-    title: 'Seansen',
-    intro:
-      'Et rundt bord, sju stoler, gasslampen skrudd ned til en hvisken. Mediet sitter allerede klar med lukkede øyne. «Sett deg, lærling,» sier Direktøren fra mørket. «I dette rommet gjør troen halve trikset. Din jobb er å se hvem som gjør resten.»',
-    facts: [
-      {
-        text: 'den moderne spiritismen startet i 1848 med søstrene Fox i USA, som lot «åndene» banke svar i bordet — mange år senere tilsto Margaret Fox at lydene ble laget med tå- og kneledd.',
-        linkUrl: 'https://en.wikipedia.org/wiki/Fox_sisters',
-        linkLabel: 'Om søstrene Fox — Wikipedia (engelsk)',
-      },
-      {
-        text: 'Harry Houdini brukte sine siste år på å avsløre falske medier — han kjente alle metodene deres fra scenen selv.',
-        linkUrl: '/tryllehistorie/magiens-hvem-er-hvem',
-        linkLabel: 'Magiens hvem er hvem',
-      },
-    ],
-    en: {
-      title: 'The Séance',
-      intro:
-        'A round table, seven chairs, the gas lamp turned down to a whisper. The medium is already seated, eyes closed. “Sit down, apprentice,” says the Director from the dark. “In this room, belief does half the trick. Your job is to see who does the rest.”',
-      facts: [
-        {
-          text: 'modern spiritualism began in 1848 with the Fox sisters in the USA, who let “the spirits” rap answers on the table — many years later, Margaret Fox confessed that the sounds were made with her toe and knee joints.',
-          linkUrl: 'https://en.wikipedia.org/wiki/Fox_sisters',
-          linkLabel: 'About the Fox sisters — Wikipedia',
-        },
-        {
-          text: 'Harry Houdini spent his final years exposing fake mediums — he knew all their methods from the stage himself.',
-          linkUrl: '/tryllehistorie/magiens-hvem-er-hvem',
-          linkLabel: 'Magic’s who’s who',
-        },
-      ],
-    },
-  },
-  epilog2: {
-    title: 'Trappen videre',
-    intro:
-      'Direktøren venter ved foten av en trapp som skrur seg opp i mørket. Ovenfra: lyden av et teater som gjør seg klart — tau som strammes, en kiste som låses. «Seks rom, lærling. Sju igjen. Men daggryet kommer, og teateret får vente til en annen natt.»',
-    facts: [],
-    en: {
-      title: 'The Staircase Onward',
-      intro:
-        'The Director waits at the foot of a staircase spiralling up into the dark. From above: the sound of a theatre making ready — ropes being tightened, a trunk being locked. “Six rooms, apprentice. Seven to go. But dawn is coming, and the theatre must wait for another night.”',
-      facts: [],
-    },
-  },
-  frievalget: {
-    title: 'Det frie valget',
-    intro:
-      'Øverst i trappen: et lite kammer med et bord, tre gjenstander — og en forseglet konvolutt. «Spådommen der inne ble skrevet før du kom inn i huset,» sier Direktøren. «Nå skal du velge. Helt fritt. Det er det som er det vakre.»',
-    facts: [
-      {
-        text: 'teknikken kalles «magician\'s choice» (equivoque) og har vært brukt i århundrer: valget ditt er ekte — men hva valget skal bety, bestemmes først etterpå.',
-      },
-    ],
-    en: {
-      title: 'The Free Choice',
-      intro:
-        'At the top of the stairs: a small chamber with a table, three objects — and a sealed envelope. “The prediction in there was written before you entered the house,” says the Director. “Now you will choose. Completely freely. That is the beautiful part.”',
-      facts: [
-        {
-          text: 'the technique is called the magician’s choice (equivoque) and has been used for centuries: your choice is real — but what the choice is to mean is decided only afterwards.',
-        },
-      ],
-    },
-  },
-  teateret: {
-    title: 'Teateret',
-    intro:
-      'Et varietéteater i full mørklagt prakt: fløyel, gasslamper, plakater med sterke menn og svevende damer. På scenen står en kiste med åpne lokk. «Utbryterkunstens gullalder,» sier Direktøren — og før du rekker å svare, har to sceneknekter løftet deg oppi. Lokket smeller. Hengelåsen klikker. Applaus.',
-    facts: [
-      {
-        text: 'Harry Houdini og kona Bess slo gjennom med «Metamorfose» på 1890-tallet: de byttet plass i en låst kiste — på sekunder.',
-        linkUrl: '/tryllehistorie/magiens-hvem-er-hvem',
-        linkLabel: 'Magiens hvem er hvem',
-      },
-      {
-        text: 'utbrytere sjelden «brøt seg ut» av noe de ikke kjente: utfordringskister og -jern ble som regel undersøkt, preparert eller valgt med omhu lenge før forestillingen.',
-      },
-    ],
-    en: {
-      title: 'The Theatre',
-      intro:
-        'A variety theatre in full darkened splendour: velvet, gas lamps, posters of strongmen and floating ladies. On the stage stands a trunk with its lid open. “The golden age of escape artistry,” says the Director — and before you can answer, two stagehands have lifted you in. The lid slams. The padlock clicks. Applause.',
-      facts: [
-        {
-          text: 'Harry Houdini and his wife Bess broke through with “Metamorphosis” in the 1890s: they swapped places in a locked trunk — in seconds.',
-          linkUrl: '/tryllehistorie/magiens-hvem-er-hvem',
-          linkLabel: 'Magic’s who’s who',
-        },
-        {
-          text: 'escape artists rarely “broke out” of anything they did not know: challenge trunks and irons were usually examined, prepared or chosen with care long before the performance.',
-        },
-      ],
-    },
-  },
-  kinoen: {
-    title: 'Kinoen',
-    intro:
-      'En sal med plysjseter og et lerret som flimrer hvitt. Bak deg surrer en prosjektor av messing. «Georges Méliès var tryllekunstner før han ble filmpioner,» sier Direktøren. «Han oppdaget at kameraet kunne gjøre det ingen scene kunne. Men filmen hans har falt fra hverandre — sett den sammen igjen.»',
-    facts: [
-      {
-        text: 'Georges Méliès var sceneillusjonist og drev Théâtre Robert-Houdin i Paris før han ble en av filmkunstens pionerer — trylleriet flyttet rett inn i det nye mediet.',
-        linkUrl: 'https://en.wikipedia.org/wiki/Georges_M%C3%A9li%C3%A8s',
-        linkLabel: 'Om Georges Méliès — Wikipedia (engelsk)',
-      },
-      {
-        text: 'i «Escamotage d\'une dame» (1896) lot Méliès en dame forsvinne med stopptrikset: kameraet stanses, damen går ut av bildet, og filmen fortsetter som om ingenting hendte. Ifølge Méliès selv oppdaget han trikset ved en tilfeldighet, da kameraet hans kilte seg midt i et gateopptak.',
-        linkUrl: '/tryllehistorie/historiske-opptak',
-        linkLabel: 'Se historiske opptak',
-      },
-    ],
-    en: {
-      title: 'The Cinema',
-      intro:
-        'A hall of plush seats and a screen flickering white. Behind you hums a projector of brass. “Georges Méliès was a magician before he became a film pioneer,” says the Director. “He discovered that the camera could do what no stage could. But his film has fallen apart — put it back together.”',
-      facts: [
-        {
-          text: 'Georges Méliès was a stage illusionist and ran the Théâtre Robert-Houdin in Paris before becoming one of the pioneers of cinema — magic moved straight into the new medium.',
-          linkUrl: 'https://en.wikipedia.org/wiki/Georges_M%C3%A9li%C3%A8s',
-          linkLabel: 'About Georges Méliès — Wikipedia',
-        },
-        {
-          text: 'in “Escamotage d’une dame” (1896), Méliès made a lady vanish with the stop trick: the camera is stopped, the lady steps out of frame, and the film carries on as if nothing had happened. By his own account, Méliès discovered the trick by accident, when his camera jammed in the middle of a street scene.',
-          linkUrl: '/tryllehistorie/historiske-opptak',
-          linkLabel: 'Watch historical recordings',
-        },
-      ],
-    },
-  },
-  lerretet: {
-    title: 'Ånden på lerretet',
-    intro:
-      'Speilgangen ender i et kammer med ett eneste, tomt lerret. «Siste akt i kveldens forestilling,» sier Direktøren. «Nå skal øynene dine mane frem et bilde som ikke finnes. Ikke tro meg — se selv.»',
-    facts: [
-      {
-        text: 'etterbilder oppstår fordi synscellene «slites» når du stirrer lenge på noe sterkt farget — etterpå serverer hjernen deg et gjenferd i komplementærfargen, på helt tomme flater.',
-        linkUrl: 'https://en.wikipedia.org/wiki/Afterimage',
-        linkLabel: 'Om etterbilder — Wikipedia (engelsk)',
-      },
-    ],
-    en: {
-      title: 'The Ghost on the Canvas',
-      intro:
-        'The Mirror Passage ends in a chamber with a single, empty canvas. “The final act of tonight’s performance,” says the Director. “Now your eyes will conjure up a picture that does not exist. Don’t take my word for it — see for yourself.”',
-      facts: [
-        {
-          text: 'afterimages appear because your visual cells “tire” when you stare at something strongly coloured for long — afterwards, the brain serves you a ghost in the complementary colour, on completely empty surfaces.',
-          linkUrl: 'https://en.wikipedia.org/wiki/Afterimage',
-          linkLabel: 'About afterimages — Wikipedia',
-        },
-      ],
-    },
-  },
-  verkstedet: {
-    title: 'Verkstedet',
-    intro:
-      'Sagflis, blåkopier og halvbygde mirakler: et bord med falluker, et speil i vinkel, en kiste med dobbel bunn. «Her tegnes effekten baklengs,» sier Direktøren, «fra salens stol og innover. På bordet ligger en bestilling — og seks deler. Bare tre av dem hører hjemme i illusjonen.»',
-    facts: [
-      {
-        text: '«Sfinksen» (London 1865) regnes som gjennombruddet for speilillusjonene: et hode på et bord uten kropp — fordi vinklede speil mellom bordbeina viste publikum gulvet de trodde de så bak bordet.',
-      },
-      {
-        text: '«black art»-prinsippet — svart fløyel mot svart bakgrunn i presist lys — gjør gjenstander og hjelpere usynlige på åpen scene, og brukes fortsatt i teater og film.',
-        linkUrl: '/utstillingen',
-        linkLabel: 'Utforsk utstillingen',
-      },
-    ],
-    en: {
-      title: 'The Workshop',
-      intro:
-        'Sawdust, blueprints and half-built miracles: a table with trapdoors, an angled mirror, a chest with a false bottom. “Here, the effect is drawn backwards,” says the Director, “from the seats of the house inwards. On the table lies a commission — and six parts. Only three of them belong in the illusion.”',
-      facts: [
-        {
-          text: '“The Sphinx” (London, 1865) is considered the breakthrough of the mirror illusions: a head on a table with no body — because angled mirrors between the table legs showed the audience the floor they thought they saw behind it.',
-        },
-        {
-          text: 'the “black art” principle — black velvet against a black backdrop in precise light — makes objects and assistants invisible on an open stage, and is still used in theatre and film.',
-          linkUrl: '/utstillingen',
-          linkLabel: 'Explore the exhibition',
-        },
-      ],
-    },
-  },
-  epilog3: {
-    title: 'Daggryets terskel',
-    intro:
-      'Direktøren står ved et vindu der nattemørket så vidt har begynt å gråne. «Ni rom, lærling. Fire igjen — studioet, gatehjørnet, vinterhagen … og det trettende. Men det trettende rommet åpner seg ikke for nøkler. Det åpner seg for en full kortstokk.»',
-    facts: [],
-    en: {
-      title: 'The Threshold of Dawn',
-      intro:
-        'The Director stands by a window where the dark of night has only just begun to grey. “Nine rooms, apprentice. Four to go — the studio, the street corner, the winter garden … and the thirteenth. But the thirteenth room does not open for keys. It opens for a complete deck of cards.”',
-      facts: [],
-    },
-  },
-  minnet: {
-    title: 'Minnet som dikter',
-    intro:
-      'Speilgangen er kald i natt, og på det største speilet står det skrevet ord i dugg. «Speilet vil vise deg noe om hukommelsen din,» sier Direktøren. «Les ordene. Husk dem. Og stol ikke på resten.»',
-    facts: [
-      {
-        text: 'hukommelsen ikke er et arkiv, men en gjenfortelling: hjernen lagrer meningen og dikter detaljene — derfor kan hele saler «huske» ting som aldri skjedde.',
-        linkUrl: 'https://en.wikipedia.org/wiki/False_memory',
-        linkLabel: 'Om falske minner — Wikipedia (engelsk)',
-      },
-    ],
-    en: {
-      title: 'The Memory That Invents',
-      intro:
-        'The Mirror Passage is cold tonight, and on the largest mirror, words are written in mist. “The mirror wants to show you something about your memory,” says the Director. “Read the words. Remember them. And do not trust the rest.”',
-      facts: [
-        {
-          text: 'memory is not an archive but a retelling: the brain stores the meaning and invents the details — which is why entire audiences can “remember” things that never happened.',
-          linkUrl: 'https://en.wikipedia.org/wiki/False_memory',
-          linkLabel: 'About false memory — Wikipedia',
-        },
-      ],
-    },
-  },
-  studioet: {
-    title: 'Studioet',
-    intro:
-      'Blendende studiolys, tre kameraer, en programleder med for hvite tenner. «TV-magiens tid,» sier Direktøren fra mørket bak kamera to. «Her leser de tankene dine — direktesendt. Sett deg i stolen, lærling. Sendingen har alt begynt.»',
-    facts: [
-      {
-        text: 'en «force» er mentalistens grunnverktøy: et valg som føles helt fritt, men der alle veier fører til samme svar — bygd av regnestykker, sannsynlighet og regi.',
-      },
-      {
-        text: 'i museets arkiv kan du se nordiske TV-opptredener fra Norske Talenter, Talang og Penn & Teller: Fool Us.',
-        linkUrl: '/tryllehistorie',
-        linkLabel: 'Utforsk TV-arkivet',
-      },
-    ],
-    en: {
-      title: 'The Studio',
-      intro:
-        'Blinding studio lights, three cameras, a host with teeth a shade too white. “The age of TV magic,” says the Director from the dark behind camera two. “Here they read your mind — live on air. Take the chair, apprentice. The broadcast has already begun.”',
-      facts: [
-        {
-          text: 'a “force” is the mentalist’s basic tool: a choice that feels completely free, but where every path leads to the same answer — built from arithmetic, probability and staging.',
-        },
-        {
-          text: 'in the museum’s archive you can watch Nordic TV appearances from Norske Talenter, Talang and Penn & Teller: Fool Us.',
-          linkUrl: '/tryllehistorie',
-          linkLabel: 'Explore the TV archive',
-        },
-      ],
-    },
-  },
-  trekanten: {
-    title: 'Trekanten som ikke finnes',
-    intro:
-      'En plansje på staffeli, opplyst av én lampe. «Speilgangen igjen, lærling,» sier Direktøren. «Denne gangen skal du få se noe som ikke er der — og du kommer til å se det likevel.»',
-    facts: [
-      {
-        text: 'hjernen tegner ferdig det øynene bare antyder: konturene «finnes» fordi synssystemet ditt fyller inn kanter der det forventer dem — helt gratis og helt uten lov.',
-        linkUrl: 'https://en.wikipedia.org/wiki/Illusory_contours',
-        linkLabel: 'Om illusoriske konturer — Wikipedia (engelsk)',
-      },
-    ],
-    en: {
-      title: 'The Triangle That Isn’t There',
-      intro:
-        'A chart on an easel, lit by a single lamp. “The Mirror Passage again, apprentice,” says the Director. “This time you will be shown something that is not there — and you will see it all the same.”',
-      facts: [
-        {
-          text: 'the brain finishes drawing what the eyes merely suggest: the contours “exist” because your visual system fills in edges where it expects them — entirely free of charge, and entirely without permission.',
-          linkUrl: 'https://en.wikipedia.org/wiki/Illusory_contours',
-          linkLabel: 'About illusory contours — Wikipedia',
-        },
-      ],
-    },
-  },
-  gatehjornet: {
-    title: 'Gatehjørnet',
-    intro:
-      'Brostein, en lyktestolpe, lyden av en by som ikke finnes. Under lykten: en gatekunstner med oppbrettede ermer og en blank mynt. «Nærmagi,» sier Direktøren. «Ingen scene, ingen røyk — publikums øyne tretti centimeter unna. Se godt etter, lærling. Han gjør det bare én gang til.»',
-    facts: [
-      {
-        text: 'begerspillet på oldtidens markeder og «three card monte» på gatehjørnene i dag er samme håndverk: nærmagi, der trikset skjer en armlengde fra publikums øyne.',
-        linkUrl: 'https://en.wikipedia.org/wiki/Three-card_Monte',
-        linkLabel: 'Om three-card monte — Wikipedia (engelsk)',
-      },
-      {
-        text: 'David Blaines TV-spesial «Street Magic» (1997) regnes som et vendepunkt for gatemagien: kameraet gikk tett på hendene — og enda tettere på publikums reaksjoner.',
-        linkUrl: '/tryllehistorie',
-        linkLabel: 'Mer tryllehistorie',
-      },
-    ],
-    en: {
-      title: 'The Street Corner',
-      intro:
-        'Cobblestones, a lamppost, the sound of a city that does not exist. Under the lamp: a street performer with rolled-up sleeves and a shining coin. “Close-up magic,” says the Director. “No stage, no smoke — the audience’s eyes thirty centimetres away. Watch closely, apprentice. He will only do it once more.”',
-      facts: [
-        {
-          text: 'the cups and balls of the ancient markets and the “three-card monte” of today’s street corners are the same craft: close-up magic, where the trick happens an arm’s length from the audience’s eyes.',
-          linkUrl: 'https://en.wikipedia.org/wiki/Three-card_Monte',
-          linkLabel: 'About three-card monte — Wikipedia',
-        },
-        {
-          text: 'David Blaine’s TV special “Street Magic” (1997) is considered a turning point for street magic: the camera went in close on the hands — and closer still on the audience’s reactions.',
-          linkUrl: '/tryllehistorie',
-          linkLabel: 'More magic history',
-        },
-      ],
-    },
-  },
-  fargene: {
-    title: 'Fargene som lyver',
-    intro:
-      'Siste dør i Speilgangen. Bak den: én eneste plansje i skumringslys. «En siste løgn fra øynene dine,» sier Direktøren. «Den enkleste av dem alle — og du går på den hver dag.»',
-    facts: [
-      {
-        text: 'øyet aldri måler farger alene: det sammenligner med omgivelsene. Samme grå kan se lys ut i skygge og mørk ut i sollys — scenografer og tryllekunstnere utnytter det hver kveld.',
-      },
-    ],
-    en: {
-      title: 'The Colours That Lie',
-      intro:
-        'The last door in the Mirror Passage. Behind it: a single chart in twilight. “One last lie from your eyes,” says the Director. “The simplest of them all — and you fall for it every day.”',
-      facts: [
-        {
-          text: 'the eye never measures a colour on its own: it compares it with the surroundings. The same grey can look light in shadow and dark in sunlight — stage designers and magicians exploit this every night.',
-        },
-      ],
-    },
-  },
-  vinterhagen: {
-    title: 'Vinterhagen',
-    intro:
-      'Glasstak mot vinternatten, isroser på rutene — og over himmelen: nordlys som bølger i grønt og fiolett. «Nordens rom,» sier Direktøren stille. «Her voktes alt du har lært. Damene slipper ingen videre som ikke kan bruke det — alt sammen, på én gang.»',
-    facts: [
-      {
-        text: 'i museets arkiv finner du portrettene av norske tryllelegender — fra varietéscenenes gullalder til TV-tiden.',
-        linkUrl: '/tryllehistorie/fordypninger',
-        linkLabel: 'Møt de norske legendene',
-      },
-      {
-        text: 'prinsippene du nettopp brukte — styrt oppmerksomhet, tro, forberedt metode og klippet — er de samme i dag som for hundre år siden; bare innpakningen skifter.',
-      },
-    ],
-    en: {
-      title: 'The Winter Garden',
-      intro:
-        'A glass roof against the winter night, frost roses on the panes — and across the sky: northern lights rippling in green and violet. “The room of the North,” says the Director quietly. “Everything you have learned is guarded here. The queens let no one pass who cannot use it — all of it, at once.”',
-      facts: [
-        {
-          text: 'in the museum’s archive you will find the portraits of Norway’s legends of magic — from the golden age of the variety stage to the TV era.',
-          linkUrl: '/tryllehistorie/fordypninger',
-          linkLabel: 'Meet the Norwegian legends',
-        },
-        {
-          text: 'the principles you just used — steered attention, belief, prepared method and the cut — are the same today as a hundred years ago; only the packaging changes.',
-        },
-      ],
-    },
-  },
-  epilog4: {
-    title: 'Den siste terskelen',
-    intro:
-      'Direktøren venter ved en dør uten håndtak, uten nøkkelhull — bare et grunt, kortformet søkk i treverket. «Tolv rom, lærling. Ett igjen. Denne døren åpner seg ikke for deg. Den åpner seg for stokken din — når den er hel.»',
-    facts: [],
-    en: {
-      title: 'The Final Threshold',
-      intro:
-        'The Director waits by a door with no handle, no keyhole — just a shallow, card-shaped recess in the woodwork. “Twelve rooms, apprentice. One to go. This door does not open for you. It opens for your deck — when it is whole.”',
-      facts: [],
-    },
-  },
-  porten: {
-    title: 'Porten',
-    intro:
-      'Døren uten håndtak venter. Søkket i treverket har form som en kortstokk, og for første gang i natt senker Direktøren stemmen til noe som ligner ærefrykt. «Nå, lærling. Legg stokken din i døren.»',
-    facts: [],
-    en: {
-      title: 'The Gate',
-      intro:
-        'The door without a handle waits. The recess in the woodwork has the shape of a deck of cards, and for the first time tonight the Director lowers his voice to something like awe. “Now, apprentice. Place your deck in the door.”',
-      facts: [],
-    },
-  },
-  kabinettet: {
-    title: 'Det trettende kabinettet',
-    intro:
-      'Rommet bak den siste døren er … en scene. Tom. Støvete gulvplanker, ett arbeidslys, en sal uten stoler. «Skuffet?» spør Direktøren. «Ikke vær det. Dette er Det trettende kabinettet: scenen som venter på sitt neste nummer. Ditt nummer.»',
-    facts: [
-      {
-        text: 'tryllekunstnere ofte beskriver et nummer i tre lag: effekten (det publikum opplever), metoden (det som faktisk skjer) og misdireksjonen (det som sørger for at de to aldri møtes).',
-      },
-    ],
-    en: {
-      title: 'The Thirteenth Cabinet',
-      intro:
-        'The room behind the last door is … a stage. Empty. Dusty floorboards, one work light, a house with no seats. “Disappointed?” asks the Director. “Don’t be. This is the Thirteenth Cabinet: the stage that waits for its next act. Your act.”',
-      facts: [
-        {
-          text: 'magicians often describe an act in three layers: the effect (what the audience experiences), the method (what actually happens) and the misdirection (what makes sure the two never meet).',
-        },
-      ],
-    },
-  },
-  daggry: {
-    title: 'Daggry',
-    intro:
-      'Bak scenen: en dobbeltdør av glass. Og bak den — ikke enda et rom, men morgen. «Kabinettets siste hemmelighet, lærling: det finnes i dagslys også. Da heter det Tryllemuseet, og det står på Årvoll gård. Rommene der er ekte. Historiene også.»',
-    facts: [
-      {
-        text: 'Tryllemuseet på Årvoll gård i Oslo forteller 4000 år med tryllekunstens historie — den samme historien du nettopp har vandret gjennom en fiksjonsversjon av, rom for rom.',
-        linkUrl: '/besok',
-        linkLabel: 'Planlegg besøket',
-      },
-    ],
-    en: {
-      title: 'Dawn',
-      intro:
-        'Behind the stage: a double door of glass. And beyond it — not another room, but morning. “The Cabinet’s last secret, apprentice: it exists in daylight too. Then it is called Tryllemuseet, the Museum of Magic, and it stands at Årvoll gård in Oslo. The rooms there are real. So are the stories.”',
-      facts: [
-        {
-          text: 'Tryllemuseet at Årvoll gård in Oslo tells 4,000 years of the history of magic — the same history you have just wandered through a fictional version of, room by room.',
-          linkUrl: '/besok',
-          linkLabel: 'Plan your visit',
-        },
-      ],
-    },
-  },
-}
-
-const overrides = new Map(chapters.map(c => [c.key, c]))
-
-// What the game engine receives per room and language.
-interface RoomFact { text: string; linkUrl?: string; linkLabel?: string; imageUrl?: string; imageAlt?: string }
-interface RoomLang { title: string; introHtml: string; facts: RoomFact[] }
+// What the game engine receives per room and language: only what is shown
+// before the room is solved.
+interface RoomLang { title: string; introHtml: string }
 interface RoomPayload { nb: RoomLang; en: RoomLang; imageUrl?: string; imageAlt?: string; imageAltEn?: string }
 
-// Fact texts are matched against the code defaults to inherit source links
-// (the seeded room documents carry the default texts without the newer
-// links) and to pair overridden facts with their English defaults. The
-// seeded documents predate the «begre og kuler» → «begerspillet» rename,
-// so normalize before matching.
-const factKey = (t: string) => t.replace(/begre og kuler/gi, 'begerspillet')
-
-const factImage = (img: GameImage | undefined, en: boolean) =>
-  img?.asset
-    ? {
-        imageUrl: urlFor(img).width(640).format('webp').url(),
-        imageAlt: (en ? img.altEn || img.alt : img.alt) || '',
-      }
-    : {}
-
 const rooms: Record<string, RoomPayload> = {}
-for (const [key, def] of Object.entries(DEFAULT_ROOMS)) {
-  const o = overrides.get(key)
-  const defByText = new Map(def.facts.map(f => [factKey(f.text), f]))
-  const defEnByText = new Map(def.facts.map((f, i) => [factKey(f.text), def.en.facts[i]]))
-
-  const factsNb: RoomFact[] = o?.facts?.length
-    ? o.facts.map(f => {
-        const d = !f.linkUrl ? defByText.get(factKey(f.text)) : undefined
-        const base: RoomFact = { text: f.text, linkUrl: f.linkUrl, linkLabel: f.linkLabel, ...factImage(f.image, false) }
-        return d?.linkUrl ? { ...base, linkUrl: d.linkUrl, linkLabel: f.linkLabel || d.linkLabel } : base
-      })
-    : def.facts.map(f => ({ ...f }))
-
-  // English facts mirror the (possibly overridden) Norwegian list: an
-  // explicit textEn wins; a fact that still matches a code default falls
-  // back to that default's English; otherwise the Norwegian text is shown.
-  const factsEn: RoomFact[] = o?.facts?.length
-    ? o.facts.map(f => {
-        const dEn = f.textEn ? undefined : defEnByText.get(factKey(f.text))
-        const d = !f.linkUrl ? defByText.get(factKey(f.text)) : undefined
-        return {
-          text: f.textEn || dEn?.text || f.text,
-          linkUrl: f.linkUrl || d?.linkUrl,
-          linkLabel: f.linkLabelEn || dEn?.linkLabel || f.linkLabel || d?.linkLabel,
-          ...factImage(f.image, true),
-        }
-      })
-    : def.en.facts.map(f => ({ ...f }))
-
-  // Custom Norwegian copy without an English counterpart falls back to the
-  // game's built-in English rather than showing Norwegian in English mode.
-  const introNbHtml = richToHtml(o?.introRich) || plainToHtml(o?.intro || def.intro)
-  const introEnHtml =
-    richToHtml(o?.introRichEn) || plainToHtml(o?.introEn || def.en.intro)
-
-  rooms[key] = {
-    nb: { title: o?.title || def.title, introHtml: introNbHtml, facts: factsNb },
-    en: { title: o?.titleEn || def.en.title, introHtml: introEnHtml, facts: factsEn },
-    ...(o?.image?.asset
+for (const c of chapters) {
+  const introNbHtml = portableTextToHtml(c.introRich, privateUrlFor) || plainToHtml(c.intro || '')
+  rooms[c.key] = {
+    nb: { title: c.title || '', introHtml: introNbHtml },
+    // Missing English falls back to the Norwegian copy.
+    en: {
+      title: c.titleEn || c.title || '',
+      introHtml: portableTextToHtml(c.introRichEn, privateUrlFor) || (c.introEn ? plainToHtml(c.introEn) : introNbHtml),
+    },
+    ...(c.image?.asset
       ? {
-          imageUrl: urlFor(o.image).width(760).format('webp').url(),
-          imageAlt: o.image.alt || '',
-          imageAltEn: o.image.altEn || o.image.alt || '',
+          imageUrl: privateUrlFor(c.image).width(760).format('webp').url(),
+          imageAlt: c.image.alt || '',
+          imageAltEn: c.image.altEn || c.image.alt || '',
         }
       : {}),
   }
 }
+const nb = (key: string): RoomLang => rooms[key]?.nb ?? { title: '', introHtml: '' }
 
 const englishEnabled = config?.englishEnabled === true
 const gameTitleEn = config?.titleEn || 'Det trettende kabinett'
@@ -810,7 +124,7 @@ const payloadJson = JSON.stringify(payload).replace(/</g, '\\u003c')
     </div>
   </section>
 
-  {!isActive ? (
+  {!isActive || unavailable ? (
     <main class="container game-main">
       <div class="coming-soon">
         <span class="coming-soon-icon" aria-hidden="true">🚪🕯️</span>
@@ -857,8 +171,8 @@ const payloadJson = JSON.stringify(payload).replace(/</g, '\\u003c')
       <!-- ── SCENE: FOAJEEN ──────────────────────────────────────── -->
       <section class="scene" id="sc-foajeen" hidden aria-labelledby="fj-heading">
         <p class="scene-label">Første rom · Essene</p>
-        <h2 class="scene-heading" id="fj-heading">{rooms.foajeen.nb.title}</h2>
-        <div class="scene-intro" set:html={rooms.foajeen.nb.introHtml} />
+        <h2 class="scene-heading" id="fj-heading">{nb('foajeen').title}</h2>
+        <div class="scene-intro" set:html={nb('foajeen').introHtml} />
 
         <div class="panel">
           <div class="guestbook" id="fj-book" aria-live="polite">
@@ -888,8 +202,8 @@ const payloadJson = JSON.stringify(payload).replace(/</g, '\\u003c')
       <!-- ── SCENE: SANDROMMET ───────────────────────────────────── -->
       <section class="scene" id="sc-sandrommet" hidden aria-labelledby="sr-heading">
         <p class="scene-label">Andre rom · Toerne</p>
-        <h2 class="scene-heading" id="sr-heading">{rooms.sandrommet.nb.title}</h2>
-        <div class="scene-intro" set:html={rooms.sandrommet.nb.introHtml} />
+        <h2 class="scene-heading" id="sr-heading">{nb('sandrommet').title}</h2>
+        <div class="scene-intro" set:html={nb('sandrommet').introHtml} />
 
         <div class="panel" id="sr-pathchoice">
           <p class="field-label">Velg din vei gjennom rommet</p>
@@ -925,7 +239,7 @@ const payloadJson = JSON.stringify(payload).replace(/</g, '\\u003c')
 
         <div class="panel panel--solved" id="sr-solved" hidden>
           <p class="solved-title">✨ Gåten er løst</p>
-          <p class="principle">«Hånden er ikke raskere enn øyet, lærling. Den trenger ikke være det. <strong>Oppmerksomheten din styres</strong> — og mens du fulgte koppene, fulgte ingen magikeren.»</p>
+          <div class="principle" id="sr-solution"></div>
           <div class="facts" id="sr-facts"></div>
           <button class="btn-gold" id="sr-complete">Fullfør rommet →</button>
         </div>
@@ -934,8 +248,8 @@ const payloadJson = JSON.stringify(payload).replace(/</g, '\\u003c')
       <!-- ── SCENE: SPEILGANGEN ──────────────────────────────────── -->
       <section class="scene" id="sc-speilgangen" hidden aria-labelledby="sg-heading">
         <p class="scene-label">Mellomrommet · Ruter to</p>
-        <h2 class="scene-heading" id="sg-heading">{rooms.speilgangen.nb.title}</h2>
-        <div class="scene-intro" set:html={rooms.speilgangen.nb.introHtml} />
+        <h2 class="scene-heading" id="sg-heading">{nb('speilgangen').title}</h2>
+        <div class="scene-intro" set:html={nb('speilgangen').introHtml} />
 
         <div class="panel">
           <div id="sg-step1">
@@ -956,7 +270,7 @@ const payloadJson = JSON.stringify(payload).replace(/</g, '\\u003c')
               <button class="btn-quiet" id="sg-reveal-btn">Løft forhenget: hvordan? 🎭</button>
             </div>
             <div class="reveal" id="sg-reveal" hidden>
-              <p>Se nøye: <strong>alle</strong> kortene ble byttet ut. Du husket bare ditt eget kort — så du merket ikke at de fem andre også forsvant. Hjernen din lagret det du ga oppmerksomhet, og fylte inn resten selv.</p>
+              <div class="reveal-text" id="sg-solution"></div>
               <div class="reveal-compare" id="sg-compare"></div>
               <div class="facts" id="sg-facts"></div>
             </div>
@@ -968,8 +282,8 @@ const payloadJson = JSON.stringify(payload).replace(/</g, '\\u003c')
       <!-- ── SCENE: MARKEDSPLASSEN ───────────────────────────────── -->
       <section class="scene" id="sc-markedsplassen" hidden aria-labelledby="mp-heading">
         <p class="scene-label">Tredje rom · Treerne</p>
-        <h2 class="scene-heading" id="mp-heading">{rooms.markedsplassen.nb.title}</h2>
-        <div class="scene-intro" set:html={rooms.markedsplassen.nb.introHtml} />
+        <h2 class="scene-heading" id="mp-heading">{nb('markedsplassen').title}</h2>
+        <div class="scene-intro" set:html={nb('markedsplassen').introHtml} />
 
         <div class="panel" id="mp-pathchoice">
           <p class="field-label">Velg din vei gjennom rommet</p>
@@ -1012,7 +326,7 @@ const payloadJson = JSON.stringify(payload).replace(/</g, '\\u003c')
 
         <div class="panel panel--solved" id="mp-solved" hidden>
           <p class="solved-title">✨ Gåten er løst</p>
-          <p class="principle">«<strong>Språket er misdireksjon</strong>, lærling. Gjøgleren pekte aldri med hånden — han pekte med verset. Første bokstav i hver linje: M-I-D-T-E-N. Folk hører historien og overser bokstavene.»</p>
+          <div class="principle" id="mp-solution"></div>
           <div class="facts" id="mp-facts"></div>
           <button class="btn-gold" id="mp-complete">Fullfør rommet →</button>
         </div>
@@ -1021,8 +335,8 @@ const payloadJson = JSON.stringify(payload).replace(/</g, '\\u003c')
       <!-- ── SCENE: EPILOG ───────────────────────────────────────── -->
       <section class="scene" id="sc-epilog" hidden aria-labelledby="ep-heading">
         <p class="scene-label">Akt I er fullført</p>
-        <h2 class="scene-heading" id="ep-heading">{rooms.epilog.nb.title}</h2>
-        <div class="scene-intro" set:html={rooms.epilog.nb.introHtml} />
+        <h2 class="scene-heading" id="ep-heading">{nb('epilog').title}</h2>
+        <div class="scene-intro" set:html={nb('epilog').introHtml} />
 
         <div class="panel">
           <p class="game-msg" id="ep-deck-summary" aria-live="polite"></p>
@@ -1041,8 +355,8 @@ const payloadJson = JSON.stringify(payload).replace(/</g, '\\u003c')
       <!-- ── SCENE: GALLERIET (SPEILGANGEN) ──────────────────────── -->
       <section class="scene" id="sc-galleriet" hidden aria-labelledby="ga-heading">
         <p class="scene-label">Mellomrommet · Ruter tre</p>
-        <h2 class="scene-heading" id="ga-heading">{rooms.galleriet.nb.title}</h2>
-        <div class="scene-intro" set:html={rooms.galleriet.nb.introHtml} />
+        <h2 class="scene-heading" id="ga-heading">{nb('galleriet').title}</h2>
+        <div class="scene-intro" set:html={nb('galleriet').introHtml} />
 
         <div class="panel">
           <p class="game-msg" id="ga-msg" aria-live="polite">Seks malerier henger på veggen. Se nøye på hvert av dem — så nøye du klarer.</p>
@@ -1052,7 +366,7 @@ const payloadJson = JSON.stringify(payload).replace(/</g, '\\u003c')
             <button class="btn-quiet" id="ga-giveup" hidden>Gi meg svaret 🎭</button>
           </div>
           <div class="reveal" id="ga-reveal" hidden>
-            <p>Du så rett på veggen — og likevel glapp det. Hjernen din sammenligner ikke synet med forrige blikk; den stoler på en grov skisse og fyller inn resten selv. Alt som endres i et blunk, endres uten vitner.</p>
+            <div class="reveal-text" id="ga-solution"></div>
             <div class="facts" id="ga-facts"></div>
           </div>
           <button class="btn-gold" id="ga-continue" hidden>Videre til Biblioteket →</button>
@@ -1063,8 +377,8 @@ const payloadJson = JSON.stringify(payload).replace(/</g, '\\u003c')
       <!-- ── SCENE: BIBLIOTEKET ──────────────────────────────────── -->
       <section class="scene" id="sc-biblioteket" hidden aria-labelledby="bl-heading">
         <p class="scene-label">Fjerde rom · Firerne</p>
-        <h2 class="scene-heading" id="bl-heading">{rooms.biblioteket.nb.title}</h2>
-        <div class="scene-intro" set:html={rooms.biblioteket.nb.introHtml} />
+        <h2 class="scene-heading" id="bl-heading">{nb('biblioteket').title}</h2>
+        <div class="scene-intro" set:html={nb('biblioteket').introHtml} />
 
         <div class="panel" id="bl-pathchoice">
           <p class="field-label">Velg din vei gjennom rommet</p>
@@ -1097,7 +411,7 @@ const payloadJson = JSON.stringify(payload).replace(/</g, '\\u003c')
 
         <div class="panel panel--solved" id="bl-solved" hidden>
           <p class="solved-title">✨ Gåten er løst</p>
-          <p class="principle">«<strong>En nedskrevet hemmelighet er en bevæpnet hemmelighet</strong>, lærling. Scot skrev for å redde liv fra bålet — og bevæpnet i samme åndedrag fire hundre år med tryllekunstnere. Boken du nettopp bladde i, er stammor til alle tryllebøker.»</p>
+          <div class="principle" id="bl-solution"></div>
           <div class="facts" id="bl-facts"></div>
           <button class="btn-gold" id="bl-complete">Fullfør rommet →</button>
         </div>
@@ -1106,8 +420,8 @@ const payloadJson = JSON.stringify(payload).replace(/</g, '\\u003c')
       <!-- ── SCENE: ØYET SOM LYVER (SPEILGANGEN) ─────────────────── -->
       <section class="scene" id="sc-oyet" hidden aria-labelledby="oy-heading">
         <p class="scene-label">Mellomrommet · Ruter fire</p>
-        <h2 class="scene-heading" id="oy-heading">{rooms.oyet.nb.title}</h2>
-        <div class="scene-intro" set:html={rooms.oyet.nb.introHtml} />
+        <h2 class="scene-heading" id="oy-heading">{nb('oyet').title}</h2>
+        <div class="scene-intro" set:html={nb('oyet').introHtml} />
 
         <div class="panel">
           <div id="oy-act1">
@@ -1161,7 +475,7 @@ const payloadJson = JSON.stringify(payload).replace(/</g, '\\u003c')
           </div>
 
           <div class="reveal" id="oy-reveal" hidden>
-            <p>Begge plansjene er ærlige — det er øynene dine som ikke er det. Selv nå, når du <em>vet</em> at linjene er like lange og sirklene like store, klarer ikke hjernen å se det. «Husk dette,» sier Direktøren. «Publikum tror de ser med øynene. De ser med vanene sine.»</p>
+            <div class="reveal-text" id="oy-solution"></div>
             <div class="facts" id="oy-facts"></div>
           </div>
           <button class="btn-gold" id="oy-continue" hidden>Videre til Salongen →</button>
@@ -1171,8 +485,8 @@ const payloadJson = JSON.stringify(payload).replace(/</g, '\\u003c')
       <!-- ── SCENE: SALONGEN ─────────────────────────────────────── -->
       <section class="scene" id="sc-salongen" hidden aria-labelledby="sl-heading">
         <p class="scene-label">Femte rom · Femerne</p>
-        <h2 class="scene-heading" id="sl-heading">{rooms.salongen.nb.title}</h2>
-        <div class="scene-intro" set:html={rooms.salongen.nb.introHtml} />
+        <h2 class="scene-heading" id="sl-heading">{nb('salongen').title}</h2>
+        <div class="scene-intro" set:html={nb('salongen').introHtml} />
 
         <div class="panel" id="sl-pathchoice">
           <p class="field-label">Velg din vei gjennom rommet</p>
@@ -1211,7 +525,7 @@ const payloadJson = JSON.stringify(payload).replace(/</g, '\\u003c')
 
         <div class="panel panel--solved" id="sl-solved" hidden>
           <p class="solved-title">✨ Gåten er løst</p>
-          <p class="principle">«<strong>Teknologi utkledd som magi</strong>, lærling. Publikum stirret på tannhjulene — og tannhjulene var kostymet. Det eneste maskinen aldri kunne gjøre, var det eneste den måtte: tenke. Så tenkte noen for den.»</p>
+          <div class="principle" id="sl-solution"></div>
           <div class="facts" id="sl-facts"></div>
           <button class="btn-gold" id="sl-complete">Fullfør rommet →</button>
         </div>
@@ -1220,8 +534,8 @@ const payloadJson = JSON.stringify(payload).replace(/</g, '\\u003c')
       <!-- ── SCENE: SEANSEN ──────────────────────────────────────── -->
       <section class="scene" id="sc-seansen" hidden aria-labelledby="se-heading">
         <p class="scene-label">Sjette rom · Sekserne</p>
-        <h2 class="scene-heading" id="se-heading">{rooms.seansen.nb.title}</h2>
-        <div class="scene-intro" set:html={rooms.seansen.nb.introHtml} />
+        <h2 class="scene-heading" id="se-heading">{nb('seansen').title}</h2>
+        <div class="scene-intro" set:html={nb('seansen').introHtml} />
 
         <div class="panel" id="se-pathchoice">
           <p class="field-label">Velg din vei gjennom rommet</p>
@@ -1255,7 +569,7 @@ const payloadJson = JSON.stringify(payload).replace(/</g, '\\u003c')
 
         <div class="panel panel--solved" id="se-solved" hidden>
           <p class="solved-title">✨ Gåten er løst</p>
-          <p class="principle">«<strong>Troen gjør halve trikset</strong>, lærling. Mørket, den frie hånden og den pratsomme assistenten gjorde resten. Og la du merke til én ting til? Åndene visste aldri noe som ikke gjestene visste fra før.»</p>
+          <div class="principle" id="se-solution"></div>
           <div class="facts" id="se-facts"></div>
           <button class="btn-gold" id="se-complete">Fullfør rommet →</button>
         </div>
@@ -1264,8 +578,8 @@ const payloadJson = JSON.stringify(payload).replace(/</g, '\\u003c')
       <!-- ── SCENE: EPILOG AKT II ────────────────────────────────── -->
       <section class="scene" id="sc-epilog2" hidden aria-labelledby="ep2-heading">
         <p class="scene-label">Akt II er fullført</p>
-        <h2 class="scene-heading" id="ep2-heading">{rooms.epilog2.nb.title}</h2>
-        <div class="scene-intro" set:html={rooms.epilog2.nb.introHtml} />
+        <h2 class="scene-heading" id="ep2-heading">{nb('epilog2').title}</h2>
+        <div class="scene-intro" set:html={nb('epilog2').introHtml} />
 
         <div class="panel">
           <p class="game-msg" id="ep2-deck-summary" aria-live="polite"></p>
@@ -1284,8 +598,8 @@ const payloadJson = JSON.stringify(payload).replace(/</g, '\\u003c')
       <!-- ── SCENE: DET FRIE VALGET (SPEILGANGEN) ────────────────── -->
       <section class="scene" id="sc-frievalget" hidden aria-labelledby="fv-heading">
         <p class="scene-label">Mellomrommet · Ruter fem</p>
-        <h2 class="scene-heading" id="fv-heading">{rooms.frievalget.nb.title}</h2>
-        <div class="scene-intro" set:html={rooms.frievalget.nb.introHtml} />
+        <h2 class="scene-heading" id="fv-heading">{nb('frievalget').title}</h2>
+        <div class="scene-intro" set:html={nb('frievalget').introHtml} />
 
         <div class="panel">
           <p class="fv-envelope" id="fv-envelope" aria-label="En forseglet konvolutt">✉️ <em>«Spådom — skrevet i går kveld»</em></p>
@@ -1299,7 +613,7 @@ const payloadJson = JSON.stringify(payload).replace(/</g, '\\u003c')
               <button class="btn-quiet" id="fv-reveal-btn">Vent litt — vis kvitteringene 🧾</button>
             </div>
             <div class="reveal" id="fv-reveal" hidden>
-              <p>Valgene dine var ekte — men <strong>hva de skulle bety, ble bestemt etterpå.</strong> Pekte du på speilet, «beholdt» du det. Pekte du på noe annet, «ryddet» Direktøren det bort. Alle veier endte ved speilet; du gikk bare én av dem.</p>
+              <div class="reveal-text" id="fv-solution"></div>
               <ul class="hint-list" id="fv-receipts"></ul>
               <div class="facts" id="fv-facts"></div>
             </div>
@@ -1311,8 +625,8 @@ const payloadJson = JSON.stringify(payload).replace(/</g, '\\u003c')
       <!-- ── SCENE: TEATERET ─────────────────────────────────────── -->
       <section class="scene" id="sc-teateret" hidden aria-labelledby="te-heading">
         <p class="scene-label">Sjuende rom · Sjuerne</p>
-        <h2 class="scene-heading" id="te-heading">{rooms.teateret.nb.title}</h2>
-        <div class="scene-intro" set:html={rooms.teateret.nb.introHtml} />
+        <h2 class="scene-heading" id="te-heading">{nb('teateret').title}</h2>
+        <div class="scene-intro" set:html={nb('teateret').introHtml} />
 
         <div class="panel" id="te-pathchoice">
           <p class="field-label">Velg din vei gjennom rommet</p>
@@ -1344,7 +658,7 @@ const payloadJson = JSON.stringify(payload).replace(/</g, '\\u003c')
 
         <div class="panel panel--solved" id="te-solved" hidden>
           <p class="solved-title">✨ Gåten er løst</p>
-          <p class="principle">«Du ruller ut bak kisten idet publikum når null. <strong>Metoden ble kjøpt lenge før effekten ble solgt</strong>, lærling: knotten satt der før teppet gikk opp. Utbryteren rømmer aldri fra kisten — han rømmer fra i går.»</p>
+          <div class="principle" id="te-solution"></div>
           <div class="facts" id="te-facts"></div>
           <button class="btn-gold" id="te-complete">Fullfør rommet →</button>
         </div>
@@ -1353,8 +667,8 @@ const payloadJson = JSON.stringify(payload).replace(/</g, '\\u003c')
       <!-- ── SCENE: KINOEN ───────────────────────────────────────── -->
       <section class="scene" id="sc-kinoen" hidden aria-labelledby="ki-heading">
         <p class="scene-label">Åttende rom · Åtterne</p>
-        <h2 class="scene-heading" id="ki-heading">{rooms.kinoen.nb.title}</h2>
-        <div class="scene-intro" set:html={rooms.kinoen.nb.introHtml} />
+        <h2 class="scene-heading" id="ki-heading">{nb('kinoen').title}</h2>
+        <div class="scene-intro" set:html={nb('kinoen').introHtml} />
 
         <div class="panel" id="ki-pathchoice">
           <p class="field-label">Velg din vei gjennom rommet</p>
@@ -1391,7 +705,7 @@ const payloadJson = JSON.stringify(payload).replace(/</g, '\\u003c')
 
         <div class="panel panel--solved" id="ki-solved" hidden>
           <p class="solved-title">✨ Gåten er løst</p>
-          <p class="principle">«<strong>Klippet er forsvinningsnummeret</strong>, lærling. Det umulige skjer aldri mens du ser på — det skjer mellom to bilder, der kameraet sto stille og verden fikk ordne seg. Méliès skjønte det før noen andre: filmen er en tryllekunstner som aldri blir avslørt av første rad.»</p>
+          <div class="principle" id="ki-solution"></div>
           <div class="facts" id="ki-facts"></div>
           <button class="btn-gold" id="ki-complete">Fullfør rommet →</button>
         </div>
@@ -1400,8 +714,8 @@ const payloadJson = JSON.stringify(payload).replace(/</g, '\\u003c')
       <!-- ── SCENE: ÅNDEN PÅ LERRETET (SPEILGANGEN) ──────────────── -->
       <section class="scene" id="sc-lerretet" hidden aria-labelledby="le-heading">
         <p class="scene-label">Mellomrommet · Ruter seks</p>
-        <h2 class="scene-heading" id="le-heading">{rooms.lerretet.nb.title}</h2>
-        <div class="scene-intro" set:html={rooms.lerretet.nb.introHtml} />
+        <h2 class="scene-heading" id="le-heading">{nb('lerretet').title}</h2>
+        <div class="scene-intro" set:html={nb('lerretet').introHtml} />
 
         <div class="panel">
           <div class="le-stage" id="le-stage">
@@ -1426,7 +740,7 @@ const payloadJson = JSON.stringify(payload).replace(/</g, '\\u003c')
             <button class="btn-quiet" id="le-nothing">Jeg ser ingenting</button>
           </div>
           <div class="reveal" id="le-reveal" hidden>
-            <p id="le-reveal-text">Gjenferdet på lerretet er <strong>ditt eget syn som dikter</strong>: synscellene som stirret på det rosa lyset er «slitne», og når lyset forsvinner, svarer de med komplementærfargen — et blekgrønt etterbilde av lykten, på et lerret som hele tiden var tomt. «Husk det,» sier Direktøren. «Publikum trenger ikke se noe for å se noe.»</p>
+            <div class="reveal-text" id="le-solution"></div>
             <div class="facts" id="le-facts"></div>
           </div>
           <button class="btn-gold" id="le-continue" hidden>Videre til Verkstedet →</button>
@@ -1436,8 +750,8 @@ const payloadJson = JSON.stringify(payload).replace(/</g, '\\u003c')
       <!-- ── SCENE: VERKSTEDET ───────────────────────────────────── -->
       <section class="scene" id="sc-verkstedet" hidden aria-labelledby="vs-heading">
         <p class="scene-label">Niende rom · Nierne</p>
-        <h2 class="scene-heading" id="vs-heading">{rooms.verkstedet.nb.title}</h2>
-        <div class="scene-intro" set:html={rooms.verkstedet.nb.introHtml} />
+        <h2 class="scene-heading" id="vs-heading">{nb('verkstedet').title}</h2>
+        <div class="scene-intro" set:html={nb('verkstedet').introHtml} />
 
         <div class="panel" id="vs-pathchoice">
           <p class="field-label">Velg din vei gjennom rommet</p>
@@ -1476,7 +790,7 @@ const payloadJson = JSON.stringify(payload).replace(/</g, '\\u003c')
 
         <div class="panel panel--solved" id="vs-solved" hidden>
           <p class="solved-title">✨ Gåten er løst</p>
-          <p class="principle">«Stålarmen bærer, motvekten holder, draperiet skjuler — og ringen glir langs den s-formede armen som om ingenting var der. <strong>Effekten tegnes baklengs fra salens stol</strong>, lærling: byggmesteren setter seg der publikum sitter, og fjerner alt de kan se.»</p>
+          <div class="principle" id="vs-solution"></div>
           <div class="facts" id="vs-facts"></div>
           <button class="btn-gold" id="vs-complete">Fullfør rommet →</button>
         </div>
@@ -1485,8 +799,8 @@ const payloadJson = JSON.stringify(payload).replace(/</g, '\\u003c')
       <!-- ── SCENE: EPILOG AKT III ───────────────────────────────── -->
       <section class="scene" id="sc-epilog3" hidden aria-labelledby="ep3-heading">
         <p class="scene-label">Akt III er fullført</p>
-        <h2 class="scene-heading" id="ep3-heading">{rooms.epilog3.nb.title}</h2>
-        <div class="scene-intro" set:html={rooms.epilog3.nb.introHtml} />
+        <h2 class="scene-heading" id="ep3-heading">{nb('epilog3').title}</h2>
+        <div class="scene-intro" set:html={nb('epilog3').introHtml} />
 
         <div class="panel">
           <p class="game-msg" id="ep3-deck-summary" aria-live="polite"></p>
@@ -1505,8 +819,8 @@ const payloadJson = JSON.stringify(payload).replace(/</g, '\\u003c')
       <!-- ── SCENE: MINNET SOM DIKTER (SPEILGANGEN) ──────────────── -->
       <section class="scene" id="sc-minnet" hidden aria-labelledby="mn-heading">
         <p class="scene-label">Mellomrommet · Ruter sju</p>
-        <h2 class="scene-heading" id="mn-heading">{rooms.minnet.nb.title}</h2>
-        <div class="scene-intro" set:html={rooms.minnet.nb.introHtml} />
+        <h2 class="scene-heading" id="mn-heading">{nb('minnet').title}</h2>
+        <div class="scene-intro" set:html={nb('minnet').introHtml} />
 
         <div class="panel">
           <div id="mn-intro">
@@ -1527,7 +841,7 @@ const payloadJson = JSON.stringify(payload).replace(/</g, '\\u003c')
           <div id="mn-result" hidden>
             <p class="game-msg game-msg--good" id="mn-verdict"></p>
             <div class="reveal" id="mn-reveal">
-              <p>Her er listen slik den faktisk sto — <strong>ordet «søvn» var aldri med.</strong> Alle ordene <em>handlet</em> om søvn, og hukommelsen din lagret meningen, ikke listen. Så diktet den resten.</p>
+              <div class="reveal-text" id="mn-solution"></div>
               <div class="mn-words" id="mn-words-again"></div>
               <div class="facts" id="mn-facts"></div>
             </div>
@@ -1539,8 +853,8 @@ const payloadJson = JSON.stringify(payload).replace(/</g, '\\u003c')
       <!-- ── SCENE: STUDIOET ─────────────────────────────────────── -->
       <section class="scene" id="sc-studioet" hidden aria-labelledby="st-heading">
         <p class="scene-label">Tiende rom · Tierne</p>
-        <h2 class="scene-heading" id="st-heading">{rooms.studioet.nb.title}</h2>
-        <div class="scene-intro" set:html={rooms.studioet.nb.introHtml} />
+        <h2 class="scene-heading" id="st-heading">{nb('studioet').title}</h2>
+        <div class="scene-intro" set:html={nb('studioet').introHtml} />
 
         <div class="panel" id="st-pathchoice">
           <p class="field-label">Velg din vei gjennom rommet</p>
@@ -1592,7 +906,7 @@ const payloadJson = JSON.stringify(payload).replace(/</g, '\\u003c')
 
         <div class="panel panel--solved" id="st-solved" hidden>
           <p class="solved-title">✨ Gåten er løst</p>
-          <p class="principle">«<strong>Rammen styrer hva du ser</strong>, lærling. På TV velger kameraet for deg — i mentalisme velger regnestykket. Tverrsummen av ni ganger hva som helst er alltid ni; alt etter det var på skinner. Friheten din var manus.»</p>
+          <div class="principle" id="st-solution"></div>
           <div class="facts" id="st-facts"></div>
           <button class="btn-gold" id="st-complete">Fullfør rommet →</button>
         </div>
@@ -1601,8 +915,8 @@ const payloadJson = JSON.stringify(payload).replace(/</g, '\\u003c')
       <!-- ── SCENE: TREKANTEN (SPEILGANGEN) ──────────────────────── -->
       <section class="scene" id="sc-trekanten" hidden aria-labelledby="tk-heading">
         <p class="scene-label">Mellomrommet · Ruter åtte</p>
-        <h2 class="scene-heading" id="tk-heading">{rooms.trekanten.nb.title}</h2>
-        <div class="scene-intro" set:html={rooms.trekanten.nb.introHtml} />
+        <h2 class="scene-heading" id="tk-heading">{nb('trekanten').title}</h2>
+        <div class="scene-intro" set:html={nb('trekanten').introHtml} />
 
         <div class="panel">
           <div class="oy-stage">
@@ -1626,7 +940,7 @@ const payloadJson = JSON.stringify(payload).replace(/</g, '\\u003c')
           </div>
           <p class="game-msg" id="tk-msg" aria-live="polite" hidden></p>
           <div class="reveal" id="tk-reveal" hidden>
-            <p>Det er ikke tegnet én eneste trekant — bare tre sirkler med kiler skåret ut. Den lyse trekanten du ser «oppå», med kanter og det hele, er <strong>tegnet av hjernen din</strong>: den fyller inn konturer der den venter dem. Mange synes til og med flaten ser lysere ut enn resten — det gjør den ikke.</p>
+            <div class="reveal-text" id="tk-solution"></div>
             <div class="facts" id="tk-facts"></div>
           </div>
           <button class="btn-gold" id="tk-continue" hidden>Videre til Gatehjørnet →</button>
@@ -1636,8 +950,8 @@ const payloadJson = JSON.stringify(payload).replace(/</g, '\\u003c')
       <!-- ── SCENE: GATEHJØRNET ──────────────────────────────────── -->
       <section class="scene" id="sc-gatehjornet" hidden aria-labelledby="gh-heading">
         <p class="scene-label">Ellevte rom · Knektene</p>
-        <h2 class="scene-heading" id="gh-heading">{rooms.gatehjornet.nb.title}</h2>
-        <div class="scene-intro" set:html={rooms.gatehjornet.nb.introHtml} />
+        <h2 class="scene-heading" id="gh-heading">{nb('gatehjornet').title}</h2>
+        <div class="scene-intro" set:html={nb('gatehjornet').introHtml} />
 
         <div class="panel" id="gh-pathchoice">
           <p class="field-label">Velg din vei gjennom rommet</p>
@@ -1672,7 +986,7 @@ const payloadJson = JSON.stringify(payload).replace(/</g, '\\u003c')
 
         <div class="panel panel--solved" id="gh-solved" hidden>
           <p class="solved-title">✨ Gåten er løst</p>
-          <p class="principle">«Grepet som aldri grep, lærling — mynten forlot aldri høyrehånden. Og løgnen som solgte det, var hånden som falt så kjedelig ned langs låret at ingen i verden så på den. <strong>Jo mindre trikset er, desto større er løgnen.</strong>»</p>
+          <div class="principle" id="gh-solution"></div>
           <div class="facts" id="gh-facts"></div>
           <button class="btn-gold" id="gh-complete">Fullfør rommet →</button>
         </div>
@@ -1681,8 +995,8 @@ const payloadJson = JSON.stringify(payload).replace(/</g, '\\u003c')
       <!-- ── SCENE: FARGENE SOM LYVER (SPEILGANGEN) ──────────────── -->
       <section class="scene" id="sc-fargene" hidden aria-labelledby="fa-heading">
         <p class="scene-label">Mellomrommet · Ruter ni</p>
-        <h2 class="scene-heading" id="fa-heading">{rooms.fargene.nb.title}</h2>
-        <div class="scene-intro" set:html={rooms.fargene.nb.introHtml} />
+        <h2 class="scene-heading" id="fa-heading">{nb('fargene').title}</h2>
+        <div class="scene-intro" set:html={nb('fargene').introHtml} />
 
         <div class="panel">
           <div class="oy-stage">
@@ -1709,7 +1023,7 @@ const payloadJson = JSON.stringify(payload).replace(/</g, '\\u003c')
           </div>
           <p class="game-msg" id="fa-msg" aria-live="polite" hidden></p>
           <div class="reveal" id="fa-reveal" hidden>
-            <p>Firkantene er <strong>nøyaktig samme grå</strong> — broen mellom dem er malt i samme farge, uten skjøter. Øyet måler aldri en farge alene; det sammenligner med naboene. Mot mørkt ser grått lyst ut, mot lyst ser det mørkt ut — hver eneste dag, overalt.</p>
+            <div class="reveal-text" id="fa-solution"></div>
             <div class="facts" id="fa-facts"></div>
           </div>
           <button class="btn-gold" id="fa-continue" hidden>Videre til Vinterhagen →</button>
@@ -1719,8 +1033,8 @@ const payloadJson = JSON.stringify(payload).replace(/</g, '\\u003c')
       <!-- ── SCENE: VINTERHAGEN ──────────────────────────────────── -->
       <section class="scene" id="sc-vinterhagen" hidden aria-labelledby="vh-heading">
         <p class="scene-label">Tolvte rom · Damene</p>
-        <h2 class="scene-heading" id="vh-heading">{rooms.vinterhagen.nb.title}</h2>
-        <div class="scene-intro" set:html={rooms.vinterhagen.nb.introHtml} />
+        <h2 class="scene-heading" id="vh-heading">{nb('vinterhagen').title}</h2>
+        <div class="scene-intro" set:html={nb('vinterhagen').introHtml} />
 
         <div class="panel" id="vh-pathchoice">
           <p class="field-label">Velg din vei gjennom rommet</p>
@@ -1753,7 +1067,7 @@ const payloadJson = JSON.stringify(payload).replace(/</g, '\\u003c')
 
         <div class="panel panel--solved" id="vh-solved" hidden>
           <p class="solved-title">✨ Gåten er løst</p>
-          <p class="principle">«Damene bukker — det gjør de sjelden. Fire netters lærdom, brukt i ett rom: <strong>oppmerksomheten, troen, metoden og klippet.</strong> Norden har alltid fostret magikere som kunne alt dette på én gang, lærling. Nå er du nesten en av dem.»</p>
+          <div class="principle" id="vh-solution"></div>
           <div class="facts" id="vh-facts"></div>
           <button class="btn-gold" id="vh-complete">Fullfør rommet →</button>
         </div>
@@ -1762,8 +1076,8 @@ const payloadJson = JSON.stringify(payload).replace(/</g, '\\u003c')
       <!-- ── SCENE: EPILOG AKT IV ────────────────────────────────── -->
       <section class="scene" id="sc-epilog4" hidden aria-labelledby="ep4-heading">
         <p class="scene-label">Akt IV er fullført</p>
-        <h2 class="scene-heading" id="ep4-heading">{rooms.epilog4.nb.title}</h2>
-        <div class="scene-intro" set:html={rooms.epilog4.nb.introHtml} />
+        <h2 class="scene-heading" id="ep4-heading">{nb('epilog4').title}</h2>
+        <div class="scene-intro" set:html={nb('epilog4').introHtml} />
 
         <div class="panel">
           <p class="game-msg" id="ep4-deck-summary" aria-live="polite"></p>
@@ -1782,8 +1096,8 @@ const payloadJson = JSON.stringify(payload).replace(/</g, '\\u003c')
       <!-- ── SCENE: PORTEN ───────────────────────────────────────── -->
       <section class="scene" id="sc-porten" hidden aria-labelledby="po-heading">
         <p class="scene-label">Terskelen · De siste ruterne</p>
-        <h2 class="scene-heading" id="po-heading">{rooms.porten.nb.title}</h2>
-        <div class="scene-intro" set:html={rooms.porten.nb.introHtml} />
+        <h2 class="scene-heading" id="po-heading">{nb('porten').title}</h2>
+        <div class="scene-intro" set:html={nb('porten').introHtml} />
 
         <div class="panel">
           <p class="game-msg" id="po-msg" aria-live="polite"></p>
@@ -1803,8 +1117,8 @@ const payloadJson = JSON.stringify(payload).replace(/</g, '\\u003c')
       <!-- ── SCENE: DET TRETTENDE KABINETTET ─────────────────────── -->
       <section class="scene" id="sc-kabinettet" hidden aria-labelledby="kb-heading">
         <p class="scene-label">Trettende rom · Kongene</p>
-        <h2 class="scene-heading" id="kb-heading">{rooms.kabinettet.nb.title}</h2>
-        <div class="scene-intro" set:html={rooms.kabinettet.nb.introHtml} />
+        <h2 class="scene-heading" id="kb-heading">{nb('kabinettet').title}</h2>
+        <div class="scene-intro" set:html={nb('kabinettet').introHtml} />
 
         <div class="panel" id="kb-compose">
           <p class="game-msg">«Sett sammen nummeret ditt av det du har lært,» sier Direktøren. «Én effekt. Én metode. Én misdireksjon. Det finnes ingen gale svar — bare ditt svar.»</p>
@@ -1836,8 +1150,8 @@ const payloadJson = JSON.stringify(payload).replace(/</g, '\\u003c')
       <!-- ── SCENE: DAGGRY ───────────────────────────────────────── -->
       <section class="scene" id="sc-daggry" hidden aria-labelledby="dg-heading">
         <p class="scene-label">Epilog · Kabinettet i dagslys</p>
-        <h2 class="scene-heading" id="dg-heading">{rooms.daggry.nb.title}</h2>
-        <div class="scene-intro" set:html={rooms.daggry.nb.introHtml} />
+        <h2 class="scene-heading" id="dg-heading">{nb('daggry').title}</h2>
+        <div class="scene-intro" set:html={nb('daggry').introHtml} />
 
         <div class="panel">
           <p class="game-msg" id="dg-deck-summary" aria-live="polite"></p>
@@ -1927,7 +1241,7 @@ const payloadJson = JSON.stringify(payload).replace(/</g, '\\u003c')
 
 <script>
   interface GFact { text: string; linkUrl?: string; linkLabel?: string; imageUrl?: string; imageAlt?: string }
-  interface GRoomLang { title: string; introHtml: string; facts: GFact[] }
+  interface GRoomLang { title: string; introHtml: string }
   interface GRoom { nb: GRoomLang; en: GRoomLang; imageUrl?: string; imageAlt?: string; imageAltEn?: string }
   interface GHeroLang { title: string; intro: string }
   interface GData {
@@ -1958,6 +1272,50 @@ const payloadJson = JSON.stringify(payload).replace(/</g, '\\u003c')
       return r ? (lang === 'en' ? r.en : r.nb) : undefined
     }
     const roomTitle = (key: string) => R(key)?.title || key
+
+    // ── Svarskranken (/api/kabinett) ─────────────────────────────
+    // This page carries no answers, hints, explanations or facts: the server
+    // checks every answer and hands those out (src/lib/kabinett.ts) — the
+    // explanation and facts of a puzzle room only after a correct answer.
+    interface GSolution { html: string; facts: GFact[] }
+    interface GCheck { ok: boolean; msg?: string; early?: boolean; invalid?: boolean; solved?: GSolution }
+    interface GStart { lines: Record<string, string>; answer?: string }
+
+    async function ask<T>(body: Record<string, unknown>): Promise<T | null> {
+      try {
+        const res = await fetch('/api/kabinett', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ ...body, lang }),
+        })
+        if (!res.ok) throw new Error(`HTTP ${res.status}`)
+        return (await res.json()) as T
+      } catch {
+        toast(t(
+          'Kabinettet svarer ikke akkurat nå. Prøv igjen om et øyeblikk.',
+          'The Cabinet is not answering right now. Try again in a moment.',
+        ))
+        return null
+      }
+    }
+    const check = (room: string, answer: Record<string, unknown> = {}) =>
+      ask<GCheck>({ action: 'check', room, ...answer })
+
+    // The texts a room needs when it opens (the Director's whisper for the
+    // chosen path etc.), fetched once per room.
+    const startCache = new Map<string, Promise<GStart | null>>()
+    function roomStart(room: string): Promise<GStart | null> {
+      let p = startCache.get(room)
+      if (!p) {
+        p = ask<GStart>({ action: 'start', room }).then(r => {
+          if (!r) startCache.delete(room) // let the next attempt retry
+          return r
+        })
+        startCache.set(room, p)
+      }
+      return p
+    }
+    const roomLine = async (room: string, key: string) => (await roomStart(room))?.lines[key] ?? ''
 
     const langBtn = $('lang-btn') as HTMLButtonElement
     if (englishEnabled) {
@@ -2062,9 +1420,6 @@ const payloadJson = JSON.stringify(payload).replace(/</g, '\\u003c')
 
       ['#sr-stage .cup:not(.cup--hand) .sr-only-label', 'Cup'],
       ['#sr-hand .sr-only-label', 'The magician’s hand'],
-      ['#sr-solved .principle',
-        '“The hand is not quicker than the eye, apprentice. It doesn’t need to be. ' +
-        '<strong>Your attention is steered</strong> — and while you followed the cups, nobody followed the magician.”'],
 
       ['#sg-step1 > .game-msg',
         'The mirror shows six cards. <strong>Choose one of them — in your mind only.</strong> ' +
@@ -2074,9 +1429,6 @@ const payloadJson = JSON.stringify(payload).replace(/</g, '\\u003c')
       ['#sg-step3 > .game-msg--good', '<strong>Your card is gone.</strong> The mirror has removed exactly the card you were thinking of:'],
       ['#sg-again', 'Incredible — do it again 🔁'],
       ['#sg-reveal-btn', 'Lift the curtain: how? 🎭'],
-      ['#sg-reveal > p',
-        'Look closely: <strong>all</strong> of the cards were swapped out. You only remembered your own card — ' +
-        'so you never noticed that the five others disappeared too. Your brain stored what you paid attention to, and filled in the rest by itself.'],
       ['#sg-continue', 'On to the next room →'],
 
       ['#mp-verse',
@@ -2090,9 +1442,6 @@ const payloadJson = JSON.stringify(payload).replace(/</g, '\\u003c')
       ['#mp-game .mp-cup[data-pick="venstre"]', 'The left mug'],
       ['#mp-game .mp-cup[data-pick="midten"]', 'The middle mug'],
       ['#mp-game .mp-cup[data-pick="hoyre"]', 'The right mug'],
-      ['#mp-solved .principle',
-        '“<strong>Language is misdirection</strong>, apprentice. The conjurer never pointed with his hand — he pointed with the verse. ' +
-        'The first letter of every line: M-I-D-D-L-E. People hear the story and overlook the letters.”'],
 
       ['#sc-epilog .panel > .game-msg:not([id])',
         '“… And should you miss the magic in daylight: the Cabinet exists in the daytime too. ' +
@@ -2102,18 +1451,12 @@ const payloadJson = JSON.stringify(payload).replace(/</g, '\\u003c')
       ['#ga-msg', 'Six paintings hang on the wall. Look carefully at each of them — as carefully as you can.'],
       ['#ga-blink-btn', 'I have seen enough — blink 👁️'],
       ['#ga-giveup', 'Give me the answer 🎭'],
-      ['#ga-reveal > p',
-        'You were looking straight at the wall — and still it slipped past. Your brain doesn’t compare what it sees with its last glance; ' +
-        'it trusts a rough sketch and fills in the rest itself. Whatever changes in a blink, changes without witnesses.'],
       ['#ga-continue', 'On to the Library →'],
       ['#ga-blink p', '… blink …'],
 
       ['#bl-game > .game-msg:not([id])',
         'Four woodcuts have been torn from the book, and four explanations remain on the page. ' +
         '<strong>Match each woodcut with the secret it exposes:</strong> press a woodcut, then an explanation.'],
-      ['#bl-solved .principle',
-        '“<strong>A secret written down is a secret armed</strong>, apprentice. Scot wrote to save lives from the pyre — ' +
-        'and in the same breath armed four hundred years of magicians. The book you just leafed through is the ancestress of every book of magic.”'],
 
       ['#oy-act1 > .game-msg', 'The first chart: two lines. <strong>Which one is longer?</strong>'],
       ['#oy-a1-btns [data-oy1="top"]', 'The top one'],
@@ -2123,10 +1466,6 @@ const payloadJson = JSON.stringify(payload).replace(/</g, '\\u003c')
       ['#oy-a2-btns [data-oy2="left"]', 'The left one'],
       ['#oy-a2-btns [data-oy2="right"]', 'The right one'],
       ['#oy-a2-btns [data-oy2="same"]', 'They are the same size'],
-      ['#oy-reveal > p',
-        'Both charts are honest — it is your eyes that are not. Even now, when you <em>know</em> the lines are equally long ' +
-        'and the circles the same size, your brain cannot see it. “Remember this,” says the Director. ' +
-        '“The audience believe they see with their eyes. They see with their habits.”'],
       ['#oy-continue', 'On to the Salon →'],
 
       ['#sl-game > .game-msg:not([id])', 'The Turk plays game after game — and beats everyone. The Director lets you watch three performances in a row. Your observations:'],
@@ -2135,17 +1474,11 @@ const payloadJson = JSON.stringify(payload).replace(/</g, '\\u003c')
       ['#sl-choices [data-sl="magnet"]', 'Magnets under the floor move the pieces'],
       ['#sl-choices [data-sl="menneske"]', 'A human being is hidden inside the cabinet'],
       ['#sl-choices [data-sl="trader"]', 'The presenter pulls invisible threads'],
-      ['#sl-solved .principle',
-        '“<strong>Technology dressed up as magic</strong>, apprentice. The audience stared at the cogwheels — and the cogwheels were the costume. ' +
-        'The only thing the machine could never do was the only thing it had to: think. So someone thought for it.”'],
 
       ['#se-game > .game-msg:not([id])',
         'The séance begins. Eight things happen around the table — <strong>three of them are the medium’s methods</strong>; ' +
         'the rest is wonder and theatre. Mark the three methods:'],
       ['#se-submit', 'Expose the medium 🔍'],
-      ['#se-solved .principle',
-        '“<strong>Belief does half the trick</strong>, apprentice. The dark, the free hand and the talkative assistant did the rest. ' +
-        'And did you notice one more thing? The spirits never knew anything the guests didn’t already know.”'],
 
       ['#sc-epilog2 .panel > .game-msg:not([id])',
         '“And remember, apprentice: everything you have seen tonight stands in glass cases once the sun is up. ' +
@@ -2155,34 +1488,19 @@ const payloadJson = JSON.stringify(payload).replace(/</g, '\\u003c')
       ['#fv-envelope', '✉️ <em>“Prediction — written last night”</em>'],
       ['#fv-msg', 'Three objects stand on the table. <strong>Point at two of them</strong> — entirely freely.'],
       ['#fv-reveal-btn', 'Wait — show the receipts 🧾'],
-      ['#fv-reveal > p',
-        'Your choices were real — but <strong>what they were to mean was decided afterwards.</strong> ' +
-        'If you pointed at the mirror, you “kept” it. If you pointed at something else, the Director “cleared it away”. ' +
-        'Every road ended at the mirror; you only walked one of them.'],
       ['#fv-continue', 'On to the Theatre →'],
 
       ['#te-game > .game-msg:not([id])', 'It is cramped, dark and hot. The audience are counting out loud. <strong>What do you do — and in what order?</strong>'],
-      ['#te-solved .principle',
-        '“You roll out behind the trunk just as the audience reach zero. <strong>The method was bought long before the effect was sold</strong>, ' +
-        'apprentice: the catch was in place before the curtain rose. The escape artist never escapes from the trunk — he escapes from yesterday.”'],
 
       ['#ki-phase1 > .game-msg', 'Five strips of film lie in a jumble. <strong>Press them in the right order</strong> — from the first frame to the last.'],
       ['#ki-phase2 > .game-msg--good',
         'The film runs: the lady vanishes — and the house gasps. But the Director leans in: <strong>“Where did the camera stop the first time?”</strong>'],
-      ['#ki-solved .principle',
-        '“<strong>The cut is the vanish</strong>, apprentice. The impossible never happens while you watch — it happens between two frames, ' +
-        'where the camera stood still and the world was allowed to rearrange itself. Méliès understood it before anyone: ' +
-        'film is a magician the front row can never expose.”'],
 
       ['#le-msg', 'When the lamp is lit: <strong>stare at the white dot in the middle</strong> without moving your gaze, until the light goes out.'],
       ['#le-light', 'Light the lamp 🕯️'],
       ['#le-skip', 'Tell me what I would have seen'],
       ['#le-saw', 'I see it — a pale ghost! 👻'],
       ['#le-nothing', 'I see nothing'],
-      ['#le-reveal-text',
-        'The ghost on the canvas is <strong>your own sight inventing</strong>: the visual cells that stared at the pink light are “tired”, ' +
-        'and when the light disappears they answer with the complementary colour — a pale green afterimage of the lantern, ' +
-        'on a canvas that was empty all along. “Remember that,” says the Director. “An audience doesn’t need to see something to see something.”'],
       ['#le-continue', 'On to the Workshop →'],
       ['#le-blank-text', '— the canvas is empty —'],
 
@@ -2193,10 +1511,6 @@ const payloadJson = JSON.stringify(payload).replace(/</g, '\\u003c')
         '<p>The audience see her the entire time.</p>'],
       ['#vs-game > .game-msg:not([id])', 'Six parts lie on the table — <strong>only three belong in the illusion.</strong> Choose them, and build.'],
       ['#vs-submit', 'Build the illusion 🔨'],
-      ['#vs-solved .principle',
-        '“The steel arm carries, the counterweight holds, the drape conceals — and the hoop glides along the S-shaped arm as if nothing were there. ' +
-        '<strong>The effect is drawn backwards from the seats of the house</strong>, apprentice: the builder sits where the audience sit, ' +
-        'and removes everything they can see.”'],
 
       ['#sc-epilog3 .panel > .game-msg:not([id])',
         '“And when you miss the nights, apprentice: the Cabinet stands in daylight at Årvoll gård. ' +
@@ -2208,9 +1522,6 @@ const payloadJson = JSON.stringify(payload).replace(/</g, '\\u003c')
       ['#mn-done', 'I have read them — wipe them away'],
       ['#mn-yes', 'Yes, it was there'],
       ['#mn-no', 'No, it was not'],
-      ['#mn-reveal > p',
-        'Here is the list as it actually stood — <strong>the word “sleep” was never on it.</strong> ' +
-        'Every word was <em>about</em> sleep, and your memory stored the meaning, not the list. Then it invented the rest.'],
       ['#mn-continue', 'On to the Studio →'],
 
       ['#st-next', 'Next →'],
@@ -2223,42 +1534,25 @@ const payloadJson = JSON.stringify(payload).replace(/</g, '\\u003c')
       ['#st-options [data-st="ni"]', 'When I multiplied by 9'],
       ['#st-options [data-st="land"]', 'When I chose the country'],
       ['#st-options [data-st="kamera"]', 'The programme read my eyes'],
-      ['#st-solved .principle',
-        '“<strong>The frame controls what you see</strong>, apprentice. On TV, the camera chooses for you — in mentalism, the arithmetic does. ' +
-        'The digit sum of nine times anything is always nine; everything after that ran on rails. Your freedom was a script.”'],
 
       ['#sc-trekanten .panel > .game-msg:not([id])', '<strong>How many triangles are drawn on the chart?</strong>'],
       ['#tk-btns [data-tk="1"]', 'One'],
       ['#tk-btns [data-tk="3"]', 'Three'],
       ['#tk-btns [data-tk="0"]', 'None'],
-      ['#tk-reveal > p',
-        'Not a single triangle is drawn — just three circles with wedges cut out. The pale triangle you see “on top”, edges and all, ' +
-        'is <strong>drawn by your brain</strong>: it fills in contours where it expects them. ' +
-        'Many people even find that the surface looks brighter than the rest — it doesn’t.'],
       ['#tk-continue', 'On to the Street Corner →'],
 
       ['#gh-pick > .game-msg', '<strong>At which moment did the trick itself happen?</strong>'],
       ['#gh-replay', 'Watch the routine once more 🔁'],
-      ['#gh-solved .principle',
-        '“The grip that never gripped, apprentice — the coin never left the right hand. And the lie that sold it was the hand ' +
-        'dropping so boringly to his thigh that nobody in the world was watching it. <strong>The smaller the trick, the bigger the lie.</strong>”'],
 
       ['#sc-fargene .panel > .game-msg:not([id])', '<strong>Which grey square is lighter?</strong>'],
       ['#fa-btns [data-fa="venstre"]', 'The left one'],
       ['#fa-btns [data-fa="hoyre"]', 'The right one'],
       ['#fa-btns [data-fa="like"]', 'They are exactly the same'],
-      ['#fa-reveal > p',
-        'The squares are <strong>exactly the same grey</strong> — the bridge between them is painted in one colour, without a seam. ' +
-        'The eye never measures a colour on its own; it compares it with the neighbours. Against dark, grey looks light; ' +
-        'against light, it looks dark — every single day, everywhere.'],
       ['#fa-continue', 'On to the Winter Garden →'],
 
       ['#vh-game > .game-msg:not([id])',
         'Four tales hang frozen in the air beneath the glass roof. <strong>Match each of them with the room where you learned the principle:</strong> ' +
         'press a tale, then a room.'],
-      ['#vh-solved .principle',
-        '“The queens bow — they rarely do. Four nights of learning, used in one room: <strong>attention, belief, method and the cut.</strong> ' +
-        'The North has always fostered magicians who could do all of this at once, apprentice. Now you are nearly one of them.”'],
 
       ['#sc-epilog4 .panel > .game-msg:not([id])',
         '“Until you return, apprentice: the Cabinet stands in daylight at Årvoll gård. ' +
@@ -2545,10 +1839,9 @@ const payloadJson = JSON.stringify(payload).replace(/</g, '\\u003c')
     $('fact-close').addEventListener('click', () => factModal.close())
     factModal.addEventListener('click', e => { if (e.target === factModal) factModal.close() })
 
-    function renderFacts(containerId: string, roomKey: string) {
+    function renderFacts(containerId: string, facts: GFact[]) {
       const box = $(containerId)
       box.innerHTML = ''
-      const facts = R(roomKey)?.facts ?? []
       for (const f of facts) {
         const btn = document.createElement('button')
         btn.type = 'button'
@@ -2569,6 +1862,28 @@ const payloadJson = JSON.stringify(payload).replace(/</g, '\\u003c')
         btn.addEventListener('click', () => openFactModal(f))
         box.appendChild(btn)
       }
+    }
+
+    // The explanation (principle or Speilgangen reveal) and facts the server
+    // sends once a room is solved.
+    function showSolution(prefix: string, sol: GSolution | undefined) {
+      const box = document.getElementById(`${prefix}-solution`)
+      if (box) box.innerHTML = sol?.html ?? ''
+      renderFacts(`${prefix}-facts`, sol?.facts ?? [])
+    }
+
+    // A puzzle room is solved: the spade card (gilded for a hint-free,
+    // mistake-free Mesterens vei), then the explanation panel.
+    function solveRoom(prefix: string, value: number, note: string, gild: boolean, sol: GSolution | undefined) {
+      awardCard(value, 'spar', note)
+      const code = cardCode(value, 'spar')
+      if (gild && !state.gilded.includes(code)) {
+        state.gilded.push(code)
+        save()
+      }
+      showSolution(prefix, sol)
+      $(`${prefix}-solved`).hidden = false
+      $(`${prefix}-solved`).scrollIntoView({ behavior: reducedMotion ? 'auto' : 'smooth', block: 'nearest' })
     }
 
     // ── Scener ───────────────────────────────────────────────────
@@ -2864,18 +2179,24 @@ const payloadJson = JSON.stringify(payload).replace(/</g, '\\u003c')
     $('poster-download').addEventListener('click', downloadPoster)
 
     // ── Hint-hjelper ─────────────────────────────────────────────
-    function wireHints(btnId: string, listId: string, hints: string[], onUse: () => void) {
+    // Hints come from the server one at a time.
+    function wireHints(btnId: string, listId: string, room: string, onUse: () => void) {
       const btn = $(btnId) as HTMLButtonElement
       const list = $(listId)
       let idx = 0
-      btn.addEventListener('click', () => {
-        if (idx >= hints.length) return
+      let busy = false
+      btn.addEventListener('click', async () => {
+        if (busy || btn.disabled) return
+        busy = true
+        const r = await ask<{ text: string; total: number }>({ action: 'hint', room, n: idx })
+        busy = false
+        if (!r) return
         const li = document.createElement('li')
-        li.textContent = lang === 'en' ? `“${hints[idx]}”` : `«${hints[idx]}»`
+        li.textContent = lang === 'en' ? `“${r.text}”` : `«${r.text}»`
         list.appendChild(li)
         idx++
         onUse()
-        if (idx >= hints.length) btn.disabled = true
+        if (idx >= r.total) btn.disabled = true
       })
     }
 
@@ -2940,16 +2261,7 @@ const payloadJson = JSON.stringify(payload).replace(/</g, '\\u003c')
     let srWrong = 0
     let srPath = state.path['sandrommet'] || ''
 
-    const SR_HINTS = lang === 'en' ? [
-      'You followed the cups, apprentice. But did you follow the magician?',
-      'The ball left the table before the first swap.',
-      'Look at the hand “resting” on the edge of the table.',
-    ] : [
-      'Du fulgte koppene, lærling. Men fulgte du magikeren?',
-      'Kulen forlot bordet før første bytte.',
-      'Se på hånden som «hviler» på bordkanten.',
-    ]
-    wireHints('sr-hint-btn', 'sr-hints', SR_HINTS, () => { srHintsUsed++ })
+    wireHints('sr-hint-btn', 'sr-hints', 'sandrommet', () => { srHintsUsed++ })
 
     document.querySelectorAll<HTMLButtonElement>('.path-btn[data-scene="sr"]').forEach(btn =>
       btn.addEventListener('click', () => {
@@ -3034,6 +2346,7 @@ const payloadJson = JSON.stringify(payload).replace(/</g, '\\u003c')
         srMsg.textContent = t('Hvor er kulen? Trykk på koppen.', 'Where is the ball? Press the cup.')
         srSetCupsEnabled(true)
       } else {
+        // The final round is checked by the server: there is no ball cup here.
         $('sr-round-label').textContent = t('Siste runde — følg kulen. Om du kan.', 'Final round — follow the ball. If you can.')
         srBallCup = -1
         const startCup = Math.floor(Math.random() * 3)
@@ -3086,33 +2399,29 @@ const payloadJson = JSON.stringify(payload).replace(/</g, '\\u003c')
             srStartRound(srRound)
           }
         } else {
-          srWrong++
-          cup.classList.add('cup--empty')
-          srMsg.textContent = t(
-            'Tomt. Alle koppene klinger hult. Men kulen forsvant jo ikke opp i røyk …',
-            'Empty. All the cups ring hollow. But the ball didn’t vanish into smoke …',
-          )
+          const r = await check('sandrommet', { value: 'cup' })
+          if (r) {
+            srWrong++
+            cup.classList.add('cup--empty')
+            srMsg.textContent = r.msg ?? ''
+          }
           srSetCupsEnabled(true)
         }
       })
     )
 
-    srHand.addEventListener('click', () => {
+    srHand.addEventListener('click', async () => {
       if (srHand.disabled) return
       srSetCupsEnabled(false)
-      srMsg.textContent = t(
-        'Skikkelsen åpner langsomt hånden. Der ligger kulen — den lå der før første bytte.',
-        'The figure slowly opens the hand. There lies the ball — it was there before the first swap.',
-      )
-      const gild = srPath === 'mester' && srHintsUsed === 0 && srWrong === 0
-      awardCard(2, 'spar', t('Sigillet fra Sandrommet', 'The seal of the Sand Room'))
-      if (gild && !state.gilded.includes('2-spar')) {
-        state.gilded.push('2-spar')
-        save()
+      const r = await check('sandrommet', { value: 'hand' })
+      if (!r?.ok) {
+        if (r) { srWrong++; srMsg.textContent = r.msg ?? '' }
+        srSetCupsEnabled(true)
+        return
       }
-      renderFacts('sr-facts', 'sandrommet')
-      $('sr-solved').hidden = false
-      $('sr-solved').scrollIntoView({ behavior: reducedMotion ? 'auto' : 'smooth', block: 'nearest' })
+      srMsg.textContent = r.msg ?? ''
+      solveRoom('sr', 2, t('Sigillet fra Sandrommet', 'The seal of the Sand Room'),
+        srPath === 'mester' && srHintsUsed === 0 && srWrong === 0, r.solved)
     })
 
     $('sr-scarab').addEventListener('click', () => {
@@ -3185,7 +2494,12 @@ const payloadJson = JSON.stringify(payload).replace(/</g, '\\u003c')
       sgRenderStep1()
     })
 
-    $('sg-reveal-btn').addEventListener('click', () => {
+    $('sg-reveal-btn').addEventListener('click', async () => {
+      const btn = $('sg-reveal-btn') as HTMLButtonElement
+      btn.disabled = true
+      const r = await check('speilgangen')
+      btn.disabled = false
+      if (!r) return
       const cmp = $('sg-compare')
       cmp.innerHTML = ''
       const mk = (title: string, cards: PlayCard[]) => {
@@ -3202,7 +2516,7 @@ const payloadJson = JSON.stringify(payload).replace(/</g, '\\u003c')
       }
       cmp.appendChild(mk(t('Kortene du fikk se:', 'The cards you were shown:'), sgBefore))
       cmp.appendChild(mk(t('Kortene du fikk «igjen»:', 'The cards you got “back”:'), sgAfter))
-      renderFacts('sg-facts', 'speilgangen')
+      showSolution('sg', r.solved)
       $('sg-reveal').hidden = false
     })
 
@@ -3213,16 +2527,7 @@ const payloadJson = JSON.stringify(payload).replace(/</g, '\\u003c')
     let mpWrong = 0
     let mpPath = state.path['markedsplassen'] || ''
 
-    const MP_HINTS = lang === 'en' ? [
-      'The answer is in the verse. All of it is.',
-      'Read downwards, not across.',
-      'The first letter of every line, apprentice.',
-    ] : [
-      'Svaret står i verset. Alt sammen gjør det.',
-      'Les nedover, ikke bortover.',
-      'Første bokstav i hver linje, lærling.',
-    ]
-    wireHints('mp-hint-btn', 'mp-hints', MP_HINTS, () => { mpHintsUsed++ })
+    wireHints('mp-hint-btn', 'mp-hints', 'markedsplassen', () => { mpHintsUsed++ })
 
     document.querySelectorAll<HTMLButtonElement>('.path-btn[data-scene="mp"]').forEach(btn =>
       btn.addEventListener('click', () => {
@@ -3231,40 +2536,25 @@ const payloadJson = JSON.stringify(payload).replace(/</g, '\\u003c')
         save()
         $('mp-pathchoice').hidden = true
         $('mp-game').hidden = false
-        $('mp-pretext').textContent = mpPath === 'laerling'
-          ? t(
-              'Direktøren lener seg inntil øret ditt: «Gjøglere gjemmer alltid hemmelighetene sine i ordene. Hør på verset — ordentlig.»',
-              'The Director leans close to your ear: “Conjurers always hide their secrets in the words. Listen to the verse — properly.”',
-            )
-          : t('Gjøgleren roper verset sitt én gang. Mer får du ikke.', 'The conjurer shouts his verse once. That is all you get.')
+        roomLine('markedsplassen', mpPath).then(line => { $('mp-pretext').textContent = line })
       })
     )
 
     // .mp-cup is a shared button class — later rooms (Øyet, Salongen, …) use
     // it too, so both the listener and the disable must stay inside #mp-game.
-    document.querySelectorAll<HTMLButtonElement>('#mp-game .mp-cup').forEach(btn =>
-      btn.addEventListener('click', () => {
-        if (btn.dataset.pick === 'midten') {
-          document.querySelectorAll<HTMLButtonElement>('#mp-game .mp-cup').forEach(b => { b.disabled = true })
-          $('mp-msg').textContent = t(
-            'Gjøgleren løfter det midterste kruset: erten! Han bukker dypt. «Endelig én som hører etter!»',
-            'The conjurer lifts the middle mug: the pea! He bows deeply. “At last, someone who listens!”',
-          )
-          const gild = mpPath === 'mester' && mpHintsUsed === 0 && mpWrong === 0
-          awardCard(3, 'spar', t('Sigillet fra Markedsplassen', 'The seal of the Market Square'))
-          if (gild && !state.gilded.includes('3-spar')) {
-            state.gilded.push('3-spar')
-            save()
-          }
-          renderFacts('mp-facts', 'markedsplassen')
-          $('mp-solved').hidden = false
-          $('mp-solved').scrollIntoView({ behavior: reducedMotion ? 'auto' : 'smooth', block: 'nearest' })
+    const mpCups = Array.from(document.querySelectorAll<HTMLButtonElement>('#mp-game .mp-cup'))
+    mpCups.forEach(btn =>
+      btn.addEventListener('click', async () => {
+        mpCups.forEach(b => { b.disabled = true })
+        const r = await check('markedsplassen', { value: btn.dataset.pick })
+        if (!r) { mpCups.forEach(b => { b.disabled = false }); return }
+        $('mp-msg').textContent = r.msg ?? ''
+        if (r.ok) {
+          solveRoom('mp', 3, t('Sigillet fra Markedsplassen', 'The seal of the Market Square'),
+            mpPath === 'mester' && mpHintsUsed === 0 && mpWrong === 0, r.solved)
         } else {
           mpWrong++
-          $('mp-msg').textContent = t(
-            'Gjøgleren løfter kruset: tomt! Han ler rått. «Nei og nei! Hørte du ikke etter? Jeg sa jo hvor den lå!»',
-            'The conjurer lifts the mug: empty! He laughs coarsely. “Dear, dear! Weren’t you listening? I told you where it was!”',
-          )
+          mpCups.forEach(b => { b.disabled = false })
         }
       })
     )
@@ -3366,7 +2656,7 @@ const payloadJson = JSON.stringify(payload).replace(/</g, '\\u003c')
       overlay.hidden = true
     }
 
-    function gaFinish(byGivingUp: boolean) {
+    async function gaFinish(byGivingUp: boolean) {
       gaDone = true
       gaShowingB = true
       gaRender()
@@ -3380,9 +2670,10 @@ const payloadJson = JSON.stringify(payload).replace(/</g, '\\u003c')
             ? `Right — “${GA_PAINTINGS[gaChanged].title}” swapped its motif right before your eyes. And most nights, nobody notices.`
             : `Riktig — «${GA_PAINTINGS[gaChanged].title}» byttet motiv rett foran øynene dine. Og de fleste netter går det ingen opp i.`)
       awardCard(3, 'ruter', t('Illusjonskortet fra Galleriet', 'The illusion card of the Gallery'))
-      renderFacts('ga-facts', 'galleriet')
-      $('ga-reveal').hidden = false
       ;($('ga-continue') as HTMLButtonElement).hidden = false
+      const r = await check('galleriet')
+      showSolution('ga', r?.solved)
+      $('ga-reveal').hidden = !r
     }
 
     function gaPick(i: number) {
@@ -3403,63 +2694,59 @@ const payloadJson = JSON.stringify(payload).replace(/</g, '\\u003c')
     $('ga-continue').addEventListener('click', () => goTo('biblioteket'))
 
     // ═══ BIBLIOTEKET ═════════════════════════════════════════════
-    interface BlPair { icon: string; name: string; laerling: string; mester: string }
-    const BL_PAIRS: BlPair[] = lang === 'en' ? [
-      { icon: '🗡️', name: 'The knife through the arm',
-        laerling: 'The blade slides into the handle — the knife was never whole.',
-        mester: 'The steel retreats home to where it came from.' },
-      { icon: '🍽️', name: 'The head on the platter',
-        laerling: 'The table has two holes — and room for two boys.',
-        mester: 'The platter is honest. The furniture lies.' },
-      { icon: '🪙', name: 'The vanishing coin',
-        laerling: 'The coin never leaves the hand — it rests hidden in the grip.',
-        mester: 'What vanished never travelled.' },
-      { icon: '🪢', name: 'The rope cut and restored',
-        laerling: 'An extra piece of rope is switched in — that is the piece sacrificed to the knife.',
-        mester: 'The one sacrificed is not the one you saw.' },
+    // The woodcuts and the explanations, each column in the order shown. Which
+    // explanation belongs to which woodcut is known only to the server.
+    const BL_WOODCUTS = lang === 'en' ? [
+      { icon: '🗡️', name: 'The knife through the arm' },
+      { icon: '🍽️', name: 'The head on the platter' },
+      { icon: '🪙', name: 'The vanishing coin' },
+      { icon: '🪢', name: 'The rope cut and restored' },
     ] : [
-      { icon: '🗡️', name: 'Kniven gjennom armen',
-        laerling: 'Bladet glir inn i skaftet — kniven var aldri hel.',
-        mester: 'Stålet viker hjem dit det kom fra.' },
-      { icon: '🍽️', name: 'Hodet på fatet',
-        laerling: 'Bordet har to hull — og plass til to gutter.',
-        mester: 'Fatet er ærlig. Møbelet lyver.' },
-      { icon: '🪙', name: 'Mynten som forsvinner',
-        laerling: 'Mynten forlater aldri hånden — den hviler skjult i grepet.',
-        mester: 'Det som forsvant, har aldri reist.' },
-      { icon: '🪢', name: 'Snoren som deles og heles',
-        laerling: 'En ekstra bit snor byttes inn — det er den som ofres for kniven.',
-        mester: 'Den som ofres, er ikke den du så.' },
+      { icon: '🗡️', name: 'Kniven gjennom armen' },
+      { icon: '🍽️', name: 'Hodet på fatet' },
+      { icon: '🪙', name: 'Mynten som forsvinner' },
+      { icon: '🪢', name: 'Snoren som deles og heles' },
     ]
-    const BL_SECRET_ORDER = [2, 0, 3, 1]
+    const BL_SECRETS = lang === 'en' ? [
+      { laerling: 'The coin never leaves the hand — it rests hidden in the grip.',
+        mester: 'What vanished never travelled.' },
+      { laerling: 'The blade slides into the handle — the knife was never whole.',
+        mester: 'The steel retreats home to where it came from.' },
+      { laerling: 'An extra piece of rope is switched in — that is the piece sacrificed to the knife.',
+        mester: 'The one sacrificed is not the one you saw.' },
+      { laerling: 'The table has two holes — and room for two boys.',
+        mester: 'The platter is honest. The furniture lies.' },
+    ] : [
+      { laerling: 'Mynten forlater aldri hånden — den hviler skjult i grepet.',
+        mester: 'Det som forsvant, har aldri reist.' },
+      { laerling: 'Bladet glir inn i skaftet — kniven var aldri hel.',
+        mester: 'Stålet viker hjem dit det kom fra.' },
+      { laerling: 'En ekstra bit snor byttes inn — det er den som ofres for kniven.',
+        mester: 'Den som ofres, er ikke den du så.' },
+      { laerling: 'Bordet har to hull — og plass til to gutter.',
+        mester: 'Fatet er ærlig. Møbelet lyver.' },
+    ]
     let blPath = state.path['biblioteket'] || ''
     let blHintsUsed = 0
     let blWrong = 0
     let blSelected = -1
-    let blMatched: number[] = []
+    let blMatched: Array<[number, number]> = []   // [woodcut, explanation]
+    let blBusy = false
 
-    const BL_HINTS = lang === 'en' ? [
-      'Start with the head on the platter: what kind of furniture does that trick need?',
-      'A knife that does no harm is a knife that is not whole.',
-      'The rope that was made whole again was never the one that was cut.',
-    ] : [
-      'Begynn med hodet på fatet: hva slags møbel trenger det trikset?',
-      'En kniv som ikke skader, er en kniv som ikke er hel.',
-      'Snoren som ble hel igjen, var aldri den som ble klippet.',
-    ]
-    wireHints('bl-hint-btn', 'bl-hints', BL_HINTS, () => { blHintsUsed++ })
+    wireHints('bl-hint-btn', 'bl-hints', 'biblioteket', () => { blHintsUsed++ })
 
     function blRender() {
       const wc = $('bl-woodcuts')
       const sc = $('bl-secrets')
       wc.innerHTML = ''
       sc.innerHTML = ''
-      BL_PAIRS.forEach((p, i) => {
+      BL_WOODCUTS.forEach((p, i) => {
+        const done = blMatched.some(m => m[0] === i)
         const btn = document.createElement('button')
         btn.className = 'match-item'
         btn.innerHTML = `<span class="match-icon" aria-hidden="true">${p.icon}</span><span>${p.name}</span>`
-        btn.disabled = blMatched.includes(i)
-        if (blMatched.includes(i)) btn.classList.add('match-item--done')
+        btn.disabled = done
+        if (done) btn.classList.add('match-item--done')
         if (blSelected === i) btn.classList.add('match-item--selected')
         btn.addEventListener('click', () => {
           blSelected = blSelected === i ? -1 : i
@@ -3467,47 +2754,36 @@ const payloadJson = JSON.stringify(payload).replace(/</g, '\\u003c')
         })
         wc.appendChild(btn)
       })
-      for (const i of BL_SECRET_ORDER) {
-        const p = BL_PAIRS[i]
+      BL_SECRETS.forEach((p, j) => {
+        const done = blMatched.some(m => m[1] === j)
         const btn = document.createElement('button')
         btn.className = 'match-item match-item--secret'
         btn.textContent = blPath === 'mester' ? p.mester : p.laerling
-        btn.disabled = blMatched.includes(i)
-        if (blMatched.includes(i)) btn.classList.add('match-item--done')
-        btn.addEventListener('click', () => {
+        btn.disabled = done
+        if (done) btn.classList.add('match-item--done')
+        btn.addEventListener('click', async () => {
           if (blSelected < 0) {
             $('bl-msg').textContent = t('Velg et tresnitt først — så forklaringen som hører til.', 'Choose a woodcut first — then the explanation that belongs to it.')
             return
           }
-          if (blSelected === i) {
-            blMatched.push(i)
-            blSelected = -1
-            $('bl-msg').textContent = blMatched.length < BL_PAIRS.length
-              ? t('Riktig — tresnittet legger seg til ro på siden sin.', 'Right — the woodcut settles onto its page.')
-              : ''
-            blRender()
-            if (blMatched.length === BL_PAIRS.length) blSolve()
-          } else {
-            blWrong++
-            blSelected = -1
-            $('bl-msg').textContent = t('Boken blafrer irritert med sidene. Det paret hører ikke sammen.', 'The book flutters its pages in irritation. That pair does not belong together.')
-            blRender()
+          if (blBusy) return
+          blBusy = true
+          const pair: [number, number] = [blSelected, j]
+          const r = await check('biblioteket', { pairs: [...blMatched, pair] })
+          blBusy = false
+          if (!r) return
+          blSelected = -1
+          $('bl-msg').textContent = r.msg ?? ''
+          if (r.ok) blMatched.push(pair)
+          else blWrong++
+          blRender()
+          if (r.solved) {
+            solveRoom('bl', 4, t('Sigillet fra Biblioteket', 'The seal of the Library'),
+              blPath === 'mester' && blHintsUsed === 0 && blWrong === 0, r.solved)
           }
         })
         sc.appendChild(btn)
-      }
-    }
-
-    function blSolve() {
-      const gild = blPath === 'mester' && blHintsUsed === 0 && blWrong === 0
-      awardCard(4, 'spar', t('Sigillet fra Biblioteket', 'The seal of the Library'))
-      if (gild && !state.gilded.includes('4-spar')) {
-        state.gilded.push('4-spar')
-        save()
-      }
-      renderFacts('bl-facts', 'biblioteket')
-      $('bl-solved').hidden = false
-      $('bl-solved').scrollIntoView({ behavior: reducedMotion ? 'auto' : 'smooth', block: 'nearest' })
+      })
     }
 
     document.querySelectorAll<HTMLButtonElement>('.path-btn[data-scene="bl"]').forEach(btn =>
@@ -3532,43 +2808,33 @@ const payloadJson = JSON.stringify(payload).replace(/</g, '\\u003c')
     })
 
     // ═══ ØYET SOM LYVER (SPEILGANGEN: SYNSBEDRAG) ════════════════
-    document.querySelectorAll<HTMLButtonElement>('#oy-a1-btns .mp-cup').forEach(btn =>
+    const oyA1 = Array.from(document.querySelectorAll<HTMLButtonElement>('#oy-a1-btns .mp-cup'))
+    oyA1.forEach(btn =>
       btn.addEventListener('click', async () => {
-        document.querySelectorAll<HTMLButtonElement>('#oy-a1-btns .mp-cup').forEach(b => { b.disabled = true })
+        oyA1.forEach(b => { b.disabled = true })
+        const r = await check('oyet', { part: 1, value: btn.dataset.oy1 })
+        if (!r) { oyA1.forEach(b => { b.disabled = false }); return }
         ;(document.getElementById('oy-ruler') as unknown as SVGGElement).style.display = ''
         const msg = $('oy-a1-msg')
-        msg.textContent = btn.dataset.oy1 === 'same'
-          ? t(
-              'Riktig — de er nøyaktig like lange. Men se på dem: ser de like ut? Ikke i det hele tatt.',
-              'Right — they are exactly the same length. But look at them: do they look the same? Not at all.',
-            )
-          : t(
-              'De er nøyaktig like lange — mål selv langs de røde strekene. Pilene i endene bestemmer hva hjernen din ser.',
-              'They are exactly the same length — measure along the red lines yourself. The arrowheads at the ends decide what your brain sees.',
-            )
+        msg.textContent = r.msg ?? ''
         msg.hidden = false
         await sleep(600)
         $('oy-act2').hidden = false
       })
     )
 
-    document.querySelectorAll<HTMLButtonElement>('#oy-a2-btns .mp-cup').forEach(btn =>
-      btn.addEventListener('click', () => {
-        document.querySelectorAll<HTMLButtonElement>('#oy-a2-btns .mp-cup').forEach(b => { b.disabled = true })
+    const oyA2 = Array.from(document.querySelectorAll<HTMLButtonElement>('#oy-a2-btns .mp-cup'))
+    oyA2.forEach(btn =>
+      btn.addEventListener('click', async () => {
+        oyA2.forEach(b => { b.disabled = true })
+        const r = await check('oyet', { part: 2, value: btn.dataset.oy2 })
+        if (!r) { oyA2.forEach(b => { b.disabled = false }); return }
         ;(document.getElementById('oy-measure') as unknown as SVGGElement).style.display = ''
         const msg = $('oy-a2-msg')
-        msg.textContent = btn.dataset.oy2 === 'same'
-          ? t(
-              'Riktig — nøyaktig like store. Men den høyre ser fortsatt størst ut, gjør den ikke?',
-              'Right — exactly the same size. But the right one still looks bigger, doesn’t it?',
-            )
-          : t(
-              'De er nøyaktig like store — selskapet rundt bestemmer hvor store de ser ut.',
-              'They are exactly the same size — the company around them decides how big they look.',
-            )
+        msg.textContent = r.msg ?? ''
         msg.hidden = false
         awardCard(4, 'ruter', t('Illusjonskortet fra Øyet som lyver', 'The illusion card of the Eye That Lies'))
-        renderFacts('oy-facts', 'oyet')
+        showSolution('oy', r.solved)
         $('oy-reveal').hidden = false
         ;($('oy-continue') as HTMLButtonElement).hidden = false
       })
@@ -3590,26 +2856,14 @@ const payloadJson = JSON.stringify(payload).replace(/</g, '\\u003c')
     let slHintsUsed = 0
     let slWrong = 0
 
-    const SL_HINTS = lang === 'en' ? [
-      'What do humans do that machines never do?',
-      'The doors are opened one by one. Why not all at once?',
-      'There is room for more than cogwheels in that cabinet.',
-    ] : [
-      'Hva gjør mennesker som maskiner aldri gjør?',
-      'Dørene åpnes én og én. Hvorfor ikke alle samtidig?',
-      'Det er plass til mer enn tannhjul i det skapet.',
-    ]
-    wireHints('sl-hint-btn', 'sl-hints', SL_HINTS, () => { slHintsUsed++ })
+    wireHints('sl-hint-btn', 'sl-hints', 'salongen', () => { slHintsUsed++ })
 
     async function slShowObservations() {
       const log = $('sl-log')
       log.innerHTML = ''
-      const obs = slPath === 'laerling'
-        ? [...SL_OBS, t(
-            'Direktøren hvisker: «Spør deg selv hva hemmeligheten trenger. Plass. Luft. Og pauser.»',
-            'The Director whispers: “Ask yourself what the secret needs. Space. Air. And breaks.”',
-          )]
-        : SL_OBS
+      // Lærlingens vei: the Director whispers one more observation.
+      const whisper = slPath === 'laerling' ? await roomLine('salongen', 'laerling') : ''
+      const obs = whisper ? [...SL_OBS, whisper] : SL_OBS
       for (const o of obs) {
         const li = document.createElement('li')
         li.textContent = o
@@ -3630,36 +2884,19 @@ const payloadJson = JSON.stringify(payload).replace(/</g, '\\u003c')
       })
     )
 
-    const SL_RETORTS: Record<string, string> = lang === 'en' ? {
-      urverk: '“A clockwork does not cough, apprentice — and does not get tired.” Try again.',
-      magnet: '“Magnets may move pieces. But do they choose moves?” Try again.',
-      trader: '“The presenter stood ten paces away with his hands behind his back.” Try again.',
-    } : {
-      urverk: '«Et urverk hoster ikke, lærling — og blir ikke trett.» Prøv igjen.',
-      magnet: '«Magneter flytter brikker, kanskje. Men velger de trekk?» Prøv igjen.',
-      trader: '«Fremviseren sto ti skritt unna med hendene bak ryggen.» Prøv igjen.',
-    }
-
-    document.querySelectorAll<HTMLButtonElement>('#sl-choices .mp-cup').forEach(btn =>
-      btn.addEventListener('click', () => {
-        if (btn.dataset.sl === 'menneske') {
-          document.querySelectorAll<HTMLButtonElement>('#sl-choices .mp-cup').forEach(b => { b.disabled = true })
-          $('sl-msg').textContent = t(
-            'Direktøren banker to ganger på skapet — og innenfra banker det tilbake. «God kveld, mester Schlumberger. Partiet er over.»',
-            'The Director knocks twice on the cabinet — and from inside comes a knock in reply. “Good evening, master Schlumberger. The game is over.”',
-          )
-          const gild = slPath === 'mester' && slHintsUsed === 0 && slWrong === 0
-          awardCard(5, 'spar', t('Sigillet fra Salongen', 'The seal of the Salon'))
-          if (gild && !state.gilded.includes('5-spar')) {
-            state.gilded.push('5-spar')
-            save()
-          }
-          renderFacts('sl-facts', 'salongen')
-          $('sl-solved').hidden = false
-          $('sl-solved').scrollIntoView({ behavior: reducedMotion ? 'auto' : 'smooth', block: 'nearest' })
+    const slChoices = Array.from(document.querySelectorAll<HTMLButtonElement>('#sl-choices .mp-cup'))
+    slChoices.forEach(btn =>
+      btn.addEventListener('click', async () => {
+        slChoices.forEach(b => { b.disabled = true })
+        const r = await check('salongen', { value: btn.dataset.sl })
+        if (!r) { slChoices.forEach(b => { b.disabled = false }); return }
+        $('sl-msg').textContent = r.msg ?? ''
+        if (r.ok) {
+          solveRoom('sl', 5, t('Sigillet fra Salongen', 'The seal of the Salon'),
+            slPath === 'mester' && slHintsUsed === 0 && slWrong === 0, r.solved)
         } else {
           slWrong++
-          $('sl-msg').textContent = SL_RETORTS[btn.dataset.sl || ''] || t('Prøv igjen.', 'Try again.')
+          slChoices.forEach(b => { b.disabled = false })
         }
       })
     )
@@ -3675,53 +2912,45 @@ const payloadJson = JSON.stringify(payload).replace(/</g, '\\u003c')
     })
 
     // ═══ SEANSEN ═════════════════════════════════════════════════
-    interface SeEvent { text: string; method: boolean }
-    const SE_EVENTS: SeEvent[] = lang === 'en' ? [
-      { text: 'The medium demands pitch darkness: “the spirits shun the light”.', method: true },
-      { text: 'The table tips and lifts one leg off the floor.', method: false },
-      { text: 'The medium edges closer to the table and asks both neighbours to hold on extra tightly to her hands.', method: true },
-      { text: 'A trumpet floats through the darkness and plays a trembling note.', method: false },
-      { text: 'Earlier in the evening, the medium’s assistant chatted long and warmly with every single guest in the hallway.', method: true },
-      { text: 'The medium falls into a trance and speaks in a strange, deep voice.', method: false },
-      { text: 'Knocks sound in the tabletop: one knock for yes, two for no.', method: false },
-      { text: 'The spirit knows Aunt Agnes’s name and sends her loving regards.', method: false },
+    // Which of these are the medium's methods is known only to the server.
+    const SE_EVENTS: string[] = lang === 'en' ? [
+      'The medium demands pitch darkness: “the spirits shun the light”.',
+      'The table tips and lifts one leg off the floor.',
+      'The medium edges closer to the table and asks both neighbours to hold on extra tightly to her hands.',
+      'A trumpet floats through the darkness and plays a trembling note.',
+      'Earlier in the evening, the medium’s assistant chatted long and warmly with every single guest in the hallway.',
+      'The medium falls into a trance and speaks in a strange, deep voice.',
+      'Knocks sound in the tabletop: one knock for yes, two for no.',
+      'The spirit knows Aunt Agnes’s name and sends her loving regards.',
     ] : [
-      { text: 'Mediet krever stummende mørke: «åndene skyr lyset».', method: true },
-      { text: 'Bordet vipper og løfter det ene beinet fra gulvet.', method: false },
-      { text: 'Mediet rykker nærmere bordet og ber begge naboene holde ekstra godt fast i hendene sine.', method: true },
-      { text: 'En trompet svever gjennom mørket og spiller en skjelvende tone.', method: false },
-      { text: 'Tidligere på kvelden pratet mediets assistent lenge og vennlig med hver eneste gjest i entreen.', method: true },
-      { text: 'Mediet faller i transe og snakker med en fremmed, dyp stemme.', method: false },
-      { text: 'Det banker i bordplaten: ett bank for ja, to for nei.', method: false },
-      { text: 'Ånden vet navnet på tante Agnes og hilser kjærlig fra henne.', method: false },
+      'Mediet krever stummende mørke: «åndene skyr lyset».',
+      'Bordet vipper og løfter det ene beinet fra gulvet.',
+      'Mediet rykker nærmere bordet og ber begge naboene holde ekstra godt fast i hendene sine.',
+      'En trompet svever gjennom mørket og spiller en skjelvende tone.',
+      'Tidligere på kvelden pratet mediets assistent lenge og vennlig med hver eneste gjest i entreen.',
+      'Mediet faller i transe og snakker med en fremmed, dyp stemme.',
+      'Det banker i bordplaten: ett bank for ja, to for nei.',
+      'Ånden vet navnet på tante Agnes og hilser kjærlig fra henne.',
     ]
     let sePath = state.path['seansen'] || ''
     let seHintsUsed = 0
     let seWrong = 0
     let seSolved = false
+    let seBusy = false
 
-    const SE_HINTS = lang === 'en' ? [
-      'Don’t look at the wonders. Look at what made the wonders possible.',
-      'What did the medium ask for — before anything at all began to happen?',
-      'The darkness. The hands. And the conversation in the hallway.',
-    ] : [
-      'Ikke se på undrene. Se på det som gjorde undrene mulige.',
-      'Hva ba mediet om — før noe som helst begynte å skje?',
-      'Mørket. Hendene. Og samtalen i entreen.',
-    ]
-    wireHints('se-hint-btn', 'se-hints', SE_HINTS, () => { seHintsUsed++ })
+    wireHints('se-hint-btn', 'se-hints', 'seansen', () => { seHintsUsed++ })
 
     function seRender() {
       const list = $('se-events')
       list.innerHTML = ''
-      SE_EVENTS.forEach((ev, i) => {
+      SE_EVENTS.forEach((text, i) => {
         const li = document.createElement('li')
         const label = document.createElement('label')
         const box = document.createElement('input')
         box.type = 'checkbox'
         box.value = String(i)
         label.appendChild(box)
-        label.appendChild(document.createTextNode(' ' + ev.text))
+        label.appendChild(document.createTextNode(' ' + text))
         li.appendChild(label)
         list.appendChild(li)
       })
@@ -3734,53 +2963,26 @@ const payloadJson = JSON.stringify(payload).replace(/</g, '\\u003c')
         save()
         $('se-pathchoice').hidden = true
         $('se-game').hidden = false
-        $('se-pretext').textContent = sePath === 'laerling'
-          ? t(
-              'Direktøren hvisker: «Metoder er aldri undre, lærling. Metoder er forberedelser og betingelser — det som må på plass før noe kan skje.»',
-              'The Director whispers: “Methods are never wonders, apprentice. Methods are preparations and conditions — what must be in place before anything can happen.”',
-            )
-          : t(
-              'Mediet åpner øynene et halvt sekund og ser rett på deg. Så begynner seansen.',
-              'The medium opens her eyes for half a second and looks straight at you. Then the séance begins.',
-            )
+        roomLine('seansen', sePath).then(line => { $('se-pretext').textContent = line })
       })
     )
 
-    $('se-submit').addEventListener('click', () => {
-      if (seSolved) return
-      const checked = Array.from(document.querySelectorAll<HTMLInputElement>('#se-events input:checked')).map(b => Number(b.value))
-      if (checked.length !== 3) {
-        $('se-msg').textContent = t(
-          'Mediet har nøyaktig tre metoder i sving. Merk av tre — verken flere eller færre.',
-          'The medium has exactly three methods at work. Mark three — no more, no fewer.',
-        )
-        return
-      }
-      const correct = checked.filter(i => SE_EVENTS[i].method).length
-      if (correct === 3) {
+    $('se-submit').addEventListener('click', async () => {
+      if (seSolved || seBusy) return
+      const checked = Array.from(document.querySelectorAll<HTMLInputElement>('#se-events input:checked')).map(b => b.value)
+      seBusy = true
+      const r = await check('seansen', { values: checked, path: sePath })
+      seBusy = false
+      if (!r) return
+      $('se-msg').textContent = r.msg ?? ''
+      if (r.ok) {
         seSolved = true
         document.querySelectorAll<HTMLInputElement>('#se-events input').forEach(b => { b.disabled = true })
         ;($('se-submit') as HTMLButtonElement).disabled = true
-        $('se-msg').textContent = t(
-          'Lyset skrus opp. Mediet ser på deg lenge — og bukker så, langsomt, som for en kollega.',
-          'The lights come up. The medium looks at you for a long time — and then bows, slowly, as to a colleague.',
-        )
-        const gild = sePath === 'mester' && seHintsUsed === 0 && seWrong === 0
-        awardCard(6, 'spar', t('Sigillet fra Seansen', 'The seal of the Séance'))
-        if (gild && !state.gilded.includes('6-spar')) {
-          state.gilded.push('6-spar')
-          save()
-        }
-        renderFacts('se-facts', 'seansen')
-        $('se-solved').hidden = false
-        $('se-solved').scrollIntoView({ behavior: reducedMotion ? 'auto' : 'smooth', block: 'nearest' })
-      } else {
+        solveRoom('se', 6, t('Sigillet fra Seansen', 'The seal of the Séance'),
+          sePath === 'mester' && seHintsUsed === 0 && seWrong === 0, r.solved)
+      } else if (!r.invalid) {
         seWrong++
-        $('se-msg').textContent = sePath === 'laerling'
-          ? (lang === 'en'
-              ? `${correct} of three hits. Remember: the methods happen before and around the wonders — not in them.`
-              : `${correct} av tre treff. Husk: metodene skjer før og rundt undrene — ikke i dem.`)
-          : t('«Åndene ler av deg,» sier Direktøren tørt. Prøv igjen.', '“The spirits are laughing at you,” says the Director drily. Try again.')
       }
     })
 
@@ -3823,8 +3025,10 @@ const payloadJson = JSON.stringify(payload).replace(/</g, '\\u003c')
       { key: 'speil',  icon: '🪞', name: 'Speilet' },
       { key: 'kort',   icon: '🃏', name: 'Kortstokken' },
     ]
-    const FV_TARGET = 'speil'
+    // The prediction and the lines that name it come from the server when
+    // the room is first played (roomStart).
     let fvPhase: 'pickTwo' | 'pickOne' | 'done' = 'pickTwo'
+    let fvBusy = false
     let fvPicked: string[] = []
     let fvRemaining = FV_ITEMS.map(i => i.key)
     let fvReceipts: string[] = []
@@ -3852,6 +3056,13 @@ const payloadJson = JSON.stringify(payload).replace(/</g, '\\u003c')
     }
 
     async function fvPick(key: string) {
+      if (fvBusy || fvPhase === 'done') return
+      fvBusy = true
+      const d = await roomStart('frievalget')
+      fvBusy = false
+      if (!d?.answer) return
+      const target = d.answer
+      const L = d.lines
       if (fvPhase === 'pickTwo') {
         if (fvPicked.includes(key)) {
           fvPicked = fvPicked.filter(k => k !== key)
@@ -3861,25 +3072,19 @@ const payloadJson = JSON.stringify(payload).replace(/</g, '\\u003c')
         fvPicked.push(key)
         fvRender()
         if (fvPicked.length < 2) return
-        const keepPair = fvPicked.includes(FV_TARGET)
+        const keepPair = fvPicked.includes(target)
         const other = FV_ITEMS.map(i => i.key).find(k => !fvPicked.includes(k))!
         if (keepPair) {
           fvLogLine(lang === 'en'
             ? `You pointed at ${fvName(fvPicked[0]).toLowerCase()} and ${fvName(fvPicked[1]).toLowerCase()}. “Those two we keep,” says the Director — and clears away ${fvName(other).toLowerCase()}.`
             : `Du pekte på ${fvName(fvPicked[0]).toLowerCase()} og ${fvName(fvPicked[1]).toLowerCase()}. «De to beholder vi,» sier Direktøren — og rydder bort ${fvName(other).toLowerCase()}.`)
-          fvReceipts.push(t(
-            'Paret ditt inneholdt speilet → valget ble tolket som «behold».',
-            'Your pair contained the mirror → the choice was interpreted as “keep”.',
-          ))
+          fvReceipts.push(L['receipt:pairKeep'] ?? '')
           fvRemaining = [...fvPicked]
         } else {
           fvLogLine(lang === 'en'
             ? `You pointed at ${fvName(fvPicked[0]).toLowerCase()} and ${fvName(fvPicked[1]).toLowerCase()}. “Those two we clear away,” says the Director.`
             : `Du pekte på ${fvName(fvPicked[0]).toLowerCase()} og ${fvName(fvPicked[1]).toLowerCase()}. «De to rydder vi bort,» sier Direktøren.`)
-          fvReceipts.push(t(
-            'Paret ditt inneholdt ikke speilet → valget ble tolket som «fjern».',
-            'Your pair did not contain the mirror → the choice was interpreted as “remove”.',
-          ))
+          fvReceipts.push(L['receipt:pairClear'] ?? '')
           fvRemaining = [other]
         }
         fvPicked = []
@@ -3891,48 +3096,44 @@ const payloadJson = JSON.stringify(payload).replace(/</g, '\\u003c')
             'Two objects left. <strong>Point at one of them</strong> — still entirely freely.',
           )
         } else {
-          fvFinish()
+          fvFinish(L)
         }
         fvRender()
       } else if (fvPhase === 'pickOne') {
-        if (key === FV_TARGET) {
-          fvLogLine(t(
-            'Du pekte på speilet. «Det beholder du,» sier Direktøren — og rydder bort det siste.',
-            'You pointed at the mirror. “That one you keep,” says the Director — and clears away the last one.',
-          ))
-          fvReceipts.push(t(
-            'Du pekte på speilet → valget ble tolket som «behold».',
-            'You pointed at the mirror → the choice was interpreted as “keep”.',
-          ))
-          fvRemaining = [FV_TARGET]
+        if (key === target) {
+          fvLogLine(lang === 'en'
+            ? `You pointed at ${fvName(key).toLowerCase()}. “That one you keep,” says the Director — and clears away the last one.`
+            : `Du pekte på ${fvName(key).toLowerCase()}. «Det beholder du,» sier Direktøren — og rydder bort det siste.`)
+          fvReceipts.push(L['receipt:oneKeep'] ?? '')
         } else {
           fvLogLine(lang === 'en'
             ? `You pointed at ${fvName(key).toLowerCase()}. “That one we clear away,” says the Director.`
             : `Du pekte på ${fvName(key).toLowerCase()}. «Det rydder vi bort,» sier Direktøren.`)
-          fvReceipts.push(t(
-            'Du pekte på noe annet enn speilet → valget ble tolket som «fjern».',
-            'You pointed at something other than the mirror → the choice was interpreted as “remove”.',
-          ))
-          fvRemaining = [FV_TARGET]
+          fvReceipts.push(L['receipt:oneClear'] ?? '')
         }
-        fvFinish()
+        fvRemaining = [target]
+        fvFinish(L)
         fvRender()
       }
     }
 
-    function fvFinish() {
+    function fvFinish(L: Record<string, string>) {
       fvPhase = 'done'
-      $('fv-msg').textContent = t('Én gjenstand står igjen på bordet: speilet.', 'One object remains on the table: the mirror.')
-      $('fv-envelope').innerHTML = t(
-        '✉️ <em>Direktøren bryter seglet og leser høyt: «Lærlingen velger fritt — og ender med speilet. Slik måtte det gå.»</em>',
-        '✉️ <em>The Director breaks the seal and reads aloud: “The apprentice chooses freely — and ends up with the mirror. It had to go this way.”</em>',
-      )
-      $('fv-verdict').textContent = t('Spådommen stemmer. Selvfølgelig gjør den det.', 'The prediction is correct. Of course it is.')
+      $('fv-msg').textContent = L['remaining'] ?? ''
+      const envelope = document.createElement('em')
+      envelope.textContent = L['envelope'] ?? ''
+      $('fv-envelope').replaceChildren('✉️ ', envelope)
+      $('fv-verdict').textContent = L['verdict'] ?? ''
       awardCard(5, 'ruter', t('Illusjonskortet fra Det frie valget', 'The illusion card of the Free Choice'))
       $('fv-result').hidden = false
     }
 
-    $('fv-reveal-btn').addEventListener('click', () => {
+    $('fv-reveal-btn').addEventListener('click', async () => {
+      const btn = $('fv-reveal-btn') as HTMLButtonElement
+      btn.disabled = true
+      const r = await check('frievalget')
+      btn.disabled = false
+      if (!r) return
       const list = $('fv-receipts')
       list.innerHTML = ''
       for (const r of fvReceipts) {
@@ -3940,59 +3141,37 @@ const payloadJson = JSON.stringify(payload).replace(/</g, '\\u003c')
         li.textContent = r
         list.appendChild(li)
       }
-      renderFacts('fv-facts', 'frievalget')
+      showSolution('fv', r.solved)
       $('fv-reveal').hidden = false
     })
     $('fv-continue').addEventListener('click', () => goTo('teateret'))
 
     // ═══ TEATERET ════════════════════════════════════════════════
-    interface TeAction { key: string; label: string; step?: number; wrongText?: string }
+    // Which actions get you out, and in which order, is known only to the server.
+    interface TeAction { key: string; label: string }
     const TE_ACTIONS: TeAction[] = lang === 'en' ? [
-      { key: 'lokk',   label: 'Push the lid with all your strength',
-        wrongText: 'Locked from the outside — of course. The whole house saw the padlock click.' },
-      { key: 'rop',    label: 'Shout for help',
-        wrongText: 'The orchestra just plays louder. Nobody rescues an escape artist.' },
-      { key: 'som',    label: 'Feel along the seam in the trunk’s short side', step: 1 },
-      { key: 'knott',  label: 'Turn the catch half a turn', step: 2 },
-      { key: 'panel',  label: 'Slide the panel aside and slip out', step: 3 },
-      { key: 'morse',  label: 'Knock SOS on the bottom board',
-        wrongText: 'Morse impresses nobody when you are the only one who hears it.' },
+      { key: 'lokk',   label: 'Push the lid with all your strength' },
+      { key: 'rop',    label: 'Shout for help' },
+      { key: 'som',    label: 'Feel along the seam in the trunk’s short side' },
+      { key: 'knott',  label: 'Turn the catch half a turn' },
+      { key: 'panel',  label: 'Slide the panel aside and slip out' },
+      { key: 'morse',  label: 'Knock SOS on the bottom board' },
     ] : [
-      { key: 'lokk',   label: 'Dytt lokket med all kraft',
-        wrongText: 'Låst utenfra — selvsagt. Hele salen så hengelåsen klikke.' },
-      { key: 'rop',    label: 'Rop om hjelp',
-        wrongText: 'Orkesteret spiller bare høyere. Ingen redder en utbryter.' },
-      { key: 'som',    label: 'Kjenn langs sømmen i kistens kortside', step: 1 },
-      { key: 'knott',  label: 'Vri knotten en halv omdreining', step: 2 },
-      { key: 'panel',  label: 'Skyv panelet til side og smyg deg ut', step: 3 },
-      { key: 'morse',  label: 'Bank SOS i bunnplaten',
-        wrongText: 'Morse imponerer ingen når du er alene om å høre det.' },
+      { key: 'lokk',   label: 'Dytt lokket med all kraft' },
+      { key: 'rop',    label: 'Rop om hjelp' },
+      { key: 'som',    label: 'Kjenn langs sømmen i kistens kortside' },
+      { key: 'knott',  label: 'Vri knotten en halv omdreining' },
+      { key: 'panel',  label: 'Skyv panelet til side og smyg deg ut' },
+      { key: 'morse',  label: 'Bank SOS i bunnplaten' },
     ]
-    const TE_STEP_TEXT: Record<number, string> = lang === 'en' ? {
-      1: 'Your fingers find a recessed catch in the seam — one that cannot be seen from the house.',
-      2: 'Something gives way with a soft click: the side panel is loose.',
-      3: 'The panel slides aside. You roll out into the wings, behind the trunk — unseen.',
-    } : {
-      1: 'Fingrene finner en forsenket knott i sømmen — en som ikke synes fra salen.',
-      2: 'Noe gir etter med et mykt klikk: sidepanelet er løst.',
-      3: 'Panelet glir til side. Du ruller ut i kulissene, bak kisten — usett.',
-    }
     let tePath = state.path['teateret'] || ''
     let teHintsUsed = 0
     let teWrong = 0
-    let teStep = 0
+    let teSteps: string[] = []   // the actions that worked, in order
     let teDone = false
+    let teBusy = false
 
-    const TE_HINTS = lang === 'en' ? [
-      'The effect is sold tonight — the method was bought yesterday, in the workshop.',
-      'Not the lid. The audience see the lid. Think of what they don’t see.',
-      'The short side. The seam. A catch that cannot be seen from the house.',
-    ] : [
-      'Effekten selges i kveld — metoden ble kjøpt i går, i verkstedet.',
-      'Ikke lokket. Publikum ser lokket. Tenk på det de ikke ser.',
-      'Kortsiden. Sømmen. En knott som ikke synes fra salen.',
-    ]
-    wireHints('te-hint-btn', 'te-hints', TE_HINTS, () => { teHintsUsed++ })
+    wireHints('te-hint-btn', 'te-hints', 'teateret', () => { teHintsUsed++ })
 
     function teRender() {
       const box = $('te-actions')
@@ -4001,44 +3180,33 @@ const payloadJson = JSON.stringify(payload).replace(/</g, '\\u003c')
         const btn = document.createElement('button')
         btn.className = 'mp-cup'
         btn.textContent = a.label
-        btn.disabled = teDone || (a.step !== undefined && a.step <= teStep)
+        btn.disabled = teDone || teSteps.includes(a.key)
         btn.addEventListener('click', () => teAct(a))
         box.appendChild(btn)
       }
     }
 
-    function teAct(a: TeAction) {
-      if (teDone) return
-      const log = $('te-log')
+    async function teAct(a: TeAction) {
+      if (teDone || teBusy) return
+      teBusy = true
+      const r = await check('teateret', { steps: teSteps, value: a.key })
+      teBusy = false
+      if (!r) return
       const li = document.createElement('li')
-      if (a.step === undefined) {
-        teWrong++
-        li.textContent = a.wrongText!
-        log.appendChild(li)
-        $('te-msg').textContent = t('Publikum teller videre. Prøv noe annet.', 'The audience keep counting. Try something else.')
-      } else if (a.step === teStep + 1) {
-        teStep = a.step
-        li.textContent = TE_STEP_TEXT[a.step]
-        log.appendChild(li)
+      li.textContent = r.msg ?? ''
+      $('te-log').appendChild(li)
+      if (r.ok) {
+        teSteps.push(a.key)
         $('te-msg').textContent = ''
-        if (teStep === 3) {
+        if (r.solved) {
           teDone = true
-          const gild = tePath === 'mester' && teHintsUsed === 0 && teWrong === 0
-          awardCard(7, 'spar', t('Sigillet fra Teateret', 'The seal of the Theatre'))
-          if (gild && !state.gilded.includes('7-spar')) {
-            state.gilded.push('7-spar')
-            save()
-          }
-          renderFacts('te-facts', 'teateret')
-          $('te-solved').hidden = false
-          $('te-solved').scrollIntoView({ behavior: reducedMotion ? 'auto' : 'smooth', block: 'nearest' })
+          solveRoom('te', 7, t('Sigillet fra Teateret', 'The seal of the Theatre'),
+            tePath === 'mester' && teHintsUsed === 0 && teWrong === 0, r.solved)
         }
       } else {
         teWrong++
-        li.textContent = a.step === 2
-          ? t('Hvilken knott? Du famler i blinde mot glatt treverk.', 'What catch? You fumble blindly against smooth wood.')
-          : t('Panelet sitter bom fast. Noe må løsne først.', 'The panel is stuck fast. Something must come loose first.')
-        log.appendChild(li)
+        // A right action at the wrong time only gets the log line.
+        if (!r.early) $('te-msg').textContent = t('Publikum teller videre. Prøv noe annet.', 'The audience keep counting. Try something else.')
       }
       teRender()
     }
@@ -4050,15 +3218,7 @@ const payloadJson = JSON.stringify(payload).replace(/</g, '\\u003c')
         save()
         $('te-pathchoice').hidden = true
         $('te-game').hidden = false
-        $('te-pretext').textContent = tePath === 'laerling'
-          ? t(
-              'Direktørens stemme, tett ved øret ditt enda han umulig kan være der: «En utbryter går aldri inn i noe han ikke kjenner. Kisten ble gjort klar for deg — let etter det som ble gjort klart.»',
-              'The Director’s voice, close by your ear though he cannot possibly be there: “An escape artist never enters anything he does not know. The trunk was made ready for you — look for what was made ready.”',
-            )
-          : t(
-              'Mørke. Varme. Applausen utenfor stilner til taktfast klapping.',
-              'Darkness. Heat. The applause outside settles into rhythmic clapping.',
-            )
+        roomLine('teateret', tePath).then(line => { $('te-pretext').textContent = line })
         teRender()
       })
     )
@@ -4074,59 +3234,60 @@ const payloadJson = JSON.stringify(payload).replace(/</g, '\\u003c')
     })
 
     // ═══ KINOEN ══════════════════════════════════════════════════
+    // The strips as they lie on the floor; the right order is known only to
+    // the server. kiOrder holds the strips placed so far (indexes into
+    // KI_STRIPS), in film order.
     const KI_STRIPS = lang === 'en' ? [
-      'The lady takes her seat in the chair',
-      'The cloth is spread over her',
       'The cloth is whipped away — the chair is empty',
-      'The magician conjures — a skeleton sits in the chair!',
       'The lady is back, and bows to the house',
+      'The lady takes her seat in the chair',
+      'The magician conjures — a skeleton sits in the chair!',
+      'The cloth is spread over her',
     ] : [
-      'Damen tar plass i stolen',
-      'Kledet bres over henne',
       'Kledet rives bort — stolen er tom',
-      'Magikeren maner — et skjelett sitter i stolen!',
       'Damen er tilbake, og bukker mot salen',
+      'Damen tar plass i stolen',
+      'Magikeren maner — et skjelett sitter i stolen!',
+      'Kledet bres over henne',
     ]
-    const KI_SHUFFLE = [2, 4, 0, 3, 1]  // fixed scramble of strip indices
     let kiPath = state.path['kinoen'] || ''
     let kiHintsUsed = 0
     let kiWrong = 0
-    let kiNext = 0
+    let kiOrder: number[] = []
     let kiPhase = 1
+    let kiBusy = false
 
-    const KI_HINTS = lang === 'en' ? [
-      'The story is simple: a lady, a cloth, a chair. Start there.',
-      'The impossible never happens while you watch it. It happens between two frames.',
-      'The camera stopped the first time while the cloth lay over the chair.',
-    ] : [
-      'Historien er enkel: en dame, et klede, en stol. Begynn der.',
-      'Det umulige skjer aldri mens du ser det. Det skjer mellom to bilder.',
-      'Kameraet stanset første gang i det kledet lå over stolen.',
-    ]
-    wireHints('ki-hint-btn', 'ki-hints', KI_HINTS, () => { kiHintsUsed++ })
+    wireHints('ki-hint-btn', 'ki-hints', 'kinoen', () => { kiHintsUsed++ })
 
     function kiRenderStrips() {
       const box = $('ki-strips')
       box.innerHTML = ''
-      for (const idx of KI_SHUFFLE) {
+      KI_STRIPS.forEach((text, idx) => {
+        const placed = kiOrder.indexOf(idx)
         const btn = document.createElement('button')
         btn.className = 'ki-strip'
-        btn.innerHTML = `<span class="ki-frame" aria-hidden="true">🎞️</span><span>${KI_STRIPS[idx]}</span><span class="ki-order">${idx < kiNext ? idx + 1 : ''}</span>`
-        btn.disabled = idx < kiNext
-        if (idx < kiNext) btn.classList.add('ki-strip--placed')
-        btn.addEventListener('click', () => {
-          if (idx === kiNext) {
-            kiNext++
-            $('ki-msg').textContent = kiNext === KI_STRIPS.length ? '' : t('Riktig — filmen vokser.', 'Right — the film is growing.')
+        btn.innerHTML = `<span class="ki-frame" aria-hidden="true">🎞️</span><span>${text}</span><span class="ki-order">${placed >= 0 ? placed + 1 : ''}</span>`
+        btn.disabled = placed >= 0
+        if (placed >= 0) btn.classList.add('ki-strip--placed')
+        btn.addEventListener('click', async () => {
+          if (kiBusy) return
+          kiBusy = true
+          const r = await check('kinoen', { part: 'order', steps: kiOrder.map(String), value: String(idx) })
+          kiBusy = false
+          if (!r) return
+          if (r.ok) {
+            kiOrder.push(idx)
+            const complete = kiOrder.length === KI_STRIPS.length
+            $('ki-msg').textContent = complete ? '' : (r.msg ?? '')
             kiRenderStrips()
-            if (kiNext === KI_STRIPS.length) kiStartPhase2()
+            if (complete) kiStartPhase2()
           } else {
             kiWrong++
-            $('ki-msg').textContent = t('Prosjektoren hakker: den biten hører ikke hjemme der.', 'The projector stutters: that strip does not belong there.')
+            $('ki-msg').textContent = r.msg ?? ''
           }
         })
         box.appendChild(btn)
-      }
+      })
     }
 
     function kiStartPhase2() {
@@ -4138,28 +3299,18 @@ const payloadJson = JSON.stringify(payload).replace(/</g, '\\u003c')
         const btn = document.createElement('button')
         btn.className = 'mp-cup'
         btn.textContent = t(`Mellom ${i + 1} og ${i + 2}`, `Between ${i + 1} and ${i + 2}`)
-        btn.addEventListener('click', () => {
-          if (i === 1) {
-            document.querySelectorAll<HTMLButtonElement>('#ki-gaps .mp-cup').forEach(b => { b.disabled = true })
-            $('ki-msg').textContent = t(
-              'Riktig: kledet lå over stolen, kameraet stanset — og damen gikk rolig ut av bildet.',
-              'Right: the cloth lay over the chair, the camera stopped — and the lady calmly walked out of frame.',
-            )
-            const gild = kiPath === 'mester' && kiHintsUsed === 0 && kiWrong === 0
-            awardCard(8, 'spar', t('Sigillet fra Kinoen', 'The seal of the Cinema'))
-            if (gild && !state.gilded.includes('8-spar')) {
-              state.gilded.push('8-spar')
-              save()
-            }
-            renderFacts('ki-facts', 'kinoen')
-            $('ki-solved').hidden = false
-            $('ki-solved').scrollIntoView({ behavior: reducedMotion ? 'auto' : 'smooth', block: 'nearest' })
+        btn.addEventListener('click', async () => {
+          const gapBtns = Array.from(document.querySelectorAll<HTMLButtonElement>('#ki-gaps .mp-cup'))
+          gapBtns.forEach(b => { b.disabled = true })
+          const r = await check('kinoen', { part: 'cut', steps: kiOrder.map(String), value: String(i) })
+          if (!r) { gapBtns.forEach(b => { b.disabled = false }); return }
+          $('ki-msg').textContent = r.msg ?? ''
+          if (r.ok) {
+            solveRoom('ki', 8, t('Sigillet fra Kinoen', 'The seal of the Cinema'),
+              kiPath === 'mester' && kiHintsUsed === 0 && kiWrong === 0, r.solved)
           } else {
             kiWrong++
-            $('ki-msg').textContent = t(
-              'Direktøren rister på hodet: «Der skjer det noe i bildet. Klippet gjemmer seg der ingenting ser ut til å skje.»',
-              'The Director shakes his head: “Something happens in the frame there. The cut hides where nothing seems to happen.”',
-            )
+            gapBtns.forEach(b => { b.disabled = false })
           }
         })
         gaps.appendChild(btn)
@@ -4174,12 +3325,7 @@ const payloadJson = JSON.stringify(payload).replace(/</g, '\\u003c')
         save()
         $('ki-pathchoice').hidden = true
         $('ki-game').hidden = false
-        $('ki-pretext').textContent = kiPath === 'laerling'
-          ? t(
-              'Direktøren hvisker: «Fortell historien slik salen skal se den: damen kommer, damen forsvinner, noe umulig — og så triumfen.»',
-              'The Director whispers: “Tell the story as the house is meant to see it: the lady arrives, the lady vanishes, something impossible — and then the triumph.”',
-            )
-          : t('Prosjektoren surrer utålmodig. Filmbitene ligger som de falt.', 'The projector hums impatiently. The film strips lie as they fell.')
+        roomLine('kinoen', kiPath).then(line => { $('ki-pretext').textContent = line })
         kiRenderStrips()
       })
     )
@@ -4229,7 +3375,7 @@ const payloadJson = JSON.stringify(payload).replace(/</g, '\\u003c')
       }, 1000)
     })
 
-    function leFinish(sawIt: boolean) {
+    async function leFinish(sawIt: boolean) {
       $('le-after').hidden = true
       $('le-controls').hidden = true
       $('le-msg').textContent = sawIt
@@ -4242,9 +3388,10 @@ const payloadJson = JSON.stringify(payload).replace(/</g, '\\u003c')
             'The Director nods. “Some eyes are more easily fooled than others. Here is what you would have seen:”',
           )
       awardCard(6, 'ruter', t('Illusjonskortet fra Ånden på lerretet', 'The illusion card of the Ghost on the Canvas'))
-      renderFacts('le-facts', 'lerretet')
-      $('le-reveal').hidden = false
       ;($('le-continue') as HTMLButtonElement).hidden = false
+      const r = await check('lerretet')
+      showSolution('le', r?.solved)
+      $('le-reveal').hidden = !r
     }
 
     $('le-saw').addEventListener('click', () => leFinish(true))
@@ -4265,49 +3412,42 @@ const payloadJson = JSON.stringify(payload).replace(/</g, '\\u003c')
     $('le-continue').addEventListener('click', () => goTo('verkstedet'))
 
     // ═══ VERKSTEDET ══════════════════════════════════════════════
-    interface VsPart { correct: boolean; laerling: string; mester: string }
+    // Which three parts belong in the illusion is known only to the server.
+    interface VsPart { laerling: string; mester: string }
     const VS_PARTS: VsPart[] = lang === 'en' ? [
-      { correct: true,  laerling: 'An S-shaped steel arm (a “gooseneck”) from a column behind the stage curtain',
+      { laerling: 'An S-shaped steel arm (a “gooseneck”) from a column behind the stage curtain',
         mester: 'Steel that curves where no one looks' },
-      { correct: false, laerling: 'Thin threads from the fly loft',
+      { laerling: 'Thin threads from the fly loft',
         mester: 'What hangs, hangs from something' },
-      { correct: true,  laerling: 'A heavy counterweight hidden beneath the stage floor',
+      { laerling: 'A heavy counterweight hidden beneath the stage floor',
         mester: 'What floats rests on what lies' },
-      { correct: false, laerling: 'A powerful magnet under the stage',
+      { laerling: 'A powerful magnet under the stage',
         mester: 'An iron will beneath the floorboards' },
-      { correct: true,  laerling: 'A drape in the same colour as the backdrop, concealing the arm',
+      { laerling: 'A drape in the same colour as the backdrop, concealing the arm',
         mester: 'Velvet against velvet: nothing to see' },
-      { correct: false, laerling: 'An angled mirror in front of the lady',
+      { laerling: 'An angled mirror in front of the lady',
         mester: 'The house sees what the house should see' },
     ] : [
-      { correct: true,  laerling: 'En s-formet stålarm («svanehals») fra en søyle bak sceneteppet',
+      { laerling: 'En s-formet stålarm («svanehals») fra en søyle bak sceneteppet',
         mester: 'Stål som svinger seg dit ingen ser' },
-      { correct: false, laerling: 'Tynne tråder fra snorloftet',
+      { laerling: 'Tynne tråder fra snorloftet',
         mester: 'Det som henger, henger i noe' },
-      { correct: true,  laerling: 'En tung motvekt skjult under scenegulvet',
+      { laerling: 'En tung motvekt skjult under scenegulvet',
         mester: 'Det som svever, hviler på det som ligger' },
-      { correct: false, laerling: 'En kraftig magnet under scenen',
+      { laerling: 'En kraftig magnet under scenen',
         mester: 'Jernvilje under gulvplankene' },
-      { correct: true,  laerling: 'Et draperi i samme farge som bakteppet, som skjuler armen',
+      { laerling: 'Et draperi i samme farge som bakteppet, som skjuler armen',
         mester: 'Fløyel mot fløyel: intet å se' },
-      { correct: false, laerling: 'Et vinklet speil foran damen',
+      { laerling: 'Et vinklet speil foran damen',
         mester: 'Salen ser det salen bør se' },
     ]
     let vsPath = state.path['verkstedet'] || ''
     let vsHintsUsed = 0
     let vsWrong = 0
     let vsSolved = false
+    let vsBusy = false
 
-    const VS_HINTS = lang === 'en' ? [
-      'Read the commission again. Each requirement kills one solution.',
-      'The hoop kills the threads. “The audience see her the entire time” kills the mirror — and a magnet that could carry a lady would seize every tool in the house.',
-      'The arm that carries, the weight that holds, the fabric that hides.',
-    ] : [
-      'Les bestillingen igjen. Hvert krav dreper én løsning.',
-      'Ringen dreper trådene. «Salen ser henne hele tiden» dreper speilet — og en magnet som bærer en dame, ville låst hvert verktøy i huset.',
-      'Armen som bærer, vekten som holder, stoffet som skjuler.',
-    ]
-    wireHints('vs-hint-btn', 'vs-hints', VS_HINTS, () => { vsHintsUsed++ })
+    wireHints('vs-hint-btn', 'vs-hints', 'verkstedet', () => { vsHintsUsed++ })
 
     function vsRender() {
       const list = $('vs-parts')
@@ -4336,44 +3476,22 @@ const payloadJson = JSON.stringify(payload).replace(/</g, '\\u003c')
       })
     )
 
-    $('vs-submit').addEventListener('click', () => {
-      if (vsSolved) return
-      const checked = Array.from(document.querySelectorAll<HTMLInputElement>('#vs-parts input:checked')).map(b => Number(b.value))
-      if (checked.length !== 3) {
-        $('vs-msg').textContent = t(
-          'Illusjonen trenger nøyaktig tre deler — verken flere eller færre.',
-          'The illusion needs exactly three parts — no more, no fewer.',
-        )
-        return
-      }
-      const correct = checked.filter(i => VS_PARTS[i].correct).length
-      if (correct === 3) {
+    $('vs-submit').addEventListener('click', async () => {
+      if (vsSolved || vsBusy) return
+      const checked = Array.from(document.querySelectorAll<HTMLInputElement>('#vs-parts input:checked')).map(b => b.value)
+      vsBusy = true
+      const r = await check('verkstedet', { values: checked, path: vsPath })
+      vsBusy = false
+      if (!r) return
+      $('vs-msg').textContent = r.msg ?? ''
+      if (r.ok) {
         vsSolved = true
         document.querySelectorAll<HTMLInputElement>('#vs-parts input').forEach(b => { b.disabled = true })
         ;($('vs-submit') as HTMLButtonElement).disabled = true
-        $('vs-msg').textContent = t(
-          'Delene finner hverandre som om de har ventet: armen, vekten, draperiet. På prøvescenen svever damen.',
-          'The parts find each other as if they had been waiting: the arm, the weight, the drape. On the rehearsal stage, the lady floats.',
-        )
-        const gild = vsPath === 'mester' && vsHintsUsed === 0 && vsWrong === 0
-        awardCard(9, 'spar', t('Sigillet fra Verkstedet', 'The seal of the Workshop'))
-        if (gild && !state.gilded.includes('9-spar')) {
-          state.gilded.push('9-spar')
-          save()
-        }
-        renderFacts('vs-facts', 'verkstedet')
-        $('vs-solved').hidden = false
-        $('vs-solved').scrollIntoView({ behavior: reducedMotion ? 'auto' : 'smooth', block: 'nearest' })
-      } else {
+        solveRoom('vs', 9, t('Sigillet fra Verkstedet', 'The seal of the Workshop'),
+          vsPath === 'mester' && vsHintsUsed === 0 && vsWrong === 0, r.solved)
+      } else if (!r.invalid) {
         vsWrong++
-        $('vs-msg').textContent = vsPath === 'laerling'
-          ? (lang === 'en'
-              ? `${correct} of three parts match the commission. Check the requirements — the hoop, the open stage, the gaze that never leaves her.`
-              : `${correct} av tre deler stemmer med bestillingen. Sjekk kravene — ringen, den åpne scenen, blikket som aldri slipper henne.`)
-          : t(
-              '«Bygget faller sammen på generalprøven,» sier Direktøren tørt. Prøv igjen.',
-              '“The build collapses at the dress rehearsal,” says the Director drily. Try again.',
-            )
       }
     })
 
@@ -4413,17 +3531,10 @@ const payloadJson = JSON.stringify(payload).replace(/</g, '\\u003c')
     const MN_WORDS = lang === 'en'
       ? ['bed', 'pillow', 'night', 'dream', 'wake', 'tired', 'blanket', 'yawn', 'rest', 'darkness', 'snore', 'evening']
       : ['seng', 'pute', 'natt', 'drøm', 'våkne', 'trøtt', 'dyne', 'gjespe', 'hvile', 'mørke', 'snorke', 'kveld']
-    const MN_PROBES = lang === 'en' ? [
-      { word: 'pillow', present: true },
-      { word: 'sleep',  present: false, lure: true },
-      { word: 'lamp',   present: false },
-    ] : [
-      { word: 'pute',  present: true },
-      { word: 'søvn',  present: false, lure: true },
-      { word: 'lampe', present: false },
-    ]
+    // The three questions; the server judges the answers.
+    const MN_PROBES = lang === 'en' ? ['pillow', 'sleep', 'lamp'] : ['pute', 'søvn', 'lampe']
     let mnProbe = 0
-    let mnFooled = false
+    let mnAnswers: string[] = []
 
     function mnRenderWords(containerId: string) {
       const box = $(containerId)
@@ -4437,34 +3548,32 @@ const payloadJson = JSON.stringify(payload).replace(/</g, '\\u003c')
     }
 
     function mnAsk() {
-      const p = MN_PROBES[mnProbe]
+      const word = MN_PROBES[mnProbe]
       $('mn-q').innerHTML = lang === 'en'
-        ? `Was the word <strong>“${p.word}”</strong> on the mirror?`
-        : `Sto ordet <strong>«${p.word}»</strong> på speilet?`
+        ? `Was the word <strong>“${word}”</strong> on the mirror?`
+        : `Sto ordet <strong>«${word}»</strong> på speilet?`
     }
 
-    function mnAnswer(saidYes: boolean) {
-      const p = MN_PROBES[mnProbe]
-      if (p.lure && saidYes) mnFooled = true
-      mnProbe++
-      if (mnProbe < MN_PROBES.length) {
+    let mnBusy = false
+    async function mnAnswer(saidYes: boolean) {
+      if (mnBusy || mnProbe >= MN_PROBES.length) return
+      mnAnswers[mnProbe] = saidYes ? 'yes' : 'no'
+      if (mnProbe + 1 < MN_PROBES.length) {
+        mnProbe++
         mnAsk()
-      } else {
-        $('mn-quiz').hidden = true
-        $('mn-verdict').textContent = mnFooled
-          ? t(
-              'Speilet dugger til av noe som ligner latter. «Søvn, ja,» sier Direktøren. «Alle husker søvn. Se på listen igjen.»',
-              'The mirror mists over with something like laughter. “Sleep, yes,” says the Director. “Everyone remembers sleep. Look at the list again.”',
-            )
-          : t(
-              '«Du er blant de få,» sier Direktøren. «De fleste sverger på at søvn sto der. Se hvorfor:»',
-              '“You are among the few,” says the Director. “Most people swear that sleep was there. See why:”',
-            )
-        mnRenderWords('mn-words-again')
-        renderFacts('mn-facts', 'minnet')
-        awardCard(7, 'ruter', t('Illusjonskortet fra Minnet som dikter', 'The illusion card of the Memory That Invents'))
-        $('mn-result').hidden = false
+        return
       }
+      mnBusy = true
+      const r = await check('minnet', { values: mnAnswers })
+      mnBusy = false
+      if (!r) return
+      mnProbe++
+      $('mn-quiz').hidden = true
+      $('mn-verdict').textContent = r.msg ?? ''
+      mnRenderWords('mn-words-again')
+      showSolution('mn', r.solved)
+      awardCard(7, 'ruter', t('Illusjonskortet fra Minnet som dikter', 'The illusion card of the Memory That Invents'))
+      $('mn-result').hidden = false
     }
 
     $('mn-start').addEventListener('click', () => {
@@ -4507,16 +3616,7 @@ const payloadJson = JSON.stringify(payload).replace(/</g, '\\u003c')
     let stHintsUsed = 0
     let stWrong = 0
 
-    const ST_HINTS = lang === 'en' ? [
-      'Walk backwards through the broadcast. When could you still have changed the outcome?',
-      'Nine is a peculiar number: multiply it by anything and add up the digits.',
-      'The digit sum of nine times anything is always nine. The rest of the broadcast was theatre.',
-    ] : [
-      'Gå baklengs gjennom sendingen. Når kunne du fortsatt ha endret utfallet?',
-      'Ni er et pussig tall: gang det med hva som helst og legg sammen sifrene.',
-      'Tverrsummen av ni ganger noe er alltid ni. Resten av sendingen var teater.',
-    ]
-    wireHints('st-hint-btn', 'st-hints', ST_HINTS, () => { stHintsUsed++ })
+    wireHints('st-hint-btn', 'st-hints', 'studioet', () => { stHintsUsed++ })
 
     $('st-next').addEventListener('click', () => {
       stStep++
@@ -4543,36 +3643,19 @@ const payloadJson = JSON.stringify(payload).replace(/</g, '\\u003c')
       window.setTimeout(stToDeduce, reducedMotion ? 400 : 1800)
     })
 
-    const ST_RETORTS: Record<string, string> = lang === 'en' ? {
-      tall: '“No — your number was free. It was the last free thing you did.” Try again.',
-      land: '“Close — but the letter was already decided. The country was just probability: nearly everyone says Denmark.” Try again.',
-      kamera: '“The camera is a prop, apprentice.” Try again.',
-    } : {
-      tall: '«Nei — tallet ditt var fritt. Det var det siste frie du gjorde.» Prøv igjen.',
-      land: '«Nesten — men bokstaven var alt bestemt. Landet var bare sannsynlighet: nesten alle sier Danmark.» Prøv igjen.',
-      kamera: '«Kameraet er en rekvisitt, lærling.» Prøv igjen.',
-    }
-
-    document.querySelectorAll<HTMLButtonElement>('#st-options .mp-cup').forEach(btn =>
-      btn.addEventListener('click', () => {
-        if (btn.dataset.st === 'ni') {
-          document.querySelectorAll<HTMLButtonElement>('#st-options .mp-cup').forEach(b => { b.disabled = true })
-          $('st-msg').textContent = t(
-            'Direktøren slår av studiolyset med ett klapp. «Riktig. Ni-gangen låste tallet — alt etterpå gikk på skinner.»',
-            'The Director switches off the studio lights with a single clap. “Correct. The nine locked the number — everything after that ran on rails.”',
-          )
-          const gild = stPath === 'mester' && stHintsUsed === 0 && stWrong === 0
-          awardCard(10, 'spar', t('Sigillet fra Studioet', 'The seal of the Studio'))
-          if (gild && !state.gilded.includes('10-spar')) {
-            state.gilded.push('10-spar')
-            save()
-          }
-          renderFacts('st-facts', 'studioet')
-          $('st-solved').hidden = false
-          $('st-solved').scrollIntoView({ behavior: reducedMotion ? 'auto' : 'smooth', block: 'nearest' })
+    const stOptions = Array.from(document.querySelectorAll<HTMLButtonElement>('#st-options .mp-cup'))
+    stOptions.forEach(btn =>
+      btn.addEventListener('click', async () => {
+        stOptions.forEach(b => { b.disabled = true })
+        const r = await check('studioet', { value: btn.dataset.st })
+        if (!r) { stOptions.forEach(b => { b.disabled = false }); return }
+        $('st-msg').textContent = r.msg ?? ''
+        if (r.ok) {
+          solveRoom('st', 10, t('Sigillet fra Studioet', 'The seal of the Studio'),
+            stPath === 'mester' && stHintsUsed === 0 && stWrong === 0, r.solved)
         } else {
           stWrong++
-          $('st-msg').textContent = ST_RETORTS[btn.dataset.st || ''] || t('Prøv igjen.', 'Try again.')
+          stOptions.forEach(b => { b.disabled = false })
         }
       })
     )
@@ -4584,15 +3667,7 @@ const payloadJson = JSON.stringify(payload).replace(/</g, '\\u003c')
         save()
         $('st-pathchoice').hidden = true
         $('st-game').hidden = false
-        $('st-pretext').textContent = stPath === 'laerling'
-          ? t(
-              'Direktøren hvisker bak kamera to: «Mentalisten gjør tre ting: regner, gjetter sannsynlig — og lar rammen gjøre resten. Se etter regnestykket.»',
-              'The Director whispers from behind camera two: “The mentalist does three things: calculates, guesses the probable — and lets the frame do the rest. Look for the arithmetic.”',
-            )
-          : t(
-              'Studiolyset blender. Programlederen smiler litt for bredt. «Direktesending om tre … to …»',
-              'The studio lights are blinding. The host smiles a touch too widely. “Live in three … two …”',
-            )
+        roomLine('studioet', stPath).then(line => { $('st-pretext').textContent = line })
         stStep = 0
         $('st-step').textContent = ST_STEPS[0]
       })
@@ -4609,19 +3684,17 @@ const payloadJson = JSON.stringify(payload).replace(/</g, '\\u003c')
     })
 
     // ═══ TREKANTEN (SPEILGANGEN: KANIZSA) ════════════════════════
-    document.querySelectorAll<HTMLButtonElement>('#tk-btns .mp-cup').forEach(btn =>
-      btn.addEventListener('click', () => {
-        document.querySelectorAll<HTMLButtonElement>('#tk-btns .mp-cup').forEach(b => { b.disabled = true })
+    const tkBtns = Array.from(document.querySelectorAll<HTMLButtonElement>('#tk-btns .mp-cup'))
+    tkBtns.forEach(btn =>
+      btn.addEventListener('click', async () => {
+        tkBtns.forEach(b => { b.disabled = true })
+        const r = await check('trekanten', { part: 1, value: btn.dataset.tk })
+        if (!r) { tkBtns.forEach(b => { b.disabled = false }); return }
         const msg = $('tk-msg')
-        msg.textContent = btn.dataset.tk === '0'
-          ? t('Riktig — og likevel: du ser den fortsatt, gjør du ikke?', 'Right — and yet: you still see it, don’t you?')
-          : t(
-              'Se en gang til. Følg «kantene» på trekanten — og finn stedet der de faktisk er tegnet.',
-              'Look again. Follow the “edges” of the triangle — and find the place where they are actually drawn.',
-            )
+        msg.textContent = r.msg ?? ''
         msg.hidden = false
         awardCard(8, 'ruter', t('Illusjonskortet fra Trekanten som ikke finnes', 'The illusion card of the Triangle That Isn’t There'))
-        renderFacts('tk-facts', 'trekanten')
+        showSolution('tk', r.solved)
         $('tk-reveal').hidden = false
         ;($('tk-continue') as HTMLButtonElement).hidden = false
       })
@@ -4644,22 +3717,13 @@ const payloadJson = JSON.stringify(payload).replace(/</g, '\\u003c')
       'Fingrene åpner seg, én etter én: hånden er tom.',
       'Han bøyer seg — og plukker mynten opp bak øret ditt.',
     ]
-    const GH_CORRECT = 1  // beat index: the false transfer
     let ghPath = state.path['gatehjornet'] || ''
     let ghHintsUsed = 0
     let ghWrong = 0
     let ghSolved = false
+    let ghBusy = false
 
-    const GH_HINTS = lang === 'en' ? [
-      'The trick never happens when something seems to be happening.',
-      'Which hand did you stop watching — and when?',
-      'The grab, apprentice. Did the hand grab anything at all?',
-    ] : [
-      'Trikset skjer aldri når det ser ut som noe skjer.',
-      'Hvilken hånd sluttet du å se på — og når?',
-      'Grepet, lærling. Grep hånden noe som helst?',
-    ]
-    wireHints('gh-hint-btn', 'gh-hints', GH_HINTS, () => { ghHintsUsed++ })
+    wireHints('gh-hint-btn', 'gh-hints', 'gatehjornet', () => { ghHintsUsed++ })
 
     async function ghPlay() {
       const log = $('gh-log')
@@ -4683,35 +3747,20 @@ const payloadJson = JSON.stringify(payload).replace(/</g, '\\u003c')
       $('gh-pick').hidden = false
     }
 
-    function ghGuess(i: number) {
-      if (ghSolved) return
-      if (i === GH_CORRECT) {
+    async function ghGuess(i: number) {
+      if (ghSolved || ghBusy) return
+      ghBusy = true
+      const r = await check('gatehjornet', { value: String(i) })
+      ghBusy = false
+      if (!r) return
+      $('gh-msg').textContent = r.msg ?? ''
+      if (r.ok) {
         ghSolved = true
         document.querySelectorAll<HTMLButtonElement>('#gh-beats .mp-cup').forEach(b => { b.disabled = true })
-        $('gh-msg').textContent = t(
-          'Gatekunstneren stopper midt i bukket og ser på deg. Så åpner han høyrehånden: mynten. Den lå der hele tiden.',
-          'The street performer stops mid-bow and looks at you. Then he opens his right hand: the coin. It was there all along.',
-        )
-        const gild = ghPath === 'mester' && ghHintsUsed === 0 && ghWrong === 0
-        awardCard(11, 'spar', t('Sigillet fra Gatehjørnet', 'The seal of the Street Corner'))
-        if (gild && !state.gilded.includes('11-spar')) {
-          state.gilded.push('11-spar')
-          save()
-        }
-        renderFacts('gh-facts', 'gatehjornet')
-        $('gh-solved').hidden = false
-        $('gh-solved').scrollIntoView({ behavior: reducedMotion ? 'auto' : 'smooth', block: 'nearest' })
+        solveRoom('gh', 11, t('Sigillet fra Gatehjørnet', 'The seal of the Street Corner'),
+          ghPath === 'mester' && ghHintsUsed === 0 && ghWrong === 0, r.solved)
       } else {
         ghWrong++
-        $('gh-msg').textContent = i === 2
-          ? t(
-              'Nei — i det øyeblikket så det ut som ingenting skjedde. Men du er nære: hvorfor sluttet du å se på den hånden?',
-              'No — at that moment, nothing seemed to be happening. But you are close: why did you stop watching that hand?',
-            )
-          : t(
-              'Gatekunstneren ler. «Der? Der var det bare teater.» Se rutinen igjen om du trenger.',
-              'The street performer laughs. “There? That was just theatre.” Watch the routine again if you need to.',
-            )
       }
     }
 
@@ -4722,12 +3771,7 @@ const payloadJson = JSON.stringify(payload).replace(/</g, '\\u003c')
         save()
         $('gh-pathchoice').hidden = true
         $('gh-game').hidden = false
-        $('gh-pretext').textContent = ghPath === 'laerling'
-          ? t(
-              'Direktøren hvisker: «Ikke se der det skjer noe. Se der det ikke skjer noe.»',
-              'The Director whispers: “Don’t look where something happens. Look where nothing happens.”',
-            )
-          : t('Gatekunstneren knipser. «Følg med nå — én gang gjør jeg det.»', 'The street performer snaps his fingers. “Watch closely now — I do it once.”')
+        roomLine('gatehjornet', ghPath).then(line => { $('gh-pretext').textContent = line })
         ghPlay()
       })
     )
@@ -4744,20 +3788,18 @@ const payloadJson = JSON.stringify(payload).replace(/</g, '\\u003c')
     })
 
     // ═══ FARGENE SOM LYVER (SPEILGANGEN: KONTRAST) ═══════════════
-    document.querySelectorAll<HTMLButtonElement>('#fa-btns .mp-cup').forEach(btn =>
-      btn.addEventListener('click', () => {
-        document.querySelectorAll<HTMLButtonElement>('#fa-btns .mp-cup').forEach(b => { b.disabled = true })
+    const faBtns = Array.from(document.querySelectorAll<HTMLButtonElement>('#fa-btns .mp-cup'))
+    faBtns.forEach(btn =>
+      btn.addEventListener('click', async () => {
+        faBtns.forEach(b => { b.disabled = true })
+        const r = await check('fargene', { part: 1, value: btn.dataset.fa })
+        if (!r) { faBtns.forEach(b => { b.disabled = false }); return }
         ;(document.getElementById('fa-bridge') as unknown as SVGGElement).style.display = ''
         const msg = $('fa-msg')
-        msg.textContent = btn.dataset.fa === 'like'
-          ? t('Riktig — helt like. Men se på dem: øynene dine nekter fortsatt.', 'Right — exactly the same. But look at them: your eyes still refuse.')
-          : t(
-              'De er nøyaktig samme grå — se broen som nå binder dem sammen, malt i ett strøk.',
-              'They are exactly the same grey — see the bridge now joining them, painted in a single stroke.',
-            )
+        msg.textContent = r.msg ?? ''
         msg.hidden = false
         awardCard(9, 'ruter', t('Illusjonskortet fra Fargene som lyver', 'The illusion card of the Colours That Lie'))
-        renderFacts('fa-facts', 'fargene')
+        showSolution('fa', r.solved)
         $('fa-reveal').hidden = false
         ;($('fa-continue') as HTMLButtonElement).hidden = false
       })
@@ -4765,61 +3807,58 @@ const payloadJson = JSON.stringify(payload).replace(/</g, '\\u003c')
     $('fa-continue').addEventListener('click', () => goTo('vinterhagen'))
 
     // ═══ VINTERHAGEN ═════════════════════════════════════════════
-    interface VhRoom { key: string; name: string; principle: string }
+    // Which room each tale belongs to is known only to the server. On
+    // Lærlingens vei the rooms are labelled with their principles (also from
+    // the server: they are the earlier rooms' solutions).
+    interface VhRoom { key: string; name: string }
     const VH_ROOMS: VhRoom[] = lang === 'en' ? [
-      { key: 'sand',   name: 'The Sand Room',      principle: 'attention is steered' },
-      { key: 'marked', name: 'The Market Square',  principle: 'language is misdirection' },
-      { key: 'salong', name: 'The Salon',          principle: 'technology dressed up as magic' },
-      { key: 'seanse', name: 'The Séance',         principle: 'belief does half the trick' },
-      { key: 'teater', name: 'The Theatre',        principle: 'the method is bought before the effect is sold' },
-      { key: 'kino',   name: 'The Cinema',         principle: 'the cut is the vanish' },
+      { key: 'sand',   name: 'The Sand Room' },
+      { key: 'marked', name: 'The Market Square' },
+      { key: 'salong', name: 'The Salon' },
+      { key: 'seanse', name: 'The Séance' },
+      { key: 'teater', name: 'The Theatre' },
+      { key: 'kino',   name: 'The Cinema' },
     ] : [
-      { key: 'sand',   name: 'Sandrommet',     principle: 'oppmerksomheten styres' },
-      { key: 'marked', name: 'Markedsplassen', principle: 'språket er misdireksjon' },
-      { key: 'salong', name: 'Salongen',       principle: 'teknologi utkledd som magi' },
-      { key: 'seanse', name: 'Seansen',        principle: 'troen gjør halve trikset' },
-      { key: 'teater', name: 'Teateret',       principle: 'metoden kjøpes før effekten selges' },
-      { key: 'kino',   name: 'Kinoen',         principle: 'klippet er forsvinningsnummeret' },
+      { key: 'sand',   name: 'Sandrommet' },
+      { key: 'marked', name: 'Markedsplassen' },
+      { key: 'salong', name: 'Salongen' },
+      { key: 'seanse', name: 'Seansen' },
+      { key: 'teater', name: 'Teateret' },
+      { key: 'kino',   name: 'Kinoen' },
     ]
     const VH_SCENARIOS = lang === 'en' ? [
-      { text: 'A “thinking machine” beats everyone at chess at the world exhibition.', room: 'salong' },
-      { text: 'In pitch darkness the table lifts — and everyone around it feels it.', room: 'seanse' },
-      { text: 'On the screen, the hero floats into the air — with no cut to be seen.', room: 'kino' },
-      { text: 'The escape artist lets the house “choose” the trunk he will be locked into.', room: 'teater' },
+      'A “thinking machine” beats everyone at chess at the world exhibition.',
+      'In pitch darkness the table lifts — and everyone around it feels it.',
+      'On the screen, the hero floats into the air — with no cut to be seen.',
+      'The escape artist lets the house “choose” the trunk he will be locked into.',
     ] : [
-      { text: 'En «tenkende maskin» slår alle i sjakk på verdensutstillingen.', room: 'salong' },
-      { text: 'I stummende mørke letter bordet — og alle rundt det kjenner det.', room: 'seanse' },
-      { text: 'På lerretet svever helten til værs — uten et klipp å se.', room: 'kino' },
-      { text: 'Utbryteren lar salen «velge» kisten han skal låses inn i.', room: 'teater' },
+      'En «tenkende maskin» slår alle i sjakk på verdensutstillingen.',
+      'I stummende mørke letter bordet — og alle rundt det kjenner det.',
+      'På lerretet svever helten til værs — uten et klipp å se.',
+      'Utbryteren lar salen «velge» kisten han skal låses inn i.',
     ]
     let vhPath = state.path['vinterhagen'] || ''
     let vhHintsUsed = 0
     let vhWrong = 0
     let vhSelected = -1
-    let vhMatched: number[] = []
+    let vhMatched: Array<[number, string]> = []   // [tale, room key]
+    let vhPrinciples: Record<string, string> = {}
+    let vhBusy = false
 
-    const VH_HINTS = lang === 'en' ? [
-      'Two of the rooms on the list belong to none of the tales.',
-      'The machine that thinks … who sat inside the cabinet in the Salon?',
-      'The trunk “freely chosen” was chosen long before the performance — as in the Theatre.',
-    ] : [
-      'To av rommene på listen hører ikke hjemme i noen av fortellingene.',
-      'Maskinen som tenker … hvem satt inni skapet i Salongen?',
-      'Kisten som «velges fritt» ble valgt lenge før forestillingen — som i Teateret.',
-    ]
-    wireHints('vh-hint-btn', 'vh-hints', VH_HINTS, () => { vhHintsUsed++ })
+    wireHints('vh-hint-btn', 'vh-hints', 'vinterhagen', () => { vhHintsUsed++ })
 
     function vhRender() {
       const sc = $('vh-scen')
       const rm = $('vh-rooms')
       sc.innerHTML = ''
       rm.innerHTML = ''
-      VH_SCENARIOS.forEach((s, i) => {
+      VH_SCENARIOS.forEach((text, i) => {
+        const done = vhMatched.some(m => m[0] === i)
         const btn = document.createElement('button')
         btn.className = 'match-item'
-        btn.textContent = s.text
-        btn.disabled = vhMatched.includes(i)
-        if (vhMatched.includes(i)) btn.classList.add('match-item--done')
+        btn.textContent = text
+        btn.disabled = done
+        if (done) btn.classList.add('match-item--done')
         if (vhSelected === i) btn.classList.add('match-item--selected')
         btn.addEventListener('click', () => {
           vhSelected = vhSelected === i ? -1 : i
@@ -4828,58 +3867,58 @@ const payloadJson = JSON.stringify(payload).replace(/</g, '\\u003c')
         sc.appendChild(btn)
       })
       for (const room of VH_ROOMS) {
-        const used = VH_SCENARIOS.findIndex((s, i) => s.room === room.key && vhMatched.includes(i)) >= 0
+        const used = vhMatched.some(m => m[1] === room.key)
         const btn = document.createElement('button')
         btn.className = 'match-item match-item--secret'
-        btn.innerHTML = vhPath === 'mester'
-          ? room.name
-          : `${room.name}<br><small>${room.principle}</small>`
+        const principle = vhPath === 'mester' ? '' : vhPrinciples[room.key] ?? ''
+        btn.textContent = room.name
+        if (principle) {
+          const small = document.createElement('small')
+          small.textContent = principle
+          btn.append(document.createElement('br'), small)
+        }
         btn.disabled = used
         if (used) btn.classList.add('match-item--done')
-        btn.addEventListener('click', () => {
+        btn.addEventListener('click', async () => {
           if (vhSelected < 0) {
             $('vh-msg').textContent = t('Velg en fortelling først — så rommet den hører hjemme i.', 'Choose a tale first — then the room it belongs to.')
             return
           }
-          if (VH_SCENARIOS[vhSelected].room === room.key) {
-            vhMatched.push(vhSelected)
-            vhSelected = -1
-            $('vh-msg').textContent = vhMatched.length < VH_SCENARIOS.length
-              ? t('Riktig — nordlyset bølger anerkjennende over glasstaket.', 'Right — the northern lights ripple approvingly across the glass roof.')
-              : ''
-            vhRender()
-            if (vhMatched.length === VH_SCENARIOS.length) vhSolve()
-          } else {
-            vhWrong++
-            vhSelected = -1
-            $('vh-msg').textContent = t('Isrosene på ruten tetner. Det paret hører ikke sammen.', 'The frost roses on the pane thicken. That pair does not belong together.')
-            vhRender()
+          if (vhBusy) return
+          vhBusy = true
+          const pair: [number, string] = [vhSelected, room.key]
+          const r = await check('vinterhagen', { pairs: [...vhMatched, pair] })
+          vhBusy = false
+          if (!r) return
+          vhSelected = -1
+          $('vh-msg').textContent = r.msg ?? ''
+          if (r.ok) vhMatched.push(pair)
+          else vhWrong++
+          vhRender()
+          if (r.solved) {
+            solveRoom('vh', 12, t('Sigillet fra Vinterhagen', 'The seal of the Winter Garden'),
+              vhPath === 'mester' && vhHintsUsed === 0 && vhWrong === 0, r.solved)
           }
         })
         rm.appendChild(btn)
       }
     }
 
-    function vhSolve() {
-      const gild = vhPath === 'mester' && vhHintsUsed === 0 && vhWrong === 0
-      awardCard(12, 'spar', t('Sigillet fra Vinterhagen', 'The seal of the Winter Garden'))
-      if (gild && !state.gilded.includes('12-spar')) {
-        state.gilded.push('12-spar')
-        save()
-      }
-      renderFacts('vh-facts', 'vinterhagen')
-      $('vh-solved').hidden = false
-      $('vh-solved').scrollIntoView({ behavior: reducedMotion ? 'auto' : 'smooth', block: 'nearest' })
-    }
-
     document.querySelectorAll<HTMLButtonElement>('.path-btn[data-scene="vh"]').forEach(btn =>
-      btn.addEventListener('click', () => {
+      btn.addEventListener('click', async () => {
         vhPath = btn.dataset.path || 'laerling'
         state.path['vinterhagen'] = vhPath
         save()
         $('vh-pathchoice').hidden = true
         $('vh-game').hidden = false
         vhRender()
+        if (vhPath === 'laerling') {
+          const lines = (await roomStart('vinterhagen'))?.lines ?? {}
+          for (const [key, text] of Object.entries(lines)) {
+            if (key.startsWith('principle:')) vhPrinciples[key.slice(10)] = text
+          }
+          vhRender()
+        }
       })
     )
 
@@ -5066,7 +4105,7 @@ const payloadJson = JSON.stringify(payload).replace(/</g, '\\u003c')
       save()
       updateDeckCount()
       toast(t('🃏 Fire nye kort: <strong>kongene</strong> — Kabinettets siste gave', '🃏 Four new cards: <strong>the kings</strong> — the Cabinet’s final gift'))
-      renderFacts('kb-facts', 'kabinettet')
+      check('kabinettet').then(r => renderFacts('kb-facts', r?.solved?.facts ?? []))
       $('kb-compose').hidden = true
       $('kb-performance').hidden = false
       window.scrollTo({ top: 0, behavior: reducedMotion ? 'auto' : 'smooth' })
@@ -5098,7 +4137,7 @@ const payloadJson = JSON.stringify(payload).replace(/</g, '\\u003c')
       $('dg-rank-line').innerHTML = lang === 'en'
         ? `Your letter of apprenticeship has been made out with the title <strong>${daggryRank()}</strong>.`
         : `Lærlingbrevet ditt er skrevet ut med tittelen <strong>${daggryRank()}</strong>.`
-      renderFacts('dg-facts', 'daggry')
+      check('daggry').then(r => renderFacts('dg-facts', r?.solved?.facts ?? []))
     }
 
     function diplomaSvg(name: string, rank: string, cards: number): string {
@@ -5332,6 +4371,9 @@ const payloadJson = JSON.stringify(payload).replace(/</g, '\\u003c')
 
   .solved-title { font-family: var(--font-ui); font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.15em; color: var(--gold-dark); margin-bottom: 0.75rem; }
   .principle { font-family: var(--font-body); font-size: 1.05rem; line-height: 1.65; color: var(--ink); margin-bottom: 1rem; }
+  /* The explanation arrives from /api/kabinett as Portable Text paragraphs */
+  .principle :global(p), .reveal-text :global(p) { margin: 0 0 0.6em; }
+  .principle :global(p:last-child), .reveal-text :global(p:last-child) { margin-bottom: 0; }
   .facts { margin-bottom: 1.25rem; display: flex; flex-direction: column; gap: 0.5rem; }
   /* :global — fact cards are created by the game engine at runtime */
   :global(.fact-card) { display: flex; flex-direction: column; gap: 0.3rem; width: 100%; text-align: left; font-family: var(--font-ui); background: var(--cream); border: 1px solid var(--cream-dark); border-left: 3px solid var(--gold); border-radius: 0 6px 6px 0; padding: 0.7rem 1rem; cursor: pointer; box-shadow: 0 2px 0 #00000026; transition: transform 120ms ease, box-shadow 120ms ease; }

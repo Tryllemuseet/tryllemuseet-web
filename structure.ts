@@ -45,7 +45,7 @@ const privateListItem = (S: StructureBuilder, schemaType: string, title: string,
     )
 
 // Studio workspace "Bak teppet" (private "lukket" dataset, see
-// sanity.config.ts): only the closed-area types.
+// sanity.config.ts): the closed-area types and the game rooms.
 export const privateStructure: StructureResolver = (S) =>
   S.list()
     .title('Bak teppet')
@@ -54,6 +54,10 @@ export const privateStructure: StructureResolver = (S) =>
       privateListItem(S, 'kitTrick', 'Tryllebeskrivelser', 'Ny tryllebeskrivelse'),
       S.divider(),
       privateListItem(S, 'kitOriginal', 'Originalbeskrivelser (arkiv)', 'Ny originalbeskrivelse'),
+      S.divider(),
+      // Det trettende kabinett: answers, hints and explanations must not be
+      // in the public dataset (see schemaTypes/gameChapter.ts).
+      privateListItem(S, 'gameChapter', 'Kabinettet: Rom', 'Nytt rom'),
     ])
 
 export const structure: StructureResolver = (S) =>
@@ -126,7 +130,8 @@ export const structure: StructureResolver = (S) =>
               S.documentTypeListItem('quizQuestion').title('Quiz: Spørsmål'),
               S.divider(),
               S.documentTypeListItem('gameConfig').title('Kabinettet: Innstillinger'),
-              S.documentTypeListItem('gameChapter').title('Kabinettet: Rom'),
+              // The rooms (with answers and hints) are in the "Bak teppet
+              // (lukket)" workspace (privateStructure above), not here.
               S.divider(),
               S.documentTypeListItem('godeRadConfig').title('Gode råd'),
               // Tryllesett and tryllebeskrivelser are in the "Bak teppet"
