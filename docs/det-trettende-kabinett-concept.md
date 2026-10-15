@@ -74,8 +74,10 @@ is real.
 
 1. **Foajeen** *(prologue/tutorial — the four Aces)* — Arrive at night,
    meet Direktøren's voice, receive the empty deck box and the four aces.
-   Teaches the interface through one tiny puzzle (the guest book won't
-   take your name until you look away).
+   Teaches the interface: the quill writes your name in the guest book by
+   itself, and the Director draws the four aces from a sleeve and deals
+   them to you (until October 2026 the book refused your name until you
+   "looked away"; dropped as a needless step).
 2. **Sandrommet** — *Antiquity.* Cups and balls, the legend of Dedi at
    Pharaoh's court. Puzzle: follow the ball — and fail — until you learn
    where the trick really happens. Principle: **attention is steered,
