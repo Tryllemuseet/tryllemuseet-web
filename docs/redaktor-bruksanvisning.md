@@ -254,7 +254,11 @@ Klikk «Add item» under **Scener** for å legge til en ny scene. Rekkefølgen p
 **Meny:** Bytt til arbeidsområdet **Bak teppet (lukket)** i menyen ved siden av «Tryllemuseet» øverst til venstre i Studio (eller gå rett til `https://tryllemuseet-no.sanity.studio/lukket`). Der ligger **Tryllesett** og **Tryllebeskrivelser**.
 **På nettsiden:** `tryllemuseet.no/bak-teppet` — ikke i menyen, ikke søkbar, krever kode.
 
-«Tryllesett» er fellesnavnet for både trylleesker og tryllekofferter. Det er én side per type sett, og alle som kjøper samme type, bruker samme kode.
+Bak teppet er et generelt lukket område for trylletriks og hemmeligheter. Et «tryllesett» er det som åpnes med én kode. Det kan være en trylleeske, en tryllekoffert eller ett enkelt triks fra tryllebutikken (f.eks. «Svengali-kortstokken»), med ett eller mange triks. Det er én side per tryllesett, og alle som kjøper det samme, bruker samme kode.
+
+### Tekstene på forsiden av området
+
+Overskriften, ingressen, teksten om hvor koden står og meldingen om feil kode redigeres i **Bak teppet (lukket) → Om området (forsiden)**. Er et felt tomt, viser siden en standardtekst. Endringer vises med en gang, uten ny publisering av nettsiden.
 
 Bak teppet har sitt eget, private datasett. Verken tekstene eller bildene der kan hentes ut av andre enn museet. Derfor ligger det i et eget arbeidsområde, og det går ikke an å lenke derfra til personer i Hvem er hvem.
 
@@ -1555,6 +1559,22 @@ formuleringen «begre og kuler»:
 - **Gatehjørnet** — det første faktumet
 
 Rett teksten i disse to dokumentene (bytt til «begerspillet»).
+
+### Kabinettet: Forhåndsvisning (teste før lansering)
+
+Ligger i arbeidsområdet **Bak teppet (lukket)**. Så lenge spillet ikke er
+aktivt, kan du spille det selv via en hemmelig lenke:
+
+`https://www.tryllemuseet.no/det-trettende-kabinett?forhandsvisning=<kode>`
+
+(eller samme adresse på `test.tryllemuseet.no`). Nettleseren husker tilgangen
+i 30 dager, og spillet viser et «Forhåndsvisning»-banner. Alle andre ser
+fortsatt «kommer snart».
+
+| Felt | Merknad |
+|---|---|
+| Forhåndsvisning er på | Av: lenken slutter å virke for alle som har brukt den |
+| Kode | Minst 8 tegn. Store/små bokstaver, mellomrom og bindestrek spiller ingen rolle. Bytt koden hvis lenken har spredt seg |
 
 ### Aktivere spillet
 

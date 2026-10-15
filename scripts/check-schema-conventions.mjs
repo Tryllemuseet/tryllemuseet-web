@@ -62,6 +62,8 @@ const NO_ISVISIBLE_ALLOWLIST = {
   signageConfig: 'settings singleton, not content',
   quizConfig: 'has isActive instead',
   gameConfig: 'has isActive instead',
+  gamePreview: 'private settings singleton, has isActive instead',
+  bakTeppetPage: 'private page singleton',
   homepage: 'page singleton — never listed/filtered',
   besokPage: 'page singleton',
   utstillingPage: 'page singleton',

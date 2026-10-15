@@ -42,6 +42,8 @@ import { quizTheme }       from './quizTheme'
 import { quizQuestion }    from './quizQuestion'
 import { gameConfig }      from './gameConfig'
 import { gameChapter }     from './gameChapter'
+import { gamePreview }     from './gamePreview'
+import { bakTeppetPage }   from './bakTeppetPage'
 import { trick }           from './trick'
 import { comicStory }      from './comicStory'
 import { worldRecordTrick } from './worldRecordTrick'
@@ -136,4 +138,6 @@ export const privateSchemaTypes = [
   kitTrick,
   kitOriginal,
   gameChapter,
+  gamePreview,
+  bakTeppetPage,
 ]

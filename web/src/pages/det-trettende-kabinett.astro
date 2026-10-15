@@ -12,17 +12,51 @@
 //
 // Rendered on demand (it reads the private dataset at request time, so
 // editors' changes show up without a rebuild) and cached briefly at the CDN.
+//
+// While the game is switched off, ?forhandsvisning=<code> opens it for one
+// browser (src/lib/kabinettPreview.ts); the page is then never cached.
 export const prerender = false
 
 import BaseLayout from '../layouts/BaseLayout.astro'
 import art from '../lib/kabinett-art.json'
-import { getGameConfig, getAllGameChapters, getSiteConfig, privateUrlFor, portableTextToHtml } from '../lib/sanity'
-import { getPrivateClient } from '../lib/bakTeppet'
+import { getGameConfig, getGamePreview, getAllGameChapters, getSiteConfig, privateUrlFor, portableTextToHtml } from '../lib/sanity'
+import { getPrivateClient, failedAttemptDelay } from '../lib/bakTeppet'
+import {
+  PREVIEW_PARAM,
+  activePreviewCode,
+  codeMatches,
+  grantPreview,
+  hasPreviewAccess,
+  hasPreviewCookie,
+} from '../lib/kabinettPreview'
 
 const [config, siteConfig] = await Promise.all([getGameConfig(), getSiteConfig()])
 
-const isActive = config?.isActive === true
-const priv = isActive ? getPrivateClient() : null
+const priv = getPrivateClient()
+let preview = false
+if (config?.isActive !== true && priv) {
+  // Only visitors with the link or the cookie cost a Sanity request.
+  const typed = Astro.url.searchParams.get(PREVIEW_PARAM)
+  if (typed !== null || hasPreviewCookie(Astro.cookies)) {
+    let code: string | null = null
+    try {
+      code = activePreviewCode(await getGamePreview(priv.client))
+    } catch (err) {
+      console.error('[kabinett] could not load the preview settings', err)
+    }
+    if (typed !== null) {
+      if (codeMatches(typed, code)) {
+        grantPreview(Astro.cookies, priv.token, code!, Astro.url.protocol === 'https:')
+        // Redirect so the code never stays in the address bar or history.
+        return Astro.redirect(Astro.url.pathname, 303)
+      }
+      await failedAttemptDelay()
+    }
+    preview = hasPreviewAccess(Astro.cookies, priv.token, code)
+  }
+}
+
+const isActive = config?.isActive === true || preview
 let chapters: Awaited<ReturnType<typeof getAllGameChapters>> = []
 let unavailable = false
 if (isActive) {
@@ -38,6 +72,11 @@ if (isActive) {
 if (unavailable) {
   Astro.response.status = 503
   Astro.response.headers.set('Cache-Control', 'no-store')
+} else if (!isActive || preview) {
+  // Not cached while the game is off: the CDN ignores cookies, so a cached
+  // "coming soon" page would hide the game from a preview browser (and a
+  // cached preview page would show it to everyone).
+  Astro.response.headers.set('Cache-Control', 'private, no-store')
 } else {
   Astro.response.headers.set('Cache-Control', 'public, max-age=0, s-maxage=300, stale-while-revalidate=600')
 }
@@ -123,7 +162,7 @@ const payloadJson = JSON.stringify(payload).replace(/</g, '\\u003c')
 <BaseLayout
   title={`${gameTitle} — Tryllemuseet`}
   description="Et tryllemuseum som bare finnes om natten. Løs gåtene, samle kortstokken og bli Direktørens lærling — Tryllemuseets historiespill."
-  noindex={!isActive}
+  noindex={config?.isActive !== true}
 >
 
   <section class="hero" id="game-hero">
@@ -145,6 +184,11 @@ const payloadJson = JSON.stringify(payload).replace(/</g, '\\u003c')
     </main>
   ) : (
     <main class="container game-main" id="game-root">
+      {preview && (
+        <p class="preview-banner" role="status">
+          🔑 Forhåndsvisning: spillet er ikke åpnet for publikum ennå. Bare nettlesere som har brukt forhåndsvisningslenken, ser dette.
+        </p>
+      )}
       <noscript>
         <div class="coming-soon">
           <h2>Kabinettet trenger JavaScript</h2>
@@ -198,11 +242,8 @@ const payloadJson = JSON.stringify(payload).replace(/</g, '\\u003c')
             </div>
           </form>
 
-          <p class="game-msg" id="fj-msg" aria-live="polite" hidden></p>
-          <button class="btn-gold" id="fj-lookaway" hidden>Se bort et øyeblikk 👀</button>
-
           <div id="fj-aces" hidden>
-            <p class="game-msg game-msg--good">Boken tar imot navnet ditt. Fra et sted bak talerstolen rekker Direktøren deg fire kort — <strong>essene</strong>. «Resten av stokken må du gjøre deg fortjent til.»</p>
+            <p class="game-msg game-msg--good">Fjærpennen skriver navnet ditt inn i boken, helt av seg selv. Direktøren trekker fire kort fram fra frakkeermet og rekker deg dem — <strong>essene</strong>. «Resten av stokken må du gjøre deg fortjent til.»</p>
             <div class="card-row" id="fj-aces-cards" aria-label="Fire ess"></div>
             <button class="btn-gold" id="fj-continue">Ta imot kortene og gå videre →</button>
           </div>
@@ -1177,11 +1218,6 @@ const payloadJson = JSON.stringify(payload).replace(/</g, '\\u003c')
         </div>
       </section>
 
-      <!-- ── OVERLEGG: SE BORT ───────────────────────────────────── -->
-      <div class="lookaway" id="look-away-overlay" hidden aria-hidden="true">
-        <p>Du ser bort. Bak deg skraper en penn mot papir …</p>
-      </div>
-
       <!-- ── KORTSTOKK-MODAL ─────────────────────────────────────── -->
       <dialog class="deck-modal" id="deck-modal" aria-labelledby="deck-heading">
         <div class="deck-head">
@@ -1403,9 +1439,8 @@ const payloadJson = JSON.stringify(payload).replace(/</g, '\\u003c')
       ['#sc-foajeen .guestbook-label', 'The guest book'],
       ['#sc-foajeen label[for="fj-name"]', 'Your stage name'],
       ['#fj-write', 'Write with the quill ✒️'],
-      ['#fj-lookaway', 'Look away for a moment 👀'],
       ['#fj-aces .game-msg--good',
-        'The book accepts your name. From somewhere behind the lectern, the Director hands you four cards — ' +
+        'The quill writes your name into the book all by itself. The Director draws four cards from a coat sleeve and hands them to you — ' +
         '<strong>the aces</strong>. “The rest of the deck you will have to earn.”'],
       ['#fj-continue', 'Accept the cards and move on →'],
 
@@ -1612,7 +1647,6 @@ const payloadJson = JSON.stringify(payload).replace(/</g, '\\u003c')
       ['#sc-daggry .game-msg--dim',
         'Thank you for being the Cabinet’s apprentice. The rooms remain — and a new night can always begin again from the game bar at the top.'],
 
-      ['#look-away-overlay p', 'You look away. Behind you, a pen scratches against paper …'],
 
       ['#deck-heading', 'Your deck'],
       ['#deck-close, #help-close, #fact-close', '✕ Close'],
@@ -1743,16 +1777,24 @@ const payloadJson = JSON.stringify(payload).replace(/</g, '\\u003c')
       copy.className = 'director-copy'
       intro.before(copy)
       copy.appendChild(intro)
-      const portrait = document.createElement('figure')
-      portrait.className = 'director-portrait'
+      // The Director stands inside the room's illustration when there is
+      // one (it is decorative, never a puzzle), otherwise beside the copy.
+      const roomImage = scene?.querySelector<HTMLElement>('.scene-image')
+      const portrait = document.createElement(roomImage ? 'div' : 'figure')
+      portrait.className = 'director-portrait' + (roomImage ? ' director-portrait--in-image' : '')
       portrait.hidden = true
       portrait.setAttribute('aria-hidden', 'true')
       const img = document.createElement('img')
       img.alt = ''
       img.decoding = 'async'
       portrait.appendChild(img)
-      copy.appendChild(portrait)
+      ;(roomImage ?? copy).appendChild(portrait)
       img.addEventListener('error', () => { portrait.hidden = true })
+      // If the room image fails, move him back beside the copy.
+      roomImage?.querySelector('img')?.addEventListener('error', () => {
+        portrait.classList.remove('director-portrait--in-image')
+        copy.appendChild(portrait)
+      })
     }
     // Keep the original accessible buttons and their existing reward handlers.
     for (const [room, entry] of Object.entries(data.rooms)) {
@@ -2289,49 +2331,36 @@ const payloadJson = JSON.stringify(payload).replace(/</g, '\\u003c')
     // ═══ FOAJEEN ═════════════════════════════════════════════════
     const fjForm = $('fj-form') as HTMLFormElement
     const fjName = $('fj-name') as HTMLInputElement
-    const fjMsg = $('fj-msg')
-    let fjTriedOnce = false
 
     $('btn-knock').addEventListener('click', () => goTo('foajeen'))
 
-    fjForm.addEventListener('submit', e => {
+    // The quill writes the name by itself, then the Director draws the four
+    // aces from a sleeve and deals them out one by one.
+    fjForm.addEventListener('submit', async e => {
       e.preventDefault()
       const name = fjName.value.trim()
       if (!name) return
       state.stageName = name
       save()
-      if (!fjTriedOnce) {
-        fjTriedOnce = true
-        fjMsg.textContent = t(
-          'Blekket renner av arket og samler seg i en liten, fornærmet dam. Gjesteboken vil tydeligvis ikke bli sett på mens den tar imot navn.',
-          'The ink runs off the page and gathers in a small, offended puddle. The guest book clearly refuses to be watched while it accepts names.',
-        )
-        fjMsg.hidden = false
-        $('fj-lookaway').hidden = false
-      } else {
-        fjMsg.textContent = t('Samme resultat. Boken er sta — og sjenert.', 'Same result. The book is stubborn — and shy.')
-        fjMsg.hidden = false
-      }
-    })
-
-    $('fj-lookaway').addEventListener('click', async () => {
-      const overlay = $('look-away-overlay')
-      overlay.hidden = false
-      await sleep(1900)
-      overlay.hidden = true
-      $('fj-book-line').textContent = `~ ${state.stageName} ~`
-      fjMsg.hidden = true
-      ;($('fj-lookaway') as HTMLButtonElement).hidden = true
       fjForm.hidden = true
-      for (const suit of SUIT_ORDER) {
+      const line = $('fj-book-line')
+      line.textContent = `~ ${name} ~`
+      line.classList.add('guestbook-line--writing')
+      await sleep(1100)
+      setDirector('foajeen', 'cards')
+      await sleep(500)
+      const row = $('fj-aces-cards')
+      SUIT_ORDER.forEach((suit, i) => {
         state.cards.includes(cardCode(1, suit)) || state.cards.push(cardCode(1, suit))
-        $('fj-aces-cards').appendChild(miniCard(1, suit))
-      }
+        const card = miniCard(1, suit)
+        card.classList.add('pcard--dealt')
+        card.style.animationDelay = `${i * 160}ms`
+        row.appendChild(card)
+      })
       save()
       updateDeckCount()
       toast(t('🃏 Fire nye kort: <strong>essene</strong> — Direktørens forskudd', '🃏 Four new cards: <strong>the aces</strong> — the Director’s advance'))
       $('fj-aces').hidden = false
-      setDirector('foajeen', 'cards')
     })
 
     $('fj-continue').addEventListener('click', () => goTo('sandrommet'))
@@ -4418,8 +4447,13 @@ const payloadJson = JSON.stringify(payload).replace(/</g, '\\u003c')
   .field-row { display: flex; gap: 0.6rem; flex-wrap: wrap; }
   .field-row input { flex: 1 1 200px; font-family: var(--font-ui); font-size: 1rem; padding: 0.65rem 0.9rem; border: 1.5px solid var(--gold-dark); border-radius: 6px; background: var(--cream); color: var(--ink); }
 
-  .lookaway { position: fixed; inset: 0; z-index: 100; background: #0a0507f2; color: var(--cream); display: flex; align-items: center; justify-content: center; text-align: center; padding: 2rem; font-family: var(--font-display); font-size: clamp(1.1rem, 3vw, 1.6rem); font-style: italic; }
-  .lookaway[hidden] { display: none; }
+  .guestbook-line--writing { animation: quill-write 1.1s steps(18, end) both; }
+  @keyframes quill-write { from { clip-path: inset(0 100% 0 0); } to { clip-path: inset(0 0 0 0); } }
+  :global(.pcard--dealt) { animation: deal-card 0.45s cubic-bezier(.2,.8,.3,1.1) both; }
+  @keyframes deal-card { from { opacity: 0; transform: translate(140px, -70px) rotate(18deg) scale(0.6); } to { opacity: 1; transform: none; } }
+  @media (prefers-reduced-motion: reduce) {
+    .guestbook-line--writing, :global(.pcard--dealt) { animation: none; }
+  }
 
   /* ── KORT ──────────────────────────────────────────────────────── */
   /* :global() on everything the game engine creates at runtime — scoped
@@ -4632,11 +4666,15 @@ const payloadJson = JSON.stringify(payload).replace(/</g, '\\u003c')
   :global(.director-portrait) { flex: 0 0 90px; margin: 0; }
   :global(.director-portrait[hidden]) { display: none; }
   :global(.director-portrait img) { display: block; width: 100%; height: 160px; object-fit: contain; object-position: top; }
+  :global(.scene-image) { position: relative; }
+  :global(.director-portrait--in-image) { position: absolute; right: 3%; bottom: 3px; height: 82%; margin: 0; pointer-events: none; filter: drop-shadow(0 6px 10px rgba(0, 0, 0, 0.55)); }
+  :global(.director-portrait--in-image img) { width: auto; height: 100%; border: 0; border-radius: 0; box-shadow: none; }
   :global(.solution-image) { display: block; max-width: 100%; height: auto; margin-top: 1rem; border-radius: 8px; }
   :global(.curiosity img) { display: block; width: 40px; height: 40px; object-fit: contain; }
   @media (max-width: 560px) {
     :global(.director-portrait) { flex-basis: 56px; }
     :global(.director-portrait img) { height: 110px; }
+    :global(.director-portrait--in-image img) { height: 100%; }
   }
 
   /* ── HJELP-MODAL ───────────────────────────────────────────────── */
@@ -4658,6 +4696,7 @@ const payloadJson = JSON.stringify(payload).replace(/</g, '\\u003c')
   .toast[hidden] { display: none; }
 
   /* ── KOMMER SNART ──────────────────────────────────────────────── */
+  .preview-banner { margin: 0 0 1rem; padding: 0.6rem 1rem; border: 1px dashed var(--gold, #b8860b); border-radius: 8px; background: rgba(184, 134, 11, 0.08); font-size: 0.9rem; text-align: center; }
   .coming-soon { text-align: center; background: white; border: 1px solid var(--cream-dark); border-radius: 10px; padding: 4rem 2rem; box-shadow: var(--shadow); }
   .coming-soon-icon { font-size: 3rem; display: block; margin-bottom: 1rem; }
   .coming-soon h2 { font-family: var(--font-display); font-size: clamp(1.4rem, 4vw, 2rem); color: var(--burgundy); margin-bottom: 0.75rem; }

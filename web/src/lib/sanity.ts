@@ -3399,6 +3399,17 @@ export async function getGameConfig(): Promise<GameConfig | null> {
 // client from createPrivateSanityClient(); image URLs need privateUrlFor().
 const GAME_CHAPTER_FILTER = `_type == "gameChapter" && _id in path("lukket.**") && isVisible != false && defined(key)`
 
+/** Preview link for the game while it is switched off (one private doc,
+ *  schemaTypes/gamePreview.ts; see src/lib/kabinettPreview.ts). */
+export interface GamePreview {
+  isActive?:    boolean
+  previewCode?: string
+}
+
+export async function getGamePreview(client: SanityClientLike): Promise<GamePreview | null> {
+  return client.fetch(`*[_type == "gamePreview" && _id in path("lukket.**")][0] { isActive, previewCode }`)
+}
+
 /** Public room copy for the game page: titles, intros, images. */
 export async function getAllGameChapters(client: SanityClientLike): Promise<GameChapter[]> {
   return client.fetch(`
@@ -3582,6 +3593,36 @@ const KIT_ORIGINAL_REF_FILTER = `string::startsWith(_ref, "lukket.") && @->_type
 
 // Card-level projection of a trick.
 const KIT_TRICK_CARD = `_id, title, "slug": slug.current, originalTitle, lead, coverImage ${KIT_IMAGE}`
+
+// Texts on the /bak-teppet entry page (schemaTypes/bakTeppetPage.ts). Every
+// field is optional in Studio, so the page always has these to fall back on.
+export interface BakTeppetPage {
+  heroTitle: string
+  heroIntro: string
+  codeHelp: string
+  wrongCode: string
+  seoDescription: string
+}
+
+export const BAK_TEPPET_DEFAULTS: BakTeppetPage = {
+  heroTitle: 'Trylletriks og hemmeligheter',
+  heroIntro: 'Her finner du forklaringer og videoer til trylletriks fra Tryllemuseet. Skriv inn koden du har fått, så åpnes triksene dine.',
+  codeHelp: 'Koden står på kortet du fikk sammen med trikset. Du kan også skanne QR-koden på kortet.',
+  wrongCode: 'Koden stemmer ikke. Sjekk at du har skrevet den riktig. Du finner den på kortet du fikk sammen med trikset.',
+  seoDescription: 'Lukket område med trylletriks og hemmeligheter fra Tryllemuseet.',
+}
+
+export async function getBakTeppetPage(client: SanityClientLike | null): Promise<BakTeppetPage> {
+  const doc: Partial<BakTeppetPage> | null = client
+    ? await client.fetch(`*[_id == "lukket.bak-teppet-page"][0] { heroTitle, heroIntro, codeHelp, wrongCode, seoDescription }`)
+    : null
+  const merged = { ...BAK_TEPPET_DEFAULTS }
+  for (const key of Object.keys(merged) as (keyof BakTeppetPage)[]) {
+    const value = doc?.[key]?.trim()
+    if (value) merged[key] = value
+  }
+  return merged
+}
 
 // All active kits with their codes — only ever used server-side to check a
 // typed code or a cookie; never rendered.

@@ -14,6 +14,8 @@
 // Rene UI-/navigasjonsendringer — ingen skjema- eller innholdsendringer.
 import type { StructureBuilder, StructureResolver } from 'sanity/structure'
 import { PRIVATE_ID_PREFIX } from './schemaTypes/privateDoc'
+import { GAME_PREVIEW_ID } from './schemaTypes/gamePreview'
+import { BAK_TEPPET_PAGE_ID } from './schemaTypes/bakTeppetPage'
 
 // Tryllesett and tryllebeskrivelser must get an ID under the private
 // "lukket." path (see schemaTypes/privateDoc.ts), which the Studio's normal
@@ -50,6 +52,12 @@ export const privateStructure: StructureResolver = (S) =>
   S.list()
     .title('Bak teppet')
     .items([
+      // Singleton with a fixed private ID: texts on the /bak-teppet entry page.
+      S.listItem()
+        .title('Om området (forsiden)')
+        .schemaType('bakTeppetPage')
+        .child(S.document().schemaType('bakTeppetPage').documentId(BAK_TEPPET_PAGE_ID).title('Om området (forsiden)')),
+      S.divider(),
       privateListItem(S, 'kitCollection', 'Tryllesett', 'Nytt tryllesett'),
       privateListItem(S, 'kitTrick', 'Tryllebeskrivelser', 'Ny tryllebeskrivelse'),
       S.divider(),
@@ -58,6 +66,11 @@ export const privateStructure: StructureResolver = (S) =>
       // Det trettende kabinett: answers, hints and explanations must not be
       // in the public dataset (see schemaTypes/gameChapter.ts).
       privateListItem(S, 'gameChapter', 'Kabinettet: Rom', 'Nytt rom'),
+      // Singleton with a fixed private ID: the code for the preview link.
+      S.listItem()
+        .title('Kabinettet: Forhåndsvisning')
+        .schemaType('gamePreview')
+        .child(S.document().schemaType('gamePreview').documentId(GAME_PREVIEW_ID).title('Kabinettet: Forhåndsvisning')),
     ])
 
 export const structure: StructureResolver = (S) =>
