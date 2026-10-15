@@ -1556,6 +1556,22 @@ formuleringen «begre og kuler»:
 
 Rett teksten i disse to dokumentene (bytt til «begerspillet»).
 
+### Kabinettet: Forhåndsvisning (teste før lansering)
+
+Ligger i arbeidsområdet **Bak teppet (lukket)**. Så lenge spillet ikke er
+aktivt, kan du spille det selv via en hemmelig lenke:
+
+`https://www.tryllemuseet.no/det-trettende-kabinett?forhandsvisning=<kode>`
+
+(eller samme adresse på `test.tryllemuseet.no`). Nettleseren husker tilgangen
+i 30 dager, og spillet viser et «Forhåndsvisning»-banner. Alle andre ser
+fortsatt «kommer snart».
+
+| Felt | Merknad |
+|---|---|
+| Forhåndsvisning er på | Av: lenken slutter å virke for alle som har brukt den |
+| Kode | Minst 8 tegn. Store/små bokstaver, mellomrom og bindestrek spiller ingen rolle. Bytt koden hvis lenken har spredt seg |
+
 ### Aktivere spillet
 
 1. Rediger rom-tekster og last opp bilder etter behov (valgfritt — spillet

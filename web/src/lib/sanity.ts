@@ -3399,6 +3399,17 @@ export async function getGameConfig(): Promise<GameConfig | null> {
 // client from createPrivateSanityClient(); image URLs need privateUrlFor().
 const GAME_CHAPTER_FILTER = `_type == "gameChapter" && _id in path("lukket.**") && isVisible != false && defined(key)`
 
+/** Preview link for the game while it is switched off (one private doc,
+ *  schemaTypes/gamePreview.ts; see src/lib/kabinettPreview.ts). */
+export interface GamePreview {
+  isActive?:    boolean
+  previewCode?: string
+}
+
+export async function getGamePreview(client: SanityClientLike): Promise<GamePreview | null> {
+  return client.fetch(`*[_type == "gamePreview" && _id in path("lukket.**")][0] { isActive, previewCode }`)
+}
+
 /** Public room copy for the game page: titles, intros, images. */
 export async function getAllGameChapters(client: SanityClientLike): Promise<GameChapter[]> {
   return client.fetch(`

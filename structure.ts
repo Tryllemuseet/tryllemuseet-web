@@ -14,6 +14,7 @@
 // Rene UI-/navigasjonsendringer — ingen skjema- eller innholdsendringer.
 import type { StructureBuilder, StructureResolver } from 'sanity/structure'
 import { PRIVATE_ID_PREFIX } from './schemaTypes/privateDoc'
+import { GAME_PREVIEW_ID } from './schemaTypes/gamePreview'
 
 // Tryllesett and tryllebeskrivelser must get an ID under the private
 // "lukket." path (see schemaTypes/privateDoc.ts), which the Studio's normal
@@ -58,6 +59,11 @@ export const privateStructure: StructureResolver = (S) =>
       // Det trettende kabinett: answers, hints and explanations must not be
       // in the public dataset (see schemaTypes/gameChapter.ts).
       privateListItem(S, 'gameChapter', 'Kabinettet: Rom', 'Nytt rom'),
+      // Singleton with a fixed private ID: the code for the preview link.
+      S.listItem()
+        .title('Kabinettet: Forhåndsvisning')
+        .schemaType('gamePreview')
+        .child(S.document().schemaType('gamePreview').documentId(GAME_PREVIEW_ID).title('Kabinettet: Forhåndsvisning')),
     ])
 
 export const structure: StructureResolver = (S) =>

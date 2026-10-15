@@ -25,15 +25,16 @@ import { privateIdValidation } from './privateDoc'
 // easy to type. 8 chars from 31 symbols ≈ 40 bits — not guessable online.
 const CODE_ALPHABET = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789'
 
-function generateAccessCode(): string {
+export function generateAccessCode(): string {
   const bytes = new Uint8Array(8)
   crypto.getRandomValues(bytes)
   const chars = Array.from(bytes, b => CODE_ALPHABET[b % CODE_ALPHABET.length])
   return `${chars.slice(0, 4).join('')}-${chars.slice(4).join('')}`
 }
 
-// Must match normalizeAccessCode() in web/src/lib/bakTeppet.ts
-function normalizeAccessCode(code: string): string {
+// Must match normalizeAccessCode() in web/src/lib/bakTeppet.ts (also used by
+// gamePreview.ts)
+export function normalizeAccessCode(code: string): string {
   return code.toUpperCase().replace(/[^A-Z0-9]/g, '')
 }
 

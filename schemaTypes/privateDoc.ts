@@ -3,7 +3,8 @@
 // Shared rules for documents that must never be readable through Sanity's
 // public API: tryllesett (kitCollection), tryllebeskrivelser (kitTrick),
 // originalbeskrivelser (kitOriginal) and the rooms of "Det trettende
-// kabinett" (gameChapter, which holds the answers). They live in the private
+// kabinett" (gameChapter, which holds the answers, and gamePreview, the code
+// for its preview link). They live in the private
 // "lukket" dataset; the ID prefix is a second line of defence (Sanity never serves
 // documents whose _id contains a "." to unauthenticated requests, and the web
 // queries only serve "lukket.**" IDs). structure.ts creates these types with an
@@ -13,7 +14,7 @@ import type { CustomValidator } from 'sanity'
 
 export const PRIVATE_ID_PREFIX = 'lukket.'
 
-export const PRIVATE_DOC_TYPES = ['kitCollection', 'kitTrick', 'kitOriginal', 'gameChapter'] as const
+export const PRIVATE_DOC_TYPES = ['kitCollection', 'kitTrick', 'kitOriginal', 'gameChapter', 'gamePreview'] as const
 
 export function isPrivateId(id: string | undefined): boolean {
   return (id ?? '').replace(/^drafts\./, '').startsWith(PRIVATE_ID_PREFIX)

@@ -411,6 +411,19 @@ anyone could read them in the page source. Now:
 - The move was done with `scripts/move-kabinett-to-private-dataset.mjs`
   (content file with the answers kept outside git).
 
+**Preview link (October 2026).** While `gameConfig.isActive` is off, the game
+can be tested on test or production without opening it to everyone:
+`/det-trettende-kabinett?forhandsvisning=<code>`. The code is in the private
+`gamePreview` document (`lukket.game-preview`; Studio **Bak teppet (lukket)**
+→ **Kabinettet: Forhåndsvisning**). A correct code sets an httpOnly cookie
+(HMAC of the current code, like Bak teppet) and redirects to the plain URL;
+that browser then gets the game page and answers from `/api/kabinett`, with a
+"Forhåndsvisning" banner. Changing the code or switching the preview off
+revokes every cookie. While the game is off, the page is sent with
+`Cache-Control: private, no-store` (the CDN ignores cookies, so it must not
+cache either version); it is `noindex` until the game is switched on. See
+`web/src/lib/kabinettPreview.ts`.
+
 **Activation checklist** (mirrors the quiz):
 
 1. Deploy the studio so the new types appear: `npm run deploy` (repo root) —
