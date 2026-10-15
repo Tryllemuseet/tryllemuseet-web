@@ -19,10 +19,12 @@ import {
   failedAttemptDelay,
   safeNextPath,
 } from '../../lib/bakTeppet'
+import { getBakTeppetPage } from '../../lib/sanity'
 
 setPrivateHeaders(Astro.response.headers)
 
 const session = await loadSession(Astro.cookies)
+const texts = await getBakTeppetPage(session?.client ?? null)
 const secure = Astro.url.protocol === 'https:'
 
 let error = ''
@@ -53,7 +55,7 @@ if (session) {
       return Astro.redirect(next ?? `${BAK_TEPPET_PATH}/${kit.slug}`, 303)
     }
     await failedAttemptDelay()
-    error = 'Koden stemmer ikke. Sjekk at du har skrevet den riktig — du finner den på kortet i esken eller kofferten.'
+    error = texts.wrongCode
     typedCode = code
     Astro.response.status = 401
   }
@@ -67,14 +69,14 @@ const unlocked = session?.unlocked ?? []
 
 <BaseLayout
   title="Bak teppet — Tryllemuseet"
-  description="Lukket område for deg som har kjøpt et tryllesett fra Tryllemuseet."
+  description={texts.seoDescription}
   noindex
 >
   <PageHero
     compact
     label="Bak teppet"
-    title="For deg med tryllesett"
-    intro="Her finner du beskrivelser og videoer til triksene i tryllesettet ditt."
+    title={texts.heroTitle}
+    intro={texts.heroIntro}
   />
 
   <section class="bt section-pad">
@@ -88,7 +90,7 @@ const unlocked = session?.unlocked ?? []
 
       {session && unlocked.length > 0 && (
         <div class="bt-kort">
-          <h2>Dine tryllesett</h2>
+          <h2>Dine triks</h2>
           <ul class="bt-liste">
             {unlocked.map(k => (
               <li><a href={`${BAK_TEPPET_PATH}/${k.slug}`}>{k.title} →</a></li>
@@ -99,10 +101,8 @@ const unlocked = session?.unlocked ?? []
 
       {session && (
         <form class="bt-kort bt-skjema" method="post" action={BAK_TEPPET_PATH}>
-          <h2>{unlocked.length > 0 ? 'Har du et annet tryllesett?' : 'Skriv inn koden'}</h2>
-          <p>
-            Koden står på kortet som ligger i esken eller kofferten. Du kan også skanne QR-koden på kortet.
-          </p>
+          <h2>{unlocked.length > 0 ? 'Har du en kode til?' : 'Skriv inn koden'}</h2>
+          <p>{texts.codeHelp}</p>
           <label for="kode">Kode</label>
           {next && <input type="hidden" name="neste" value={next} />}
           <input
