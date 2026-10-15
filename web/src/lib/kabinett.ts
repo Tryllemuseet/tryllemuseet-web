@@ -18,9 +18,12 @@
 //
 // The rules below say how each room's answer is checked; the answer keys
 // themselves are only in Sanity (gameChapter.answer).
+import type { AstroCookies } from 'astro'
 import { getPrivateClient } from './bakTeppet'
+import { activePreviewCode, hasPreviewAccess } from './kabinettPreview'
 import {
   getGameConfig,
+  getGamePreview,
   getGameRoomSecrets,
   portableTextToHtml,
   privateUrlFor,
@@ -100,16 +103,28 @@ export type KabinettResult =
 // Answers change rarely; a short cache keeps Sanity API usage to about one
 // request per minute per running function instead of one per click.
 const CACHE_MS = 60_000
-let cache: { at: number; active: boolean; rooms: Map<string, GameRoomSecrets> } | null = null
+let cache: {
+  at: number
+  active: boolean
+  previewCode: string | null
+  token: string
+  rooms: Map<string, GameRoomSecrets>
+} | null = null
 
 async function loadData() {
   if (cache && Date.now() - cache.at < CACHE_MS) return cache
   const priv = getPrivateClient()
   if (!priv) return null
-  const [config, rooms] = await Promise.all([getGameConfig(), getGameRoomSecrets(priv.client)])
+  const [config, preview, rooms] = await Promise.all([
+    getGameConfig(),
+    getGamePreview(priv.client),
+    getGameRoomSecrets(priv.client),
+  ])
   cache = {
     at: Date.now(),
     active: config?.isActive === true,
+    previewCode: activePreviewCode(preview),
+    token: priv.token,
     rooms: new Map(rooms.map(r => [r.key, r])),
   }
   return cache
@@ -261,7 +276,7 @@ function check(kind: Kind, room: GameRoomSecrets, lang: Lang, req: KabinettReque
 }
 
 // ── Entry point ──────────────────────────────────────────────────
-export async function answer(req: KabinettRequest): Promise<KabinettResult> {
+export async function answer(req: KabinettRequest, cookies: AstroCookies): Promise<KabinettResult> {
   const roomKey = str(req.room)
   const kind = roomKey ? ROOMS[roomKey] : undefined
   if (!roomKey || !kind) return { status: 404, body: { error: 'unknown room' } }
@@ -278,8 +293,9 @@ export async function answer(req: KabinettRequest): Promise<KabinettResult> {
     console.error('[kabinett] SANITY_PRIVATE_READ_TOKEN is not set')
     return { status: 503, body: { error: 'unavailable' } }
   }
-  // While the game is switched off, nothing is handed out.
-  if (!data.active) return { status: 404, body: { error: 'inactive' } }
+  // While the game is switched off, nothing is handed out, except to a
+  // browser that opened the preview link (src/lib/kabinettPreview.ts).
+  if (!data.active && !hasPreviewAccess(cookies, data.token, data.previewCode)) return { status: 404, body: { error: 'inactive' } }
   const room = data.rooms.get(roomKey)
   if (!room) return { status: 503, body: { error: 'room missing' } }
 

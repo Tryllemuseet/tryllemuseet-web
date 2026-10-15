@@ -14,7 +14,7 @@ const headers = {
   'X-Robots-Tag': 'noindex',
 }
 
-export const POST: APIRoute = async ({ request }) => {
+export const POST: APIRoute = async ({ request, cookies }) => {
   let body: KabinettRequest
   try {
     const text = await request.text()
@@ -24,6 +24,6 @@ export const POST: APIRoute = async ({ request }) => {
   } catch {
     return new Response(JSON.stringify({ error: 'bad request' }), { status: 400, headers })
   }
-  const result = await answer(body)
+  const result = await answer(body, cookies)
   return new Response(JSON.stringify(result.body), { status: result.status, headers })
 }

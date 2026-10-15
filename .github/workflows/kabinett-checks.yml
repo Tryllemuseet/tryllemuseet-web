@@ -10,6 +10,7 @@ on:
       - 'web/tests/**'
       - 'web/package*.json'
       - 'schemaTypes/gameChapter.ts'
+      - 'schemaTypes/gamePreview.ts'
       - '.github/workflows/kabinett-checks.yml'
 
 jobs:

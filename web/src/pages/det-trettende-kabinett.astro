@@ -12,17 +12,51 @@
 //
 // Rendered on demand (it reads the private dataset at request time, so
 // editors' changes show up without a rebuild) and cached briefly at the CDN.
+//
+// While the game is switched off, ?forhandsvisning=<code> opens it for one
+// browser (src/lib/kabinettPreview.ts); the page is then never cached.
 export const prerender = false
 
 import BaseLayout from '../layouts/BaseLayout.astro'
 import art from '../lib/kabinett-art.json'
-import { getGameConfig, getAllGameChapters, getSiteConfig, privateUrlFor, portableTextToHtml } from '../lib/sanity'
-import { getPrivateClient } from '../lib/bakTeppet'
+import { getGameConfig, getGamePreview, getAllGameChapters, getSiteConfig, privateUrlFor, portableTextToHtml } from '../lib/sanity'
+import { getPrivateClient, failedAttemptDelay } from '../lib/bakTeppet'
+import {
+  PREVIEW_PARAM,
+  activePreviewCode,
+  codeMatches,
+  grantPreview,
+  hasPreviewAccess,
+  hasPreviewCookie,
+} from '../lib/kabinettPreview'
 
 const [config, siteConfig] = await Promise.all([getGameConfig(), getSiteConfig()])
 
-const isActive = config?.isActive === true
-const priv = isActive ? getPrivateClient() : null
+const priv = getPrivateClient()
+let preview = false
+if (config?.isActive !== true && priv) {
+  // Only visitors with the link or the cookie cost a Sanity request.
+  const typed = Astro.url.searchParams.get(PREVIEW_PARAM)
+  if (typed !== null || hasPreviewCookie(Astro.cookies)) {
+    let code: string | null = null
+    try {
+      code = activePreviewCode(await getGamePreview(priv.client))
+    } catch (err) {
+      console.error('[kabinett] could not load the preview settings', err)
+    }
+    if (typed !== null) {
+      if (codeMatches(typed, code)) {
+        grantPreview(Astro.cookies, priv.token, code!, Astro.url.protocol === 'https:')
+        // Redirect so the code never stays in the address bar or history.
+        return Astro.redirect(Astro.url.pathname, 303)
+      }
+      await failedAttemptDelay()
+    }
+    preview = hasPreviewAccess(Astro.cookies, priv.token, code)
+  }
+}
+
+const isActive = config?.isActive === true || preview
 let chapters: Awaited<ReturnType<typeof getAllGameChapters>> = []
 let unavailable = false
 if (isActive) {
@@ -38,6 +72,11 @@ if (isActive) {
 if (unavailable) {
   Astro.response.status = 503
   Astro.response.headers.set('Cache-Control', 'no-store')
+} else if (!isActive || preview) {
+  // Not cached while the game is off: the CDN ignores cookies, so a cached
+  // "coming soon" page would hide the game from a preview browser (and a
+  // cached preview page would show it to everyone).
+  Astro.response.headers.set('Cache-Control', 'private, no-store')
 } else {
   Astro.response.headers.set('Cache-Control', 'public, max-age=0, s-maxage=300, stale-while-revalidate=600')
 }
@@ -123,7 +162,7 @@ const payloadJson = JSON.stringify(payload).replace(/</g, '\\u003c')
 <BaseLayout
   title={`${gameTitle} — Tryllemuseet`}
   description="Et tryllemuseum som bare finnes om natten. Løs gåtene, samle kortstokken og bli Direktørens lærling — Tryllemuseets historiespill."
-  noindex={!isActive}
+  noindex={config?.isActive !== true}
 >
 
   <section class="hero" id="game-hero">
@@ -145,6 +184,11 @@ const payloadJson = JSON.stringify(payload).replace(/</g, '\\u003c')
     </main>
   ) : (
     <main class="container game-main" id="game-root">
+      {preview && (
+        <p class="preview-banner" role="status">
+          🔑 Forhåndsvisning: spillet er ikke åpnet for publikum ennå. Bare nettlesere som har brukt forhåndsvisningslenken, ser dette.
+        </p>
+      )}
       <noscript>
         <div class="coming-soon">
           <h2>Kabinettet trenger JavaScript</h2>
@@ -4658,6 +4702,7 @@ const payloadJson = JSON.stringify(payload).replace(/</g, '\\u003c')
   .toast[hidden] { display: none; }
 
   /* ── KOMMER SNART ──────────────────────────────────────────────── */
+  .preview-banner { margin: 0 0 1rem; padding: 0.6rem 1rem; border: 1px dashed var(--gold, #b8860b); border-radius: 8px; background: rgba(184, 134, 11, 0.08); font-size: 0.9rem; text-align: center; }
   .coming-soon { text-align: center; background: white; border: 1px solid var(--cream-dark); border-radius: 10px; padding: 4rem 2rem; box-shadow: var(--shadow); }
   .coming-soon-icon { font-size: 3rem; display: block; margin-bottom: 1rem; }
   .coming-soon h2 { font-family: var(--font-display); font-size: clamp(1.4rem, 4vw, 2rem); color: var(--burgundy); margin-bottom: 0.75rem; }

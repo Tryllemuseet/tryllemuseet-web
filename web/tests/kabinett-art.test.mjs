@@ -31,8 +31,9 @@ test('solution images and answers are excluded from the initial room query', () 
   assert.match(publicQuery, /curiosityImage/)
 })
 
-test('the API withholds the solution image on start, hint and wrong answer and returns it on a correct answer', async () => {
-  // Execute the production checker, replacing only its external Sanity dependencies.
+// Execute the production checker, replacing only its external dependencies
+// (Sanity and the preview cookie check).
+async function loadChecker({ isActive = true, previewAccess = false } = {}) {
   const source = read('src/lib/kabinett.ts')
     .replace(/import\s[\s\S]*?from\s+'[^']+'\n/g, '')
   const compiled = await transform(source, { loader: 'ts', format: 'cjs' })
@@ -41,13 +42,24 @@ test('the API withholds the solution image on start, hint and wrong answer and r
     hints: [{ text: 'A hint' }], responses: [], solution: [], facts: [],
     solutionImage: { asset: { _ref: 'private-image' }, alt: 'Avsløringen', altEn: 'The reveal' },
   }
-  const exports = {}
-  const module = { exports }
+  const module = { exports: {} }
   const builder = { width() { return this }, format() { return this }, url() { return 'https://example.test/private-reveal.webp' } }
-  new Function('module', 'exports', 'getPrivateClient', 'getGameConfig', 'getGameRoomSecrets', 'portableTextToHtml', 'privateUrlFor', compiled.code)(
-    module, exports, () => ({ client: {} }), async () => ({ isActive: true }), async () => [room], () => 'Explanation', () => builder,
-  )
-  const answer = module.exports.answer
+  const deps = {
+    getPrivateClient: () => ({ client: {}, token: 'token' }),
+    getGameConfig: async () => ({ isActive }),
+    getGamePreview: async () => ({ isActive: true, previewCode: 'ABCD-EFGH' }),
+    getGameRoomSecrets: async () => [room],
+    activePreviewCode: preview => preview?.previewCode ?? null,
+    hasPreviewAccess: (_cookies, token, code) => previewAccess && token === 'token' && code === 'ABCD-EFGH',
+    portableTextToHtml: () => 'Explanation',
+    privateUrlFor: () => builder,
+  }
+  new Function('module', 'exports', ...Object.keys(deps), compiled.code)(module, module.exports, ...Object.values(deps))
+  return (request) => module.exports.answer(request, {})
+}
+
+test('the API withholds the solution image on start, hint and wrong answer and returns it on a correct answer', async () => {
+  const answer = await loadChecker()
   for (const request of [
     { action: 'start' }, { action: 'hint', n: 0 }, { action: 'check', value: 'wrong-choice' },
   ]) {
@@ -59,4 +71,17 @@ test('the API withholds the solution image on start, hint and wrong answer and r
   assert.equal(result.body.ok, true)
   assert.equal(result.body.solved.imageAlt, 'The reveal')
   assert.equal(result.body.solved.imageUrl, 'https://example.test/private-reveal.webp')
+})
+
+test('while the game is off, the API answers only a browser with preview access', async () => {
+  const closed = await loadChecker({ isActive: false })
+  for (const request of [{ action: 'start' }, { action: 'hint', n: 0 }, { action: 'check', value: 'correct-choice' }]) {
+    const result = await closed({ room: 'salongen', ...request })
+    assert.equal(result.status, 404)
+    assert.doesNotMatch(JSON.stringify(result.body), /A hint|private-reveal|Explanation/)
+  }
+  const preview = await loadChecker({ isActive: false, previewAccess: true })
+  const result = await preview({ room: 'salongen', action: 'check', value: 'correct-choice' })
+  assert.equal(result.status, 200)
+  assert.equal(result.body.ok, true)
 })
