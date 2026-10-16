@@ -17,6 +17,10 @@ Punktene peker bare til steg og ord. Selve hemmelighetene står ikke her, fordi 
 
 - [ ] **Utførelse, steg 2:** «Her passer det fint å bruke trikset Myntforsvinning.» Det finnes ingen tryllebeskrivelse med det navnet. Fjerne setningen, eller lenke til et triks som kommer?
 
+### Universets pose (Tryllekofferten 2026)
+
+- [ ] **Klargjøring, steg 2 og 4:** Hvilken vei skal mekanismen på håndtaket dreies for å åpne og for å lukke mellomlaget? Den engelske teksten sier «mot klokka» begge ganger. Oversettelsen følger den kinesiske, som sier «motsatt retning» i steg 4. Sjekk mot posen.
+
 ## Avklart
 
 _(ingen ennå)_
