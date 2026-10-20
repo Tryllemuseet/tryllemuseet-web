@@ -21,6 +21,10 @@ Punktene peker bare til steg og ord. Selve hemmelighetene står ikke her, fordi 
 
 - [ ] **Klargjøring, steg 2 og 4:** Hvilken vei skal mekanismen på håndtaket dreies for å åpne og for å lukke mellomlaget? Den engelske teksten sier «mot klokka» begge ganger. Oversettelsen følger den kinesiske, som sier «motsatt retning» i steg 4. Sjekk mot posen.
 
+### Ringspillet (Tryllekofferten 2026)
+
+- [ ] **Utførelse, trinn 27:** «Gjør som på bilde 23.» Bilde 23 viser «Ikke vis ennå at de henger sammen», så henvisningen ser feil ut. Er det trinn 22 eller 26 som menes? Sjekk mot arket.
+
 ## Avklart
 
 _(ingen ennå)_
