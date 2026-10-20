@@ -13,10 +13,6 @@ Punktene peker bare til steg og ord. Selve hemmelighetene står ikke her, fordi 
 - [ ] **Slik forbereder du trikset, steg 2:** «… før den **blå** tauenden opp til de andre». Steget går ikke opp når det rød-gule skillet holdes øverst (steg 1). Er det den blå eller den røde enden?
 - [ ] **Utførelse, steg 5, og språk:** Si tydeligere hva som skjer med knutene, for eksempel «skyv knutene av tauet og hold dem skjult i høyre hånd». Bytt også «rep» med «tau» (Effekt) og «taukveilen» med «tauet» (steg 6). Venter til steg 2 og 3 er avklart.
 
-### Fantommynten (Tryllekofferten 2026)
-
-- [ ] **Utførelse, steg 2:** «Her passer det fint å bruke trikset Myntforsvinning.» Det finnes ingen tryllebeskrivelse med det navnet. Fjerne setningen, eller lenke til et triks som kommer?
-
 ### Universets pose (Tryllekofferten 2026)
 
 - [ ] **Klargjøring, steg 2 og 4:** Hvilken vei skal mekanismen på håndtaket dreies for å åpne og for å lukke mellomlaget? Den engelske teksten sier «mot klokka» begge ganger. Oversettelsen følger den kinesiske, som sier «motsatt retning» i steg 4. Sjekk mot posen.
@@ -27,4 +23,6 @@ Punktene peker bare til steg og ord. Selve hemmelighetene står ikke her, fordi 
 
 ## Avklart
 
-_(ingen ennå)_
+### Fantommynten (Tryllekofferten 2026)
+
+- [x] **Utførelse, steg 2:** «Her passer det fint å bruke trikset Myntforsvinning.» Avklart 2026-10-20: «Myntforsvinning» er laget og lagt i Tryllekofferten 2026, og den står under «Se også» på Fantommynten. Setningen blir stående.
