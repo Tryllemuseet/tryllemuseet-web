@@ -307,7 +307,10 @@ async function importFile(file) {
               _type: 'kitStep',
               _key: key(),
               ...(stepTitle ? { title: stepTitle } : {}),
-              text: blocksOf($, $(li).find('p')),
+              // Step text in <p>s, or written straight in the <li> (next to a <figure>).
+              text: $(li).find('p').length
+                ? blocksOf($, $(li).find('p'))
+                : blocksOf($, $('<p>').append($(li).clone().find('figure, img, h3, ol, ul').remove().end().contents())),
               ...(stepFigures.length ? { figures: stepFigures } : {}),
             })
           }
