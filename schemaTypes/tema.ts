@@ -74,6 +74,81 @@ export const tema = defineType({
     }),
 
     defineField({
+      name: 'infoBokser',
+      title: 'Infobokser',
+      type: 'array',
+      description: 'Korte kunngjøringer øverst på temaets samleside, rett under introen. Vises i rekkefølgen her (dra for å endre). Sett «Vis til og med» for at en boks skal forsvinne av seg selv etter en dato.',
+      of: [
+        {
+          type: 'object',
+          name: 'infoBoks',
+          title: 'Infoboks',
+          fields: [
+            defineField({
+              name: 'tittel',
+              title: 'Tittel',
+              type: 'string',
+              validation: R => R.required().max(80),
+            }),
+            defineField({
+              name: 'tekst',
+              title: 'Tekst',
+              type: 'text',
+              rows: 3,
+              description: 'Maks 300 tegn.',
+              validation: R => R.required().max(300),
+            }),
+            defineField({
+              name: 'lenkeTekst',
+              title: 'Lenketekst',
+              type: 'string',
+              description: 'Teksten på knappen, f.eks. «Test deg selv i quizen». Krever lenkeadresse.',
+              validation: R => R.max(60).custom((value, context) => {
+                const parent = context.parent as { lenkeUrl?: string } | undefined
+                return value && !parent?.lenkeUrl ? 'Fyll inn lenkeadresse, eller fjern lenketeksten.' : true
+              }),
+            }),
+            defineField({
+              name: 'lenkeUrl',
+              title: 'Lenkeadresse',
+              type: 'string',
+              description: 'Intern sti som starter med / (f.eks. /tryllequiz) eller full adresse som starter med https://. Eksterne lenker åpnes i ny fane.',
+              validation: R => R.custom((value, context) => {
+                const parent = context.parent as { lenkeTekst?: string } | undefined
+                if (!value) return parent?.lenkeTekst ? 'Fyll inn lenkeadresse, eller fjern lenketeksten.' : true
+                if (/\s/.test(value)) return 'Adressen kan ikke inneholde mellomrom.'
+                if (value.startsWith('/') && !value.startsWith('//')) {
+                  return parent?.lenkeTekst ? true : 'Fyll inn lenketekst, eller fjern lenkeadressen.'
+                }
+                if (/^https:\/\/[^/]+\.[^/]+/.test(value)) {
+                  return parent?.lenkeTekst ? true : 'Fyll inn lenketekst, eller fjern lenkeadressen.'
+                }
+                return 'Må starte med / (intern side) eller https:// (ekstern side).'
+              }),
+            }),
+            defineField({
+              name: 'visTilOgMed',
+              title: 'Vis til og med',
+              type: 'date',
+              options: { dateFormat: 'DD.MM.YYYY' },
+              description: 'Valgfritt. Boksen skjules automatisk etter denne datoen. La stå tom for å vise den til du fjerner den.',
+            }),
+          ],
+          preview: {
+            select: { title: 'tittel', until: 'visTilOgMed' },
+            prepare({ title, until }: { title?: string; until?: string }) {
+              const [y, m, d] = (until ?? '').split('-')
+              return {
+                title: title ?? '(uten tittel)',
+                subtitle: until ? `Vises til og med ${d}.${m}.${y}` : 'Ingen utløpsdato',
+              }
+            },
+          },
+        },
+      ],
+    }),
+
+    defineField({
       name: 'physicalPresence',
       title: 'Fysisk tilstedeværelse i museet',
       type: 'string',
