@@ -6,6 +6,7 @@
 // artefakt, trylleforening), gruppert etter type. Brukes av
 // /utstillingen/[slug].astro når slugen matcher et Tema fremfor en enkelt
 // Fordypning.
+import InfoBoxes from './InfoBoxes.astro'
 import { urlFor } from '../lib/sanity'
 import type { Tema, TemaContentItem } from '../lib/sanity'
 
@@ -54,6 +55,8 @@ const heroImgUrl = tema.heroImage?.asset
     {tema.intro && <p class="tema-hero-intro">{tema.intro}</p>}
   </div>
 </section>
+
+<InfoBoxes infoBokser={tema.infoBokser} />
 
 <section class="container tema-grid-section">
   <p class="section-label">Utforsk {tema.title}</p>
