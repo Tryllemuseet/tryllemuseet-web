@@ -1,0 +1,147 @@
+---
+// src/components/InfoBoxes.astro
+//
+// Editor-managed announcement boxes (tema.infoBokser, see schemaTypes/tema.ts)
+// shown at the top of a Tema hub, under the hero. Renders nothing when there
+// are no boxes left to show, so pages without boxes are unchanged.
+//
+// visTilOgMed ("show through") is a date-only value. The site is static, so
+// expired boxes are dropped at build time AND hidden again in the browser
+// (data-until + the inline script below), so a box disappears on time even
+// if no rebuild happens after its date.
+import type { TemaInfoBoks } from '../lib/sanity'
+
+interface Props { infoBokser?: TemaInfoBoks[] | null }
+const { infoBokser } = Astro.props
+
+// Today's date in Oslo as "YYYY-MM-DD" (sv-SE formats dates that way), so it
+// compares directly with Sanity date strings.
+const todayOslo = new Intl.DateTimeFormat('sv-SE', { timeZone: 'Europe/Oslo' }).format(new Date())
+
+const boxes = (infoBokser ?? []).filter(b => b?.tittel && (!b.visTilOgMed || b.visTilOgMed >= todayOslo))
+
+function isExternal(url: string) {
+  if (!url.startsWith('https://')) return false
+  try {
+    const host = new URL(url).hostname
+    return host !== 'tryllemuseet.no' && !host.endsWith('.tryllemuseet.no')
+  } catch {
+    return true
+  }
+}
+---
+
+{boxes.length > 0 && (
+  <div class="container info-boxes" data-info-boxes>
+    {boxes.map((box) => {
+      const headingId = `infoboks-${box._key}`
+      const external = box.lenkeUrl ? isExternal(box.lenkeUrl) : false
+      return (
+        <aside class="info-box" aria-labelledby={headingId} data-until={box.visTilOgMed}>
+          <h2 class="info-box-title" id={headingId}>{box.tittel}</h2>
+          <p class="info-box-text">{box.tekst}</p>
+          {box.lenkeUrl && box.lenkeTekst && (
+            <a
+              class="info-box-link"
+              href={box.lenkeUrl}
+              {...(external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
+            >
+              {box.lenkeTekst}
+              {external
+                ? <><span aria-hidden="true"> ↗</span><span class="visually-hidden"> (åpnes i ny fane)</span></>
+                : <span aria-hidden="true"> →</span>}
+            </a>
+          )}
+        </aside>
+      )
+    })}
+  </div>
+)}
+
+{boxes.some(b => b.visTilOgMed) && (
+  <script is:inline>
+    // Runs synchronously right after the boxes are parsed, so an expired box
+    // never flashes. Same Oslo date-only comparison as at build time.
+    (function () {
+      var wrap = document.currentScript && document.currentScript.previousElementSibling
+      if (!wrap || !wrap.hasAttribute('data-info-boxes')) return
+      var today = new Intl.DateTimeFormat('sv-SE', { timeZone: 'Europe/Oslo' }).format(new Date())
+      wrap.querySelectorAll('[data-until]').forEach(function (box) {
+        var until = box.getAttribute('data-until')
+        if (until && until < today) box.remove()
+      })
+      if (!wrap.querySelector('.info-box')) wrap.remove()
+    })()
+  </script>
+)}
+
+<style>
+  .info-boxes {
+    display: grid;
+    gap: 1rem;
+    padding-top: 2rem;
+  }
+  @media (min-width: 720px) {
+    .info-boxes { grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.25rem; }
+  }
+
+  .info-box {
+    background: var(--cream);
+    border: 1px solid var(--cream-dark);
+    border-left: 4px solid var(--gold);
+    border-radius: var(--radius-md);
+    padding: 1.25rem 1.25rem 1.35rem;
+    box-shadow: var(--shadow-sm);
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .info-box-title {
+    font-family: var(--font-display);
+    font-size: 1.15rem;
+    line-height: 1.3;
+    letter-spacing: 0.02em;
+    color: var(--burgundy);
+    margin: 0 0 0.5rem;
+  }
+
+  .info-box-text {
+    font-family: var(--font-body);
+    font-size: 1rem;
+    line-height: 1.65;
+    color: var(--ink);
+    margin: 0;
+  }
+
+  .info-box-link {
+    display: inline-block;
+    margin-top: 1rem;
+    padding: 0.6rem 1.1rem;
+    min-height: 44px;
+    background: var(--burgundy);
+    color: var(--cream);
+    font-family: var(--font-ui);
+    font-size: 0.95rem;
+    font-weight: 600;
+    line-height: 1.5;
+    text-decoration: none;
+    border-radius: var(--radius);
+    transition: background-color var(--transition);
+  }
+  .info-box-link:hover { background: var(--burgundy-dk); }
+  .info-box-link:focus-visible {
+    outline: 3px solid var(--gold-dark);
+    outline-offset: 3px;
+  }
+
+  .visually-hidden {
+    position: absolute;
+    width: 1px; height: 1px;
+    padding: 0; margin: -1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+    border: 0;
+  }
+</style>

@@ -234,6 +234,17 @@ export interface TemaContentItem {
   stationCount?: number
 }
 
+// Redaktørstyrt kunngjøring øverst på Tema-huben (se InfoBoxes.astro).
+// visTilOgMed er en Sanity-dato, "YYYY-MM-DD".
+export interface TemaInfoBoks {
+  _key:         string
+  tittel:       string
+  tekst:        string
+  lenkeTekst?:  string
+  lenkeUrl?:    string
+  visTilOgMed?: string
+}
+
 export interface Tema {
   _id:               string
   title:             string
@@ -242,6 +253,7 @@ export interface Tema {
   intro?:            string
   heroImage?:        { asset: { _ref: string; url: string }; alt?: string }
   physicalPresence?: 'none' | 'wallPanel' | 'room'
+  infoBokser?:       TemaInfoBoks[]
   content:           TemaContentItem[]
 }
 
@@ -271,6 +283,7 @@ const TEMA_CONTENT_PROJECTION = `
 const TEMA_PROJECTION = `
   _id, title, "slug": slug.current, icon, intro, physicalPresence,
   heroImage { asset->{ _ref, url }, alt },
+  infoBokser[]{ _key, tittel, tekst, lenkeTekst, lenkeUrl, visTilOgMed },
   "content": content[]->{ ${TEMA_CONTENT_PROJECTION} }
 `
 
