@@ -21,6 +21,10 @@ Punktene peker bare til steg og ord. Selve hemmelighetene står ikke her, fordi 
 
 - [ ] **Utførelse, trinn 27:** «Gjør som på bilde 23.» Bilde 23 viser «Ikke vis ennå at de henger sammen», så henvisningen ser feil ut. Er det trinn 22 eller 26 som menes? Sjekk mot arket.
 
+### Fargeskiftende tørkler (Tryllekofferten 2026)
+
+- [ ] **Utførelse av effekt 2, steg 3:** Det blå tørkleet har nettopp blitt grønt, men steget sier «Grip raskt et hjørne av det **blå** tørkleet sammen med ringen». Er det det gule eller det grønne tørkleet som menes? Sjekk mot tørklene.
+
 ## Avklart
 
 ### Fantommynten (Tryllekofferten 2026)
