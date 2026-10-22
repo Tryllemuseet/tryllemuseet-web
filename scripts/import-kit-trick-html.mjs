@@ -206,9 +206,12 @@ async function importFile(file) {
   // untitled continuation subsection (steps always render after the body).
   const sections = []
   const isStepList = el => $(el).is('ol.routine, ol.steps')
-  // A list of photos, optionally each in a <figure> with a <figcaption>.
+  // A list of photos, optionally each in a <figure> with a <figcaption>, or
+  // (ul.frames) with the caption in a <p class="n"> after the image.
+  const CAPTION = 'figcaption, p.n'
   const isPhotoList = el => $(el).is('ol, ul') && $(el).find('img').length > 0 &&
-    !clean($(el).clone().find('figcaption').remove().end().text())
+    !clean($(el).clone().find(CAPTION).remove().end().text())
+  const photoCaption = img => clean(($(img).closest('figure').length ? $(img).closest('figure') : $(img).closest('li')).find(CAPTION).first().text())
 
   async function inlineImage(img, caption) {
     const ref = await uploadImage($(img).attr('src'), hint())
@@ -304,14 +307,17 @@ async function importFile(file) {
               _type: 'kitStep',
               _key: key(),
               ...(stepTitle ? { title: stepTitle } : {}),
-              text: blocksOf($, $(li).find('p')),
+              // Step text in <p>s, or written straight in the <li> (next to a <figure>).
+              text: $(li).find('p').length
+                ? blocksOf($, $(li).find('p'))
+                : blocksOf($, $('<p>').append($(li).clone().find('figure, img, h3, ol, ul').remove().end().contents())),
               ...(stepFigures.length ? { figures: stepFigures } : {}),
             })
           }
         } else if (isPhotoList(el)) {
           afterSteps()
           for (const img of $el.find('img').toArray()) {
-            const im = await inlineImage(img, clean($(img).closest('figure').find('figcaption').text()))
+            const im = await inlineImage(img, photoCaption(img))
             if (im) cur.body.push(im)
           }
         } else if (tag === 'ol' || tag === 'ul') {
