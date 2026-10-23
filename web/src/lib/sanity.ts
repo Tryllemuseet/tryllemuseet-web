@@ -284,7 +284,10 @@ const TEMA_PROJECTION = `
   _id, title, "slug": slug.current, icon, intro, physicalPresence,
   heroImage { asset->{ _ref, url }, alt },
   infoBokser[]{ _key, tittel, tekst, lenkeTekst, lenkeUrl, visTilOgMed },
-  "content": content[]->{ ${TEMA_CONTENT_PROJECTION} }
+  // Drop references that don't resolve (deleted, unpublished, or a draft
+  // unreadable without a token in preview builds) before dereferencing;
+  // content[]-> would yield null items and crash TemaHub.
+  "content": content[defined(@->_id)]->{ ${TEMA_CONTENT_PROJECTION} }
 `
 
 // Alle temaer — til temakortene på /utstillingen
