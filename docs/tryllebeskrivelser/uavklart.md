@@ -25,6 +25,10 @@ Punktene peker bare til steg og ord. Selve hemmelighetene står ikke her, fordi 
 
 - [ ] **Utførelse av effekt 2, steg 3:** Det blå tørkleet har nettopp blitt grønt, men steget sier «Grip raskt et hjørne av det **blå** tørkleet sammen med ringen». Er det det gule eller det grønne tørkleet som menes? Sjekk mot tørklene.
 
+### Trylleriets trykketriks (eget tryllesett)
+
+- [ ] **Utførelse, steg 2:** Den første måten å ta ut kortene på sier «trekk ut «spar 10» og vis fremsiden». Men fremsiden av det blanke kortet er det publikum ikke må se. Menes det å vise fremsiden mens kortet ennå sitter i plastlommen? Sjekk mot holderen.
+
 ## Avklart
 
 ### Fantommynten (Tryllekofferten 2026)
