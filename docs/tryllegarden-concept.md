@@ -5,13 +5,14 @@
 > Christmas, with the *fjøsnisse* on the farm and the museum's two
 > *tryllebarn*, integrated in the website, with secrets kept in the closed
 > area, adjustable difficulty and language, optional read-aloud, and built so
-> other seasons can be switched in by configuration. Open questions for the
-> museum are collected under "Decisions needed" at the end.
+> other seasons can be switched in by configuration. The museum's answers to
+> the first round of questions are recorded under "Decisions" at the end.
 
 ## The pitch
 
-**Tryllegården** ("The Magic Farm") is an old farm where small, unexplainable
-things happen. The hay is braided. The lantern is lit before anyone gets up.
+**Tryllegården** ("The Magic Farm") is what the tryllebarn call **Årvoll
+gård** — the old farm in Oslo where Tryllemuseet lives — because small,
+unexplainable things happen there. The hay is braided. The lantern is lit before anyone gets up.
 Someone has eaten the porridge. The two tryllebarn know that every trick has a
 method — so who is doing these?
 
@@ -67,8 +68,8 @@ mini-game is a "which one is it under" game, and no trick is a cup trick
 
 - **Tryllebarna** — the museum's two child magicians (girl with red hair, boy
   with brown hair, top hats). They speak to the player, explain and cheer.
-  The player is the third apprentice, not one of them. *Names are a museum
-  decision; working names in this document: Tiril and Trym.*
+  The player is the third apprentice, not one of them. Their names are
+  **Tiril** and **Trym**.
 - **Fjøsnissen** — small, grey wool clothes, red knitted hat, white beard.
   Seen only in glimpses until the finale. He "speaks" through notes with
   wobbly handwriting and through what he leaves behind. He lives on the farm
@@ -91,22 +92,37 @@ small children learn the rhythm:
    (what the audience sees). The *secret* goes into the player's tryllesekk
    and is read in the closed area (see "Secrets").
 
-| # | Place | Mini-game (mechanic) | Tradition taught |
-|---|---|---|---|
-| 1 | **Tunet** (prologue) | Find the nisse's traces in the yard (`finn`) | Who the fjøsnisse is: the farm's little guardian |
-| 2 | **Fjøset** | Make the Christmas porridge in the right order (`rekkefolge`) | Porridge with a *smørøye* for the nisse on Christmas Eve |
-| 3 | **Låven** | Repeat the order the birds landed on the julenek (`husk`) | The *julenek* — a sheaf of oats for the birds |
-| 4 | **Stallen** | Follow the strands in the horse's braided mane (`folg-traden`) | *Nisseflette* — the belief that the nisse braids the mane at night |
-| 5 | **Bakstehuset** | Fill the cake tins so the pattern is right (`monster`) | *Sju slag* — seven kinds of Christmas biscuits |
-| 6 | **Stua** | Weave a paper heart, over and under (`flett`) | *Julekurver* on the tree, and making your own decorations |
-| 7 | **Stabburet** | The nisse has moved things — what changed? (`forandret`) | Christmas food, the almond in the porridge and the marzipan pig |
-| 8 | **Lyktestien** | Light the four lanterns along the path (`tenn`) | Advent — four Sundays, four candles |
-| 9 | **Låvescenen** (finale) | Put together your own Christmas show (`forestilling`) | The animals get extra food on Christmas Eve; the nisse comes to watch |
-| + | *Romjulsbonus:* **Porten** | Who is behind the costume? (`gjett-hvem`) | *Å gå julebukk* between Christmas and New Year |
+| # | Place | Mini-game (mechanic) | Tradition taught | Nissens triks (effect only) |
+|---|---|---|---|---|
+| 1 | **Tunet** (prologue) | Find the nisse's traces in the yard (`finn`) | Who the fjøsnisse is: the farm's little guardian | **Strikken som hopper** — a rubber band jumps from two fingers to the other two |
+| 2 | **Fjøset** | Make the Christmas porridge in the right order (`rekkefolge`) | Porridge with a *smørøye* for the nisse on Christmas Eve | **Kanelstanga av gummi** — a stiff cinnamon stick turns soft and wobbly |
+| 3 | **Låven** | Repeat the order the birds landed on the julenek (`husk`) | The *julenek* — a sheaf of oats for the birds | **Fuglen på neket** — a bird on one side of a paper disc, the julenek on the other; suddenly the bird sits on it |
+| 4 | **Stallen** | Follow the strands in the horse's braided mane (`folg-traden`) | *Nisseflette* — the belief that the nisse braids the mane at night | **Den umulige knuten** — tie a knot in a ribbon without letting go of the ends |
+| 5 | **Bakstehuset** | Fill the cake tins so the pattern is right (`monster`) | *Sju slag* — seven kinds of Christmas biscuits | **Pepperkaka som vet svaret** — a friend thinks of any number; the answer was already written under the biscuit |
+| 6 | **Stua** | Weave a paper heart, over and under (`flett`) | *Julekurver* on the tree, and making your own decorations | **Gå gjennom et julekort** — step right through an ordinary Christmas card |
+| 7 | **Stabburet** | The nisse has moved things — what changed? (`forandret`) | Christmas food, the almond in the porridge and the marzipan pig | **Klementinen som teller** — say how many segments are inside before it is peeled |
+| 8 | **Lyktestien** | Light the four lanterns along the path (`tenn`) | Advent — four Sundays, four candles | **Tankeleser-lysene** — one magician leaves the room, comes back and knows which candle was chosen |
+| 9 | **Låvescenen** (finale) | Put together your own Christmas show (`forestilling`) | The animals get extra food on Christmas Eve; the nisse comes to watch | **Tryllekunstnerens tre regler** — how to present a trick (no new effect) |
+| + | *Bonus:* **Porten** | Who is behind the costume? (`gjett-hvem`) | *Å gå julebukk* between Christmas and New Year | **Maska som bytter ansikt** — a folded paper mask shows a new face every time it opens |
 
-Every tradition sentence is the museum's to write and fact-check (same
-editorial flow as the quiz and the Cabinet). The table is a proposal, not
-verified folklore.
+**All places are open from the first day** and can be played in any order
+(decided November 2026). The finale opens when the eight ornaments hang on
+the tree; the bonus place is open like the others.
+
+**How the tricks were chosen.** All ten are classic beginners' effects of
+the kind found in children's magic books: self-working or nearly so, done
+with things already in the house (a rubber band, a ribbon, paper, a
+clementine, a biscuit), with no fire, nothing sharp beyond children's
+scissors, and no wasted food. None comes from the museum's tryllesett or
+from working magicians' repertoire, so giving the methods to anyone who
+finishes a place costs nobody a secret worth keeping. Tankeleser-lysene
+needs two people — on purpose: it is Tiril and Trym's trick, and it gets a
+sibling or a parent involved. The table gives effects only; the methods are
+written as `kitTrick` documents in the private dataset.
+
+The tradition texts are drafted during the build and are **not verified
+folklore** until the museum has approved them. Approval happens once, before
+launch (see "Decisions").
 
 **The finale.** On the barn stage the player picks an opening, a middle and a
 closing number from the tricks collected, chooses a magic word, and watches
@@ -232,9 +248,8 @@ Both reuse what is already built:
 
 This also keeps the magicians' rule the site already follows: public pages
 describe **effects**; methods are only behind the curtain. The tricks
-themselves are chosen by the museum — simple, safe, self-working effects
-with Christmas things (a clementine, a gingerbread biscuit, a ribbon, a
-Christmas card, a few nuts). This document names no methods on purpose.
+are listed, as effects, in the table of places above. This document names
+no methods on purpose.
 
 ## Seasons: one farm, several packs
 
@@ -265,11 +280,10 @@ are visible.
 What needs code: a new *mechanic* (the library starts with the ten in the
 table above), and new art has to be drawn.
 
-**Unlock modes** (per season): `open` (everything at once), `sequential` (one
-place opens the next — the default) or `dated` (each place has an
-`availableFrom` date). `dated` gives an advent rhythm — for example two
-places per advent week and the finale on 23 December — without the content
-burden of a 24-door calendar. Out of season, the game shows the most recent
+**Unlock modes** (per season): `open` (everything at once — chosen for
+Christmas), `sequential` (one place opens the next) or `dated` (each place has an
+`availableFrom` date). `dated` would give an advent rhythm without the
+content burden of a 24-door calendar; it stays available for a later year. Out of season, the game shows the most recent
 season as a replay, or a "kommer snart" teaser; that is a config choice.
 
 ## How it fits the website
@@ -304,9 +318,9 @@ and so reduced-motion users get still pictures that work just as well.
 
 The supplied images show the children in two different styles: taller
 figures with purple hat bands, and rounder figures with red hat bands and a
-silver star. The barn picture with the nisse — the rounder style — is the
-one the game should follow, and the hat band is a natural season marker
-(red for Christmas). Every scene needs the same two children, so a character
+silver star. The game follows the rounder style from the barn picture with
+the nisse (confirmed by the museum), and the hat band is a natural season
+marker (red for Christmas). Every scene needs the same two children, so a character
 sheet (front, side, cheering, pointing, surprised) should be drawn before any
 scene.
 
@@ -344,20 +358,17 @@ second on-demand page and endpoint; the rest of the site stays static.
 Everything else — the remaining places, the full finale, the diploma, the
 museum QR ornament, English, and the next season — layers on without rework.
 
-## Decisions needed (museum)
+## Decisions (museum, November 2026)
 
-1. **The farm's name.** The museum's address is Årvollveien 35 — Årvoll
-   gård. Should the game's farm be Årvoll gård by name, a farm that merely
-   looks like it, or simply "Tryllegården"? Using the real name ties the
-   game to a visit, but may need a word with whoever runs the farm.
-2. **The children's names** (working names: Tiril and Trym), and whether the
-   same two become the site's regular child characters.
-3. **Which tricks** the nisse teaches, and whether a free game may give away
-   their methods at all — or whether Nisseloftet should hold only tricks the
-   museum already teaches openly on its courses.
-4. **Rhythm:** everything open at once, or released through advent
-   (`dated`)?
-5. **Art:** who draws it, and confirmation of the rounder illustration style.
-6. **Title:** *Tryllegården* for the engine and *Jul på Tryllegården —
-   Fjøsnissens hemmelighet* for the season are proposals.
-7. **Folklore texts:** the museum writes or approves every tradition text.
+| Question | Decision |
+|---|---|
+| The farm's name | **Årvoll gård**, by name |
+| The children's names | **Tiril and Trym** |
+| Which tricks, and whether to give methods away | Left to the concept: the ten beginners' effects in the table of places, methods included in Nisseloftet |
+| Rhythm | **Everything open at once** (`open`) |
+| Illustration style | The rounder style from the barn picture |
+| Titles | *Tryllegården* (engine) and *Jul på Tryllegården — Fjøsnissens hemmelighet* (season) |
+| Folklore and other texts | The museum approves **once, before launch** — not along the way. Drafts are written during the build, and the game stays behind `isActive` until that review is done |
+
+Still open: who draws the art, and whether whoever runs Årvoll gård should
+be told that the farm appears by name in a game.
