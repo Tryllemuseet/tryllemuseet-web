@@ -115,6 +115,8 @@ export interface FarmPlace {
   /** Where the nisse hides in this place's scene, in percent. */
   nisseX?: number
   nisseY?: number
+  /** The scene picture already shows the nisse at nisseX/nisseY: the hidden hat is then an invisible target. */
+  nisseInScene?: boolean
 }
 
 export interface FarmSeason {
@@ -218,8 +220,8 @@ const jul: FarmSeason = {
       icon: '🥣',
       mapX: 47, mapY: 29,
       ornament: '🟡',
-      backdrop: 'fjos',
-      sceneAlt: 'Inne i fjøset, med lykt, høy og en gryte på bordet.',
+      sceneImageUrl: '/images/tryllegarden/scene/fjoset.webp',
+      sceneAlt: 'Inne i fjøset: en tent lykt, høyballer, en tom gryte på bordet og en nysgjerrig ku. Nissen titter fram bak høyet.',
       intro: [
         { who: 'gutt',  text: 'Det lukter grøt her! Men gryta er tom …' },
         { who: 'jente', text: 'Nissen blir så glad for julegrøt. Skal vi koke en ny til ham?' },
@@ -227,15 +229,15 @@ const jul: FarmSeason = {
       ],
       task: 'Trykk på det som skal skje først. Så det neste, helt til grøten er ferdig.',
       items: [
-        { key: 'gryte', label: 'Ha melk og ris i gryta',         emoji: '🥛', order: 1 },
-        { key: 'ror',   label: 'Rør og rør til grøten er tykk',  emoji: '🥄', imageUrl: '/images/tryllegarden/ting/skje.webp', order: 2, from: 'laerling' },
-        { key: 'skal',  label: 'Øs grøten opp i skåla',          emoji: '🥣', order: 3, from: 'laerling' },
-        { key: 'kanel', label: 'Dryss på sukker og kanel',       emoji: '✨', order: 4, from: 'mester' },
-        { key: 'smor',  label: 'Legg en klatt smør i midten',    emoji: '🧈', order: 5 },
-        { key: 'lave',  label: 'Bær skåla ut på låven',          emoji: '🏮', order: 6 },
-        { key: 'sokk',  label: 'Legg en sokk oppi',              emoji: '🧦', decoy: true, from: 'mester',
+        { key: 'gryte', label: 'Ha melk og ris i gryta',         emoji: '🥛', imageUrl: '/images/tryllegarden/kort/helle.webp', order: 1 },
+        { key: 'ror',   label: 'Rør og rør til grøten er tykk',  emoji: '🥄', imageUrl: '/images/tryllegarden/kort/ror.webp', order: 2, from: 'laerling' },
+        { key: 'skal',  label: 'Øs grøten opp i skåla',          emoji: '🥣', imageUrl: '/images/tryllegarden/kort/skal.webp', order: 3, from: 'laerling' },
+        { key: 'kanel', label: 'Dryss på sukker og kanel',       emoji: '✨', imageUrl: '/images/tryllegarden/kort/kanel.webp', order: 4, from: 'mester' },
+        { key: 'smor',  label: 'Legg en klatt smør i midten',    emoji: '🧈', imageUrl: '/images/tryllegarden/kort/smor.webp', order: 5 },
+        { key: 'lave',  label: 'Bær skåla ut på låven',          emoji: '🏮', imageUrl: '/images/tryllegarden/kort/lave.webp', order: 6 },
+        { key: 'sokk',  label: 'Legg en sokk oppi',              emoji: '🧦', imageUrl: '/images/tryllegarden/kort/sokk.webp', decoy: true, from: 'mester',
           wrong: 'Sokk i grøten? Nei, fy da! Den hører ikke hjemme her.' },
-        { key: 'agurk', label: 'Pynt med sylteagurk',            emoji: '🥒', decoy: true, from: 'mester',
+        { key: 'agurk', label: 'Pynt med sylteagurk',            emoji: '🥒', imageUrl: '/images/tryllegarden/kort/agurk.webp', decoy: true, from: 'mester',
           wrong: 'Sylteagurk? Det liker ikke nissen. Den hører ikke hjemme her.' },
       ],
       hints: [
@@ -251,7 +253,7 @@ const jul: FarmSeason = {
       trickEffect:
         'Du viser fram en hard kanelstang. Så rister du forsiktig på den – og plutselig ser den myk ut, som om den var av gummi!',
       trickSlug: 'kanelstanga-av-gummi',
-      nisseX: 8, nisseY: 30,
+      nisseX: 90, nisseY: 83, nisseInScene: true,
     },
     {
       key: 'laven',

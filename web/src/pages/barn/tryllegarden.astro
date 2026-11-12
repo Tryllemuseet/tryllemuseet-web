@@ -169,7 +169,7 @@ const paletteStyle = `--tg-sky:${pal.sky};--tg-ground:${pal.ground};--tg-accent:
     traditionShort: string; traditionShortEn?: string; traditionLong?: string; traditionLongEn?: string
     traditionLinkUrl?: string; traditionLinkLabel?: string
     trickTitle: string; trickTitleEn?: string; trickEffect: string; trickEffectEn?: string
-    hasTrick: boolean; nisseX?: number; nisseY?: number
+    hasTrick: boolean; nisseX?: number; nisseY?: number; nisseInScene?: boolean
   }
   interface Season {
     key: string; title: string; titleEn?: string; subtitle?: string; subtitleEn?: string
@@ -616,9 +616,9 @@ const paletteStyle = `--tg-sky:${pal.sky};--tg-ground:${pal.ground};--tg-accent:
       show(`<div class="tg-card tg-game tg-lvl-${level()}">
         <div class="tg-head"><h1 class="tg-h1" tabindex="-1" data-focus>${esc(title)}</h1>${sayBtn(task)}</div>
         <p class="tg-task">${esc(task)}</p>
-        <div class="tg-scene${SHORT_SCENE.includes(place.mechanic) ? ' tg-scene--short' : ''}" id="tg-scene">
+        <div class="tg-scene${SHORT_SCENE.includes(place.mechanic) ? (place.sceneImageUrl ? ' tg-scene--mid' : ' tg-scene--short') : ''}" id="tg-scene">
           ${sceneArt(place)}
-          ${place.nisseX != null && place.nisseY != null ? `<button type="button" class="tg-hat${mine.hats.includes(place.key) ? ' is-found' : ''}" id="tg-hat" style="left:${place.nisseX}%;top:${place.nisseY}%" aria-label="${t('Noe rødt som stikker fram', 'Something red peeking out')}"><img src="${peekFor(place.key)}" alt=""></button>` : ''}
+          ${place.nisseX != null && place.nisseY != null ? `<button type="button" class="tg-hat${place.nisseInScene ? ' tg-hat--ghost' : ''}${mine.hats.includes(place.key) ? ' is-found' : ''}" id="tg-hat" style="left:${place.nisseX}%;top:${place.nisseY}%" aria-label="${t('Noe rødt som stikker fram', 'Something red peeking out')}">${place.nisseInScene ? '' : `<img src="${peekFor(place.key)}" alt="">`}</button>` : ''}
         </div>
         <div id="tg-board"></div>
         <p class="tg-msg" id="tg-msg" role="status" aria-live="polite"></p>
@@ -1502,6 +1502,8 @@ const paletteStyle = `--tg-sky:${pal.sky};--tg-ground:${pal.ground};--tg-accent:
   /* Scenes */
   .tg-scene { position: relative; aspect-ratio: 16 / 10; border-radius: 16px; overflow: hidden; background: var(--tg-sky); }
   .tg-scene--short { aspect-ratio: 16 / 6; }
+  .tg-scene--mid { aspect-ratio: 16 / 8; }
+  .tg-scene--mid .tg-backdrop { object-position: center 60%; }
   .tg-backdrop { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
   .tg-thing, .tg-bird, .tg-hat, .tg-spot {
     position: absolute; transform: translate(-50%, -50%); background: none; border: 0; padding: 0; cursor: pointer; line-height: 1;
@@ -1514,6 +1516,8 @@ const paletteStyle = `--tg-sky:${pal.sky};--tg-ground:${pal.ground};--tg-accent:
   .is-hint { animation: tg-glow 1s ease-in-out infinite; border-radius: 16px; box-shadow: 0 0 0 4px var(--tg-glow); }
   .tg-hat { width: 14%; min-width: 56px; opacity: .92; transform: translate(-50%, -62%); }
   .tg-hat img, .tg-hat svg { width: 100%; height: auto; display: block; }
+  .tg-hat--ghost { width: 12%; aspect-ratio: 1; border-radius: 50%; transform: translate(-50%, -50%); opacity: 1; }
+  .tg-hat--ghost.is-found { box-shadow: 0 0 0 4px var(--tg-glow), 0 0 18px var(--tg-glow); }
   .tg-hat.is-found { opacity: 1; filter: drop-shadow(0 0 6px var(--tg-glow)); }
 
   .tg-checklist { list-style: none; display: flex; flex-wrap: wrap; gap: var(--space-2); justify-content: center; padding: 0; margin-top: var(--space-3); }
@@ -1530,7 +1534,7 @@ const paletteStyle = `--tg-sky:${pal.sky};--tg-ground:${pal.ground};--tg-accent:
   .tg-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: var(--space-2); margin-top: var(--space-4); }
   .tg-cardbtn { display: flex; align-items: center; gap: var(--space-3); min-height: 64px; padding: .6rem 1rem; text-align: left; background: #fff; border: 3px solid transparent; border-radius: 14px; cursor: pointer; font: 600 1.1rem var(--font-ui); color: var(--ink); box-shadow: var(--shadow); }
   .tg-cardbtn > span[aria-hidden], .tg-slot-body > span[aria-hidden] { font-size: 1.8rem; line-height: 1; }
-  .tg-cardbtn img, .tg-slot-body img { width: 2.2rem; height: 2.2rem; object-fit: contain; }
+  .tg-cardbtn img, .tg-slot-body img { width: 3.4rem; height: 3.4rem; object-fit: contain; flex-shrink: 0; }
   .tg-slot-body { display: inline-flex; align-items: center; gap: var(--space-3); }
   .tg-cardbtn:hover { border-color: var(--tg-glow); }
   .tg-cardbtn.is-out { opacity: .4; text-decoration: line-through; cursor: default; }
