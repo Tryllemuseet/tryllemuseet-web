@@ -30,6 +30,7 @@ const navSubArea = {
           { title: 'Ingen', value: 'none' },
           { title: 'Tryllequiz (quizConfig.isActive)', value: 'quiz' },
           { title: 'Det trettende kabinett (gameConfig.isActive)', value: 'game' },
+          { title: 'Tryllegården (farmGameConfig.isActive)', value: 'tryllegarden' },
           { title: 'Konkurranse-/foreningshistorie (vises når siteConfig.historietabellerActive er på)', value: 'historietabeller' },
           { title: 'Erstattes av konkurranse-/foreningshistorie (vises bare FØR siteConfig.historietabellerActive er på)', value: 'historietabellerAv' },
         ],

@@ -1,6 +1,6 @@
 ---
 // src/layouts/BaseLayout.astro
-import { getSiteConfig, getQuizConfig, getGameConfig, getSiteNavigation } from '../lib/sanity'
+import { getSiteConfig, getQuizConfig, getGameConfig, getFarmGameConfig, getSiteNavigation } from '../lib/sanity'
 import type { NavMainArea, NavSubArea } from '../lib/sanity'
 import { SITE_ORIGIN, isIndexable } from '../lib/site'
 import Analytics from '@vercel/analytics/astro'
@@ -24,8 +24,8 @@ const {
   ogType = 'website',
 } = Astro.props;
 
-const [site, quizConfig, gameConfig, navigation] = await Promise.all([
-  getSiteConfig(), getQuizConfig(), getGameConfig(), getSiteNavigation(),
+const [site, quizConfig, gameConfig, farmConfig, navigation] = await Promise.all([
+  getSiteConfig(), getQuizConfig(), getGameConfig(), getFarmGameConfig(), getSiteNavigation(),
 ])
 const metaDescription = description ?? site.seoDescription
 
@@ -33,6 +33,7 @@ const canonicalUrl = new URL(Astro.url.pathname, SITE_ORIGIN).toString()
 const shareImage = new URL(ogImage ?? '/Logosirkel_m_tekst.jpg', SITE_ORIGIN).toString()
 const quizActive = quizConfig?.isActive === true
 const gameActive = gameConfig?.isActive === true
+const farmActive = farmConfig?.isActive === true
 
 const currentPath = Astro.url.pathname
 
@@ -48,6 +49,7 @@ const rightAreas = mainAreas.filter(a => a.column === 'right')
 const isFeatureActive = (flag?: NavSubArea['featureFlag']) =>
   flag === 'quiz' ? quizActive :
   flag === 'game' ? gameActive :
+  flag === 'tryllegarden' ? farmActive :
   flag === 'historietabeller' ? site.historietabellerActive :
   flag === 'historietabellerAv' ? !site.historietabellerActive :
   true

@@ -1642,7 +1642,7 @@ export interface NavSubArea {
   label:        string
   link:         string
   isVisible:    boolean
-  featureFlag?: 'none' | 'quiz' | 'game' | 'historietabeller' | 'historietabellerAv'
+  featureFlag?: 'none' | 'quiz' | 'game' | 'tryllegarden' | 'historietabeller' | 'historietabellerAv'
 }
 
 export interface NavMainArea {
@@ -3683,6 +3683,90 @@ export async function getKitTrickBySlug(client: SanityClientLike, slug: string):
       "kitIds": *[${KIT_FILTER} && ^._id in tricks[]._ref]._id
     }
   `, { slug })
+}
+
+// ── Tryllegården (/barn/tryllegarden) ─────────────────────────
+//
+// The children's farm game (docs/tryllegarden-concept.md). Config and season
+// packs are public: they hold no secrets. The tricks' methods are kitTrick
+// documents in the private dataset, read through getKitTrickBySlug() by
+// src/lib/tryllegarden.ts.
+
+export interface FarmGameConfig {
+  isActive?:        boolean
+  englishEnabled?:  boolean
+  activeSeason?:    string
+  farmName?:        string
+  girlName?:        string
+  boyName?:         string
+  comingSoonTitle?: string
+  comingSoonText?:  string
+}
+
+export async function getFarmGameConfig(): Promise<FarmGameConfig | null> {
+  return sanityClient.fetch(`
+    *[_type == "farmGameConfig"][0] {
+      isActive, englishEnabled, activeSeason,
+      farmName, girlName, boyName,
+      comingSoonTitle, comingSoonText
+    }
+  `)
+}
+
+/** A season pack as stored in Sanity. Every field is optional: it is laid on
+ *  top of the built-in pack with the same key (mergeSeason() in
+ *  src/lib/tryllegardenSeason.ts). Images come back as plain URLs. */
+export async function getFarmSeasonDoc(key: string): Promise<Record<string, unknown> | null> {
+  const doc = await sanityClient.fetch(`
+    *[_type == "farmSeason" && key == $key && isVisible != false][0] {
+      key, title, titleEn, subtitle, subtitleEn, intro, introEn,
+      "heroImage": heroImage { asset->{ _ref, url }, alt },
+      palette { sky, ground, accent, accent2, glow },
+      collectionName, collectionNameEn, collectionTop,
+      finaleTitle, finaleTitleEn, finale[] { who, text, textEn },
+      loftName, loftNameEn, kitSlug,
+      "hidden": places[isVisible == false].key,
+      places[isVisible != false] {
+        key, title, titleEn, mechanic, icon, mapX, mapY, ornament,
+        "sceneImage": sceneImage { asset->{ _ref, url }, alt },
+        intro[] { who, text, textEn },
+        task, taskEn,
+        items[] {
+          key, label, labelEn, emoji, x, y, from, order, decoy, wrong, wrongEn, colors,
+          "image": image { asset->{ _ref, url } }
+        },
+        levels { smanisse { rounds, reverse }, laerling { rounds, reverse }, mester { rounds, reverse } },
+        hints, hintsEn, done, doneEn,
+        traditionShort, traditionShortEn, traditionLong, traditionLongEn,
+        traditionLinkUrl, traditionLinkLabel,
+        trickTitle, trickTitleEn, trickEffect, trickEffectEn, trickSlug,
+        nisseX, nisseY
+      }
+    }
+  `, { key })
+  if (!doc) return null
+
+  // Image objects → URLs, so the merged season is plain JSON for the client.
+  type Img = { asset?: { _ref: string; url: string }; alt?: string } | null | undefined
+  const hero: Img = doc.heroImage
+  if (hero?.asset) {
+    doc.heroImageUrl = urlFor(hero).width(1400).format('webp').url()
+    if (hero.alt) doc.heroAlt = hero.alt
+  }
+  delete doc.heroImage
+  for (const place of (doc.places ?? []) as Record<string, any>[]) {
+    const scene: Img = place.sceneImage
+    if (scene?.asset) {
+      place.sceneImageUrl = urlFor(scene).width(1400).format('webp').url()
+      if (scene.alt) place.sceneAlt = scene.alt
+    }
+    delete place.sceneImage
+    for (const item of (place.items ?? []) as Record<string, any>[]) {
+      if (item.image?.asset) item.imageUrl = urlFor(item.image).width(240).format('webp').url()
+      delete item.image
+    }
+  }
+  return doc
 }
 
 // ── Trylleeffekter (/tryllehistorie/trylleeffekter) ──────────

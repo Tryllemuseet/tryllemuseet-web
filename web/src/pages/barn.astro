@@ -4,13 +4,18 @@ import BaseLayout from '../layouts/BaseLayout.astro'
 import AnimateIn from '../components/AnimateIn.astro'
 import PageHero from '../components/PageHero.astro'
 import Button from '../components/Button.astro'
-import { getBarnPage, getSiteConfig, getComicStoryPaths, portableTextToHtml } from '../lib/sanity'
+import { getBarnPage, getSiteConfig, getComicStoryPaths, getFarmGameConfig, portableTextToHtml } from '../lib/sanity'
+import { BUILT_IN_SEASONS, DEFAULT_SEASON_KEY } from '../lib/tryllegardenSeason'
 
-const [bp, config, storyPaths] = await Promise.all([
+const [bp, config, storyPaths, farmConfig] = await Promise.all([
   getBarnPage(),
   getSiteConfig(),
   getComicStoryPaths(),
+  getFarmGameConfig(),
 ])
+// The farm game (/barn/tryllegarden) is only linked while its switch is on.
+const farmSeason = BUILT_IN_SEASONS[farmConfig?.activeSeason?.trim() || DEFAULT_SEASON_KEY]
+const farmTeaserTitle = farmSeason?.title ?? 'Tryllegården'
 // Houdini er høstens hovedutstilling og har den eneste ferdige interaktive
 // historien akkurat nå — teaseren under peker rett dit så lenge den finnes,
 // og faller tilbake til den generelle historier-oversikten ellers.
@@ -58,6 +63,22 @@ const showCta2 = hero.cta2Href && (config.laerEtTriksActive || !hero.cta2Href.st
     <Button variant="secondary" href={hero.cta1Href}>{hero.cta1Label}</Button>
     {showCta2 && <Button variant="outline" href={hero.cta2Href} class="hero-btn-outline">{hero.cta2Label}</Button>}
   </PageHero>
+
+  <!-- ── TRYLLEGÅRDEN (teaser) ────────────────────────────────── -->
+  {farmConfig?.isActive === true && (
+    <section class="triks-teaser section-pad">
+      <AnimateIn>
+      <div class="container triks-teaser-inner">
+        <div>
+          <span class="etikett">Spill</span>
+          <h2>{farmTeaserTitle}</h2>
+          <p>Bli med tryllebarna til gården og finn ut hvem som tryller i fjøset. Nissen lærer deg sine egne triks.</p>
+        </div>
+        <Button variant="primary" href="/barn/tryllegarden">Spill nå</Button>
+      </div>
+      </AnimateIn>
+    </section>
+  )}
 
   <!-- ── LÆR ET TRIKS (teaser) ────────────────────────────────── -->
   {config.laerEtTriksActive && (
