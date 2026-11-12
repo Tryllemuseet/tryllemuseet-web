@@ -379,47 +379,56 @@ museum QR ornament, English, and the next season — layers on without rework.
 Still open: who draws the art, and whether whoever runs Årvoll gård should
 be told that the farm appears by name in a game.
 
-## Implementation status — first version (November 2026)
+## Implementation status (November 2026)
 
-Built and dormant: `/barn/tryllegarden` shows "kommer snart", is `noindex`
-and is not linked from `/barn` until **Tryllegården: Innstillinger** →
-`isActive` is on. Editors test it with the preview link.
+Built and dormant: `/barn/tryllegarden` shows "kommer snart", is `noindex` and
+is not linked from `/barn` until **Tryllegården: Innstillinger** → `isActive`
+is on. Editors test it with the preview link.
 
 **What is in it**
 
 - Start screen with the three levels, the farm map with the Christmas tree,
-  and three places: **Tunet** (`finn`), **Fjøset** (`rekkefolge`) and
-  **Låven** (`husk`), each with dialogue, mini-game, "visste du at", the
+  and **eight places**. Each has dialogue, a mini-game, "visste du at", the
   nisse's trick and an ornament for the tree.
-- Three levels that change the number of things, their size, decoy cards,
-  the length of the bird sequences and (Tryllemester) a backwards round.
-  The level can be changed in the middle of a place.
-- The hint ladder "Nissen hvisker" (two spoken hints, then the answer
-  glows), golden smørøyne for hint-free places, and a hidden nisse hat in
-  every scene.
+
+  | Place | Mechanic | What changes with the level |
+  |---|---|---|
+  | Tunet | `finn` | 3 → 7 things, smaller on harder levels |
+  | Fjøset | `rekkefolge` | 4 → 8 cards, decoy cards on Tryllemester |
+  | Låven | `husk` | 2 → 5 birds, last round backwards on Tryllemester |
+  | Stallen | `folg-traden` | 3 → 6 braids, same colour on harder levels |
+  | Bakstehuset | `monster` | 1 → 3 missing biscuits, longer and more complex rows |
+  | Stua | `flett` | 2×2 → 5×5 basket, other weaves on Tryllemester |
+  | Stabburet | `forandret` | 3 → 9 things on the shelves |
+  | Lyktestien | `tenn` | in order → a lantern also flips its neighbours |
+
+- Hint ladder "Nissen hvisker" (two spoken hints, then the answer glows),
+  golden smørøyne for hint-free places, and a hidden nisse in every scene.
 - Read-aloud through the browser's speech synthesis when it has a matching
   voice; on by default for Smånisse.
-- A finale stub: when all ornaments hang, the star is lit and the nisse
-  hands over the key to Nisseloftet (`/bak-teppet/nissens-tryllesekk`).
-- The three tricks and the bundle "Nissens tryllesekk" exist in the
-  `lukket` dataset.
+- **Finale:** when all eight ornaments hang, the player composes a show
+  (three of the nisse's tricks and a magic word), the animals watch, and the
+  nisse hands over the key to Nisseloftet (`/bak-teppet/nissens-tryllesekk`).
+- Nine tricks and the bundle "Nissens tryllesekk" exist in the `lukket`
+  dataset. The ninth, "Tryllekunstnerens tre regler", is the finale's lesson.
 - Norwegian only. The interface has English strings and every content field
   has an English sibling, but no place text is translated and
   `englishEnabled` is off.
 
-**Placeholder art.** The scenes, the map and the birds are simple drawings
-in the page code, objects are emoji, and the start picture and the three
-faces are cut from the reference illustration the museum supplied. What to
-draw is described in `docs/tryllegarden-art-brief.md`. Scene pictures, object
-pictures and the start picture are replaced in Studio (the season
-document); the map, the tree and the faces are files and need a small code
-change.
+**Art.** The museum's illustrations are in use: the farm map
+(`kart-jul.webp`; places sit on it at `mapX`/`mapY` and follow its buildings),
+the seven things from Tunet (also reused in Fjøset, Stallen and Lyktestien),
+the children in four poses (faces in the speech bubbles, whole figures in the
+finale), the nisse (face, two standing poses, two peeking heads) and the
+start picture. All are files in `web/public/images/tryllegarden/`. Scenes,
+the other mini-game objects (birds, biscuits, shelf food) and the tree are
+still simple drawings or emoji. See `docs/tryllegarden-art-brief.md`. The
+lantern picture has a ragged lower edge from the original sheet.
 
-**Not built yet:** the other six places and their mechanics, the full
-finale (composing a show), the diploma, the museum QR ornament, seasons by
-date, recorded voices, English texts.
+**Not built yet:** the diploma, the museum QR ornament, seasons by date,
+recorded voices, English texts, scene pictures.
 
 **Before switching it on:** the museum's one review of all texts — the
-tradition texts in particular are drafts — and of the three tricks; real
-art; and a decision on whether the game gets a place in the menu
-(`siteNavigation`, feature flag "Tryllegården").
+tradition texts in particular are drafts — and of the tricks; scene art; and
+a decision on whether the game gets a place in the menu (`siteNavigation`,
+feature flag "Tryllegården").

@@ -26,8 +26,12 @@ export const FARM_MECHANICS: FarmMechanic[] = ['finn', 'rekkefolge', 'husk', 'fo
 
 export type FarmSpeaker = 'jente' | 'gutt' | 'nisse' | 'forteller'
 
+export type FarmPose = 'hei' | 'peker' | 'overrasket' | 'jubler'
+
 export interface FarmLine {
   who:     FarmSpeaker
+  /** Which picture of the child to show. Default: chosen from the text. */
+  pose?:   FarmPose
   text:    string
   textEn?: string
 }
@@ -157,6 +161,8 @@ const jul: FarmSeason = {
   subtitle: 'Fjøsnissens hemmelighet',
   intro:
     'På {gard} skjer det rare ting før jul. Noen har spist grøten. Noen har flettet høyet. {jente} og {gutt} tror det bor en nisse i fjøset – og at han kan trylle!',
+  mapImageUrl: '/images/tryllegarden/kart-jul.webp',
+  mapAlt: 'Årvoll gård sett ovenfra en vinterkveld: låven, stabburet og stua i snøen, med lykter langs stien.',
   heroImageUrl: '/images/tryllegarden/jul-laven.webp',
   heroAlt: 'To tryllebarn med flosshatt tryller en hvit kanin opp av en hatt på låven, mens fjøsnissen ser på og klapper.',
   palette: { sky: '#14213d', ground: '#eef3f8', accent: '#b3262d', accent2: '#1f5c3a', glow: '#f6c453' },
@@ -182,13 +188,13 @@ const jul: FarmSeason = {
       ],
       task: 'Finn alle tingene nissen har lagt igjen på tunet.',
       items: [
-        { key: 'fotspor', label: 'Fotsporene',  emoji: '👣', x: 34, y: 82 },
-        { key: 'vott',    label: 'Votten',      emoji: '🧤', x: 71, y: 74 },
-        { key: 'lykt',    label: 'Lykta',       emoji: '🏮', x: 54, y: 55 },
-        { key: 'skje',    label: 'Grøtskjeen',  emoji: '🥄', x: 14, y: 66, from: 'laerling' },
-        { key: 'bjelle',  label: 'Bjella',      emoji: '🔔', x: 86, y: 47, from: 'laerling' },
-        { key: 'garn',    label: 'Garnnøstet',  emoji: '🧶', x: 45, y: 91, from: 'mester' },
-        { key: 'gulrot',  label: 'Gulrota',     emoji: '🥕', x: 6,  y: 88, from: 'mester' },
+        { key: 'fotspor', label: 'Fotsporene',  emoji: '👣', imageUrl: '/images/tryllegarden/ting/fotspor.webp', x: 34, y: 82 },
+        { key: 'vott',    label: 'Votten',      emoji: '🧤', imageUrl: '/images/tryllegarden/ting/vott.webp', x: 71, y: 74 },
+        { key: 'lykt',    label: 'Lykta',       emoji: '🏮', imageUrl: '/images/tryllegarden/ting/lykt.webp', x: 54, y: 55 },
+        { key: 'skje',    label: 'Grøtskjeen',  emoji: '🥄', imageUrl: '/images/tryllegarden/ting/skje.webp', x: 14, y: 66, from: 'laerling' },
+        { key: 'bjelle',  label: 'Bjella',      emoji: '🔔', imageUrl: '/images/tryllegarden/ting/bjelle.webp', x: 86, y: 47, from: 'laerling' },
+        { key: 'garn',    label: 'Garnnøstet',  emoji: '🧶', imageUrl: '/images/tryllegarden/ting/garn.webp', x: 45, y: 91, from: 'mester' },
+        { key: 'gulrot',  label: 'Gulrota',     emoji: '🥕', imageUrl: '/images/tryllegarden/ting/gulrot.webp', x: 6,  y: 88, from: 'mester' },
       ],
       hints: [
         'Se nøye i snøen, helt nederst.',
@@ -222,7 +228,7 @@ const jul: FarmSeason = {
       task: 'Trykk på det som skal skje først. Så det neste, helt til grøten er ferdig.',
       items: [
         { key: 'gryte', label: 'Ha melk og ris i gryta',         emoji: '🥛', order: 1 },
-        { key: 'ror',   label: 'Rør og rør til grøten er tykk',  emoji: '🥄', order: 2, from: 'laerling' },
+        { key: 'ror',   label: 'Rør og rør til grøten er tykk',  emoji: '🥄', imageUrl: '/images/tryllegarden/ting/skje.webp', order: 2, from: 'laerling' },
         { key: 'skal',  label: 'Øs grøten opp i skåla',          emoji: '🥣', order: 3, from: 'laerling' },
         { key: 'kanel', label: 'Dryss på sukker og kanel',       emoji: '✨', order: 4, from: 'mester' },
         { key: 'smor',  label: 'Legg en klatt smør i midten',    emoji: '🧈', order: 5 },
@@ -306,9 +312,9 @@ const jul: FarmSeason = {
       ],
       task: 'Følg fletta fra sløyfa og helt ned. Trykk på riktig sløyfe.',
       items: [
-        { key: 'bjelle',   label: 'bjella',      emoji: '🔔' },
+        { key: 'bjelle',   label: 'bjella',      emoji: '🔔', imageUrl: '/images/tryllegarden/ting/bjelle.webp' },
         { key: 'eple',     label: 'eplet',       emoji: '🍎' },
-        { key: 'gulrot',   label: 'gulrota',     emoji: '🥕' },
+        { key: 'gulrot',   label: 'gulrota',     emoji: '🥕', imageUrl: '/images/tryllegarden/ting/gulrot.webp' },
         { key: 'sokk',     label: 'sokken',      emoji: '🧦', from: 'laerling' },
         { key: 'sukker',   label: 'sukkertøyet', emoji: '🍬', from: 'mester' },
         { key: 'stjerne',  label: 'stjerna',     emoji: '⭐', from: 'mester' },
@@ -478,7 +484,7 @@ const jul: FarmSeason = {
       ],
       task: 'Trykk på lyktene til alle lyser.',
       items: [
-        { key: 'lykt', label: 'Lykt', emoji: '🏮' },
+        { key: 'lykt', label: 'Lykt', emoji: '🏮', imageUrl: '/images/tryllegarden/ting/lykt.webp' },
       ],
       levels: {
         smanisse: { rounds: [4] },

@@ -151,7 +151,8 @@ const paletteStyle = `--tg-sky:${pal.sky};--tg-ground:${pal.ground};--tg-accent:
 <script>
   type Level = 'smanisse' | 'laerling' | 'mester'
   type Who = 'jente' | 'gutt' | 'nisse' | 'forteller'
-  interface Line { who: Who; text: string; textEn?: string }
+  type Pose = 'hei' | 'peker' | 'overrasket' | 'jubler'
+  interface Line { who: Who; text: string; textEn?: string; pose?: Pose }
   interface Item {
     key: string; label: string; labelEn?: string; emoji?: string; imageUrl?: string
     x?: number; y?: number; from?: Level; order?: number; decoy?: boolean
@@ -413,11 +414,14 @@ const paletteStyle = `--tg-sky:${pal.sky};--tg-ground:${pal.ground};--tg-accent:
       : i.colors ? birdSvg(i.colors)
       : `<span aria-hidden="true">${esc(i.emoji ?? '❔')}</span>`
 
-    const AVATARS: Partial<Record<Who, string>> = {
-      jente: '/images/tryllegarden/jente.webp',
-      gutt:  '/images/tryllegarden/gutt.webp',
-      nisse: '/images/tryllegarden/nisse.webp',
-    }
+    // The children's face depends on what is said: a question points, an
+    // exclamation is surprised, the rest waves. Lines can set a pose themselves.
+    const poseFor = (line: Line): Pose =>
+      line.pose ?? (/\?/.test(line.text) ? 'peker' : /!/.test(line.text) ? 'overrasket' : 'hei')
+    const avatarFor = (who: Who, pose: Pose): string | null =>
+      who === 'jente' || who === 'gutt' ? `/images/tryllegarden/ansikt/${who}-${pose}.webp`
+      : who === 'nisse' ? '/images/tryllegarden/ansikt/nisse.webp'
+      : null
     const whoName = (who: Who) =>
       who === 'jente' ? data.names.jente
       : who === 'gutt' ? data.names.gutt
@@ -425,13 +429,18 @@ const paletteStyle = `--tg-sky:${pal.sky};--tg-ground:${pal.ground};--tg-accent:
       : ''
     function bubble(line: Line): string {
       const text = L(line, 'text')
-      const avatar = AVATARS[line.who]
+      const avatar = avatarFor(line.who, poseFor(line))
       return `<div class="tg-bubble tg-bubble--${line.who}">
         ${avatar ? `<img class="tg-avatar" src="${avatar}" alt="" width="80" height="80">` : `<span class="tg-avatar tg-avatar--book" aria-hidden="true">📖</span>`}
         <div class="tg-bubble-body">${whoName(line.who) ? `<p class="tg-who">${esc(whoName(line.who))}</p>` : ''}<p class="tg-text">${esc(text)}</p></div>
         ${sayBtn(text)}
       </div>`
     }
+    /** Whole figures standing together, for the happy moments. */
+    const figures = (names: string[]) =>
+      `<div class="tg-figs" aria-hidden="true">${names.map(n => `<img src="/images/tryllegarden/figur/${n}.webp" alt="" loading="lazy">`).join('')}</div>`
+    /** The nisse peeking out: one of two pictures, always the same for a place. */
+    const peekFor = (key: string) => `/images/tryllegarden/titt/titt-${(key.length % 2) + 1}.webp`
 
     // ── Linja øverst: kart, nivå, opplesing, språk ───────────────
     /** Set while a mini-game is on screen: restarts it on the new level. */
@@ -609,7 +618,7 @@ const paletteStyle = `--tg-sky:${pal.sky};--tg-ground:${pal.ground};--tg-accent:
         <p class="tg-task">${esc(task)}</p>
         <div class="tg-scene${SHORT_SCENE.includes(place.mechanic) ? ' tg-scene--short' : ''}" id="tg-scene">
           ${sceneArt(place)}
-          ${place.nisseX != null && place.nisseY != null ? `<button type="button" class="tg-hat${mine.hats.includes(place.key) ? ' is-found' : ''}" id="tg-hat" style="left:${place.nisseX}%;top:${place.nisseY}%" aria-label="${t('Noe rødt som stikker fram', 'Something red peeking out')}">${HAT}</button>` : ''}
+          ${place.nisseX != null && place.nisseY != null ? `<button type="button" class="tg-hat${mine.hats.includes(place.key) ? ' is-found' : ''}" id="tg-hat" style="left:${place.nisseX}%;top:${place.nisseY}%" aria-label="${t('Noe rødt som stikker fram', 'Something red peeking out')}"><img src="${peekFor(place.key)}" alt=""></button>` : ''}
         </div>
         <div id="tg-board"></div>
         <p class="tg-msg" id="tg-msg" role="status" aria-live="polite"></p>
@@ -1241,7 +1250,7 @@ const paletteStyle = `--tg-sky:${pal.sky};--tg-ground:${pal.ground};--tg-accent:
       const fact = [short, long].filter(Boolean).join(' ')
       show(`<div class="tg-card">
         <h1 class="tg-h1" tabindex="-1" data-focus>${esc(L(place, 'title'))}</h1>
-        <div class="tg-talk">${bubble({ who: 'jente', text: done })}</div>
+        <div class="tg-talk">${bubble({ who: 'jente', text: done, pose: 'jubler' })}</div>
         <div class="tg-fact">
           <div class="tg-head"><h2 class="tg-h2">${t('Visste du at …', 'Did you know …')}</h2>${sayBtn(fact)}</div>
           <p>${esc(short)}</p>
@@ -1302,6 +1311,7 @@ const paletteStyle = `--tg-sky:${pal.sky};--tg-ground:${pal.ground};--tg-accent:
         save()
         show(`<div class="tg-card tg-finale">
           <p class="tg-star" aria-hidden="true">${esc(season.collectionTop)}</p>
+          ${figures(['jente-jubler', 'nisse-klapper', 'gutt-jubler'])}
           <h1 class="tg-h1" tabindex="-1" data-focus>${esc(loft)}</h1>
           <p class="tg-lead tg-lead--tight">${t(`Her ligger alle triksene du har fått av nissen. Vis dem til noen du er glad i!`, `Here are all the tricks the nisse gave you. Show them to someone you love!`)}</p>
           <div id="tg-key">
@@ -1372,10 +1382,10 @@ const paletteStyle = `--tg-sky:${pal.sky};--tg-ground:${pal.ground};--tg-accent:
           const [a, b, c] = chosen as string[]
           const lines: Line[] = [
             { who: 'forteller', text: t('Lyktene dempes. Kua, hesten, sauene og katten sitter helt stille.', 'The lanterns dim. The cow, the horse, the sheep and the cat sit perfectly still.') },
-            { who: 'jente', text: t(`Mine damer og herrer, kuer og sauer! Først: ${a}. ${word}!`, `Ladies and gentlemen, cows and sheep! First: ${a}. ${word}!`) },
+            { who: 'jente', pose: 'jubler', text: t(`Mine damer og herrer, kuer og sauer! Først: ${a}. ${word}!`, `Ladies and gentlemen, cows and sheep! First: ${a}. ${word}!`) },
             { who: 'forteller', text: t('Dyra måper. Katten glemmer å vaske seg.', 'The animals gape. The cat forgets to wash.') },
-            ...(b ? [{ who: 'gutt' as Who, text: t(`Og nå: ${b}. ${word}!`, `And now: ${b}. ${word}!`) }] : []),
-            ...(c ? [{ who: 'jente' as Who, text: t(`Til slutt det aller beste: ${c}. Alle sammen: ${word}!`, `And last, the very best: ${c}. All together: ${word}!`) }] : []),
+            ...(b ? [{ who: 'gutt' as Who, pose: 'jubler' as Pose, text: t(`Og nå: ${b}. ${word}!`, `And now: ${b}. ${word}!`) }] : []),
+            ...(c ? [{ who: 'jente' as Who, pose: 'jubler' as Pose, text: t(`Til slutt det aller beste: ${c}. Alle sammen: ${word}!`, `And last, the very best: ${c}. All together: ${word}!`) }] : []),
             { who: 'forteller', text: t('Helt bakerst sitter en liten kar med rød lue. Han klapper så vottene ryker.', 'At the very back sits a little fellow in a red hat. He claps until his mittens smoke.') },
             { who: 'nisse', text: t('Takk for hjelpa, og takk for forestillingen. Triksene mine ligger på loftet. Hilsen N.', 'Thank you for the help, and for the show. My tricks are in the loft. Yours, N.') },
             { who: 'gutt', text: t(`Nissen har gitt oss nøkkelen til ${loft}! Men husk: En tryllekunstner forteller aldri hvordan det gjøres.`, `The nisse has given us the key to ${loft}! But remember: a magician never tells how it is done.`) },
@@ -1484,7 +1494,7 @@ const paletteStyle = `--tg-sky:${pal.sky};--tg-ground:${pal.ground};--tg-accent:
   .tg-bubble--nisse { background: #fff8e6; font-family: var(--font-body); font-style: italic; }
   .tg-bubble--forteller { background: transparent; box-shadow: none; }
   .tg-bubble-body { flex: 1; }
-  .tg-avatar { width: 64px; height: 64px; border-radius: 50%; object-fit: cover; flex-shrink: 0; border: 3px solid var(--tg-glow); }
+  .tg-avatar { width: 64px; height: 64px; border-radius: 50%; object-fit: cover; object-position: center top; flex-shrink: 0; border: 3px solid var(--tg-glow); background: #fff; }
   .tg-avatar--book { display: flex; align-items: center; justify-content: center; font-size: 1.8rem; background: #fff; border-color: transparent; }
   .tg-who { font-size: .85rem; font-weight: 700; color: var(--tg-accent2); }
   .tg-text { font-size: 1.2rem; line-height: 1.45; }
@@ -1502,8 +1512,8 @@ const paletteStyle = `--tg-sky:${pal.sky};--tg-ground:${pal.ground};--tg-accent:
   .tg-lvl-mester .tg-thing { width: 9%; font-size: clamp(.95rem, 3.6vw, 1.8rem); opacity: .85; }
   .tg-thing.is-found { opacity: 1; background: color-mix(in srgb, var(--tg-glow) 75%, transparent); box-shadow: 0 0 0 3px #fff; cursor: default; }
   .is-hint { animation: tg-glow 1s ease-in-out infinite; border-radius: 16px; box-shadow: 0 0 0 4px var(--tg-glow); }
-  .tg-hat { width: 6%; min-width: 26px; opacity: .8; }
-  .tg-hat svg { width: 100%; height: auto; display: block; }
+  .tg-hat { width: 14%; min-width: 56px; opacity: .92; transform: translate(-50%, -62%); }
+  .tg-hat img, .tg-hat svg { width: 100%; height: auto; display: block; }
   .tg-hat.is-found { opacity: 1; filter: drop-shadow(0 0 6px var(--tg-glow)); }
 
   .tg-checklist { list-style: none; display: flex; flex-wrap: wrap; gap: var(--space-2); justify-content: center; padding: 0; margin-top: var(--space-3); }
@@ -1607,8 +1617,8 @@ const paletteStyle = `--tg-sky:${pal.sky};--tg-ground:${pal.ground};--tg-accent:
   .tg-ornament.is-new { animation: tg-drop .7s ease-out; }
   .tg-treetop { position: absolute; left: 50%; top: 4%; transform: translate(-50%, -50%); font-size: clamp(1.4rem, 5.5vw, 2.8rem); line-height: 1; filter: drop-shadow(0 0 10px var(--tg-glow)); }
   .tg-spot { display: flex; flex-direction: column; align-items: center; gap: 4px; }
-  .tg-spot-icon { width: clamp(46px, 11vw, 76px); aspect-ratio: 1; border-radius: 50%; background: #fff; border: 4px solid var(--tg-glow); font-size: clamp(1.5rem, 6vw, 2.5rem); display: flex; align-items: center; justify-content: center; box-shadow: 0 0 18px color-mix(in srgb, var(--tg-glow) 70%, transparent); }
-  .tg-spot-name { font: 700 clamp(.85rem, 2.8vw, 1.1rem) var(--font-ui); color: #fff; background: var(--tg-accent); border-radius: 999px; padding: .15em .8em; white-space: nowrap; }
+  .tg-spot-icon { width: clamp(38px, 8.6vw, 68px); aspect-ratio: 1; border-radius: 50%; background: #fff; border: 4px solid var(--tg-glow); font-size: clamp(1.5rem, 6vw, 2.5rem); display: flex; align-items: center; justify-content: center; box-shadow: 0 0 18px color-mix(in srgb, var(--tg-glow) 70%, transparent); }
+  .tg-spot-name { font: 700 clamp(.68rem, 2.2vw, 1rem) var(--font-ui); color: #fff; background: var(--tg-accent); border-radius: 999px; padding: .15em .8em; white-space: nowrap; }
   .tg-spot.is-done .tg-spot-icon { border-color: var(--tg-accent2); box-shadow: none; }
   .tg-spot.is-done .tg-spot-name { background: var(--tg-accent2); }
   .tg-spot:hover .tg-spot-icon { transform: scale(1.06); }
@@ -1618,6 +1628,8 @@ const paletteStyle = `--tg-sky:${pal.sky};--tg-ground:${pal.ground};--tg-accent:
   .tg-tally small { color: var(--ink-mid); }
 
   .tg-finale { text-align: center; }
+  .tg-figs { display: flex; justify-content: center; align-items: flex-end; gap: var(--space-2); }
+  .tg-figs img { height: clamp(120px, 30vw, 210px); width: auto; }
   .tg-star { font-size: 4rem; line-height: 1; filter: drop-shadow(0 0 16px var(--tg-glow)); }
 
   .tg-toast {
