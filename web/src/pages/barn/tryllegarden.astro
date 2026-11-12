@@ -161,7 +161,7 @@ const paletteStyle = `--tg-sky:${pal.sky};--tg-ground:${pal.ground};--tg-accent:
   interface Place {
     key: string; title: string; titleEn?: string
     mechanic: 'finn' | 'rekkefolge' | 'husk' | 'folg-traden' | 'monster' | 'flett' | 'forandret' | 'tenn'
-    icon: string; mapX: number; mapY: number; ornament: string
+    icon: string; mapX: number; mapY: number; ornament: string; ornamentImageUrl?: string
     backdrop?: string; sceneImageUrl?: string; sceneAlt?: string
     intro: Line[]; task: string; taskEn?: string; items: Item[]
     levels?: Partial<Record<Level, { rounds?: number[]; reverse?: boolean }>>
@@ -175,7 +175,7 @@ const paletteStyle = `--tg-sky:${pal.sky};--tg-ground:${pal.ground};--tg-accent:
     key: string; title: string; titleEn?: string; subtitle?: string; subtitleEn?: string
     intro: string; introEn?: string; heroImageUrl?: string; heroAlt?: string
     mapImageUrl?: string; mapAlt?: string
-    collectionName: string; collectionNameEn?: string; collectionTop: string
+    collectionName: string; collectionNameEn?: string; collectionTop: string; collectionTopUrl?: string
     places: Place[]; finaleTitle: string; finaleTitleEn?: string; finale: Line[]
     loftName: string; loftNameEn?: string
     showWords?: string[]; showWordsEn?: string[]
@@ -228,10 +228,14 @@ const paletteStyle = `--tg-sky:${pal.sky};--tg-ground:${pal.ground};--tg-accent:
     const esc = (s: string) =>
       s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
 
+    /** A small picture from the ornament sheet, as markup. */
+    const pic = (name: string, cls: string) => `<img class="${cls}" src="/images/tryllegarden/pynt/${name}.webp" alt="" aria-hidden="true">`
+    const ornamentOf = (p: Place) => p.ornamentImageUrl ? `<img class="tg-orn-img" src="${esc(p.ornamentImageUrl)}" alt="">` : esc(p.ornament)
+    const topOf = (cls: string) => season.collectionTopUrl ? `<img class="${cls}" src="${esc(season.collectionTopUrl)}" alt="">` : esc(season.collectionTop)
     const LEVEL_NAMES: Record<Level, { name: string; age: string; icon: string }> = {
-      smanisse: { name: t('Smånisse', 'Little Nisse'),            age: t('4–6 år', 'Ages 4–6'),         icon: '🧦' },
-      laerling: { name: t('Tryllelærling', 'Apprentice'),         age: t('7–9 år', 'Ages 7–9'),         icon: '🎩' },
-      mester:   { name: t('Tryllemester', 'Master Magician'),     age: t('10 år og oppover', 'Ages 10+'), icon: '⭐' },
+      smanisse: { name: t('Smånisse', 'Little Nisse'),            age: t('4–6 år', 'Ages 4–6'),         icon: pic('sokk', 'tg-lvlicon') },
+      laerling: { name: t('Tryllelærling', 'Apprentice'),         age: t('7–9 år', 'Ages 7–9'),         icon: pic('hatt', 'tg-lvlicon') },
+      mester:   { name: t('Tryllemester', 'Master Magician'),     age: t('10 år og oppover', 'Ages 10+'), icon: pic('stjerne8', 'tg-lvlicon') },
     }
     const level = (): Level => store.level ?? 'smanisse'
     const levelIndex = (l: Level | undefined) => Math.max(0, LEVELS.indexOf(l ?? 'smanisse'))
@@ -408,7 +412,7 @@ const paletteStyle = `--tg-sky:${pal.sky};--tg-ground:${pal.ground};--tg-accent:
       const [body = '#777', breast = '#ddd', cap = '#222'] = c
       return `<svg viewBox="0 0 40 34" aria-hidden="true"><path d="M9 22 Q4 13 0 11 Q5 22 9 27Z" fill="${body}"/><ellipse cx="19" cy="20" rx="13" ry="10" fill="${body}"/><ellipse cx="21" cy="23" rx="8.5" ry="6.5" fill="${breast}"/><circle cx="29" cy="11" r="7" fill="${cap}"/><circle cx="30.5" cy="13.5" r="3.6" fill="#fff" opacity=".85"/><circle cx="31.5" cy="10" r="1.5" fill="#fff"/><circle cx="31.9" cy="10" r=".8" fill="#111"/><path d="M35.5 10.5 l4.5 1.6 l-4.5 1.6z" fill="#e0a030"/><path d="M17 30 v3.5 M22 30 v3.5" stroke="#3b2a18" stroke-width="1.3" stroke-linecap="round"/></svg>`
     }
-    const HAT = `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 20 Q6 6 16 3 Q22 2 21 9 Q18 6 15 8 Q19 13 20 20Z" fill="#c62828"/><circle cx="21" cy="9" r="2.3" fill="#fff"/><rect x="2" y="18.5" width="19" height="4" rx="2" fill="#fff"/></svg>`
+    const HAT = pic('nisselue', 'tg-tally-icon')
     const itemArt = (i: Item) =>
       i.imageUrl ? `<img src="${esc(i.imageUrl)}" alt="">`
       : i.colors ? birdSvg(i.colors)
@@ -529,7 +533,7 @@ const paletteStyle = `--tg-sky:${pal.sky};--tg-ground:${pal.ground};--tg-accent:
       const ornaments = season.places
         .map((p, i) => ({ p, slot: TREE_SLOTS[i % TREE_SLOTS.length] }))
         .filter(o => mine.done[o.p.key])
-        .map(o => `<span class="tg-ornament${o.p.key === celebrate ? ' is-new' : ''}" style="left:${o.slot[0]}%;top:${o.slot[1]}%" aria-hidden="true">${esc(o.p.ornament)}</span>`)
+        .map(o => `<span class="tg-ornament${o.p.key === celebrate ? ' is-new' : ''}" style="left:${o.slot[0]}%;top:${o.slot[1]}%" aria-hidden="true">${ornamentOf(o.p)}</span>`)
         .join('')
       const status = allDone()
         ? (mine.finale ? t('Stjerna lyser på toppen!', 'The star is shining on top!') : t('All pynten henger! Nå mangler bare stjerna.', 'All the ornaments are up! Only the star is missing.'))
@@ -544,7 +548,7 @@ const paletteStyle = `--tg-sky:${pal.sky};--tg-ground:${pal.ground};--tg-accent:
           <div class="tg-tree" role="img" aria-label="${esc(`${collection}. ${status}`)}">
             <svg viewBox="0 0 60 80" aria-hidden="true"><rect x="26" y="68" width="8" height="12" fill="#6b4226"/><path d="M30 6 L10 34 H20 L6 54 H18 L4 72 H56 L42 54 H54 L40 34 H50Z" fill="#1f5c3a"/><path d="M30 6 L22 18 Q30 22 38 18Z" fill="#f4f8fc"/></svg>
             ${ornaments}
-            ${mine.finale ? `<span class="tg-treetop" aria-hidden="true">${esc(season.collectionTop)}</span>` : ''}
+            ${mine.finale ? `<span class="tg-treetop" aria-hidden="true">${topOf('tg-top-img')}</span>` : ''}
           </div>
           ${season.places.map(p => `<button type="button" class="tg-spot${mine.done[p.key] ? ' is-done' : ''}" data-place="${esc(p.key)}" style="left:${p.mapX}%;top:${p.mapY}%">
             <span class="tg-spot-icon" aria-hidden="true">${esc(p.icon)}</span>
@@ -554,9 +558,9 @@ const paletteStyle = `--tg-sky:${pal.sky};--tg-ground:${pal.ground};--tg-accent:
         <p class="tg-status">${esc(status)}</p>
         <ul class="tg-tally">
           <li>${HAT} ${t(`Nisseluer funnet: ${hats} av ${season.places.length}`, `Nisse hats found: ${hats} of ${season.places.length}`)}</li>
-          <li><span aria-hidden="true">🧈</span> ${t(`Smørøyne: ${smor}`, `Butter-eyes: ${smor}`)} <small>${t('(for steder uten hint)', '(for places done without hints)')}</small></li>
+          <li>${pic('smor', 'tg-tally-icon')} ${t(`Smørøyne: ${smor}`, `Butter-eyes: ${smor}`)} <small>${t('(for steder uten hint)', '(for places done without hints)')}</small></li>
         </ul>
-        ${allDone() ? `<p class="tg-center"><button type="button" class="tg-btn tg-btn--glow" data-act="finale">${esc(season.collectionTop)} ${esc(mine.finale ? L(season, 'loftName') : L(season, 'finaleTitle'))}</button></p>` : ''}
+        ${allDone() ? `<p class="tg-center"><button type="button" class="tg-btn tg-btn--glow" data-act="finale">${topOf('tg-btn-icon')} ${esc(mine.finale ? L(season, 'loftName') : L(season, 'finaleTitle'))}</button></p>` : ''}
       </div>`)
       root.querySelectorAll<HTMLButtonElement>('[data-place]').forEach(btn =>
         btn.addEventListener('click', () => {
@@ -1257,7 +1261,7 @@ const paletteStyle = `--tg-sky:${pal.sky};--tg-ground:${pal.ground};--tg-accent:
           ${long ? `<p>${esc(long)}</p>` : ''}
           ${place.traditionLinkUrl ? `<p><a href="${esc(place.traditionLinkUrl)}">${esc(place.traditionLinkLabel || t('Les mer', 'Read more'))}</a></p>` : ''}
         </div>
-        ${noHints ? `<p class="tg-note"><span aria-hidden="true">🧈</span> ${t('Du klarte det uten hint. Nissen la et smørøye i grøten din!', 'You did it without hints. The nisse put a butter-eye in your porridge!')}</p>` : ''}
+        ${noHints ? `<p class="tg-note">${pic('smor', 'tg-tally-icon')} ${t('Du klarte det uten hint. Nissen la et smørøye i grøten din!', 'You did it without hints. The nisse put a butter-eye in your porridge!')}</p>` : ''}
         <p class="tg-center"><button type="button" class="tg-btn" id="tg-next">${t('Hva har nissen lagt igjen? ▶', 'What did the nisse leave? ▶')}</button></p>
       </div>`)
       root.querySelector('#tg-next')!.addEventListener('click', () => showTrick(place, noHints))
@@ -1278,7 +1282,7 @@ const paletteStyle = `--tg-sky:${pal.sky};--tg-ground:${pal.ground};--tg-accent:
             ? `<p class="tg-center"><button type="button" class="tg-btn tg-btn--ghost" id="tg-reveal">🔑 ${t('Vis hemmeligheten', 'Show the secret')}</button></p>`
             : `<p class="tg-note">${t(`Hemmeligheten ligger på ${loft}.`, `The secret is kept in ${loft}.`)}</p>`}
         </div>
-        <p class="tg-center"><button type="button" class="tg-btn" id="tg-hang">${esc(place.ornament)} ${t('Heng pynten på treet', 'Hang the ornament on the tree')}</button></p>
+        <p class="tg-center"><button type="button" class="tg-btn" id="tg-hang">${ornamentOf(place)} ${t('Heng pynten på treet', 'Hang the ornament on the tree')}</button></p>
       </div>`)
       const secret = root.querySelector<HTMLElement>('#tg-secret')!
       root.querySelector('#tg-reveal')?.addEventListener('click', async e => {
@@ -1310,13 +1314,13 @@ const paletteStyle = `--tg-sky:${pal.sky};--tg-ground:${pal.ground};--tg-accent:
         mine.finale = true
         save()
         show(`<div class="tg-card tg-finale">
-          <p class="tg-star" aria-hidden="true">${esc(season.collectionTop)}</p>
+          <p class="tg-star" aria-hidden="true">${topOf('tg-star-img')}</p>
           ${figures(['jente-jubler', 'nisse-klapper', 'gutt-jubler'])}
           <h1 class="tg-h1" tabindex="-1" data-focus>${esc(loft)}</h1>
           <p class="tg-lead tg-lead--tight">${t(`Her ligger alle triksene du har fått av nissen. Vis dem til noen du er glad i!`, `Here are all the tricks the nisse gave you. Show them to someone you love!`)}</p>
           <div id="tg-key">
             ${data.secrets
-              ? `<p class="tg-center"><button type="button" class="tg-btn tg-btn--glow" id="tg-open">🔑 ${t(`Åpne ${loft}`, `Open ${loft}`)}</button></p>`
+              ? `<p class="tg-center"><button type="button" class="tg-btn tg-btn--glow" id="tg-open">${pic('nokkel', 'tg-btn-icon')} ${t(`Åpne ${loft}`, `Open ${loft}`)}</button></p>`
               : `<p class="tg-note">${t(`${loft} er stengt akkurat nå. Prøv igjen senere.`, `${loft} is closed right now. Try again later.`)}</p>`}
           </div>
           <p class="tg-center"><button type="button" class="tg-btn tg-btn--ghost" id="tg-back">🗺️ ${t('Tilbake til gården', 'Back to the farm')}</button></p>
@@ -1337,7 +1341,7 @@ const paletteStyle = `--tg-sky:${pal.sky};--tg-ground:${pal.ground};--tg-accent:
               <p class="tg-code">${esc(res.code)}</p>
               <p>${t('Skriv det ned sammen med en voksen. Da kommer du inn igjen senere, også på en annen mobil eller PC.', 'Write it down with a grown-up. Then you can get back in later, on another phone or computer too.')}</p>
             </div>
-            <p class="tg-center"><a class="tg-btn tg-btn--glow" href="${esc(res.url)}">🔑 ${t(`Gå inn på ${loft}`, `Enter ${loft}`)}</a></p>`
+            <p class="tg-center"><a class="tg-btn tg-btn--glow" href="${esc(res.url)}">${pic('nokkel', 'tg-btn-icon')} ${t(`Gå inn på ${loft}`, `Enter ${loft}`)}</a></p>`
         })
       }
       // Put the show together: three numbers from the nisse's tricks and a
@@ -1618,6 +1622,13 @@ const paletteStyle = `--tg-sky:${pal.sky};--tg-ground:${pal.ground};--tg-accent:
   .tg-tree { position: absolute; left: 62%; top: 52%; width: 13%; transform: translate(-50%, -50%); }
   .tg-tree svg { width: 100%; height: auto; display: block; }
   .tg-ornament { position: absolute; transform: translate(-50%, -50%); font-size: clamp(.9rem, 3.4vw, 1.7rem); line-height: 1; }
+  .tg-orn-img { width: clamp(18px, 4.6vw, 34px); height: auto; display: block; }
+  .tg-top-img { width: clamp(30px, 7.5vw, 56px); height: auto; display: block; }
+  .tg-star-img { height: 4.5rem; width: auto; }
+  .tg-lvlicon { height: 1.5em; width: auto; vertical-align: middle; }
+  .tg-pick-icon .tg-lvlicon { height: 3rem; }
+  .tg-tally-icon { width: 1.6rem; height: 1.6rem; object-fit: contain; vertical-align: middle; }
+  .tg-btn-icon { height: 1.5em; width: auto; vertical-align: middle; }
   .tg-ornament.is-new { animation: tg-drop .7s ease-out; }
   .tg-treetop { position: absolute; left: 50%; top: 4%; transform: translate(-50%, -50%); font-size: clamp(1.4rem, 5.5vw, 2.8rem); line-height: 1; filter: drop-shadow(0 0 10px var(--tg-glow)); }
   .tg-spot { display: flex; flex-direction: column; align-items: center; gap: 4px; }

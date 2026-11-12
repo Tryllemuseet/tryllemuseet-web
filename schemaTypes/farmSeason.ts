@@ -138,7 +138,8 @@ const place = defineArrayMember({
     defineField({ name: 'icon', title: 'Emoji på kartet', type: 'string', group: 'main' }),
     { ...percent('mapX', 'På kartet: fra venstre (%)'), group: 'main' },
     { ...percent('mapY', 'På kartet: fra toppen (%)'), group: 'main' },
-    defineField({ name: 'ornament', title: 'Pynt stedet gir', type: 'string', group: 'main', description: 'Emoji som henges på treet.' }),
+    defineField({ name: 'ornament', title: 'Pynt stedet gir (emoji)', type: 'string', group: 'main', description: 'Emoji som henges på treet. Brukes når det ikke finnes bilde.' }),
+    defineField({ name: 'ornamentImage', title: 'Pynt stedet gir (bilde)', type: 'image', group: 'main', description: 'Gjennomsiktig bakgrunn, helst kvadratisk. Vises på treet i stedet for emojien.' }),
     { ...percent('nisseX', 'Nissens gjemmested: fra venstre (%)'), group: 'main' },
     { ...percent('nisseY', 'Nissens gjemmested: fra toppen (%)'), group: 'main' },
     defineField({
