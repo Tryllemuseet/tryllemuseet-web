@@ -68,9 +68,9 @@ export const privateStructure: StructureResolver = (S) =>
       privateListItem(S, 'gameChapter', 'Kabinettet: Rom', 'Nytt rom'),
       // Singleton with a fixed private ID: the code for the preview link.
       S.listItem()
-        .title('Kabinettet: Forhåndsvisning')
+        .title('Spill: Forhåndsvisning')
         .schemaType('gamePreview')
-        .child(S.document().schemaType('gamePreview').documentId(GAME_PREVIEW_ID).title('Kabinettet: Forhåndsvisning')),
+        .child(S.document().schemaType('gamePreview').documentId(GAME_PREVIEW_ID).title('Spill: Forhåndsvisning')),
     ])
 
 export const structure: StructureResolver = (S) =>
@@ -145,6 +145,11 @@ export const structure: StructureResolver = (S) =>
               S.documentTypeListItem('gameConfig').title('Kabinettet: Innstillinger'),
               // The rooms (with answers and hints) are in the "Bak teppet
               // (lukket)" workspace (privateStructure above), not here.
+              S.divider(),
+              S.documentTypeListItem('farmGameConfig').title('Tryllegården: Innstillinger'),
+              S.documentTypeListItem('farmSeason').title('Tryllegården: Sesong'),
+              // The tricks' methods are tryllebeskrivelser in the "Bak teppet
+              // (lukket)" workspace; a season only names them by slug.
               S.divider(),
               S.documentTypeListItem('godeRadConfig').title('Gode råd'),
               // Tryllesett and tryllebeskrivelser are in the "Bak teppet"

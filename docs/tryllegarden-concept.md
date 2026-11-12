@@ -1,6 +1,8 @@
 # Tryllegården — Game Concept (Vision)
 
-> **Status: concept only — nothing is built.** Written November 2026 from the
+> **Status: a first version with three places is built** and dormant behind
+> the `isActive` switch (see "Implementation status" at the end). The rest of
+> this document is the vision. Written November 2026 from the
 > museum's brief: a cosy children's game about the magic of Norwegian
 > Christmas, with the *fjøsnisse* on the farm and the museum's two
 > *tryllebarn*, integrated in the website, with secrets kept in the closed
@@ -48,7 +50,7 @@ claims the nisse is real or not real. That is left to the child.
 | Reading | Not required on the easiest level — everything can be read aloud |
 | Privacy | No accounts, no typed names, no tracking; progress in `localStorage` |
 | Seasons | Christmas is a *season pack*; other seasons are content + art, not code |
-| Secrets | Answers and trick methods live only in the private dataset |
+| Secrets | Trick methods live only in the private dataset |
 
 **Not cups and balls.** The supplied character illustrations show the
 children at a cups-and-balls table. That is illustration style only: no
@@ -216,35 +218,38 @@ silent; any ambience sits behind a toggle that is off by default.
 
 ## Secrets: Nisseloftet in the closed area
 
-Two kinds of secret exist, and neither may appear in the repository or the
-public dataset (the repository is public):
+What must not appear in the repository or the public dataset (the repository
+is public) is **how the nisse's tricks are done**. That reuses what is
+already built:
 
-1. **Game answers** — solutions, hints and the "visste du at" texts that give
-   answers away.
-2. **Trick methods** — how the nisse's tricks are done.
-
-Both reuse what is already built:
-
-- The places live in the **private `lukket` dataset**, exactly like the
-  Cabinet's rooms. The page receives only titles, intro text and images.
-  Hints, answer checks and explanations come one at a time from a small
-  endpoint (`/api/tryllegarden`, modelled on `/api/kabinett`).
 - The tricks are ordinary **`kitTrick`** documents, and each season's bundle
-  is an ordinary **`kitCollection`** — "Nissens tryllesekk" — in the same
-  private dataset. No new content type is needed for the secrets, and the
+  is an ordinary **`kitCollection`** — "Nissens tryllesekk" — in the private
+  `lukket` dataset. No new content type is needed for the secrets, and the
   existing trick page (`/bak-teppet/triks/<slug>`) renders them, with
   figures, steps and read-aloud.
-- **The game is the key.** When the endpoint confirms the finale, it sets the
-  same signed cookie that a correct code sets today, for that season's
-  tryllesekk. The game then links to `/bak-teppet/<slug>` — presented to the
-  child as **Nisseloftet**. No code appears in the page source.
-- The finale also shows the tryllesekk's code once, as "nissens hemmelige
-  ord", so a parent can write it down for another device. The same code can
-  be printed on a card handed out at the museum's Christmas events — a
+- Each finished place reveals its one trick inside the game, fetched from a
+  small endpoint (`/api/tryllegarden`, modelled on `/api/kabinett`), so the
+  child gets something to perform straight away.
+- **The game is the key.** At the finale the endpoint hands over the way
+  into that season's tryllesekk — presented to the child as **Nisseloftet**
+  — through the closed area's ordinary code link. No code is in the page
+  source.
+- The finale also shows the tryllesekk's code, as "nissens hemmelige ord",
+  so a parent can write it down for another device. The same code can be
+  printed on a card handed out at the museum's Christmas events — a
   physical way in that needs no playing. The code is changed each season.
-- Before the finale, each finished place reveals its one trick inside the
-  game (delivered by the endpoint after a correct answer), so the child gets
-  something to perform straight away and does not have to wait for the end.
+
+**The mini-games themselves hold no secrets** and run in the browser: a
+random order of birds or the steps of making porridge cannot be "looked
+up", and there is nothing to win by cheating. This differs from *Det
+trettende kabinett*, where every answer is checked on the server. The
+consequence is that the server cannot know whether a place was really
+played: "finished" is the browser's word, and someone determined could ask
+the endpoint for a trick without playing. That is accepted — the tricks are
+beginners' effects meant for anyone who plays — and the guard that matters
+is a different one: the endpoint only hands out tricks that are in the
+season's own tryllesekk, so nothing in the public season document can point
+it at a tryllesett someone has paid for.
 
 This also keeps the magicians' rule the site already follows: public pages
 describe **effects**; methods are only behind the curtain. The tricks
@@ -331,20 +336,21 @@ is respected.
 
 ## Technical sketch (grounded in this repo)
 
-| Piece | Proposal |
+| Piece | As built |
 |---|---|
-| Page | `web/src/pages/barn/tryllegarden.astro`, rendered on demand and CDN-cached like the Cabinet page (it reads the private dataset) |
-| Endpoint | `web/src/pages/api/tryllegarden.ts` + `web/src/lib/tryllegarden.ts`: place start texts, one hint at a time, answer checks, trick reveal, finale → closed-area cookie |
-| Public config | `farmGameConfig` singleton in `production`: `isActive`, `englishEnabled`, active season (or automatic by date), teaser texts, default difficulty |
-| Season pack | `farmSeason` in `production`: title, date window, palette, map image, collection, unlock mode, reference by slug to the closed-area bundle. Nothing secret |
-| Places | `farmPlace` in `lukket` (`lukket.farm-place-<season>-<key>`): mechanic, three difficulty parameter sets, lines (nb/en, optional audio), tradition text, answers, hints, trick reference, `availableFrom`, `isVisible` |
-| Tricks | Existing `kitTrick` + `kitCollection` (one per season) |
-| Queries | In `web/src/lib/sanity.ts`, private ones through `createPrivateSanityClient()`, images through `privateUrlFor()`, all filtered `isVisible != false` |
+| Page | `web/src/pages/barn/tryllegarden.astro`, rendered on demand (the preview link needs a cookie) and CDN-cached while live |
+| Engine | Vanilla TS in the page: map, dialogue, three mechanics, hint ladder, read-aloud, `localStorage` |
+| Season packs | `web/src/lib/tryllegardenSeason.ts`: types, the built-in Christmas pack and `mergeSeason()` |
+| Endpoint | `web/src/pages/api/tryllegarden.ts` + `web/src/lib/tryllegarden.ts`: `trick` (one method) and `finale` (the way into the bundle) |
+| Config | `farmGameConfig` singleton in `production`: `isActive`, `activeSeason`, the farm's and the children's names, teaser texts, `englishEnabled` |
+| Season in Sanity | `farmSeason` in `production`, every field optional: a document with the key of a built-in pack overrides it field by field; a new key is a new season. Nothing secret |
+| Tricks | Existing `kitTrick` + `kitCollection` (one per season) in `lukket`, named by slug from the season |
+| Queries | `getFarmGameConfig()`, `getFarmSeasonDoc()` in `web/src/lib/sanity.ts`; the private side reuses `getKitTrickBySlug()` and `getKitAccessList()` |
 | Progress | `localStorage` (`tryllegarden-v1`), keyed by season so a new season starts fresh and old trees are kept |
-| Access change | `web/src/lib/bakTeppet.ts` gets one new way to grant a kit: from the game endpoint after a confirmed finale |
+| Preview | The Cabinet's preview code also opens this game: `/barn/tryllegarden?forhandsvisning=<code>` |
 
-No new dataset is needed (the plan's three are in use). The game adds a
-second on-demand page and endpoint; the rest of the site stays static.
+No new dataset or private content type is needed. The game adds a third
+on-demand page and a second endpoint; the rest of the site stays static.
 
 ## Smallest launchable slice
 
@@ -372,3 +378,48 @@ museum QR ornament, English, and the next season — layers on without rework.
 
 Still open: who draws the art, and whether whoever runs Årvoll gård should
 be told that the farm appears by name in a game.
+
+## Implementation status — first version (November 2026)
+
+Built and dormant: `/barn/tryllegarden` shows "kommer snart", is `noindex`
+and is not linked from `/barn` until **Tryllegården: Innstillinger** →
+`isActive` is on. Editors test it with the preview link.
+
+**What is in it**
+
+- Start screen with the three levels, the farm map with the Christmas tree,
+  and three places: **Tunet** (`finn`), **Fjøset** (`rekkefolge`) and
+  **Låven** (`husk`), each with dialogue, mini-game, "visste du at", the
+  nisse's trick and an ornament for the tree.
+- Three levels that change the number of things, their size, decoy cards,
+  the length of the bird sequences and (Tryllemester) a backwards round.
+  The level can be changed in the middle of a place.
+- The hint ladder "Nissen hvisker" (two spoken hints, then the answer
+  glows), golden smørøyne for hint-free places, and a hidden nisse hat in
+  every scene.
+- Read-aloud through the browser's speech synthesis when it has a matching
+  voice; on by default for Smånisse.
+- A finale stub: when all ornaments hang, the star is lit and the nisse
+  hands over the key to Nisseloftet (`/bak-teppet/nissens-tryllesekk`).
+- The three tricks and the bundle "Nissens tryllesekk" exist in the
+  `lukket` dataset.
+- Norwegian only. The interface has English strings and every content field
+  has an English sibling, but no place text is translated and
+  `englishEnabled` is off.
+
+**Placeholder art.** The scenes, the map and the birds are simple drawings
+in the page code, objects are emoji, and the start picture and the three
+faces are cut from the reference illustration the museum supplied. What to
+draw is described in `docs/tryllegarden-art-brief.md`. Scene pictures, object
+pictures and the start picture are replaced in Studio (the season
+document); the map, the tree and the faces are files and need a small code
+change.
+
+**Not built yet:** the other six places and their mechanics, the full
+finale (composing a show), the diploma, the museum QR ornament, seasons by
+date, recorded voices, English texts.
+
+**Before switching it on:** the museum's one review of all texts — the
+tradition texts in particular are drafts — and of the three tricks; real
+art; and a decision on whether the game gets a place in the menu
+(`siteNavigation`, feature flag "Tryllegården").
