@@ -21,13 +21,17 @@ export type FarmLevel = 'smanisse' | 'laerling' | 'mester'
 export const FARM_LEVELS: FarmLevel[] = ['smanisse', 'laerling', 'mester']
 
 /** Mini-game mechanics the engine can play. A new one needs code. */
-export type FarmMechanic = 'finn' | 'rekkefolge' | 'husk'
-export const FARM_MECHANICS: FarmMechanic[] = ['finn', 'rekkefolge', 'husk']
+export type FarmMechanic = 'finn' | 'rekkefolge' | 'husk' | 'folg-traden' | 'monster' | 'flett' | 'forandret' | 'tenn'
+export const FARM_MECHANICS: FarmMechanic[] = ['finn', 'rekkefolge', 'husk', 'folg-traden', 'monster', 'flett', 'forandret', 'tenn']
 
 export type FarmSpeaker = 'jente' | 'gutt' | 'nisse' | 'forteller'
 
+export type FarmPose = 'hei' | 'peker' | 'overrasket' | 'jubler'
+
 export interface FarmLine {
   who:     FarmSpeaker
+  /** Which picture of the child to show. Default: chosen from the text. */
+  pose?:   FarmPose
   text:    string
   textEn?: string
 }
@@ -57,7 +61,12 @@ export interface FarmItem {
 }
 
 export interface FarmLevelParams {
-  /** husk: length of each round's sequence. */
+  /**
+   * One number per round. What the number means depends on the mechanic:
+   * husk = birds to remember, folg-traden = braids, monster = biscuits in the
+   * row, flett = squares per side, forandret = things on the shelf,
+   * tenn = lanterns.
+   */
   rounds?: number[]
   /** husk: the last round must be answered backwards. */
   reverse?: boolean
@@ -76,7 +85,7 @@ export interface FarmPlace {
   /** What this place hangs on the tree (or puts in the basket …). */
   ornament: string
   /** Built-in placeholder backdrop; ignored when sceneImageUrl is set. */
-  backdrop?:      'tun' | 'fjos' | 'lave'
+  backdrop?:      'tun' | 'fjos' | 'lave' | 'stall' | 'bakst' | 'stue' | 'stabbur' | 'sti'
   sceneImageUrl?: string
   sceneAlt?:      string
   intro:   FarmLine[]
@@ -118,6 +127,9 @@ export interface FarmSeason {
   introEn?:    string
   heroImageUrl?: string
   heroAlt?:      string
+  /** Picture of the whole farm, 4:3. Places sit on it at mapX/mapY. Without one, a drawn placeholder is used. */
+  mapImageUrl?: string
+  mapAlt?:      string
   /** Colours of the game's frame. Any CSS colour. */
   palette: { sky: string; ground: string; accent: string; accent2: string; glow: string }
   /** The thing being filled: "Juletreet", "Påskekurven" … */
@@ -131,6 +143,9 @@ export interface FarmSeason {
   finale: FarmLine[]
   /** Name of the season's bundle in the closed area, as the child sees it. */
   loftName:    string
+  /** Magic words to choose between for the final show. */
+  showWords?:   string[]
+  showWordsEn?: string[]
   loftNameEn?: string
   /** Slug of the kitCollection (private dataset) the finished game opens. */
   kitSlug?: string
@@ -146,6 +161,8 @@ const jul: FarmSeason = {
   subtitle: 'Fjøsnissens hemmelighet',
   intro:
     'På {gard} skjer det rare ting før jul. Noen har spist grøten. Noen har flettet høyet. {jente} og {gutt} tror det bor en nisse i fjøset – og at han kan trylle!',
+  mapImageUrl: '/images/tryllegarden/kart-jul.webp',
+  mapAlt: 'Årvoll gård sett ovenfra en vinterkveld: låven, stabburet og stua i snøen, med lykter langs stien.',
   heroImageUrl: '/images/tryllegarden/jul-laven.webp',
   heroAlt: 'To tryllebarn med flosshatt tryller en hvit kanin opp av en hatt på låven, mens fjøsnissen ser på og klapper.',
   palette: { sky: '#14213d', ground: '#eef3f8', accent: '#b3262d', accent2: '#1f5c3a', glow: '#f6c453' },
@@ -153,13 +170,14 @@ const jul: FarmSeason = {
   collectionTop: '⭐',
   loftName: 'Nisseloftet',
   kitSlug: 'nissens-tryllesekk',
+  showWords: ['Hokus pokus', 'Sim sala bim', 'Snipp snapp snute', 'Nisselue og grøt'],
   places: [
     {
       key: 'tunet',
       title: 'Tunet',
       mechanic: 'finn',
       icon: '👣',
-      mapX: 20, mapY: 66,
+      mapX: 21, mapY: 68,
       ornament: '🔴',
       backdrop: 'tun',
       sceneAlt: 'Tunet på gården en vinterkveld, med låve, grantrær og snø.',
@@ -170,13 +188,13 @@ const jul: FarmSeason = {
       ],
       task: 'Finn alle tingene nissen har lagt igjen på tunet.',
       items: [
-        { key: 'fotspor', label: 'Fotsporene',  emoji: '👣', x: 34, y: 82 },
-        { key: 'vott',    label: 'Votten',      emoji: '🧤', x: 71, y: 74 },
-        { key: 'lykt',    label: 'Lykta',       emoji: '🏮', x: 54, y: 55 },
-        { key: 'skje',    label: 'Grøtskjeen',  emoji: '🥄', x: 14, y: 66, from: 'laerling' },
-        { key: 'bjelle',  label: 'Bjella',      emoji: '🔔', x: 86, y: 47, from: 'laerling' },
-        { key: 'garn',    label: 'Garnnøstet',  emoji: '🧶', x: 45, y: 91, from: 'mester' },
-        { key: 'gulrot',  label: 'Gulrota',     emoji: '🥕', x: 6,  y: 88, from: 'mester' },
+        { key: 'fotspor', label: 'Fotsporene',  emoji: '👣', imageUrl: '/images/tryllegarden/ting/fotspor.webp', x: 34, y: 82 },
+        { key: 'vott',    label: 'Votten',      emoji: '🧤', imageUrl: '/images/tryllegarden/ting/vott.webp', x: 71, y: 74 },
+        { key: 'lykt',    label: 'Lykta',       emoji: '🏮', imageUrl: '/images/tryllegarden/ting/lykt.webp', x: 54, y: 55 },
+        { key: 'skje',    label: 'Grøtskjeen',  emoji: '🥄', imageUrl: '/images/tryllegarden/ting/skje.webp', x: 14, y: 66, from: 'laerling' },
+        { key: 'bjelle',  label: 'Bjella',      emoji: '🔔', imageUrl: '/images/tryllegarden/ting/bjelle.webp', x: 86, y: 47, from: 'laerling' },
+        { key: 'garn',    label: 'Garnnøstet',  emoji: '🧶', imageUrl: '/images/tryllegarden/ting/garn.webp', x: 45, y: 91, from: 'mester' },
+        { key: 'gulrot',  label: 'Gulrota',     emoji: '🥕', imageUrl: '/images/tryllegarden/ting/gulrot.webp', x: 6,  y: 88, from: 'mester' },
       ],
       hints: [
         'Se nøye i snøen, helt nederst.',
@@ -198,7 +216,7 @@ const jul: FarmSeason = {
       title: 'Fjøset',
       mechanic: 'rekkefolge',
       icon: '🥣',
-      mapX: 50, mapY: 24,
+      mapX: 47, mapY: 29,
       ornament: '🟡',
       backdrop: 'fjos',
       sceneAlt: 'Inne i fjøset, med lykt, høy og en gryte på bordet.',
@@ -210,7 +228,7 @@ const jul: FarmSeason = {
       task: 'Trykk på det som skal skje først. Så det neste, helt til grøten er ferdig.',
       items: [
         { key: 'gryte', label: 'Ha melk og ris i gryta',         emoji: '🥛', order: 1 },
-        { key: 'ror',   label: 'Rør og rør til grøten er tykk',  emoji: '🥄', order: 2, from: 'laerling' },
+        { key: 'ror',   label: 'Rør og rør til grøten er tykk',  emoji: '🥄', imageUrl: '/images/tryllegarden/ting/skje.webp', order: 2, from: 'laerling' },
         { key: 'skal',  label: 'Øs grøten opp i skåla',          emoji: '🥣', order: 3, from: 'laerling' },
         { key: 'kanel', label: 'Dryss på sukker og kanel',       emoji: '✨', order: 4, from: 'mester' },
         { key: 'smor',  label: 'Legg en klatt smør i midten',    emoji: '🧈', order: 5 },
@@ -240,7 +258,7 @@ const jul: FarmSeason = {
       title: 'Låven',
       mechanic: 'husk',
       icon: '🌾',
-      mapX: 80, mapY: 62,
+      mapX: 19, mapY: 38,
       ornament: '🔵',
       backdrop: 'lave',
       sceneAlt: 'Juleneket henger på en stang utenfor låven. Det snør.',
@@ -278,13 +296,222 @@ const jul: FarmSeason = {
       trickSlug: 'fuglen-pa-neket',
       nisseX: 92, nisseY: 84,
     },
+    {
+      key: 'stallen',
+      title: 'Stallen',
+      mechanic: 'folg-traden',
+      icon: '🐴',
+      mapX: 66, mapY: 37,
+      ornament: '🟣',
+      backdrop: 'stall',
+      sceneAlt: 'Inne i stallen. Hesten har fått fletter i manken.',
+      intro: [
+        { who: 'gutt',  text: 'Se på Blakken! Noen har flettet manken hans i natt.' },
+        { who: 'jente', text: 'Det heter nisseflette. Og nissen har knyttet noe fast i enden av hver flette!' },
+        { who: 'gutt',  text: 'Men flettene går i kryss og krok. Kan du følge dem med øynene?' },
+      ],
+      task: 'Følg fletta fra sløyfa og helt ned. Trykk på riktig sløyfe.',
+      items: [
+        { key: 'bjelle',   label: 'bjella',      emoji: '🔔', imageUrl: '/images/tryllegarden/ting/bjelle.webp' },
+        { key: 'eple',     label: 'eplet',       emoji: '🍎' },
+        { key: 'gulrot',   label: 'gulrota',     emoji: '🥕', imageUrl: '/images/tryllegarden/ting/gulrot.webp' },
+        { key: 'sokk',     label: 'sokken',      emoji: '🧦', from: 'laerling' },
+        { key: 'sukker',   label: 'sukkertøyet', emoji: '🍬', from: 'mester' },
+        { key: 'stjerne',  label: 'stjerna',     emoji: '⭐', from: 'mester' },
+      ],
+      levels: {
+        smanisse: { rounds: [3, 3] },
+        laerling: { rounds: [4, 4] },
+        mester:   { rounds: [5, 6] },
+      },
+      hints: [
+        'Start nederst ved tingen, og følg fletta oppover i stedet.',
+        'Følg med fingeren på skjermen, sakte, gjennom alle kryssene.',
+      ],
+      done: 'Du mistet ikke tråden! En tryllekunstner følger med på én ting, selv når mye skjer.',
+      traditionShort:
+        'Fant bonden fletter i manken på hesten om morgenen, sa folk at nissen hadde vært der. Det het nisseflette.',
+      traditionLong:
+        'Folk trodde nissen stelte ekstra godt med hesten han likte best. Flettene skulle få være i fred. Klipte man dem av, kunne nissen bli fornærmet.',
+      trickTitle: 'Den umulige knuten',
+      trickEffect:
+        'Du ber en venn knyte en knute på et bånd uten å slippe endene. Det går ikke! Men du klarer det på et blunk.',
+      trickSlug: 'den-umulige-knuten',
+      nisseX: 92, nisseY: 30,
+    },
+    {
+      key: 'bakstehuset',
+      title: 'Bakstehuset',
+      mechanic: 'monster',
+      icon: '🍪',
+      mapX: 83, mapY: 28,
+      ornament: '🟠',
+      backdrop: 'bakst',
+      sceneAlt: 'Bakstehuset, med varm ovn og kakebokser på bordet.',
+      intro: [
+        { who: 'jente', text: 'Mmm, det lukter julekaker! Her bakes det sju slag.' },
+        { who: 'gutt',  text: 'Kakene skal ligge i mønster i boksen. Men nissen har smakt på noen av dem!' },
+        { who: 'jente', text: 'Ser du hvilke kaker som mangler?' },
+      ],
+      task: 'Se på mønsteret. Trykk på kaka som skal ligge i den tomme plassen.',
+      items: [
+        { key: 'pepperkake',    label: 'Pepperkake',    emoji: '🍪' },
+        { key: 'smultring',     label: 'Smultring',     emoji: '🍩' },
+        { key: 'krumkake',      label: 'Krumkake',      emoji: '🥐' },
+        { key: 'sandkake',      label: 'Sandkake',      emoji: '🧁', from: 'laerling' },
+        { key: 'berlinerkrans', label: 'Berlinerkrans', emoji: '🥨', from: 'mester' },
+        { key: 'goro',          label: 'Goro',          emoji: '🧇', from: 'mester' },
+      ],
+      levels: {
+        smanisse: { rounds: [6, 6] },
+        laerling: { rounds: [8, 8, 9] },
+        mester:   { rounds: [9, 10, 12] },
+      },
+      hints: [
+        'Si navnene på kakene høyt, som en regle. Da hører du mønsteret.',
+        'Se på de første kakene i raden. Mønsteret begynner på nytt etter dem.',
+      ],
+      done: 'Alle kakene er på plass! En tryllekunstner ser mønsteret før alle andre.',
+      traditionShort:
+        'Til jul skal det være sju slag kaker i huset. Det er en gammel norsk tradisjon.',
+      traditionLong:
+        'Ingen er helt enige om hvilke sju det skal være. Pepperkaker, smultringer, krumkaker, sandkaker, berlinerkranser, goro og fattigmann er blant de vanligste.',
+      trickTitle: 'Pepperkaka som vet svaret',
+      trickEffect:
+        'En venn tenker på et hemmelig tall og regner litt i hodet. Så løfter du på en pepperkake. Under den ligger en lapp – med svaret!',
+      trickSlug: 'pepperkaka-som-vet-svaret',
+      nisseX: 7, nisseY: 34,
+    },
+    {
+      key: 'stua',
+      title: 'Stua',
+      mechanic: 'flett',
+      icon: '❤️',
+      mapX: 74, mapY: 79,
+      ornament: '💗',
+      backdrop: 'stue',
+      sceneAlt: 'Stua, med peis, strikkede strømper og glanspapir på bordet.',
+      intro: [
+        { who: 'gutt',  text: 'I stua lager de julepynt. Se, flettede julekurver!' },
+        { who: 'jente', text: 'Nissen har begynt på en, men den ble ikke ferdig.' },
+        { who: 'gutt',  text: 'Annenhver rute skal være rød og hvit. Kan du flette den ferdig?' },
+      ],
+      task: 'Trykk på rutene til kurven din er lik mønsteret.',
+      items: [
+        { key: 'rod',  label: 'rød',  colors: ['#b3262d'] },
+        { key: 'hvit', label: 'hvit', colors: ['#ffffff'] },
+      ],
+      levels: {
+        smanisse: { rounds: [2, 3] },
+        laerling: { rounds: [3, 4] },
+        mester:   { rounds: [4, 5] },
+      },
+      hints: [
+        'Ta én rad om gangen, fra venstre mot høyre.',
+        'Sammenlign rute for rute med mønsteret. Trykk på dem som har feil farge.',
+      ],
+      done: 'For en fin kurv! En tryllekunstner har tålmodige fingre.',
+      traditionShort:
+        'Julekurver flettes av to papirbiter og henges på juletreet. Ofte ligger det godteri oppi.',
+      traditionLong:
+        'Før i tida laget familien julepynten selv: kurver, lenker av glanspapir og engler av papp. Mange gjør det fortsatt.',
+      trickTitle: 'Gå gjennom et julekort',
+      trickEffect:
+        'Du viser fram et helt vanlig julekort og sier at du kan gå tvers gjennom det. Ingen tror deg. Noen klipp senere stiger du rett gjennom kortet!',
+      trickSlug: 'ga-gjennom-et-julekort',
+      nisseX: 93, nisseY: 26,
+    },
+    {
+      key: 'stabburet',
+      title: 'Stabburet',
+      mechanic: 'forandret',
+      icon: '🧀',
+      mapX: 42, mapY: 56,
+      ornament: '🟢',
+      backdrop: 'stabbur',
+      sceneAlt: 'Hyllene i stabburet, fulle av julemat.',
+      intro: [
+        { who: 'jente', text: 'Her på stabburet står all julematen.' },
+        { who: 'gutt',  text: 'Nissen pleier å stikke innom og bytte om på ting. Bare på moro!' },
+        { who: 'jente', text: 'Se godt på hyllene først. Så ser vi om du merker hva han gjør.' },
+      ],
+      task: 'Se nøye på hyllene. Finn det nissen har byttet ut.',
+      items: [
+        { key: 'ost',      label: 'Osten',         emoji: '🧀', x: 16, y: 30 },
+        { key: 'syltetoy', label: 'Syltetøyet',    emoji: '🫙', x: 38, y: 30 },
+        { key: 'epler',    label: 'Eplet',         emoji: '🍎', x: 60, y: 30 },
+        { key: 'gris',     label: 'Marsipangrisen', emoji: '🐷', x: 82, y: 30 },
+        { key: 'brod',     label: 'Brødet',        emoji: '🍞', x: 16, y: 66 },
+        { key: 'smor',     label: 'Smøret',        emoji: '🧈', x: 38, y: 66 },
+        { key: 'notter',   label: 'Nøttene',       emoji: '🌰', x: 60, y: 66 },
+        { key: 'honning',  label: 'Honningen',     emoji: '🍯', x: 82, y: 66 },
+        { key: 'lys',      label: 'Lyset',         emoji: '🕯️', x: 27, y: 48 },
+        { key: 'kurv',     label: 'Kurven',        emoji: '🧺', x: 71, y: 48 },
+      ],
+      levels: {
+        smanisse: { rounds: [3, 4] },
+        laerling: { rounds: [5, 6] },
+        mester:   { rounds: [7, 8, 9] },
+      },
+      hints: [
+        'Si høyt hva som står på hyllene før du trykker på «Jeg er klar».',
+        'Trykk på «Se hvordan det var» og sammenlign én hylle om gangen.',
+      ],
+      done: 'Deg lurer han ikke! En tryllekunstner legger merke til det minste som forandrer seg.',
+      traditionShort:
+        'I julegrøten gjemmes det en mandel. Den som finner mandelen, får en marsipangris!',
+      traditionLong:
+        'På stabburet oppbevarte gården maten gjennom vinteren. Huset står på stolper, så musene ikke kommer seg inn.',
+      trickTitle: 'Klementinen som teller',
+      trickEffect:
+        'Du holder opp en klementin og sier hvor mange båter den har inni. Så skreller du den, og alle teller. Det stemmer!',
+      trickSlug: 'klementinen-som-teller',
+      nisseX: 50, nisseY: 90,
+    },
+    {
+      key: 'lyktestien',
+      title: 'Lyktestien',
+      mechanic: 'tenn',
+      icon: '🏮',
+      mapX: 36, mapY: 82,
+      ornament: '🟤',
+      backdrop: 'sti',
+      sceneAlt: 'En snødekt sti med fire lykter på rekke.',
+      intro: [
+        { who: 'gutt',  text: 'Langs stien står det fire lykter. Én for hver søndag i advent.' },
+        { who: 'jente', text: 'Men nissen har tullet med dem. Noen lykter henger sammen!' },
+        { who: 'gutt',  text: 'Klarer du å få alle fire til å lyse samtidig?' },
+      ],
+      task: 'Trykk på lyktene til alle lyser.',
+      items: [
+        { key: 'lykt', label: 'Lykt', emoji: '🏮', imageUrl: '/images/tryllegarden/ting/lykt.webp' },
+      ],
+      levels: {
+        smanisse: { rounds: [4] },
+        laerling: { rounds: [4, 4] },
+        mester:   { rounds: [4, 5] },
+      },
+      hints: [
+        'Trykk på én lykt og se nøye etter hvilke som forandrer seg.',
+        'Noen ganger må du slukke en lykt for å få tent en annen.',
+      ],
+      done: 'Nå lyser hele stien! En tryllekunstner tenker ett steg fram.',
+      traditionShort:
+        'I advent tenner vi ett lys hver søndag. Når alle fire lysene brenner, er det snart jul.',
+      traditionLong:
+        'Advent betyr «komme». Det er de fire ukene før jul, da vi venter og gjør alt klart.',
+      trickTitle: 'Tankeleser-lysene',
+      trickEffect:
+        'Den ene tryllekunstneren går ut av rommet. Publikum velger ett lys. Tryllekunstneren kommer inn igjen – og vet hvilket lys det var!',
+      trickSlug: 'tankeleser-lysene',
+      nisseX: 6, nisseY: 70,
+    },
   ],
   finaleTitle: 'Stjerna på treet',
   finale: [
-    { who: 'forteller', text: 'Juletreet på tunet lyser. På låvebrua ligger det en lapp med skjeve bokstaver.' },
-    { who: 'nisse',     text: 'Takk for hjelpa. Triksene mine ligger på loftet. Hilsen N.' },
-    { who: 'jente',     text: 'Nissen har gitt oss nøkkelen til Nisseloftet!' },
-    { who: 'gutt',      text: 'Der ligger alle hemmelighetene. Men husk: En tryllekunstner forteller aldri hvordan det gjøres.' },
+    { who: 'forteller', text: 'All pynten henger på treet. Inne på låven er det tent lykter, og dyra har satt seg på benkene.' },
+    { who: 'jente',     text: 'I kveld holder vi juleforestilling – for alle som bor på {gard}!' },
+    { who: 'gutt',      text: 'Og du bestemmer hva vi skal vise.' },
   ],
 }
 

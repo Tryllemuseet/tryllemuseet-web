@@ -58,9 +58,9 @@ const levelParams = (name: string, title: string) =>
         title: 'Runder',
         type: 'array',
         of: [defineArrayMember({ type: 'number' })],
-        description: 'Ett tall per runde: hvor mange som skal huskes. For eksempel 2 og 3.',
+        description: 'Ett tall per runde. Tallet betyr: fugler som skal huskes, fletter, kaker i raden, ruter per side, ting på hylla eller antall lykter – alt etter minispillet.',
       }),
-      defineField({ name: 'reverse', title: 'Siste runde skal svares baklengs', type: 'boolean' }),
+      defineField({ name: 'reverse', title: 'Siste runde skal svares baklengs («Husk rekkefølgen»)', type: 'boolean' }),
     ],
   })
 
@@ -122,7 +122,7 @@ const place = defineArrayMember({
       title: 'Nøkkel',
       type: 'string',
       group: 'main',
-      description: 'Julesesongens innebygde steder heter tunet, fjoset og laven. Samme nøkkel = feltene du fyller ut her erstatter de innebygde. Ny nøkkel = nytt sted.',
+      description: 'Julesesongens innebygde steder heter tunet, fjoset, laven, stallen, bakstehuset, stua, stabburet og lyktestien. Samme nøkkel = feltene du fyller ut her erstatter de innebygde. Ny nøkkel = nytt sted.',
       validation: R => R.required().regex(/^[a-z0-9-]+$/).error('Bare små bokstaver, tall og bindestrek.'),
     }),
     defineField({ name: 'title', title: 'Navn', type: 'string', group: 'main' }),
@@ -152,6 +152,11 @@ const place = defineArrayMember({
           { title: 'Finn tingene i bildet', value: 'finn' },
           { title: 'Riktig rekkefølge', value: 'rekkefolge' },
           { title: 'Husk rekkefølgen', value: 'husk' },
+          { title: 'Følg tråden', value: 'folg-traden' },
+          { title: 'Fortsett mønsteret', value: 'monster' },
+          { title: 'Flett kurven', value: 'flett' },
+          { title: 'Hva er forandret?', value: 'forandret' },
+          { title: 'Tenn lyktene', value: 'tenn' },
         ],
       },
     }),
@@ -167,7 +172,7 @@ const place = defineArrayMember({
     }),
     defineField({
       name: 'levels',
-      title: 'Vanskelighetsgrad («Husk rekkefølgen»)',
+      title: 'Vanskelighetsgrad (runder per nivå)',
       type: 'object',
       group: 'game',
       fields: [
@@ -281,6 +286,14 @@ export const farmSeason = defineType({
       fields: [defineField({ name: 'alt', title: 'Alt-tekst', type: 'string' })],
     }),
     defineField({
+      name: 'mapImage',
+      title: 'Kart over gården',
+      type: 'image',
+      group: 'main',
+      description: 'Hele gården sett ovenfra, liggende 4:3 (for eksempel 2000 × 1500 px), uten juletre og uten stedsknapper. Spillet legger treet og knappene oppå. Plasseringen av hvert sted angis under «Steder» (fra venstre og fra toppen, i prosent).',
+      fields: [defineField({ name: 'alt', title: 'Alt-tekst', type: 'string' })],
+    }),
+    defineField({
       name: 'palette',
       title: 'Farger',
       type: 'object',
@@ -311,6 +324,15 @@ export const farmSeason = defineType({
     defineField({ name: 'finale', title: 'Avslutning: replikker', type: 'array', of: [line], group: 'finale' }),
     defineField({ name: 'loftName', title: 'Navn på det hemmelige stedet', type: 'string', group: 'finale', description: 'For eksempel «Nisseloftet».' }),
     defineField({ name: 'loftNameEn', title: 'Navn på det hemmelige stedet (engelsk)', type: 'string', group: 'finale' }),
+    defineField({
+      name: 'showWords',
+      title: 'Trylleord til forestillingen',
+      type: 'array',
+      of: [defineArrayMember({ type: 'string' })],
+      group: 'finale',
+      description: 'Spilleren velger ett av dem. Uten utropstegn.',
+    }),
+    defineField({ name: 'showWordsEn', title: 'Trylleord (engelsk)', type: 'array', of: [defineArrayMember({ type: 'string' })], group: 'finale' }),
     defineField({
       name: 'kitSlug',
       title: 'Sesongens tryllesett (slug)',
