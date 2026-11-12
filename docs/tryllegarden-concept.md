@@ -420,7 +420,7 @@ is on. Editors test it with the preview link.
 the seven things from Tunet (also reused in Fjøset, Stallen and Lyktestien),
 the children in four poses (faces in the speech bubbles, whole figures in the
 finale), the nisse (face, two standing poses, two peeking heads) and the
-start picture. All are files in `web/public/images/tryllegarden/`. Scenes,
+start picture, the ornaments for Tunet, Fjøset and Låven, the star for the tree, the three level badges (sock, top hat, star), the key to Nisseloftet and the scenes for Tunet and Fjøset. All are files in `web/public/images/tryllegarden/`. Scenes,
 the other mini-game objects (birds, biscuits, shelf food) and the tree are
 still simple drawings or emoji. See `docs/tryllegarden-art-brief.md`. The
 lantern picture has a ragged lower edge from the original sheet.

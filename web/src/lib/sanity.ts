@@ -3729,6 +3729,7 @@ export async function getFarmSeasonDoc(key: string): Promise<Record<string, unkn
       "hidden": places[isVisible == false].key,
       places[isVisible != false] {
         key, title, titleEn, mechanic, icon, mapX, mapY, ornament,
+        "ornamentImage": ornamentImage { asset->{ _ref, url } },
         "sceneImage": sceneImage { asset->{ _ref, url }, alt },
         intro[] { who, text, textEn },
         task, taskEn,
@@ -3768,6 +3769,9 @@ export async function getFarmSeasonDoc(key: string): Promise<Record<string, unkn
       if (scene.alt) place.sceneAlt = scene.alt
     }
     delete place.sceneImage
+    const orn: Img = place.ornamentImage
+    if (orn?.asset) place.ornamentImageUrl = urlFor(orn).width(200).format('webp').url()
+    delete place.ornamentImage
     for (const item of (place.items ?? []) as Record<string, any>[]) {
       if (item.image?.asset) item.imageUrl = urlFor(item.image).width(240).format('webp').url()
       delete item.image

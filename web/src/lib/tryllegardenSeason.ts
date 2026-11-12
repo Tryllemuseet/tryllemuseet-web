@@ -84,6 +84,8 @@ export interface FarmPlace {
   mapY: number
   /** What this place hangs on the tree (or puts in the basket …). */
   ornament: string
+  /** Picture of the ornament; the emoji above is the fallback. */
+  ornamentImageUrl?: string
   /** Built-in placeholder backdrop; ignored when sceneImageUrl is set. */
   backdrop?:      'tun' | 'fjos' | 'lave' | 'stall' | 'bakst' | 'stue' | 'stabbur' | 'sti'
   sceneImageUrl?: string
@@ -139,6 +141,7 @@ export interface FarmSeason {
   collectionNameEn?: string
   /** What crowns the collection when everything is done. */
   collectionTop: string
+  collectionTopUrl?: string
   places: FarmPlace[]
   finaleTitle:    string
   finaleTitleEn?: string
@@ -170,6 +173,7 @@ const jul: FarmSeason = {
   palette: { sky: '#14213d', ground: '#eef3f8', accent: '#b3262d', accent2: '#1f5c3a', glow: '#f6c453' },
   collectionName: 'Juletreet',
   collectionTop: '⭐',
+  collectionTopUrl: '/images/tryllegarden/pynt/stjerne.webp',
   loftName: 'Nisseloftet',
   kitSlug: 'nissens-tryllesekk',
   showWords: ['Hokus pokus', 'Sim sala bim', 'Snipp snapp snute', 'Nisselue og grøt'],
@@ -181,8 +185,9 @@ const jul: FarmSeason = {
       icon: '👣',
       mapX: 21, mapY: 68,
       ornament: '🔴',
-      backdrop: 'tun',
-      sceneAlt: 'Tunet på gården en vinterkveld, med låve, grantrær og snø.',
+      ornamentImageUrl: '/images/tryllegarden/pynt/kule-rod.webp',
+      sceneImageUrl: '/images/tryllegarden/scene/tunet.webp',
+      sceneAlt: 'Tunet en vinterkveld: den røde bygningen med lys i vinduene, vedstabel, grantrær, gjerde og mye urørt snø. Nissen titter fram over mønet.',
       intro: [
         { who: 'jente', text: 'Se, {gutt}! Noen har gått over tunet i natt.' },
         { who: 'gutt',  text: 'Bittesmå fotspor … Jeg tror det bor en nisse her på {gard}!' },
@@ -190,13 +195,13 @@ const jul: FarmSeason = {
       ],
       task: 'Finn alle tingene nissen har lagt igjen på tunet.',
       items: [
-        { key: 'fotspor', label: 'Fotsporene',  emoji: '👣', imageUrl: '/images/tryllegarden/ting/fotspor.webp', x: 34, y: 82 },
-        { key: 'vott',    label: 'Votten',      emoji: '🧤', imageUrl: '/images/tryllegarden/ting/vott.webp', x: 71, y: 74 },
-        { key: 'lykt',    label: 'Lykta',       emoji: '🏮', imageUrl: '/images/tryllegarden/ting/lykt.webp', x: 54, y: 55 },
-        { key: 'skje',    label: 'Grøtskjeen',  emoji: '🥄', imageUrl: '/images/tryllegarden/ting/skje.webp', x: 14, y: 66, from: 'laerling' },
-        { key: 'bjelle',  label: 'Bjella',      emoji: '🔔', imageUrl: '/images/tryllegarden/ting/bjelle.webp', x: 86, y: 47, from: 'laerling' },
-        { key: 'garn',    label: 'Garnnøstet',  emoji: '🧶', imageUrl: '/images/tryllegarden/ting/garn.webp', x: 45, y: 91, from: 'mester' },
-        { key: 'gulrot',  label: 'Gulrota',     emoji: '🥕', imageUrl: '/images/tryllegarden/ting/gulrot.webp', x: 6,  y: 88, from: 'mester' },
+        { key: 'fotspor', label: 'Fotsporene',  emoji: '👣', imageUrl: '/images/tryllegarden/ting/fotspor.webp', x: 30, y: 84 },
+        { key: 'vott',    label: 'Votten',      emoji: '🧤', imageUrl: '/images/tryllegarden/ting/vott.webp', x: 72, y: 77 },
+        { key: 'lykt',    label: 'Lykta',       emoji: '🏮', imageUrl: '/images/tryllegarden/ting/lykt.webp', x: 40, y: 70 },
+        { key: 'skje',    label: 'Grøtskjeen',  emoji: '🥄', imageUrl: '/images/tryllegarden/ting/skje.webp', x: 14, y: 68, from: 'laerling' },
+        { key: 'bjelle',  label: 'Bjella',      emoji: '🔔', imageUrl: '/images/tryllegarden/ting/bjelle.webp', x: 87, y: 72, from: 'laerling' },
+        { key: 'garn',    label: 'Garnnøstet',  emoji: '🧶', imageUrl: '/images/tryllegarden/ting/garn.webp', x: 55, y: 91, from: 'mester' },
+        { key: 'gulrot',  label: 'Gulrota',     emoji: '🥕', imageUrl: '/images/tryllegarden/ting/gulrot.webp', x: 8,  y: 90, from: 'mester' },
       ],
       hints: [
         'Se nøye i snøen, helt nederst.',
@@ -211,7 +216,7 @@ const jul: FarmSeason = {
       trickEffect:
         'Du setter en strikk rundt pekefingeren og langfingeren. Du knytter hånda og sier trylleordet. Vips – strikken har hoppet over til de to andre fingrene!',
       trickSlug: 'strikken-som-hopper',
-      nisseX: 90, nisseY: 28,
+      nisseX: 63, nisseY: 19, nisseInScene: true,
     },
     {
       key: 'fjoset',
@@ -220,6 +225,7 @@ const jul: FarmSeason = {
       icon: '🥣',
       mapX: 47, mapY: 29,
       ornament: '🟡',
+      ornamentImageUrl: '/images/tryllegarden/pynt/kule-gul.webp',
       sceneImageUrl: '/images/tryllegarden/scene/fjoset.webp',
       sceneAlt: 'Inne i fjøset: en tent lykt, høyballer, en tom gryte på bordet og en nysgjerrig ku. Nissen titter fram bak høyet.',
       intro: [
@@ -262,6 +268,7 @@ const jul: FarmSeason = {
       icon: '🌾',
       mapX: 19, mapY: 38,
       ornament: '🔵',
+      ornamentImageUrl: '/images/tryllegarden/pynt/fugl-bla.webp',
       backdrop: 'lave',
       sceneAlt: 'Juleneket henger på en stang utenfor låven. Det snør.',
       intro: [
@@ -317,9 +324,9 @@ const jul: FarmSeason = {
         { key: 'bjelle',   label: 'bjella',      emoji: '🔔', imageUrl: '/images/tryllegarden/ting/bjelle.webp' },
         { key: 'eple',     label: 'eplet',       emoji: '🍎' },
         { key: 'gulrot',   label: 'gulrota',     emoji: '🥕', imageUrl: '/images/tryllegarden/ting/gulrot.webp' },
-        { key: 'sokk',     label: 'sokken',      emoji: '🧦', from: 'laerling' },
+        { key: 'sokk',     label: 'sokken',      emoji: '🧦', imageUrl: '/images/tryllegarden/pynt/sokk.webp', from: 'laerling' },
         { key: 'sukker',   label: 'sukkertøyet', emoji: '🍬', from: 'mester' },
-        { key: 'stjerne',  label: 'stjerna',     emoji: '⭐', from: 'mester' },
+        { key: 'stjerne',  label: 'stjerna',     emoji: '⭐', imageUrl: '/images/tryllegarden/pynt/stjerne8.webp', from: 'mester' },
       ],
       levels: {
         smanisse: { rounds: [3, 3] },
