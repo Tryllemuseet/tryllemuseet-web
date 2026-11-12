@@ -141,6 +141,13 @@ const place = defineArrayMember({
     defineField({ name: 'ornament', title: 'Pynt stedet gir', type: 'string', group: 'main', description: 'Emoji som henges på treet.' }),
     { ...percent('nisseX', 'Nissens gjemmested: fra venstre (%)'), group: 'main' },
     { ...percent('nisseY', 'Nissens gjemmested: fra toppen (%)'), group: 'main' },
+    defineField({
+      name: 'nisseInScene',
+      title: 'Nissen er allerede tegnet inn i scenebildet',
+      type: 'boolean',
+      group: 'main',
+      description: 'På: den skjulte nissen blir et usynlig trykkpunkt på stedet der han er tegnet. Av: spillet legger et bilde av nissen som titter fram.',
+    }),
 
     defineField({
       name: 'mechanic',
