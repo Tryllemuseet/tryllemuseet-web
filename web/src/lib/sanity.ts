@@ -3492,6 +3492,8 @@ type SanityImageRef = { asset: { _ref: string; url: string }; alt?: string }
 export interface KitVideo {
   label?: string
   url:    string
+  /** Standing (9:16) video; Shorts links are detected without it. */
+  portrait?: boolean
 }
 
 export interface KitFigure {
@@ -3671,7 +3673,7 @@ export async function getKitTrickBySlug(client: SanityClientLike, slug: string):
         figures[] ${KIT_FIGURE},
         steps[] { _key, title, text[] { ${KIT_RICH_TEXT} }, figures[] ${KIT_FIGURE} }
       },
-      videos[] { label, url },
+      videos[] { label, url, portrait },
       "relatedTricks": relatedTricks[${KIT_TRICK_REF_FILTER}]->{ ${KIT_TRICK_CARD} },
       sourceText[] { ${KIT_RICH_TEXT} },
       sourceFacts[] { _key, label, value },

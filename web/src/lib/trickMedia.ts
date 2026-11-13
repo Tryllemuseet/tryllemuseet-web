@@ -28,8 +28,15 @@ export function withNorwegianCaptions(embed: string): string {
   return embed
 }
 
+/** Standing (9:16) video: a YouTube Shorts link, or one the editor has marked as standing. */
+export function isPortraitVideo(url: string, marked?: boolean | null): boolean {
+  return !!marked || /youtube\.com\/shorts\//.test(url)
+}
+
 export interface TrickVideo {
   label: string
+  /** Standing video: the player gets a 9:16 frame. */
+  portrait?: true
   /** Player URL when the link can be embedded. */
   embed?: string
   /** Plain link, only for videos that cannot be embedded. */
@@ -42,7 +49,7 @@ export interface TrickVideo {
  * only suggest videos from the same channel (rel=0), and every player is
  * asked for Norwegian subtitles. Links that are not http(s) are dropped.
  */
-export function videoPayload(videos: { label?: string; url?: string }[] | null | undefined): TrickVideo[] {
+export function videoPayload(videos: { label?: string; url?: string; portrait?: boolean | null }[] | null | undefined): TrickVideo[] {
   const out: TrickVideo[] = []
   for (const v of videos ?? []) {
     const url = (v?.url ?? '').trim()
@@ -51,7 +58,7 @@ export function videoPayload(videos: { label?: string; url?: string }[] | null |
     const embed = videoEmbedUrl(url)
     if (!embed) { out.push({ label, url }); continue }
     const player = embed.includes('youtube-nocookie.com') ? `${embed}?rel=0` : embed
-    out.push({ label, embed: withNorwegianCaptions(player) })
+    out.push({ label, embed: withNorwegianCaptions(player), ...(isPortraitVideo(url, v.portrait) ? { portrait: true as const } : {}) })
   }
   const effect = (v: TrickVideo) => (/effekt|effect/i.test(v.label) ? 0 : 1)
   return out

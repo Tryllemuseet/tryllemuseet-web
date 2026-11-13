@@ -31,6 +31,16 @@ test('players are asked for Norwegian subtitles', () => {
   assert.equal(withNorwegianCaptions('https://example.test/film'), 'https://example.test/film')
 })
 
+test('Shorts and videos marked as standing get a portrait player', () => {
+  const out = videoPayload([
+    { label: 'A', url: 'https://www.youtube.com/shorts/abcdefghijk' },
+    { label: 'B', url: 'https://youtu.be/abcdefghijk', portrait: true },
+    { label: 'C', url: 'https://youtu.be/abcdefghijk' },
+  ])
+  assert.deepEqual(out.map(v => v.portrait), [true, true, undefined])
+  assert.ok(out[0].embed.startsWith('https://www.youtube-nocookie.com/embed/abcdefghijk?'))
+})
+
 test('unembeddable https links stay links, anything else is dropped', () => {
   const out = videoPayload([
     { label: 'Film', url: 'https://example.test/film.mp4' },
