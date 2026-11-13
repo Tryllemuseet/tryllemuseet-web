@@ -100,10 +100,11 @@ kulene du har tegnet):
 >
 > **Loco og julekurven (13. november):** Kakaduen Loco sitter i Fuglehuset og
 > danser hver gang barnet teller riktig. Stua har fått «Lag din egen
-> julekurv» med fem trinn. Loco og de fem trinnbildene er enkle tegninger laget
-> fra bunnen av til dette spillet (`honsehus/loco.svg`, `lag/julekurv-1…5.svg`),
-> ikke bearbeidede fotografier. Tegneren kan gjerne erstatte dem i samme stil
-> som resten. Begge deler ligger foreløpig bare i koden, ikke som felt i Studio.
+> julekurv» med fem trinn. De fem trinnbildene er enkle tegninger laget fra
+> bunnen av til dette spillet (`lag/julekurv-1…5.svg`), ikke bearbeidede
+> fotografier. Tegneren kan gjerne erstatte dem i samme stil som resten. Loco
+> er museets egne tegninger, to positurer (`honsehus/loco.webp` og `loco-danser.webp`), dempet litt mot lyktelyset.
+> Begge deler ligger foreløpig bare i koden, ikke som felt i Studio.
 >
 > **Status 13. november:** Alle fem stedene i del 2 er bygget (Klokketårnet,
 > Skogen, Porten, Bryggerhuset og Hønsehuset) med museets scenebilder. Klokketårnet
