@@ -409,6 +409,18 @@ is on. Editors test it with the preview link.
 - **Finale:** when all eight ornaments hang, the player composes a show
   (three of the nisse's tricks and a magic word), the animals watch, and the
   nisse hands over the key to Nisseloftet (`/bak-teppet/nissens-tryllesekk`).
+- **Progress across visits and devices.** Progress is kept in the browser. A
+  **save code** ("lagrekode", `JUL-XXXXX-XXXXX-XXXXX`) carries it to another
+  device: "Lagre fremgang" on the map shows it with a copy button, and "Har du
+  en lagrekode fra før?" on the start page takes it back. The code packs the
+  done places, butter-eyes, found hats, finale, level and read-aloud choice into
+  75 bits with a checksum; nothing is stored on a server and nothing identifies
+  the child. Restoring only adds progress, it never takes any away. Places are
+  identified by a fixed `slot` (0–15), so codes survive places being reordered
+  or hidden; a slot must never be changed once codes exist, and new places
+  need one (Studio: "Plassnummer"). The game also asks the browser for
+  persistent storage after the first ornament, because Safari may otherwise
+  clear it after a week without a visit (Firefox may ask the grown-up first).
 - **The trick card** reuses the closed area's tryllebeskrivelser: text, steps
   and step pictures, plus a read-aloud button and the trick's videos (a video
   titled "Effekt" is shown first; embedded players load only after the child

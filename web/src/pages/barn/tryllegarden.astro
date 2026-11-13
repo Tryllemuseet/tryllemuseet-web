@@ -149,6 +149,8 @@ const paletteStyle = `--tg-sky:${pal.sky};--tg-ground:${pal.ground};--tg-accent:
 </BaseLayout>
 
 <script>
+  import { encodeProgress, decodeProgress, mergeProgress } from '../../lib/tryllegardenSave'
+
   type Level = 'smanisse' | 'laerling' | 'mester'
   type Who = 'jente' | 'gutt' | 'nisse' | 'forteller'
   type Pose = 'hei' | 'peker' | 'overrasket' | 'jubler'
@@ -159,7 +161,7 @@ const paletteStyle = `--tg-sky:${pal.sky};--tg-ground:${pal.ground};--tg-accent:
     wrong?: string; wrongEn?: string; colors?: string[]
   }
   interface Place {
-    key: string; title: string; titleEn?: string
+    key: string; slot?: number; title: string; titleEn?: string
     mechanic: 'finn' | 'rekkefolge' | 'husk' | 'folg-traden' | 'monster' | 'flett' | 'forandret' | 'tenn'
     icon: string; mapX: number; mapY: number; ornament: string; ornamentImageUrl?: string
     backdrop?: string; sceneImageUrl?: string; sceneAlt?: string
@@ -213,6 +215,14 @@ const paletteStyle = `--tg-sky:${pal.sky};--tg-ground:${pal.ground};--tg-accent:
     } catch { /* a fresh start is fine */ }
     if (!LEVELS.includes(store.level as Level)) store.level = null
     const save = () => { try { localStorage.setItem(STORE_KEY, JSON.stringify(store)) } catch { /* ignore */ } }
+    // Ask the browser to keep this data (Safari may otherwise clear it after a
+    // week without a visit). Asked once, after the first ornament is hung.
+    let persistAsked = false
+    function askPersist() {
+      if (persistAsked || !navigator.storage?.persist) return
+      persistAsked = true
+      navigator.storage.persisted?.().then(already => { if (!already) return navigator.storage.persist() }).catch(() => { /* fine */ })
+    }
     // Each season keeps its own tree, so a new season starts empty.
     const mine: SeasonSave = (store.seasons[season.key] ??= { done: {}, hats: [], finale: false })
     mine.done ??= {}
@@ -507,7 +517,44 @@ const paletteStyle = `--tg-sky:${pal.sky};--tg-ground:${pal.ground};--tg-accent:
           </button>`).join('')}
         </div>
         <p class="tg-note">${t('Du kan bytte når som helst. Ingen kan tape her.', 'You can change at any time. Nobody can lose here.')}</p>
+        <p class="tg-center"><button type="button" class="tg-link" id="tg-havecode" aria-expanded="false" aria-controls="tg-codeform">${t('Har du en lagrekode fra før?', 'Do you have a save code?')}</button></p>
+        <form class="tg-codeform" id="tg-codeform" hidden>
+          <label for="tg-code">${t('Skriv inn lagrekoden din', 'Type your save code')}</label>
+          <div class="tg-codeform-row">
+            <input id="tg-code" name="code" type="text" inputmode="text" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="${esc(season.key.toUpperCase().replace(/[^A-Z0-9]/g, ''))}-XXXXX-XXXXX-XXXXX" aria-describedby="tg-codeerr">
+            <button type="submit" class="tg-btn">${t('Fortsett', 'Continue')}</button>
+          </div>
+          <p class="tg-codeerr" id="tg-codeerr" role="alert"></p>
+        </form>
       </div>`)
+      const form = root.querySelector<HTMLFormElement>('#tg-codeform')!
+      const toggle = root.querySelector<HTMLButtonElement>('#tg-havecode')!
+      toggle.addEventListener('click', () => {
+        form.hidden = !form.hidden
+        toggle.setAttribute('aria-expanded', String(!form.hidden))
+        if (!form.hidden) form.querySelector<HTMLInputElement>('input')!.focus()
+      })
+      form.addEventListener('submit', e => {
+        e.preventDefault()
+        const err = form.querySelector<HTMLElement>('#tg-codeerr')!
+        const result = decodeProgress(form.querySelector('input')!.value, season.key, season.places)
+        if (!result.ok) {
+          err.textContent = result.reason === 'season'
+            ? t('Den koden hører til en annen sesong.', 'That code belongs to a different season.')
+            : t('Koden stemmer ikke. Sjekk at du har skrevet den riktig.', 'The code is not right. Check that you typed it correctly.')
+          return
+        }
+        const merged = mergeProgress(mine, result)
+        mine.done = merged.done
+        mine.hats = merged.hats
+        mine.finale = merged.finale
+        if (result.level) store.level = result.level
+        if (result.read !== null && store.read === null) store.read = result.read
+        save()
+        renderBar()
+        renderMap()
+        toast(t('Fremgangen din er hentet!', 'Your progress is back!'))
+      })
       root.querySelectorAll<HTMLButtonElement>('[data-pick]').forEach(btn =>
         btn.addEventListener('click', () => {
           store.level = btn.dataset.pick as Level
@@ -560,6 +607,8 @@ const paletteStyle = `--tg-sky:${pal.sky};--tg-ground:${pal.ground};--tg-accent:
           <li>${HAT} ${t(`Nisseluer funnet: ${hats} av ${season.places.length}`, `Nisse hats found: ${hats} of ${season.places.length}`)}</li>
           <li>${pic('smor', 'tg-tally-icon')} ${t(`Smørøyne: ${smor}`, `Butter-eyes: ${smor}`)} <small>${t('(for steder uten hint)', '(for places done without hints)')}</small></li>
         </ul>
+        <p class="tg-center"><button type="button" class="tg-btn tg-btn--ghost" id="tg-savecode" aria-expanded="false" aria-controls="tg-codebox">💾 ${t('Lagre fremgang', 'Save progress')}</button></p>
+        <div class="tg-fact" id="tg-codebox" hidden></div>
         ${allDone() ? `<p class="tg-center"><button type="button" class="tg-btn tg-btn--glow" data-act="finale">${topOf('tg-btn-icon')} ${esc(mine.finale ? L(season, 'loftName') : L(season, 'finaleTitle'))}</button></p>` : ''}
       </div>`)
       root.querySelectorAll<HTMLButtonElement>('[data-place]').forEach(btn =>
@@ -569,6 +618,33 @@ const paletteStyle = `--tg-sky:${pal.sky};--tg-ground:${pal.ground};--tg-accent:
         }),
       )
       root.querySelector('[data-act="finale"]')?.addEventListener('click', () => runFinale())
+      root.querySelector<HTMLButtonElement>('#tg-savecode')!.addEventListener('click', e => {
+        const btn = e.currentTarget as HTMLButtonElement
+        const box = root.querySelector<HTMLElement>('#tg-codebox')!
+        if (!box.hidden) { box.hidden = true; btn.setAttribute('aria-expanded', 'false'); return }
+        const code = encodeProgress(season.key, season.places, mine, { level: store.level, read: store.read })
+        box.innerHTML = `
+          <h2 class="tg-h2">${t('Din lagrekode', 'Your save code')}</h2>
+          <p class="tg-code" id="tg-codetext">${esc(code)}</p>
+          <p>${t('Skriv den ned eller send den til deg selv. På en annen mobil eller PC trykker du «Har du en lagrekode fra før?» på startsiden og skriver inn koden. Da fortsetter du der du slapp.', 'Write it down or send it to yourself. On another phone or computer, tap “Do you have a save code?” on the start page and type it in. Then you carry on where you left off.')}</p>
+          <p class="tg-center"><button type="button" class="tg-btn tg-btn--ghost" id="tg-copycode">📋 ${t('Kopier koden', 'Copy the code')}</button></p>`
+        box.hidden = false
+        btn.setAttribute('aria-expanded', 'true')
+        askPersist()
+        box.querySelector('#tg-copycode')!.addEventListener('click', async () => {
+          try {
+            await navigator.clipboard.writeText(code)
+            toast(t('Koden er kopiert.', 'The code is copied.'))
+          } catch {
+            // No clipboard access: select the text so it can be copied by hand.
+            const range = document.createRange()
+            range.selectNodeContents(box.querySelector('#tg-codetext')!)
+            const sel = window.getSelection(); sel?.removeAllRanges(); sel?.addRange(range)
+            toast(t('Trykk og hold på koden for å kopiere.', 'Press and hold the code to copy it.'))
+          }
+        })
+        box.scrollIntoView({ block: 'nearest', behavior: 'smooth' })
+      })
       if (celebrate) toast(t('Pynten henger på treet!', 'The ornament is on the tree!'))
       auto(`${where} ${status}`)
     }
@@ -1308,6 +1384,7 @@ const paletteStyle = `--tg-sky:${pal.sky};--tg-ground:${pal.ground};--tg-accent:
         // A golden butter-eye, once earned, is kept on replays.
         mine.done[place.key] = { smor: noHints || !!mine.done[place.key]?.smor }
         save()
+        if (Object.keys(mine.done).length === 1) askPersist()
         renderMap(place.key)
       })
       auto(`${title}. ${effect}`)
@@ -1627,6 +1704,13 @@ const paletteStyle = `--tg-sky:${pal.sky};--tg-ground:${pal.ground};--tg-accent:
   .tg-secret-body li + li { margin-top: var(--space-2); }
   .tg-secret-body img { max-width: 100%; height: auto; border-radius: 10px; }
   .tg-code { font: 700 1.8rem ui-monospace, monospace; letter-spacing: .12em; color: var(--tg-accent); }
+  #tg-codetext { font-size: clamp(1rem, 4.6vw, 1.6rem); letter-spacing: .06em; overflow-wrap: anywhere; user-select: all; }
+  .tg-link { background: none; border: 0; padding: .5rem; font: 600 1rem var(--font-ui); color: var(--tg-accent2); text-decoration: underline; cursor: pointer; min-height: 44px; }
+  .tg-codeform { background: #fff; border-radius: 14px; padding: var(--space-4); }
+  .tg-codeform label { display: block; font-weight: 700; margin-bottom: var(--space-2); color: var(--tg-accent2); }
+  .tg-codeform-row { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+  .tg-codeform input { flex: 1 1 14rem; min-height: 56px; padding: .5rem 1rem; font: 700 1.1rem ui-monospace, monospace; letter-spacing: .06em; text-transform: uppercase; border: 3px solid var(--tg-accent2); border-radius: 12px; min-width: 0; }
+  .tg-codeerr { min-height: 1.4em; margin-top: var(--space-2); font-weight: 700; color: var(--tg-accent); }
 
   /* Map */
   .tg-map { aspect-ratio: 16 / 12; }

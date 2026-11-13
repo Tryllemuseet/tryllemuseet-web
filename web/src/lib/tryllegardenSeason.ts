@@ -74,6 +74,8 @@ export interface FarmLevelParams {
 
 export interface FarmPlace {
   key:      string
+  /** Fixed number 0–15 that identifies the place in a save code. Never change it once players may have codes. */
+  slot?:    number
   title:    string
   titleEn?: string
   mechanic: FarmMechanic
@@ -182,6 +184,7 @@ const jul: FarmSeason = {
   places: [
     {
       key: 'tunet',
+      slot: 0,
       title: 'Tunet',
       mechanic: 'finn',
       icon: '👣',
@@ -223,6 +226,7 @@ const jul: FarmSeason = {
     },
     {
       key: 'fjoset',
+      slot: 1,
       title: 'Fjøset',
       mechanic: 'rekkefolge',
       icon: '🥣',
@@ -267,6 +271,7 @@ const jul: FarmSeason = {
     },
     {
       key: 'laven',
+      slot: 2,
       title: 'Låven',
       mechanic: 'husk',
       icon: '🌾',
@@ -312,6 +317,7 @@ const jul: FarmSeason = {
     },
     {
       key: 'stallen',
+      slot: 3,
       title: 'Stallen',
       mechanic: 'folg-traden',
       icon: '🐴',
@@ -356,6 +362,7 @@ const jul: FarmSeason = {
     },
     {
       key: 'bakstehuset',
+      slot: 4,
       title: 'Bakstehuset',
       mechanic: 'monster',
       icon: '🍪',
@@ -400,6 +407,7 @@ const jul: FarmSeason = {
     },
     {
       key: 'stua',
+      slot: 5,
       title: 'Stua',
       mechanic: 'flett',
       icon: '❤️',
@@ -440,6 +448,7 @@ const jul: FarmSeason = {
     },
     {
       key: 'stabburet',
+      slot: 6,
       title: 'Stabburet',
       mechanic: 'forandret',
       icon: '🧀',
@@ -488,6 +497,7 @@ const jul: FarmSeason = {
     },
     {
       key: 'lyktestien',
+      slot: 7,
       title: 'Lyktestien',
       mechanic: 'tenn',
       icon: '🏮',
