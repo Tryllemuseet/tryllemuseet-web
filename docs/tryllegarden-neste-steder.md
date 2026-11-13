@@ -98,6 +98,13 @@ kulene du har tegnet):
 > lenger. Hønsehuset heter nå **Fuglehuset**, som på Årvoll gård: et eget lite hus
 > med høner, kanin og (om sommeren) kakaduer, blant dem Loco. Julekurven i Stua er et hjerte.
 >
+> **Loco og julekurven (13. november):** Kakaduen Loco sitter i Fuglehuset og
+> danser hver gang barnet teller riktig. Stua har fått «Lag din egen
+> julekurv» med fem trinn. Loco og de fem trinnbildene er enkle tegninger laget
+> fra bunnen av til dette spillet (`honsehus/loco.svg`, `lag/julekurv-1…5.svg`),
+> ikke bearbeidede fotografier. Tegneren kan gjerne erstatte dem i samme stil
+> som resten. Begge deler ligger foreløpig bare i koden, ikke som felt i Studio.
+>
 > **Status 13. november:** Alle fem stedene i del 2 er bygget (Klokketårnet,
 > Skogen, Porten, Bryggerhuset og Hønsehuset) med museets scenebilder. Klokketårnet
 > har de fem tegnede bjellene, Skogen de seks trærne og Hønsehuset hønene og

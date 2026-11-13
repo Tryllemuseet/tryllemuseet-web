@@ -88,6 +88,15 @@ export interface FarmLevelParams {
   reverse?: boolean
 }
 
+export interface FarmCraft {
+  title: string
+  titleEn?: string
+  /** What you need, one line. */
+  needs?: string
+  needsEn?: string
+  steps: { text: string; textEn?: string; imageUrl?: string }[]
+}
+
 export interface FarmPlace {
   key:      string
   /** gjett: the riddles. */
@@ -143,6 +152,10 @@ export interface FarmPlace {
   nisseY?: number
   /** The scene picture already shows the nisse at nisseX/nisseY: the hidden hat is then an invisible target. */
   nisseInScene?: boolean
+  /** A friend who stands in the scene and dances when the child gets it right (mechanic `tell`): Loco the cockatoo. */
+  dancer?: { name: string; imageUrl: string; x: number; y: number; size?: number }
+  /** "Make it yourself" instructions shown after the mini-game. Never a trick's method. */
+  craft?: FarmCraft
 }
 
 export interface FarmSeason {
@@ -459,6 +472,17 @@ const jul: FarmSeason = {
         'Julekurver flettes av to papirbiter til et hjerte og henges på juletreet. Ofte ligger det godteri oppi.',
       traditionLong:
         'En ekte julekurv er litt magisk: Papirremsene er doble og tres gjennom hverandre, ikke bare over og under. Derfor kan hjertet åpnes, som en liten pose.',
+      craft: {
+        title: 'Lag din egen julekurv',
+        needs: 'Du trenger: tynt papir i to farger, saks, blyant, linjal, litt papp og lim. Be gjerne en voksen om hjelp til klippingen.',
+        steps: [
+          { imageUrl: '/images/tryllegarden/lag/julekurv-1.svg', text: 'Lag en mal av papp: en firkant på 10 ganger 10 centimeter, med en halv sirkel på toppen.' },
+          { imageUrl: '/images/tryllegarden/lag/julekurv-2.svg', text: 'Brett et ark dobbelt. Legg den rette kanten på malen helt inntil bretten, tegn rundt og klipp ut. Ikke klipp i bretten! Lag en del i hver farge.' },
+          { imageUrl: '/images/tryllegarden/lag/julekurv-3.svg', text: 'Klipp tre snitt fra bretten og opp til der buen begynner. Nå har hver del fire doble remser.' },
+          { imageUrl: '/images/tryllegarden/lag/julekurv-4.svg', text: 'Flett! Remsene er doble, som små løkker. Tre den første remsa gjennom en løkke, og la neste løkke gå gjennom remsa. Annenhver gang, hele veien. Neste rad begynner motsatt.' },
+          { imageUrl: '/images/tryllegarden/lag/julekurv-5.svg', text: 'Skyv remsene forsiktig på plass. Lim på en papirremse som hank. Nå kan kurven åpnes, og du kan henge den på treet!' },
+        ],
+      },
       trickTitle: 'Gå gjennom et julekort',
       trickEffect:
         'Du viser fram et helt vanlig julekort og sier at du kan gå tvers gjennom det. Ingen tror deg. Noen klipp senere stiger du rett gjennom kortet!',
@@ -764,10 +788,10 @@ const jul: FarmSeason = {
       sceneAlt: 'Inne i fuglehuset: reirkasser med halm og egg, en tent lykt, et vindu mot nattehimmelen og et trau. Nissen titter fram fra en reirkasse.',
       intro: [
         { who: 'gutt',  text: 'Dette er fuglehuset! Her bor hønene, og en kanin.' },
-        { who: 'jente', text: 'Om sommeren bor kakaduen Loco her også. Han danser når noen spiller musikk! Nå er han inne i varmen.' },
+        { who: 'jente', text: 'Og der sitter kakaduen Loco! Han er på julebesøk. Loco danser når han blir glad.' },
         { who: 'jente', text: 'Dyra skal ha ekstra god mat på julaften. Også hønene.' },
         { who: 'gutt',  text: 'Nissen har prøvd å telle hønene og eggene, men han mister alltid tellingen.' },
-        { who: 'jente', text: 'Kan du hjelpe ham? Se godt etter, og tell.' },
+        { who: 'jente', text: 'Kan du hjelpe ham? Tell riktig, så danser Loco for deg.' },
       ],
       task: 'Se godt etter. Tell, og trykk på riktig tall.',
       items: [
@@ -797,6 +821,7 @@ const jul: FarmSeason = {
       trickAge: 8,
       trickSlug: 'egget-som-roper-seg',
       nisseX: 66, nisseY: 59, nisseInScene: true,
+      dancer: { name: 'Loco', imageUrl: '/images/tryllegarden/honsehus/loco.svg', x: 24, y: 31, size: 11 },
     },
   ],
   finaleTitle: 'Stjerna på treet',
