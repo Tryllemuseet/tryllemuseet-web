@@ -37,16 +37,26 @@ Barnet tenner lykter i riktig rekkefølge.
 
 ## 2. Kartet, versjon 2
 
-Dagens kart beholdes, og **alle bygg og stier skal stå der de står**. To nye
-bygg tegnes inn:
+Stedene ble flyttet på kartet 13. november så de ligger mer som på Årvoll
+gård. Dagens bygg og stier kan stå, men kartet trenger to nye bygg og litt
+tydeligere motiv der knappene nå står. Tallene er prosent fra venstre og fra
+toppen.
 
-- **Fuglehuset:** lavt, rødt hus med slakt saltak, netting i veggene mot
-  tunet, hvit dør i den ene enden og en utskåret tiur i gavlen. Det står på
-  grusplassen rett foran låven (oppe til venstre), vinkelrett ut fra hovedhus
-  og låve. Gjerne en hvit kakadue innenfor nettingen.
-- **Sykkelverkstedet:** lav uthusbygning til høyre for tunet, omtrent 88 % fra
-  venstre og 67 % fra toppen. Dobbel dør, en sykkel og en spark lent mot
-  veggen, lys i vinduet.
+| Sted | Plass | Hva som bør tegnes der |
+|---|---|---|
+| Skogen | 9, 18 (oppe til venstre) | skogkanten, gjerne litt tettere gran |
+| Låven | 19, 38 | som i dag |
+| Klokketårnet | 46, 9 | som i dag |
+| Stallen | 47, 32 (midt i det store røde bygget) | stalldør, gjerne en hestesko over |
+| Fjøset | 66, 37 (høyre del av det røde bygget) | fjøsdør |
+| Sykkelverkstedet | 83, 28 (bygget helt til høyre) | dobbel dør, en sykkel og en spark lent mot veggen |
+| **Fuglehuset** | 90, 43 | **nytt bygg:** lavt, rødt hus med netting mot tunet, hvit dør i enden og tiur i gavlen. Gjerne en hvit kakadue innenfor nettingen |
+| Tunet | 55, 46 (ved juletreet) | åpen plass, som i dag |
+| Stabburet | 42, 56 | som i dag |
+| **Bakstehuset** | 88, 67 | **nytt bygg:** lite hus med pipe og røyk, lys i vinduet |
+| Stua | 66, 83 | som i dag |
+| Porten | 21, 68 (ved gjerdet til venstre) | en åpen grind i gjerdet |
+| Lyktestien | 36, 82 | som i dag |
 
 Juletreet midt på tunet skal fortsatt stå uten pynt (pynten henger spillet på).
 
