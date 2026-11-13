@@ -93,6 +93,13 @@ kulene du har tegnet):
 
 ---
 
+> **Status 13. november:** Klokketårnet, Skogen og Porten er bygget (scenebilder
+> og trær er levert, bjellene og kostymene er enkle plassholdere). Porten har
+> fått «Mynten bak øret» som triks i stedet for «Maska som bytter ansikt», og
+> «Binders som kobler seg selv» hører til Skogen. Bryggerhuset og Hønsehuset
+> gjenstår. Alle tre nye tryllebeskrivelsene er skrevet fra hukommelsen og må
+> prøves ut med papir, binders, bjelle og mynt før lansering.
+
 ## Del 2 – Forslag til neste steder
 
 Alle forslag bruker nissen som vert og gir ett triks hver. De hører til

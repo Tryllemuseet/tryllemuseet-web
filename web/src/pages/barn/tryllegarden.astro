@@ -158,11 +158,13 @@ const paletteStyle = `--tg-sky:${pal.sky};--tg-ground:${pal.ground};--tg-accent:
   interface Item {
     key: string; label: string; labelEn?: string; emoji?: string; imageUrl?: string
     x?: number; y?: number; from?: Level; order?: number; decoy?: boolean
-    wrong?: string; wrongEn?: string; colors?: string[]
+    wrong?: string; wrongEn?: string; colors?: string[]; size?: number; filter?: string; anon?: boolean
   }
+  interface Clue { text: string; textEn?: string; answer: string; levels?: Level[] }
   interface Place {
     key: string; slot?: number; title: string; titleEn?: string
-    mechanic: 'finn' | 'rekkefolge' | 'husk' | 'folg-traden' | 'monster' | 'flett' | 'forandret' | 'tenn'
+    mechanic: 'finn' | 'rekkefolge' | 'husk' | 'folg-traden' | 'monster' | 'flett' | 'forandret' | 'tenn' | 'gjett'
+    clues?: Clue[]; bonus?: boolean
     icon: string; mapX: number; mapY: number; ornament: string; ornamentImageUrl?: string
     backdrop?: string; sceneImageUrl?: string; sceneAlt?: string
     intro: Line[]; task: string; taskEn?: string; items: Item[]
@@ -424,7 +426,7 @@ const paletteStyle = `--tg-sky:${pal.sky};--tg-ground:${pal.ground};--tg-accent:
     }
     const HAT = pic('nisselue', 'tg-tally-icon')
     const itemArt = (i: Item) =>
-      i.imageUrl ? `<img src="${esc(i.imageUrl)}" alt="">`
+      i.imageUrl ? `<img src="${esc(i.imageUrl)}" alt=""${i.filter && /^[a-z0-9(),.% -]+$/i.test(i.filter) ? ` style="filter:${esc(i.filter)}"` : ''}>`
       : i.colors ? birdSvg(i.colors)
       : `<span aria-hidden="true">${esc(i.emoji ?? '❔')}</span>`
 
@@ -568,8 +570,9 @@ const paletteStyle = `--tg-sky:${pal.sky};--tg-ground:${pal.ground};--tg-accent:
     }
 
     // ── Kartet og treet ──────────────────────────────────────────
-    const TREE_SLOTS = [[50, 40], [36, 60], [64, 60], [50, 72], [28, 82], [72, 82], [44, 88], [58, 52], [60, 90]]
-    const allDone = () => season.places.every(p => mine.done[p.key])
+    const TREE_SLOTS = [[50, 40], [36, 60], [64, 60], [50, 72], [28, 82], [72, 82], [44, 88], [58, 52], [60, 90], [46, 50], [54, 80], [34, 72]]
+    // The finale opens when every place that is not an extra has its ornament.
+    const allDone = () => season.places.filter(p => !p.bonus).every(p => mine.done[p.key])
 
     function renderMap(celebrate?: string) {
       restartGame = null
@@ -683,7 +686,7 @@ const paletteStyle = `--tg-sky:${pal.sky};--tg-ground:${pal.ground};--tg-accent:
     }
 
     /** Mechanics played below the picture: the scene is only a strip of decor. */
-    const SHORT_SCENE = ['rekkefolge', 'folg-traden', 'monster', 'flett']
+    const SHORT_SCENE = ['rekkefolge', 'folg-traden', 'monster', 'flett', 'gjett']
 
     function playGame(place: Place) {
       const title = L(place, 'title')
@@ -742,6 +745,7 @@ const paletteStyle = `--tg-sky:${pal.sky};--tg-ground:${pal.ground};--tg-accent:
         : place.mechanic === 'flett' ? gameWeave(place, board, api)
         : place.mechanic === 'forandret' ? gameChanged(place, scene, board, api)
         : place.mechanic === 'tenn' ? gameLights(place, scene, board, api)
+        : place.mechanic === 'gjett' ? gameGuess(place, board, api)
         : gameFind(place, scene, board, api)
 
       hintBtn.addEventListener('click', () => {
@@ -854,7 +858,7 @@ const paletteStyle = `--tg-sky:${pal.sky};--tg-ground:${pal.ground};--tg-accent:
       const expected = () => (backwards() ? seq[seq.length - 1 - pos] : seq[pos])
 
       scene.insertAdjacentHTML('beforeend', birds.map(i =>
-        `<button type="button" class="tg-bird" data-k="${esc(i.key)}" style="left:${i.x ?? 50}%;top:${i.y ?? 50}%">${itemArt(i)}<span class="tg-bird-name">${esc(L(i, 'label'))}</span></button>`,
+        `<button type="button" class="tg-bird" data-k="${esc(i.key)}" style="left:${i.x ?? 50}%;top:${i.y ?? 50}%${i.size ? `;width:${i.size}%` : ''}">${itemArt(i)}<span class="tg-bird-name">${esc(L(i, 'label'))}</span></button>`,
       ).join(''))
       board.innerHTML = `<p class="tg-center"><button type="button" class="tg-btn tg-btn--ghost" id="tg-again">🔁 ${t('Vis en gang til', 'Show me again')}</button></p>`
       const el = (key: string) => scene.querySelector<HTMLButtonElement>(`.tg-bird[data-k="${key}"]`)!
@@ -1322,6 +1326,55 @@ const paletteStyle = `--tg-sky:${pal.sky};--tg-ground:${pal.ground};--tg-accent:
       }
     }
 
+    // Minispill 9: gjett riktig. A riddle, and the child taps the thing it describes.
+    function gameGuess(place: Place, board: HTMLElement, api: GameApi): Game {
+      const items = forLevel(place.items)
+      const lvl = level()
+      const pool = shuffle((place.clues ?? []).filter(c =>
+        (!c.levels?.length || c.levels.includes(lvl)) && items.some(i => i.key === c.answer)))
+      const wanted = roundsFor(place, { smanisse: [3], laerling: [3], mester: [4] })[0]
+      const rounds = Math.max(1, Math.min(wanted, pool.length))
+      let round = 0
+      let locked = false
+      board.innerHTML = `<div class="tg-clue" id="tg-clue"></div>
+        <div class="tg-guessrow${items.some(i => i.anon) ? ' tg-guessrow--trees' : ''}">${items.map((i, n) => `<button type="button" class="tg-guess${i.anon ? ' tg-guess--anon' : ''}" data-k="${esc(i.key)}" aria-label="${esc(i.anon ? `${t('Tre', 'Tree')} ${n + 1}` : L(i, 'label'))}">${itemArt(i)}${i.anon ? `<span class="tg-guess-num">${n + 1}</span>` : `<span class="tg-guess-name">${esc(L(i, 'label'))}</span>`}</button>`).join('')}</div>`
+      const clueEl = board.querySelector<HTMLElement>('#tg-clue')!
+      function show() {
+        const text = L(pool[round], 'text')
+        clueEl.innerHTML = `<p>${esc(text)}</p>${sayBtn(text)}`
+        board.querySelectorAll('.is-right, .is-hint').forEach(b => b.classList.remove('is-right', 'is-hint'))
+        locked = false
+        api.msg(text)
+      }
+      if (!pool.length) { api.msg(t('Her mangler det ledetråder.', 'There are no clues here.'), false); return { reveal() {} } }
+      board.querySelectorAll<HTMLButtonElement>('.tg-guess').forEach(btn =>
+        btn.addEventListener('click', async () => {
+          if (locked) return
+          if (btn.dataset.k !== pool[round].answer) {
+            btn.classList.remove('is-shake')
+            void btn.offsetWidth
+            btn.classList.add('is-shake')
+            api.msg(t('Ikke den. Les ledetråden en gang til!', 'Not that one. Read the clue once more!'))
+            return
+          }
+          locked = true
+          board.querySelectorAll('.is-hint').forEach(b => b.classList.remove('is-hint'))
+          btn.classList.add('is-right')
+          round++
+          if (round === rounds) {
+            api.msg(t('Riktig! Du fant dem alle.', 'Right! You found them all.'))
+            api.done()
+            return
+          }
+          api.msg(t('Riktig! Her kommer en ny ledetråd.', 'Right! Here comes a new clue.'), false)
+          await api.wait(1500)
+          if (board.isConnected) show()
+        }),
+      )
+      show()
+      return { reveal() { board.querySelector(`.tg-guess[data-k="${pool[round].answer}"]`)?.classList.add('is-hint') } }
+    }
+
     // ── Etter minispillet ────────────────────────────────────────
     function afterGame(place: Place, noHints: boolean) {
       const done = L(place, 'done')
@@ -1699,6 +1752,20 @@ const paletteStyle = `--tg-sky:${pal.sky};--tg-ground:${pal.ground};--tg-accent:
   .tg-video-wrap { position: relative; aspect-ratio: 16 / 9; border-radius: 12px; overflow: hidden; background: #000; }
   .tg-video-wrap iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
   .tg-video figcaption { font-size: .95rem; color: var(--ink-mid); margin-top: var(--space-1); }
+  .tg-clue { display: flex; align-items: center; justify-content: center; gap: var(--space-3); min-height: 3.2rem; margin-top: var(--space-3); padding: var(--space-3) var(--space-4); background: #fff; border-radius: 14px; font-size: 1.2rem; font-weight: 700; text-align: center; box-shadow: var(--shadow-sm); }
+  .tg-clue p { margin: 0; }
+  .tg-guessrow { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: center; gap: var(--space-2); margin-top: var(--space-3); }
+  .tg-guess { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: .3rem .4rem; background: none; border: 3px solid transparent; border-radius: 14px; cursor: pointer; font: 700 1rem var(--font-ui); color: var(--ink); }
+  .tg-guess:hover { border-color: var(--tg-glow); }
+  .tg-guessrow--trees { flex-wrap: nowrap; gap: 2px; }
+  .tg-guess--anon { padding: .2rem .1rem; min-width: 0; }
+  .tg-guess img { height: clamp(90px, 25vw, 200px); width: auto; display: block; }
+  .tg-guess:not(.tg-guess--anon) { background: #fff; box-shadow: var(--shadow-sm); min-width: 5.5rem; padding: .6rem .8rem; }
+  .tg-guess:not(.tg-guess--anon) > span[aria-hidden] { font-size: 3rem; line-height: 1; }
+  .tg-guess:not(.tg-guess--anon) img { height: 3.4rem; }
+  .tg-guess-num { min-width: 1.8rem; height: 1.8rem; border-radius: 50%; background: var(--tg-accent2); color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 700; }
+  .tg-guess.is-right { border-color: var(--tg-accent2); background: color-mix(in srgb, var(--tg-glow) 35%, #fff); }
+  .tg-guess.is-shake { animation: tg-shake .35s; }
   .tg-secret-body h4 { font-size: 1.15rem; color: var(--tg-accent); }
   .tg-secret-body ol, .tg-secret-body ul { padding-left: 1.4em; }
   .tg-secret-body li + li { margin-top: var(--space-2); }

@@ -388,7 +388,7 @@ is on. Editors test it with the preview link.
 **What is in it**
 
 - Start screen with the three levels, the farm map with the Christmas tree,
-  and **eight places**. Each has dialogue, a mini-game, "visste du at", the
+  and **eleven places** (Porten is an extra and not needed to open the finale). Each has dialogue, a mini-game, "visste du at", the
   nisse's trick and an ornament for the tree.
 
   | Place | Mechanic | What changes with the level |
@@ -401,6 +401,9 @@ is on. Editors test it with the preview link.
   | Stua | `flett` | 2×2 → 5×5 basket, other weaves on Tryllemester |
   | Stabburet | `forandret` | 3 → 9 things on the shelves |
   | Lyktestien | `tenn` | in order → a lantern also flips its neighbours |
+  | Klokketårnet | `husk` | 2 → 6 bells that differ in colour, last round backwards on Tryllemester |
+  | Skogen | `gjett` | 3 → 6 trees; "find the tallest" → "the second tallest" and combined clues |
+  | Porten (extra) | `gjett` | 3 → 6 costumes (emoji until drawn) and riddles |
 
 - Hint ladder "Nissen hvisker" (two spoken hints, then the answer glows),
   golden smørøyne for hint-free places, and a hidden nisse in every scene.

@@ -3728,13 +3728,14 @@ export async function getFarmSeasonDoc(key: string): Promise<Record<string, unkn
       loftName, loftNameEn, kitSlug, showWords, showWordsEn,
       "hidden": places[isVisible == false].key,
       places[isVisible != false] {
-        key, slot, title, titleEn, mechanic, icon, mapX, mapY, ornament,
+        key, slot, bonus, title, titleEn, mechanic, icon, mapX, mapY, ornament,
+        clues[] { text, textEn, answer, levels },
         "ornamentImage": ornamentImage { asset->{ _ref, url } },
         "sceneImage": sceneImage { asset->{ _ref, url }, alt },
         intro[] { who, text, textEn },
         task, taskEn,
         items[] {
-          key, label, labelEn, emoji, x, y, from, order, decoy, wrong, wrongEn, colors,
+          key, label, labelEn, emoji, x, y, from, order, decoy, wrong, wrongEn, colors, size, filter, anon,
           "image": image { asset->{ _ref, url } }
         },
         levels { smanisse { rounds, reverse }, laerling { rounds, reverse }, mester { rounds, reverse } },
