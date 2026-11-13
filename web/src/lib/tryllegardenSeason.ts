@@ -21,8 +21,8 @@ export type FarmLevel = 'smanisse' | 'laerling' | 'mester'
 export const FARM_LEVELS: FarmLevel[] = ['smanisse', 'laerling', 'mester']
 
 /** Mini-game mechanics the engine can play. A new one needs code. */
-export type FarmMechanic = 'finn' | 'rekkefolge' | 'husk' | 'folg-traden' | 'monster' | 'flett' | 'forandret' | 'tenn'
-export const FARM_MECHANICS: FarmMechanic[] = ['finn', 'rekkefolge', 'husk', 'folg-traden', 'monster', 'flett', 'forandret', 'tenn']
+export type FarmMechanic = 'finn' | 'rekkefolge' | 'husk' | 'folg-traden' | 'monster' | 'flett' | 'forandret' | 'tenn' | 'gjett' | 'tell' | 'sorter'
+export const FARM_MECHANICS: FarmMechanic[] = ['finn', 'rekkefolge', 'husk', 'folg-traden', 'monster', 'flett', 'forandret', 'tenn', 'gjett', 'tell', 'sorter']
 
 export type FarmSpeaker = 'jente' | 'gutt' | 'nisse' | 'forteller'
 
@@ -58,6 +58,21 @@ export interface FarmItem {
   wrongEn?: string
   /** husk: body, breast and cap colour of the placeholder bird. */
   colors?: string[]
+  /** Width in percent of the scene (husk). */
+  size?: number
+  /** CSS filter on the picture, for example to tint one bell differently from another. */
+  filter?: string
+  /** gjett: show a number instead of the name, so the name does not give the answer away. */
+  anon?: boolean
+}
+
+/** gjett: a riddle and the key of the item that answers it. */
+export interface FarmClue {
+  text:     string
+  textEn?:  string
+  answer:   string
+  /** Levels the clue is used on. Default: every level where the answer is shown. */
+  levels?:  FarmLevel[]
 }
 
 export interface FarmLevelParams {
@@ -65,7 +80,8 @@ export interface FarmLevelParams {
    * One number per round. What the number means depends on the mechanic:
    * husk = birds to remember, folg-traden = braids, monster = biscuits in the
    * row, flett = squares per side, forandret = things on the shelf,
-   * tenn = lanterns.
+   * tenn = lanterns, gjett = the first number is how many rounds are played,
+   * tell = the most things in a round, sorter = candles in a round.
    */
   rounds?: number[]
   /** husk: the last round must be answered backwards. */
@@ -74,6 +90,10 @@ export interface FarmLevelParams {
 
 export interface FarmPlace {
   key:      string
+  /** gjett: the riddles. */
+  clues?:   FarmClue[]
+  /** Not needed to open the finale. */
+  bonus?:   boolean
   /** Fixed number 0–15 that identifies the place in a save code. Never change it once players may have codes. */
   slot?:    number
   title:    string
@@ -230,7 +250,7 @@ const jul: FarmSeason = {
       title: 'Fjøset',
       mechanic: 'rekkefolge',
       icon: '🥣',
-      mapX: 47, mapY: 29,
+      mapX: 47, mapY: 32,
       ornament: '🟡',
       ornamentImageUrl: '/images/tryllegarden/pynt/kule-gul.webp',
       sceneImageUrl: '/images/tryllegarden/scene/fjoset.webp',
@@ -308,9 +328,9 @@ const jul: FarmSeason = {
         'Juleneket er et knippe med havre som henges opp ute til jul. Da får småfuglene også julemat.',
       traditionLong:
         'Før i tida sparte bonden de fineste kornstråene fra høsten til juleneket. Kom det mange fugler, trodde folk at det ble et godt år.',
-      trickTitle: 'Thaumatropen',
+      trickTitle: 'Fuglen på neket',
       trickEffect:
-        'På den ene siden av en papirskive er det en fugl. På den andre siden er det et julenek. Du snurrer skiva – og plutselig sitter fuglen på neket! Slik trylte folk med bilder for 200 år siden, lenge før film var funnet opp.',
+        'På den ene siden av en snurreskive er det en fugl. På den andre siden er det et julenek. Du snurrer skiva – og plutselig sitter fuglen på neket! En slik snurreskive kalles en thaumatrope, og folk trylte med dem for 200 år siden, lenge før film var funnet opp.',
       trickAge: 6,
       trickSlug: 'fuglen-pa-neket',
       nisseX: 92, nisseY: 84,
@@ -534,6 +554,247 @@ const jul: FarmSeason = {
       trickAge: 9,
       trickSlug: 'tankeleser-lysene',
       nisseX: 6, nisseY: 70,
+    },
+    {
+      key: 'klokketarnet',
+      slot: 8,
+      title: 'Klokketårnet',
+      mechanic: 'husk',
+      icon: '🔔',
+      mapX: 46, mapY: 9,
+      ornament: '🔔',
+      ornamentImageUrl: '/images/tryllegarden/pynt/gullbjelle.webp',
+      sceneImageUrl: '/images/tryllegarden/scene/klokketarnet.webp',
+      sceneAlt: 'Inne i det lille klokketårnet: bjeller på en bjelke, et tykt bjelletau, et vindu med nattehimmel og en tent lykt. Nissen titter over en bjelke.',
+      intro: [
+        { who: 'jente', text: 'Hører du det? Noen har ringt i bjellene i klokketårnet!' },
+        { who: 'gutt',  text: 'På julaften klokka fem ringer klokkene inn julen. Nissen øver i hemmelighet.' },
+        { who: 'jente', text: 'Klarer du å huske hvilken bjelle som ringte først, og hvilken som kom etterpå?' },
+      ],
+      task: 'Se hvilken bjelle som ringer først. Trykk på bjellene i samme rekkefølge.',
+      items: [
+        { key: 'gull',   label: 'Gullbjella',   imageUrl: '/images/tryllegarden/klokker/gull.webp',   x: 14, y: 72, size: 14 },
+        { key: 'grønn',  label: 'Grønn bjelle', imageUrl: '/images/tryllegarden/klokker/gronn.webp',  x: 30, y: 72, size: 14 },
+        { key: 'rød',    label: 'Rød bjelle',   imageUrl: '/images/tryllegarden/klokker/rod.webp',    x: 64, y: 72, size: 14 },
+        { key: 'sølv',   label: 'Sølvbjella',   imageUrl: '/images/tryllegarden/klokker/solv.webp',   x: 80, y: 72, size: 14, from: 'laerling' },
+        { key: 'kobber', label: 'Kobberbjella', imageUrl: '/images/tryllegarden/klokker/kobber.webp', x: 44, y: 72, size: 14, from: 'mester' },
+      ],
+      levels: {
+        smanisse: { rounds: [2, 3] },
+        laerling: { rounds: [3, 4] },
+        mester:   { rounds: [4, 5], reverse: true },
+      },
+      hints: [
+        'Si fargene høyt mens bjellene ringer: gull, grønn, rød …',
+        'Trykk på «Vis en gang til» og følg med på den første bjella.',
+      ],
+      done: 'For en hukommelse! En tryllekunstner husker rekkefølgen, selv når mye skjer.',
+      traditionShort:
+        'På julaften klokka 17 ringer kirkeklokkene inn julen. Da skal alt være gjort ferdig, og høytiden begynner.',
+      traditionLong:
+        'Klokkene er et signal. Når de ringer, legger man fra seg arbeidet og setter seg til å feire.',
+      trickTitle: 'Bjella som lystrer',
+      trickEffect:
+        'Du holder opp en liten bjelle og ber den ringe – og den ringer. Du ber den være stille – og det blir helt stille!',
+      trickAge: 7,
+      trickSlug: 'bjella-som-lystrer',
+      nisseX: 38, nisseY: 47, nisseInScene: true,
+    },
+    {
+      key: 'skogen',
+      slot: 9,
+      title: 'Skogen',
+      mechanic: 'gjett',
+      icon: '🌲',
+      mapX: 90, mapY: 43,
+      ornament: '🌲',
+      sceneImageUrl: '/images/tryllegarden/scene/skogen.webp',
+      sceneAlt: 'Skogen en stjerneklar vinternatt. Fotspor i snøen fører til et stort tre, og nissen titter fram bak stammen.',
+      intro: [
+        { who: 'gutt',  text: 'Nissen vil ha et juletre, men han har glemt hvordan et fint tre ser ut!' },
+        { who: 'jente', text: 'Han har gitt oss små ledetråder. Se godt på trærne og finn det rette.' },
+        { who: 'gutt',  text: 'Fotsporene går mot skogen. Er det nissen som har gått her?' },
+      ],
+      task: 'Les ledetråden. Trykk på treet nissen vil ha.',
+      items: [
+        { key: 'tre1', label: 'Tre 1', imageUrl: '/images/tryllegarden/traer/tre-1.webp', anon: true },
+        { key: 'tre2', label: 'Tre 2', imageUrl: '/images/tryllegarden/traer/tre-2.webp', anon: true },
+        { key: 'tre3', label: 'Tre 3', imageUrl: '/images/tryllegarden/traer/tre-3.webp', anon: true, from: 'laerling' },
+        { key: 'tre4', label: 'Tre 4', imageUrl: '/images/tryllegarden/traer/tre-4.webp', anon: true },
+        { key: 'tre5', label: 'Tre 5', imageUrl: '/images/tryllegarden/traer/tre-5.webp', anon: true, from: 'mester' },
+        { key: 'tre6', label: 'Tre 6', imageUrl: '/images/tryllegarden/traer/tre-6.webp', anon: true, from: 'mester' },
+      ],
+      clues: [
+        { text: 'Nissen vil ha det høyeste treet.', answer: 'tre1', levels: ['smanisse', 'mester'] },
+        { text: 'Nissen vil ha det laveste treet.', answer: 'tre2' },
+        { text: 'Nissen vil ha treet med færrest greiner.', answer: 'tre4' },
+        { text: 'Nissen vil ha et tre som er høyt og tett.', answer: 'tre1', levels: ['laerling'] },
+        { text: 'Nissen vil ha et lavt og tett tre.', answer: 'tre2', levels: ['laerling'] },
+        { text: 'Nissen vil ha treet som er midt imellom i høyde, og tett.', answer: 'tre3', levels: ['laerling'] },
+        { text: 'Nissen vil ha det nest høyeste treet.', answer: 'tre6', levels: ['mester'] },
+        { text: 'Nissen vil ha det tredje høyeste treet.', answer: 'tre5', levels: ['mester'] },
+      ],
+      levels: {
+        smanisse: { rounds: [3] },
+        laerling: { rounds: [3] },
+        mester:   { rounds: [5] },
+      },
+      hints: [
+        'Se på alle trærne før du velger. Sammenlikn toppene.',
+        'Se hvor mange greiner hvert tre har, og hvor høyt det rekker.',
+      ],
+      done: 'Det var det rette treet! En tryllekunstner ser forskjeller andre overser.',
+      traditionShort:
+        'Å hente juletre i skogen er en gammel tradisjon i mange familier.',
+      traditionLong:
+        'Juletreet ble vanlig i norske hjem på 1800-tallet.',
+      trickTitle: 'Binders som kobler seg selv',
+      trickEffect:
+        'To binders sitter løst på en brettet papirstripe. Du drar i endene – og binderne henger plutselig sammen i en lenke!',
+      trickAge: 8,
+      trickSlug: 'binders-som-kobler-seg',
+      nisseX: 79, nisseY: 56, nisseInScene: true,
+    },
+    {
+      key: 'porten',
+      slot: 10,
+      bonus: true,
+      title: 'Porten',
+      mechanic: 'gjett',
+      icon: '🎭',
+      mapX: 9, mapY: 89,
+      ornament: '🎭',
+      sceneImageUrl: '/images/tryllegarden/scene/porten.webp',
+      sceneAlt: 'Gårdsporten en snøfull kveld, med røde hus og lys i vinduene. Nissen titter fram bak en grindstolpe.',
+      intro: [
+        { who: 'jente', text: 'Mellom jul og nyttår kommer julebukkene! De er utkledd og banker på dørene.' },
+        { who: 'gutt',  text: 'Ingen skal vite hvem de er. Men vi kan gjette!' },
+        { who: 'jente', text: 'Jeg gir deg en ledetråd, og du finner kostymet.' },
+      ],
+      task: 'Les ledetråden. Trykk på kostymet som passer.',
+      items: [
+        { key: 'bukk',    label: 'Julebukken',   emoji: '🐐' },
+        { key: 'bjorn',   label: 'Bjørnen',      emoji: '🐻' },
+        { key: 'trylle',  label: 'Tryllekunstneren', emoji: '🎩' },
+        { key: 'kone',    label: 'Gamle Marit',  emoji: '👵', from: 'laerling' },
+        { key: 'ridder',  label: 'Ridderen',     emoji: '🛡️', from: 'mester' },
+        { key: 'stjerne', label: 'Stjernegutten', emoji: '⭐', from: 'mester' },
+      ],
+      clues: [
+        { text: 'Hvem har horn?', answer: 'bukk' },
+        { text: 'Hvem er lodden og elsker honning?', answer: 'bjorn' },
+        { text: 'Hvem har flosshatt og tryllestav?', answer: 'trylle' },
+        { text: 'Hvem har sjal og går med stokk?', answer: 'kone' },
+        { text: 'Hvem har skjold og sverd?', answer: 'ridder' },
+        { text: 'Hvem bærer en lysende stjerne og synger?', answer: 'stjerne' },
+      ],
+      levels: {
+        smanisse: { rounds: [3] },
+        laerling: { rounds: [4] },
+        mester:   { rounds: [5] },
+      },
+      hints: [
+        'Se på alle kostymene før du velger.',
+        'Hva har kostymet på hodet, eller i hånda?',
+      ],
+      done: 'Du kjente dem igjen! En tryllekunstner skjønner hvem som gjemmer seg.',
+      traditionShort:
+        'Å gå julebukk er å kle seg ut og gå fra hus til hus mellom jul og nyttår. Man synger og får noe godt.',
+      traditionLong:
+        'Før i tida var det ofte bare de voksne som gikk. Maskene gjorde at ingen visste hvem som banket på.',
+      trickTitle: 'Mynten bak øret',
+      trickEffect:
+        'Du får en mynt til å forsvinne fra hånda – og finner den igjen bak øret til en venn!',
+      trickAge: 9,
+      trickSlug: 'mynten-bak-oret',
+      nisseX: 35, nisseY: 71, nisseInScene: true,
+    },
+    {
+      key: 'bryggerhuset',
+      slot: 11,
+      bonus: true,
+      title: 'Bryggerhuset',
+      mechanic: 'sorter',
+      icon: '🕯️',
+      mapX: 85, mapY: 67,
+      ornament: '🕯️',
+      sceneImageUrl: '/images/tryllegarden/scene/bryggerhuset.webp',
+      sceneAlt: 'Inne i bryggerhuset: en stor kjele over ilden, trebøtter, kakeformer på hyllene og en tent lykt. Nissen titter inn fra døra.',
+      intro: [
+        { who: 'jente', text: 'Her i bryggerhuset støpte man lys før i tida. Det er varmt av ilden!' },
+        { who: 'gutt',  text: 'Men nissen har rotet til lysene. De står i hytt og vær.' },
+        { who: 'jente', text: 'Kan du sette dem på rekke, fra det korteste til det lengste?' },
+      ],
+      task: 'Trykk på lysene i rekkefølge: først det korteste, så det neste, helt til det lengste.',
+      items: [
+        { key: 'lys', label: 'Lys' },
+      ],
+      levels: {
+        smanisse: { rounds: [3] },
+        laerling: { rounds: [4, 5] },
+        mester:   { rounds: [5, 6] },
+      },
+      hints: [
+        'Se først hvilket lys som er aller kortest.',
+        'Sammenlign to og to lys som står ved siden av hverandre.',
+      ],
+      done: 'Alle lysene står på rekke! En tryllekunstner har orden på tingene sine.',
+      traditionShort:
+        'Før elektrisiteten støpte folk lysene selv, av talg eller stearin. Lys var viktig i de mørke vintermånedene.',
+      traditionLong:
+        'I bryggerhuset var det plass til store kjeler og mye damp, så her ble mange av de store jobbene på gården gjort.',
+      trickTitle: 'Pendelen som lystrer',
+      trickEffect:
+        'En liten ring henger i en tråd og står helt stille. Du ber den svinge – og den begynner å svinge, uten at du tar på den!',
+      trickAge: 7,
+      trickSlug: 'pendelen-som-lystrer',
+      nisseX: 10, nisseY: 55, nisseInScene: true,
+    },
+    {
+      key: 'honsehuset',
+      slot: 12,
+      bonus: true,
+      title: 'Hønsehuset',
+      mechanic: 'tell',
+      icon: '🐔',
+      mapX: 13, mapY: 46,
+      ornament: '🥚',
+      ornamentImageUrl: '/images/tryllegarden/honsehus/egg-1.webp',
+      sceneImageUrl: '/images/tryllegarden/scene/honsehuset.webp',
+      sceneAlt: 'Inne i hønsehuset: reirkasser med halm og egg, en tent lykt, et vindu mot nattehimmelen og et trau. Nissen titter fram fra en reirkasse.',
+      intro: [
+        { who: 'gutt',  text: 'Dyra skal ha ekstra god mat på julaften. Også hønene!' },
+        { who: 'jente', text: 'Nissen har prøvd å telle hønene og eggene, men han mister alltid tellingen.' },
+        { who: 'gutt',  text: 'Kan du hjelpe ham? Se godt etter, og tell.' },
+      ],
+      task: 'Se godt etter. Tell, og trykk på riktig tall.',
+      items: [
+        { key: 'egg1',  label: 'Egg',        imageUrl: '/images/tryllegarden/honsehus/egg-1.webp' },
+        { key: 'egg2',  label: 'Egg',        imageUrl: '/images/tryllegarden/honsehus/egg-2.webp', from: 'laerling' },
+        { key: 'hone1', label: 'Hvit høne',  imageUrl: '/images/tryllegarden/honsehus/hone-1.webp', from: 'laerling' },
+        { key: 'hone2', label: 'Brun høne',  imageUrl: '/images/tryllegarden/honsehus/hone-2.webp', from: 'laerling' },
+        { key: 'hone3', label: 'Rød høne',   imageUrl: '/images/tryllegarden/honsehus/hone-3.webp', from: 'laerling' },
+      ],
+      levels: {
+        smanisse: { rounds: [3, 4] },
+        laerling: { rounds: [4, 5, 6] },
+        mester:   { rounds: [6, 7, 8, 9] },
+      },
+      hints: [
+        'Tell høyt, én og én. Pek med fingeren på skjermen.',
+        'Trykk på «Vis en gang til» og tell enda en gang, litt saktere.',
+      ],
+      done: 'Du teller som en ekte regnemester! En tryllekunstner har god oversikt.',
+      traditionShort:
+        'På julaften fikk husdyra ekstra mat. Mange mente at dyra skulle ha det fint før menneskene satte seg til bords.',
+      traditionLong:
+        'Hønene fikk gjerne litt ekstra korn, og noen satte ut en skål grøt til nissen.',
+      trickTitle: 'Egget som røper seg',
+      trickEffect:
+        'To egg ser helt like ut. Du kan si hvilket som er kokt og hvilket som er rått, uten å knekke dem!',
+      trickAge: 8,
+      trickSlug: 'egget-som-roper-seg',
+      nisseX: 66, nisseY: 59, nisseInScene: true,
     },
   ],
   finaleTitle: 'Stjerna på treet',

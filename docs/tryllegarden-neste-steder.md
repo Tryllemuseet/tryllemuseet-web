@@ -93,6 +93,17 @@ kulene du har tegnet):
 
 ---
 
+> **Status 13. november:** Alle fem stedene i del 2 er bygget (Klokketårnet,
+> Skogen, Porten, Bryggerhuset og Hønsehuset) med museets scenebilder. Klokketårnet
+> har de fem tegnede bjellene, Skogen de seks trærne og Hønsehuset hønene og
+> eggene. Lysene i Bryggerhuset og kostymene i Porten er enkle plassholdere. Triksene
+> ble endret underveis: Porten har «Mynten bak øret», Hønsehuset «Egget som røper
+> seg», Bryggerhuset «Pendelen som lystrer» og Skogen «Binders som kobler seg
+> selv». Alle de nye tryllebeskrivelsene er skrevet fra hukommelsen og må prøves
+> ut med ekte binders, bjelle, mynt, ring i tråd og egg før lansering. Bryggerhuset
+> og Hønsehuset ligger på kartet der det fortsatt ikke er tegnet bygg, så kartet
+> må få to små bygg i en ny versjon.
+
 ## Del 2 – Forslag til neste steder
 
 Alle forslag bruker nissen som vert og gir ett triks hver. De hører til
