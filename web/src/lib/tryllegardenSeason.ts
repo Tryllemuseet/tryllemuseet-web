@@ -110,6 +110,8 @@ export interface FarmPlace {
   mechanic: FarmMechanic
   /** Emoji on the map button until the map is drawn. */
   icon: string
+  /** Drawn map button; replaces the emoji in `icon`. */
+  iconImageUrl?: string
   /** Position on the map, in percent. */
   mapX: number
   mapY: number
@@ -314,7 +316,8 @@ const jul: FarmSeason = {
       ornament: '🔵',
       ornamentImageUrl: '/images/tryllegarden/pynt/fugl-bla.webp',
       backdrop: 'lave',
-      sceneAlt: 'Juleneket henger på en stang utenfor låven. Det snør.',
+      sceneImageUrl: '/images/tryllegarden/scene/laven.webp',
+      sceneAlt: 'Juleneket står på en stang foran den røde låven en stjerneklar kveld. Lykta lyser ved låvedøra, og nissen titter fram bak en snøfonn.',
       intro: [
         { who: 'jente', text: 'Hysj! Det sitter fugler på juleneket.' },
         { who: 'gutt',  text: 'De lander én og én. Nissen vet nok hvem som kom først.' },
@@ -322,12 +325,12 @@ const jul: FarmSeason = {
       ],
       task: 'Se hvem som lander først. Trykk på fuglene i samme rekkefølge.',
       items: [
-        { key: 'dompap',    label: 'Dompap',    x: 30, y: 30, colors: ['#5b6470', '#d9423a', '#1b1b1f'] },
-        { key: 'kjottmeis', label: 'Kjøttmeis', x: 70, y: 30, colors: ['#6f8f3a', '#f2d13d', '#1b1b1f'] },
-        { key: 'graspurv',  label: 'Gråspurv',  x: 50, y: 62, colors: ['#8a6a4a', '#d8cbb8', '#6b4a2e'] },
-        { key: 'blameis',   label: 'Blåmeis',   x: 18, y: 64, colors: ['#5f86b8', '#f2d86a', '#2f6fc0'], from: 'laerling' },
-        { key: 'gulspurv',  label: 'Gulspurv',  x: 82, y: 64, colors: ['#a07a3c', '#f0cf3a', '#f0cf3a'], from: 'mester' },
-        { key: 'skjaere',   label: 'Skjære',    x: 50, y: 14, colors: ['#1b1b1f', '#ffffff', '#1b1b1f'], from: 'mester' },
+        { key: 'dompap',    label: 'Dompap',    imageUrl: '/images/tryllegarden/fugler/dompap.webp', x: 34, y: 24, size: 13, colors: ['#5b6470', '#d9423a', '#1b1b1f'] },
+        { key: 'kjottmeis', label: 'Kjøttmeis', imageUrl: '/images/tryllegarden/fugler/kjottmeis.webp', x: 66, y: 23, size: 13, colors: ['#6f8f3a', '#f2d13d', '#1b1b1f'] },
+        { key: 'graspurv',  label: 'Gråspurv',  imageUrl: '/images/tryllegarden/fugler/graspurv.webp', x: 50, y: 12, size: 13, colors: ['#8a6a4a', '#d8cbb8', '#6b4a2e'] },
+        { key: 'blameis',   label: 'Blåmeis',   imageUrl: '/images/tryllegarden/fugler/blameis.webp', x: 31, y: 45, size: 13, colors: ['#5f86b8', '#f2d86a', '#2f6fc0'], from: 'laerling' },
+        { key: 'gulspurv',  label: 'Gulspurv',  imageUrl: '/images/tryllegarden/fugler/gulspurv.webp', x: 68, y: 46, size: 13, colors: ['#a07a3c', '#f0cf3a', '#f0cf3a'], from: 'mester' },
+        { key: 'skjaere',   label: 'Skjære',    imageUrl: '/images/tryllegarden/fugler/skjaere.webp', x: 45, y: 70, size: 13, colors: ['#1b1b1f', '#ffffff', '#1b1b1f'], from: 'mester' },
       ],
       levels: {
         smanisse: { rounds: [2, 3] },
@@ -348,7 +351,7 @@ const jul: FarmSeason = {
         'På den ene siden av en snurreskive er det en fugl. På den andre siden er det et julenek. Du snurrer skiva – og plutselig sitter fuglen på neket! En slik snurreskive kalles en thaumatrope, og folk trylte med dem for 200 år siden, lenge før film var funnet opp.',
       trickAge: 6,
       trickSlug: 'fuglen-pa-neket',
-      nisseX: 92, nisseY: 84,
+      nisseX: 12, nisseY: 60, nisseInScene: true,
     },
     {
       key: 'stallen',
@@ -358,8 +361,10 @@ const jul: FarmSeason = {
       icon: '🐴',
       mapX: 66, mapY: 37,
       ornament: '🟣',
+      ornamentImageUrl: '/images/tryllegarden/pynt/hestesko.webp',
       backdrop: 'stall',
-      sceneAlt: 'Inne i stallen. Hesten har fått fletter i manken.',
+      sceneImageUrl: '/images/tryllegarden/scene/stallen.webp',
+      sceneAlt: 'Inne i stallen. Fjordhesten Blakken står i spiltauet med lang, lys man. Seletøy, bjelle og lykt henger på veggen, og nissen titter fram bak en høyball.',
       intro: [
         { who: 'gutt',  text: 'Se på Blakken! Noen har flettet manken hans i natt.' },
         { who: 'jente', text: 'Det heter nisseflette. Og nissen har knyttet noe fast i enden av hver flette!' },
@@ -368,10 +373,10 @@ const jul: FarmSeason = {
       task: 'Følg fletta fra sløyfa og helt ned. Trykk på riktig sløyfe.',
       items: [
         { key: 'bjelle',   label: 'bjella',      emoji: '🔔', imageUrl: '/images/tryllegarden/ting/bjelle.webp' },
-        { key: 'eple',     label: 'eplet',       emoji: '🍎' },
+        { key: 'eple',     label: 'eplet',       emoji: '🍎', imageUrl: '/images/tryllegarden/ting/eple.webp' },
         { key: 'gulrot',   label: 'gulrota',     emoji: '🥕', imageUrl: '/images/tryllegarden/ting/gulrot.webp' },
         { key: 'sokk',     label: 'sokken',      emoji: '🧦', imageUrl: '/images/tryllegarden/pynt/sokk.webp', from: 'laerling' },
-        { key: 'sukker',   label: 'sukkertøyet', emoji: '🍬', from: 'mester' },
+        { key: 'sukker',   label: 'sukkertøyet', emoji: '🍬', from: 'mester', imageUrl: '/images/tryllegarden/ting/sukkertoy.webp' },
         { key: 'stjerne',  label: 'stjerna',     emoji: '⭐', imageUrl: '/images/tryllegarden/pynt/stjerne8.webp', from: 'mester' },
       ],
       levels: {
@@ -393,7 +398,7 @@ const jul: FarmSeason = {
         'Du ber en venn knyte en knute på et bånd uten å slippe endene. Det går ikke! Men du klarer det på et blunk.',
       trickAge: 7,
       trickSlug: 'den-umulige-knuten',
-      nisseX: 92, nisseY: 30,
+      nisseX: 24, nisseY: 50, nisseInScene: true,
     },
     {
       key: 'bakstehuset',
@@ -403,8 +408,10 @@ const jul: FarmSeason = {
       icon: '🍪',
       mapX: 83, mapY: 28,
       ornament: '🟠',
+      ornamentImageUrl: '/images/tryllegarden/pynt/pepperkakehjerte.webp',
       backdrop: 'bakst',
-      sceneAlt: 'Bakstehuset, med varm ovn og kakebokser på bordet.',
+      sceneImageUrl: '/images/tryllegarden/scene/bakstehuset.webp',
+      sceneAlt: 'Bakstehuset: bakerovn med glør, et stort bord med mel og kjevle, kakebokser og kaker til avkjøling. Nissen titter fram bak ovnen.',
       intro: [
         { who: 'jente', text: 'Mmm, det lukter julekaker! Her bakes det sju slag.' },
         { who: 'gutt',  text: 'Kakene skal ligge i mønster i boksen. Men nissen har smakt på noen av dem!' },
@@ -412,12 +419,12 @@ const jul: FarmSeason = {
       ],
       task: 'Se på mønsteret. Trykk på kaka som skal ligge i den tomme plassen.',
       items: [
-        { key: 'pepperkake',    label: 'Pepperkake',    emoji: '🍪' },
-        { key: 'smultring',     label: 'Smultring',     emoji: '🍩' },
-        { key: 'krumkake',      label: 'Krumkake',      emoji: '🥐' },
-        { key: 'sandkake',      label: 'Sandkake',      emoji: '🧁', from: 'laerling' },
-        { key: 'berlinerkrans', label: 'Berlinerkrans', emoji: '🥨', from: 'mester' },
-        { key: 'goro',          label: 'Goro',          emoji: '🧇', from: 'mester' },
+        { key: 'pepperkake',    label: 'Pepperkake',    emoji: '🍪', imageUrl: '/images/tryllegarden/kaker/pepperkake.webp' },
+        { key: 'smultring',     label: 'Smultring',     emoji: '🍩', imageUrl: '/images/tryllegarden/kaker/smultring.webp' },
+        { key: 'krumkake',      label: 'Krumkake',      emoji: '🥐', imageUrl: '/images/tryllegarden/kaker/krumkake.webp' },
+        { key: 'sandkake',      label: 'Sandkake',      emoji: '🧁', from: 'laerling', imageUrl: '/images/tryllegarden/kaker/sandkake.webp' },
+        { key: 'berlinerkrans', label: 'Berlinerkrans', emoji: '🥨', from: 'mester', imageUrl: '/images/tryllegarden/kaker/berlinerkrans.webp' },
+        { key: 'goro',          label: 'Goro',          emoji: '🧇', from: 'mester', imageUrl: '/images/tryllegarden/kaker/goro.webp' },
       ],
       levels: {
         smanisse: { rounds: [6, 6] },
@@ -438,7 +445,7 @@ const jul: FarmSeason = {
         'En venn tenker på et hemmelig tall og regner litt i hodet. Så løfter du på en pepperkake. Under den ligger en lapp – med svaret!',
       trickAge: 8,
       trickSlug: 'pepperkaka-som-vet-svaret',
-      nisseX: 7, nisseY: 34,
+      nisseX: 32, nisseY: 37, nisseInScene: true,
     },
     {
       key: 'stua',
@@ -448,8 +455,10 @@ const jul: FarmSeason = {
       icon: '❤️',
       mapX: 66, mapY: 83,
       ornament: '💗',
+      ornamentImageUrl: '/images/tryllegarden/pynt/julehjerte.webp',
       backdrop: 'stue',
-      sceneAlt: 'Stua, med peis, strikkede strømper og glanspapir på bordet.',
+      sceneImageUrl: '/images/tryllegarden/scene/stua.webp',
+      sceneAlt: 'Stua: peis med strikkede strømper, bord med glanspapir, saks og flettede julekurver, og et juletre. Nissen titter fram bak treet.',
       intro: [
         { who: 'gutt',  text: 'I stua lager de julepynt. Se, flettede julekurver, formet som hjerter!' },
         { who: 'jente', text: 'Nissen har begynt på en, men den ble ikke ferdig.' },
@@ -490,7 +499,7 @@ const jul: FarmSeason = {
         'Du viser fram et helt vanlig julekort og sier at du kan gå tvers gjennom det. Ingen tror deg. Noen klipp senere stiger du rett gjennom kortet!',
       trickAge: 8,
       trickSlug: 'ga-gjennom-et-julekort',
-      nisseX: 93, nisseY: 26,
+      nisseX: 88, nisseY: 39, nisseInScene: true,
     },
     {
       key: 'stabburet',
@@ -500,8 +509,10 @@ const jul: FarmSeason = {
       icon: '🧀',
       mapX: 42, mapY: 56,
       ornament: '🟢',
+      ornamentImageUrl: '/images/tryllegarden/pynt/gris.webp',
       backdrop: 'stabbur',
-      sceneAlt: 'Hyllene i stabburet, fulle av julemat.',
+      sceneImageUrl: '/images/tryllegarden/scene/stabburet.webp',
+      sceneAlt: 'Inne i stabburet: to hyller på tømmerveggen, spekemat og flatbrød under taket og en tent lykt. Nissen titter fram bak ei tønne.',
       intro: [
         { who: 'jente', text: 'Her på stabburet står all julematen.' },
         { who: 'gutt',  text: 'Nissen pleier å stikke innom og bytte om på ting. Bare på moro!' },
@@ -509,16 +520,16 @@ const jul: FarmSeason = {
       ],
       task: 'Se nøye på hyllene. Finn det nissen har byttet ut.',
       items: [
-        { key: 'ost',      label: 'Osten',         emoji: '🧀', x: 16, y: 30 },
-        { key: 'syltetoy', label: 'Syltetøyet',    emoji: '🫙', x: 38, y: 30 },
-        { key: 'epler',    label: 'Eplet',         emoji: '🍎', x: 60, y: 30 },
-        { key: 'gris',     label: 'Marsipangrisen', emoji: '🐷', x: 82, y: 30 },
-        { key: 'brod',     label: 'Brødet',        emoji: '🍞', x: 16, y: 66 },
-        { key: 'smor',     label: 'Smøret',        emoji: '🧈', x: 38, y: 66 },
-        { key: 'notter',   label: 'Nøttene',       emoji: '🌰', x: 60, y: 66 },
-        { key: 'honning',  label: 'Honningen',     emoji: '🍯', x: 82, y: 66 },
-        { key: 'lys',      label: 'Lyset',         emoji: '🕯️', x: 27, y: 48 },
-        { key: 'kurv',     label: 'Kurven',        emoji: '🧺', x: 71, y: 48 },
+        { key: 'ost',      label: 'Osten',         emoji: '🧀', imageUrl: '/images/tryllegarden/stabbur/ost.webp', x: 27, y: 37.5 },
+        { key: 'syltetoy', label: 'Syltetøyet',    emoji: '🫙', imageUrl: '/images/tryllegarden/stabbur/syltetoy.webp', x: 40.5, y: 37.5 },
+        { key: 'epler',    label: 'Eplet',         emoji: '🍎', imageUrl: '/images/tryllegarden/stabbur/eple.webp', x: 54, y: 37.5 },
+        { key: 'gris',     label: 'Marsipangrisen', emoji: '🐷', imageUrl: '/images/tryllegarden/stabbur/gris.webp', x: 67.5, y: 37.5 },
+        { key: 'brod',     label: 'Brødet',        emoji: '🍞', imageUrl: '/images/tryllegarden/stabbur/brod.webp', x: 27, y: 56 },
+        { key: 'smor',     label: 'Smøret',        emoji: '🧈', imageUrl: '/images/tryllegarden/stabbur/smor.webp', x: 40.5, y: 56 },
+        { key: 'notter',   label: 'Nøttene',       emoji: '🌰', imageUrl: '/images/tryllegarden/stabbur/notter.webp', x: 54, y: 56 },
+        { key: 'honning',  label: 'Honningen',     emoji: '🍯', imageUrl: '/images/tryllegarden/stabbur/honning.webp', x: 67.5, y: 56 },
+        { key: 'lys',      label: 'Lyset',         emoji: '🕯️', imageUrl: '/images/tryllegarden/stabbur/lys.webp', x: 81, y: 37.5 },
+        { key: 'kurv',     label: 'Kurven',        emoji: '🧺', imageUrl: '/images/tryllegarden/stabbur/kurv.webp', x: 81, y: 56 },
       ],
       levels: {
         smanisse: { rounds: [3, 4] },
@@ -539,7 +550,7 @@ const jul: FarmSeason = {
         'Du holder opp en klementin og sier hvor mange båter den har inni. Så skreller du den, og alle teller. Det stemmer!',
       trickAge: 8,
       trickSlug: 'klementinen-som-teller',
-      nisseX: 50, nisseY: 90,
+      nisseX: 15, nisseY: 61, nisseInScene: true,
     },
     {
       key: 'lyktestien',
@@ -549,6 +560,7 @@ const jul: FarmSeason = {
       icon: '🏮',
       mapX: 36, mapY: 82,
       ornament: '🟤',
+      ornamentImageUrl: '/images/tryllegarden/pynt/lykt.webp',
       backdrop: 'sti',
       sceneAlt: 'En snødekt sti med fire lykter på rekke.',
       intro: [
@@ -634,6 +646,7 @@ const jul: FarmSeason = {
       icon: '🌲',
       mapX: 90, mapY: 43,
       ornament: '🌲',
+      ornamentImageUrl: '/images/tryllegarden/pynt/gran.webp',
       sceneImageUrl: '/images/tryllegarden/scene/skogen.webp',
       sceneAlt: 'Skogen en stjerneklar vinternatt. Fotspor i snøen fører til et stort tre, og nissen titter fram bak stammen.',
       intro: [
@@ -690,6 +703,7 @@ const jul: FarmSeason = {
       icon: '🎭',
       mapX: 9, mapY: 89,
       ornament: '🎭',
+      ornamentImageUrl: '/images/tryllegarden/pynt/halmbukk.webp',
       sceneImageUrl: '/images/tryllegarden/scene/porten.webp',
       sceneAlt: 'Gårdsporten en snøfull kveld, med røde hus og lys i vinduene. Nissen titter fram bak en grindstolpe.',
       intro: [
@@ -699,12 +713,12 @@ const jul: FarmSeason = {
       ],
       task: 'Les ledetråden. Trykk på kostymet som passer.',
       items: [
-        { key: 'bukk',    label: 'Julebukken',   emoji: '🐐' },
-        { key: 'bjorn',   label: 'Bjørnen',      emoji: '🐻' },
-        { key: 'trylle',  label: 'Tryllekunstneren', emoji: '🎩' },
-        { key: 'kone',    label: 'Gamle Marit',  emoji: '👵', from: 'laerling' },
-        { key: 'ridder',  label: 'Ridderen',     emoji: '🛡️', from: 'mester' },
-        { key: 'stjerne', label: 'Stjernegutten', emoji: '⭐', from: 'mester' },
+        { key: 'bukk',    label: 'Julebukken',   emoji: '🐐', imageUrl: '/images/tryllegarden/kostymer/julebukk.webp' },
+        { key: 'bjorn',   label: 'Bjørnen',      emoji: '🐻', imageUrl: '/images/tryllegarden/kostymer/bjorn.webp' },
+        { key: 'trylle',  label: 'Tryllekunstneren', emoji: '🎩', imageUrl: '/images/tryllegarden/kostymer/tryllekunstner.webp' },
+        { key: 'kone',    label: 'Gamle Marit',  emoji: '👵', from: 'laerling', imageUrl: '/images/tryllegarden/kostymer/marit.webp' },
+        { key: 'ridder',  label: 'Ridderen',     emoji: '🛡️', from: 'mester', imageUrl: '/images/tryllegarden/kostymer/ridder.webp' },
+        { key: 'stjerne', label: 'Stjernegutten', emoji: '⭐', from: 'mester', imageUrl: '/images/tryllegarden/kostymer/stjernegutt.webp' },
       ],
       clues: [
         { text: 'Hvem har horn?', answer: 'bukk' },
@@ -742,9 +756,11 @@ const jul: FarmSeason = {
       title: 'Sykkelverkstedet',
       mechanic: 'sorter',
       icon: '🚲',
+      iconImageUrl: '/images/tryllegarden/verktoy/sykkel-knapp.webp',
       mapX: 88, mapY: 67,
       ornament: '🔧',
-      backdrop: 'stall',
+      ornamentImageUrl: '/images/tryllegarden/pynt/sykkelbjelle.webp',
+      sceneImageUrl: '/images/tryllegarden/scene/sykkelverkstedet.webp',
       sceneAlt: 'Inne i sykkelverkstedet: en sykkel i reparasjonsstativ, en spark, hjul på veggen og en verktøytavle. Nissen titter fram bak et sykkelhjul.',
       intro: [
         { who: 'gutt',  text: 'Her er sykkelverkstedet! Om vinteren fikser de sparker og kjelker her også.' },
@@ -753,7 +769,12 @@ const jul: FarmSeason = {
       ],
       task: 'Trykk på fastnøklene i rekkefølge: først den korteste, så den neste, helt til den lengste.',
       items: [
-        { key: 'nokkel', label: 'Fastnøkkel' },
+        { key: 'nokkel1', label: 'Fastnøkkel', imageUrl: '/images/tryllegarden/verktoy/nokkel-1.webp', size: 124 },
+        { key: 'nokkel2', label: 'Fastnøkkel', imageUrl: '/images/tryllegarden/verktoy/nokkel-2.webp', size: 156 },
+        { key: 'nokkel3', label: 'Fastnøkkel', imageUrl: '/images/tryllegarden/verktoy/nokkel-3.webp', size: 184 },
+        { key: 'nokkel4', label: 'Fastnøkkel', imageUrl: '/images/tryllegarden/verktoy/nokkel-4.webp', size: 203 },
+        { key: 'nokkel5', label: 'Fastnøkkel', imageUrl: '/images/tryllegarden/verktoy/nokkel-5.webp', size: 222 },
+        { key: 'nokkel6', label: 'Fastnøkkel', imageUrl: '/images/tryllegarden/verktoy/nokkel-6.webp', size: 250 },
       ],
       levels: {
         smanisse: { rounds: [3] },
@@ -774,7 +795,7 @@ const jul: FarmSeason = {
         'En mutter henger i en tråd og står helt stille. Du ber den svinge – og den begynner å svinge, uten at du tar på den!',
       trickAge: 7,
       trickSlug: 'pendelen-som-lystrer',
-      nisseX: 12, nisseY: 40,
+      nisseX: 9, nisseY: 43, nisseInScene: true,
     },
     {
       key: 'honsehuset',

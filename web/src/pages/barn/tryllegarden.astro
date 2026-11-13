@@ -165,7 +165,7 @@ const paletteStyle = `--tg-sky:${pal.sky};--tg-ground:${pal.ground};--tg-accent:
     key: string; slot?: number; title: string; titleEn?: string
     mechanic: 'finn' | 'rekkefolge' | 'husk' | 'folg-traden' | 'monster' | 'flett' | 'forandret' | 'tenn' | 'gjett' | 'tell' | 'sorter'
     clues?: Clue[]; bonus?: boolean
-    icon: string; mapX: number; mapY: number; ornament: string; ornamentImageUrl?: string
+    icon: string; iconImageUrl?: string; mapX: number; mapY: number; ornament: string; ornamentImageUrl?: string
     backdrop?: string; sceneImageUrl?: string; sceneAlt?: string
     intro: Line[]; task: string; taskEn?: string; items: Item[]
     levels?: Partial<Record<Level, { rounds?: number[]; reverse?: boolean }>>
@@ -603,7 +603,7 @@ const paletteStyle = `--tg-sky:${pal.sky};--tg-ground:${pal.ground};--tg-accent:
             ${mine.finale ? `<span class="tg-treetop" aria-hidden="true">${topOf('tg-top-img')}</span>` : ''}
           </div>
           ${season.places.map(p => `<button type="button" class="tg-spot${mine.done[p.key] ? ' is-done' : ''}" data-place="${esc(p.key)}" style="left:${p.mapX}%;top:${p.mapY}%">
-            <span class="tg-spot-icon" aria-hidden="true">${esc(p.icon)}</span>
+            <span class="tg-spot-icon" aria-hidden="true">${p.iconImageUrl ? `<img src="${esc(p.iconImageUrl)}" alt="">` : esc(p.icon)}</span>
             <span class="tg-spot-name">${esc(L(p, 'title'))}${mine.done[p.key] ? ` <span aria-hidden="true">✓</span><span class="tg-sr">${t(' (ferdig)', ' (done)')}</span>` : ''}</span>
           </button>`).join('')}
         </div>
@@ -1518,6 +1518,9 @@ const paletteStyle = `--tg-sky:${pal.sky};--tg-ground:${pal.ground};--tg-accent:
       const backwards = () => lvl === 'mester' && round === rounds.length - 1
       // Candles are the built-in look; any other item (key != 'lys') is drawn as a spanner.
       const tool = !!place.items[0] && place.items[0].key !== 'lys'
+      // Drawn things (each with its own picture and `size` = length) replace the built-in candles and spanners.
+      const drawn = place.items.filter(i => i.imageUrl && i.size).sort((a, b) => a.size! - b.size!)
+      const longest = drawn.length ? drawn[drawn.length - 1].size! : 1
       const name = tool ? L(place.items[0], 'label') : t('Lys', 'Candle')
 
       function newRound() {
@@ -1525,6 +1528,14 @@ const paletteStyle = `--tg-sky:${pal.sky};--tg-ground:${pal.ground};--tg-accent:
         // Heights spread between 30 and 92; the gap shrinks on Tryllemester.
         const gap = Math.max(7, Math.min((92 - 30) / (n - 1), lvl === 'mester' ? 11 : 20))
         order = Array.from({ length: n }, (_, i) => ({ id: i, h: Math.round(30 + i * gap) }))
+        let pics: Item[] = []
+        if (drawn.length >= n) {
+          // Pick n of the drawn things: spread out for the youngest, neighbours (nearly alike) for the masters.
+          const start = lvl === 'mester' ? Math.floor(Math.random() * (drawn.length - n + 1)) : 0
+          const step = lvl === 'mester' ? 1 : (drawn.length - 1) / Math.max(1, n - 1)
+          pics = Array.from({ length: n }, (_, i) => drawn[Math.round(start + i * step)])
+          order = pics.map((p, i) => ({ id: i, h: Math.round(92 * p.size! / longest) }))
+        }
         if (backwards()) order.reverse()
         next = 0
         locked = false
@@ -1536,7 +1547,7 @@ const paletteStyle = `--tg-sky:${pal.sky};--tg-ground:${pal.ground};--tg-accent:
           : (backwards()
             ? t('Nå: trykk på lysene fra det lengste til det korteste.', 'Now: tap the candles from the longest to the shortest.')
             : t('Trykk på lysene fra det korteste til det lengste.', 'Tap the candles from the shortest to the longest.'))
-        board.innerHTML = `<div class="tg-candles">${shown.map((c, k) => `<button type="button" class="tg-candle${tool ? ' tg-candle--tool' : ''}" data-id="${c.id}" style="--h:${c.h}" aria-label="${esc(name)} ${k + 1}">${tool ? '' : '<span class="tg-flame"></span>'}<span class="tg-candle-num"></span></button>`).join('')}</div>`
+        board.innerHTML = `<div class="tg-candles">${shown.map((c, k) => `<button type="button" class="tg-candle${pics.length ? ' tg-candle--pic' : tool ? ' tg-candle--tool' : ''}" data-id="${c.id}" style="--h:${c.h}" aria-label="${esc(name)} ${k + 1}">${pics.length ? `<img src="${esc(pics[c.id].imageUrl!)}" alt="">` : tool ? '' : '<span class="tg-flame"></span>'}<span class="tg-candle-num"></span></button>`).join('')}</div>`
         api.msg(q)
         board.querySelectorAll<HTMLButtonElement>('.tg-candle').forEach(btn =>
           btn.addEventListener('click', async () => {
@@ -1855,6 +1866,10 @@ const paletteStyle = `--tg-sky:${pal.sky};--tg-ground:${pal.ground};--tg-accent:
   }
   .tg-thing { width: 12%; aspect-ratio: 1; font-size: clamp(1.2rem, 5.2vw, 2.6rem); display: flex; align-items: center; justify-content: center; border-radius: 50%; }
   .tg-thing img { width: 100%; height: 100%; object-fit: contain; }
+  /* Things on a shelf stand on it: x/y is the middle of the thing's foot. */
+  .tg-shelf, .tg-lvl-smanisse .tg-shelf, .tg-lvl-mester .tg-shelf { width: 10%; transform: translate(-50%, -100%); border-radius: 8px; align-items: flex-end; opacity: 1; }
+  .tg-shelf img { object-position: 50% 100%; filter: drop-shadow(0 2px 2px rgba(0, 0, 0, .4)); }
+  .tg-spot-icon img { width: 100%; height: 100%; object-fit: contain; display: block; }
   .tg-lvl-smanisse .tg-thing { width: 16%; font-size: clamp(1.6rem, 7vw, 3.4rem); }
   .tg-lvl-mester .tg-thing { width: 9%; font-size: clamp(.95rem, 3.6vw, 1.8rem); opacity: .85; }
   .tg-thing.is-found { opacity: 1; background: color-mix(in srgb, var(--tg-glow) 75%, transparent); box-shadow: 0 0 0 3px #fff; cursor: default; }
@@ -1973,7 +1988,7 @@ const paletteStyle = `--tg-sky:${pal.sky};--tg-ground:${pal.ground};--tg-accent:
   .tg-guess img { height: clamp(90px, 25vw, 200px); width: auto; display: block; }
   .tg-guess:not(.tg-guess--anon) { background: #fff; box-shadow: var(--shadow-sm); min-width: 5.5rem; padding: .6rem .8rem; }
   .tg-guess:not(.tg-guess--anon) > span[aria-hidden] { font-size: 3rem; line-height: 1; }
-  .tg-guess:not(.tg-guess--anon) img { height: 3.4rem; }
+  .tg-guess:not(.tg-guess--anon) img { height: clamp(4.6rem, 18vw, 8rem); }
   .tg-guess-num { min-width: 1.8rem; height: 1.8rem; border-radius: 50%; background: var(--tg-accent2); color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 700; }
   .tg-guess.is-right { border-color: var(--tg-accent2); background: color-mix(in srgb, var(--tg-glow) 35%, #fff); }
   .tg-guess.is-shake { animation: tg-shake .35s; }
@@ -2006,6 +2021,10 @@ const paletteStyle = `--tg-sky:${pal.sky};--tg-ground:${pal.ground};--tg-accent:
   /* The same game with spanners instead of candles (Sykkelverkstedet): a steel shaft with a ring at the top. */
   .tg-candle--tool { background: linear-gradient(90deg, transparent 13px, #8d99a6 13px, #dfe6ec 20px, #8d99a6 27px, transparent 27px); border-color: transparent; border-radius: 0; }
   .tg-candle--tool::before { left: 50%; top: -22px; width: 34px; height: 34px; box-sizing: border-box; background: transparent; border: 9px solid #a9b4bf; border-radius: 50%; box-shadow: inset 0 0 0 1px #6f7a86, 0 0 0 1px #6f7a86; }
+  .tg-candle--pic { background: none; border-color: transparent; width: auto; min-width: 40px; height: calc(var(--h) * 1.75px); justify-content: center; }
+  .tg-candle--pic::before { display: none; }
+  .tg-candle--pic img { height: 100%; width: auto; display: block; filter: drop-shadow(0 2px 2px rgba(0, 0, 0, .35)); }
+  .tg-candle--pic .tg-candle-num { position: absolute; bottom: 2px; }
   .tg-candle.is-taken { opacity: .55; cursor: default; }
   .tg-candle.is-taken .tg-candle-num { display: flex; }
   .tg-candle.is-shake { animation: tg-shake .35s; }
