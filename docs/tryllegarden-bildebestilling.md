@@ -152,8 +152,7 @@ triksene kan vente til tekstene er prøvd ut.
 
 ## G. Ikke nødvendig, men fint å ha
 
-- **Loco**, én positur til (for eksempel med hodet på skakke), så dansen får
-  mer liv. To positurer finnes.
+- **Loco** har fire positurer (sitter, danser, hodet på skrå to veier). Ingen flere trengs.
 - **Fjøset:** kua beholdes. Ingen endring.
 - Scenebildet fra **Bryggerhuset** brukes ikke lenger, siden stedet ble
   Sykkelverkstedet.

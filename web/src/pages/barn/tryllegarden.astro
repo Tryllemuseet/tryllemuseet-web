@@ -174,7 +174,7 @@ const paletteStyle = `--tg-sky:${pal.sky};--tg-ground:${pal.ground};--tg-accent:
     traditionLinkUrl?: string; traditionLinkLabel?: string
     trickTitle: string; trickTitleEn?: string; trickEffect: string; trickEffectEn?: string; trickAge?: number
     hasTrick: boolean; nisseX?: number; nisseY?: number; nisseInScene?: boolean
-    dancer?: { name: string; imageUrl: string; danceImageUrl?: string; x: number; y: number; size?: number }
+    dancer?: { name: string; imageUrl: string; danceImageUrl?: string; idleImageUrls?: string[]; x: number; y: number; size?: number }
     craft?: { title: string; titleEn?: string; needs?: string; needsEn?: string; steps: { text: string; textEn?: string; imageUrl?: string }[] }
   }
   interface Season {
@@ -1405,6 +1405,18 @@ const paletteStyle = `--tg-sky:${pal.sky};--tg-ground:${pal.ground};--tg-accent:
       if (friend) scene.insertAdjacentHTML('beforeend', `<img class="tg-dancer" src="${esc(friend.imageUrl)}" alt="${esc(friend.name)}" style="left:${friend.x}%;top:${friend.y}%;width:${friend.size ?? 11}%">`)
       if (friend?.danceImageUrl) new Image().src = friend.danceImageUrl
       let flap = 0
+      // While he waits he tilts his head now and then (extra poses in the same frame).
+      const idles = friend?.idleImageUrls ?? []
+      idles.forEach(u => { new Image().src = u })
+      if (friend && idles.length && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        const el0 = scene.querySelector<HTMLImageElement>('.tg-dancer')!
+        const idle = window.setInterval(() => {
+          if (!el0.isConnected) { clearInterval(idle); return }
+          if (el0.classList.contains('is-dancing')) return
+          el0.src = pick(idles)
+          window.setTimeout(() => { if (el0.isConnected && !el0.classList.contains('is-dancing')) el0.src = friend.imageUrl }, 900)
+        }, 2600)
+      }
       const dance = (forever = false) => {
         const el = scene.querySelector<HTMLImageElement>('.tg-dancer')
         if (!el || !friend) return

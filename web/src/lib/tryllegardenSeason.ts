@@ -154,7 +154,8 @@ export interface FarmPlace {
   nisseInScene?: boolean
   /** A friend who stands in the scene and dances when the child gets it right (mechanic `tell`): Loco the cockatoo. */
   /** `danceImageUrl` is a second pose in the same frame (same size, perch in the same spot); the two are swapped while dancing. */
-  dancer?: { name: string; imageUrl: string; danceImageUrl?: string; x: number; y: number; size?: number }
+  /** `idleImageUrls`: more poses in the same frame (head tilts) shown now and then while he waits. */
+  dancer?: { name: string; imageUrl: string; danceImageUrl?: string; idleImageUrls?: string[]; x: number; y: number; size?: number }
   /** "Make it yourself" instructions shown after the mini-game. Never a trick's method. */
   craft?: FarmCraft
 }
@@ -822,7 +823,7 @@ const jul: FarmSeason = {
       trickAge: 8,
       trickSlug: 'egget-som-roper-seg',
       nisseX: 66, nisseY: 59, nisseInScene: true,
-      dancer: { name: 'Loco', imageUrl: '/images/tryllegarden/honsehus/loco.webp', danceImageUrl: '/images/tryllegarden/honsehus/loco-danser.webp', x: 24.5, y: 24.7, size: 22 },
+      dancer: { name: 'Loco', imageUrl: '/images/tryllegarden/honsehus/loco.webp', danceImageUrl: '/images/tryllegarden/honsehus/loco-danser.webp', idleImageUrls: ['/images/tryllegarden/honsehus/loco-skra-1.webp', '/images/tryllegarden/honsehus/loco-skra-2.webp'], x: 24.5, y: 24.7, size: 22 },
     },
   ],
   finaleTitle: 'Stjerna på treet',
