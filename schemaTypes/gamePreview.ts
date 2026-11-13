@@ -7,7 +7,7 @@
 // web/src/lib/kabinettPreview.ts.
 //
 // One document, ID "lukket.game-preview", in the PRIVATE "lukket" dataset
-// (Studio workspace "Bak teppet (lukket)" → «Kabinettet: Forhåndsvisning»):
+// (Studio workspace "Bak teppet (lukket)" → «Spill: Forhåndsvisning»):
 // the code must not be readable through the public API.
 import { defineType, defineField } from 'sanity'
 import { privateIdValidation } from './privateDoc'
@@ -17,12 +17,12 @@ export const GAME_PREVIEW_ID = 'lukket.game-preview'
 
 export const gamePreview = defineType({
   name: 'gamePreview',
-  title: 'Kabinettet: Forhåndsvisning',
+  title: 'Spill: Forhåndsvisning',
   type: 'document',
   icon: () => '🔑',
-  description: 'Hemmelig lenke for å teste «Det trettende kabinett» før spillet er åpnet for alle.',
+  description: 'Hemmelig lenke for å teste spillene «Det trettende kabinett» og «Tryllegården» før de er åpnet for alle. Samme kode gjelder begge.',
 
-  validation: Rule => Rule.custom(privateIdValidation('«Kabinettet: Forhåndsvisning»')),
+  validation: Rule => Rule.custom(privateIdValidation('«Spill: Forhåndsvisning»')),
 
   fields: [
     defineField({
@@ -30,7 +30,7 @@ export const gamePreview = defineType({
       title: 'Forhåndsvisning er på',
       type: 'boolean',
       initialValue: true,
-      description: 'Av: lenken slutter å virke for alle som har brukt den. Når spillet er åpnet for alle, gjør denne ingenting.',
+      description: 'Av: lenkene slutter å virke for alle som har brukt dem. Når et spill er åpnet for alle, gjør denne ingenting for det spillet.',
     }),
 
     defineField({
@@ -39,7 +39,7 @@ export const gamePreview = defineType({
       type: 'string',
       initialValue: generateAccessCode,
       description:
-        'Lenken blir https://www.tryllemuseet.no/det-trettende-kabinett?forhandsvisning=<kode> (eller samme adresse på test.tryllemuseet.no). Store/små bokstaver, mellomrom og bindestrek spiller ingen rolle. Bytt koden hvis lenken har spredt seg — da slutter alle gamle lenker å virke.',
+        'Lenkene blir https://www.tryllemuseet.no/det-trettende-kabinett?forhandsvisning=<kode> og https://www.tryllemuseet.no/barn/tryllegarden?forhandsvisning=<kode> (eller samme adresser på test.tryllemuseet.no). Store/små bokstaver, mellomrom og bindestrek spiller ingen rolle. Bytt koden hvis en lenke har spredt seg — da slutter alle gamle lenker å virke.',
       validation: R => R.required().custom(value =>
         !value || normalizeAccessCode(value).length >= 8 ? true : 'Koden må ha minst 8 bokstaver/tall.',
       ),
@@ -50,7 +50,7 @@ export const gamePreview = defineType({
     select: { code: 'previewCode', active: 'isActive' },
     prepare({ code, active }: { code?: string; active?: boolean }) {
       return {
-        title: (active === false ? '⚪ ' : '🟢 ') + 'Forhåndsvisning av spillet',
+        title: (active === false ? '⚪ ' : '🟢 ') + 'Forhåndsvisning av spillene',
         subtitle: code ? `Kode: ${code}` : 'Mangler kode',
       }
     },

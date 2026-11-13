@@ -1,0 +1,1770 @@
+---
+// src/pages/barn/tryllegarden.astro
+// "Tryllegården" — the children's game on the farm, with the fjøsnisse and
+// the two tryllebarn. Concept: docs/tryllegarden-concept.md.
+//
+// The page gets one season pack (src/lib/tryllegardenSeason.ts: built-in
+// pack + optional Sanity overrides) and plays it in the browser: a map, the
+// places, a mini-game per place, three difficulty levels, optional read-aloud
+// (Web Speech API) and progress in localStorage. It holds no trick methods:
+// those come from /api/tryllegarden (src/lib/tryllegarden.ts) when a place is
+// finished, and the finished game opens the season's bundle in /bak-teppet.
+//
+// Rendered on demand, because the editors' preview link needs a cookie:
+// while farmGameConfig.isActive is off, ?forhandsvisning=<code> (the same
+// code as the Cabinet's, src/lib/kabinettPreview.ts) opens the game for one
+// browser and everyone else sees "kommer snart". Cached briefly at the CDN
+// when the game is live.
+export const prerender = false
+
+import BaseLayout from '../../layouts/BaseLayout.astro'
+import { getFarmGameConfig, getGamePreview } from '../../lib/sanity'
+import { getPrivateClient, failedAttemptDelay } from '../../lib/bakTeppet'
+import {
+  PREVIEW_PARAM,
+  activePreviewCode,
+  codeMatches,
+  grantPreview,
+  hasPreviewAccess,
+  hasPreviewCookie,
+} from '../../lib/kabinettPreview'
+import { loadFarmSeason } from '../../lib/tryllegarden'
+import { BUILT_IN_SEASONS, DEFAULT_SEASON_KEY } from '../../lib/tryllegardenSeason'
+
+let config: Awaited<ReturnType<typeof getFarmGameConfig>> = null
+try {
+  config = await getFarmGameConfig()
+} catch (err) {
+  console.error('[tryllegarden] could not load the config', err)
+}
+
+const priv = getPrivateClient()
+let preview = false
+if (config?.isActive !== true && priv) {
+  // Only visitors with the link or the cookie cost a Sanity request.
+  const typed = Astro.url.searchParams.get(PREVIEW_PARAM)
+  if (typed !== null || hasPreviewCookie(Astro.cookies)) {
+    let code: string | null = null
+    try {
+      code = activePreviewCode(await getGamePreview(priv.client))
+    } catch (err) {
+      console.error('[tryllegarden] could not load the preview settings', err)
+    }
+    if (typed !== null) {
+      if (codeMatches(typed, code)) {
+        grantPreview(Astro.cookies, priv.token, code!, Astro.url.protocol === 'https:')
+        // Redirect so the code never stays in the address bar or history.
+        return Astro.redirect(Astro.url.pathname, 303)
+      }
+      await failedAttemptDelay()
+    }
+    preview = hasPreviewAccess(Astro.cookies, priv.token, code)
+  }
+}
+
+const isActive = config?.isActive === true || preview
+const season = isActive ? await loadFarmSeason(config) : null
+const playable = isActive && !!season
+
+if (!isActive || preview) {
+  // Not cached while the game is off: the CDN ignores cookies, so a cached
+  // "coming soon" page would hide the game from a preview browser (and a
+  // cached preview page would show it to everyone).
+  Astro.response.headers.set('Cache-Control', 'private, no-store')
+} else {
+  Astro.response.headers.set('Cache-Control', 'public, max-age=0, s-maxage=300, stale-while-revalidate=600')
+}
+
+const names = {
+  jente: config?.girlName?.trim() || 'Tiril',
+  gutt:  config?.boyName?.trim()  || 'Trym',
+  gard:  config?.farmName?.trim() || 'Årvoll gård',
+}
+const fill = (s: string) =>
+  s.replace(/\{jente\}/g, names.jente).replace(/\{gutt\}/g, names.gutt).replace(/\{gard\}/g, names.gard)
+
+// The teaser borrows title and picture from the season that will be shown.
+const teaser = season ?? BUILT_IN_SEASONS[config?.activeSeason?.trim() || DEFAULT_SEASON_KEY] ?? BUILT_IN_SEASONS[DEFAULT_SEASON_KEY]
+const pageTitle = teaser.title
+const comingSoonTitle = config?.comingSoonTitle?.trim() || 'Hysj … nissen gjør seg klar'
+const comingSoonText = config?.comingSoonText?.trim() ||
+  fill('Snart kan du bli med {jente} og {gutt} til {gard} og finne ut hvem som tryller i fjøset. Kom tilbake om litt!')
+
+// What the browser gets: the season without the slugs into the closed area.
+const payload = playable
+  ? {
+      season: {
+        ...season!,
+        kitSlug: undefined,
+        places: season!.places.map(({ trickSlug, ...p }) => ({ ...p, hasTrick: !!trickSlug })),
+      },
+      names,
+      englishEnabled: config?.englishEnabled === true,
+      // Without the private token there are no secrets to hand out.
+      secrets: !!priv && !!season!.kitSlug,
+    }
+  : null
+const payloadJson = payload ? JSON.stringify(payload).replace(/</g, '\\u003c') : ''
+const pal = teaser.palette
+const paletteStyle = `--tg-sky:${pal.sky};--tg-ground:${pal.ground};--tg-accent:${pal.accent};--tg-accent2:${pal.accent2};--tg-glow:${pal.glow}`
+---
+
+<BaseLayout
+  title={`${pageTitle} — Tryllemuseet`}
+  description="Bli med tryllebarna til gården og finn ut hvem som tryller i fjøset. Et koselig spill for barn, med nissens egne trylletriks."
+  noindex={config?.isActive !== true}
+>
+  <section class="tg" id="tg" style={paletteStyle}>
+    <div class="tg-wrap">
+      {playable ? (
+        <>
+          <div class="tg-bar" id="tg-bar" hidden></div>
+          <div class="tg-stage" id="tg-root">
+            <!-- Shown until the script takes over (and to visitors without JavaScript). -->
+            <div class="tg-card tg-start">
+              {teaser.heroImageUrl && <img class="tg-hero-img" src={teaser.heroImageUrl} alt={teaser.heroAlt ?? ''} width="1400" height="1000" />}
+              <p class="tg-kicker">Tryllemuseet for barn</p>
+              <h1 class="tg-title">{teaser.title}</h1>
+              {teaser.subtitle && <p class="tg-subtitle">{teaser.subtitle}</p>}
+              <p class="tg-lead">{fill(teaser.intro)}</p>
+              <noscript><p class="tg-note">Spillet trenger JavaScript. Slå det på i nettleseren for å spille.</p></noscript>
+            </div>
+          </div>
+          <div class="tg-toast" id="tg-toast" role="status" aria-live="polite"></div>
+          <script type="application/json" id="tg-data" set:html={payloadJson} />
+        </>
+      ) : (
+        <div class="tg-stage">
+          <div class="tg-card tg-start">
+            {teaser.heroImageUrl && <img class="tg-hero-img" src={teaser.heroImageUrl} alt={teaser.heroAlt ?? ''} width="1400" height="1000" />}
+            <p class="tg-kicker">{teaser.title}</p>
+            <h1 class="tg-title">{comingSoonTitle}</h1>
+            <p class="tg-lead">{comingSoonText}</p>
+            <p><a class="tg-btn" href="/barn">Til barnesiden</a></p>
+          </div>
+        </div>
+      )}
+    </div>
+  </section>
+</BaseLayout>
+
+<script>
+  import { encodeProgress, decodeProgress, mergeProgress } from '../../lib/tryllegardenSave'
+
+  type Level = 'smanisse' | 'laerling' | 'mester'
+  type Who = 'jente' | 'gutt' | 'nisse' | 'forteller'
+  type Pose = 'hei' | 'peker' | 'overrasket' | 'jubler'
+  interface Line { who: Who; text: string; textEn?: string; pose?: Pose }
+  interface Item {
+    key: string; label: string; labelEn?: string; emoji?: string; imageUrl?: string
+    x?: number; y?: number; from?: Level; order?: number; decoy?: boolean
+    wrong?: string; wrongEn?: string; colors?: string[]
+  }
+  interface Place {
+    key: string; slot?: number; title: string; titleEn?: string
+    mechanic: 'finn' | 'rekkefolge' | 'husk' | 'folg-traden' | 'monster' | 'flett' | 'forandret' | 'tenn'
+    icon: string; mapX: number; mapY: number; ornament: string; ornamentImageUrl?: string
+    backdrop?: string; sceneImageUrl?: string; sceneAlt?: string
+    intro: Line[]; task: string; taskEn?: string; items: Item[]
+    levels?: Partial<Record<Level, { rounds?: number[]; reverse?: boolean }>>
+    hints: string[]; hintsEn?: string[]; done: string; doneEn?: string
+    traditionShort: string; traditionShortEn?: string; traditionLong?: string; traditionLongEn?: string
+    traditionLinkUrl?: string; traditionLinkLabel?: string
+    trickTitle: string; trickTitleEn?: string; trickEffect: string; trickEffectEn?: string; trickAge?: number
+    hasTrick: boolean; nisseX?: number; nisseY?: number; nisseInScene?: boolean
+  }
+  interface Season {
+    key: string; title: string; titleEn?: string; subtitle?: string; subtitleEn?: string
+    intro: string; introEn?: string; heroImageUrl?: string; heroAlt?: string
+    mapImageUrl?: string; mapAlt?: string
+    collectionName: string; collectionNameEn?: string; collectionTop: string; collectionTopUrl?: string
+    places: Place[]; finaleTitle: string; finaleTitleEn?: string; finale: Line[]
+    loftName: string; loftNameEn?: string
+    showWords?: string[]; showWordsEn?: string[]
+  }
+  interface Data {
+    season: Season
+    names: { jente: string; gutt: string; gard: string }
+    englishEnabled: boolean
+    secrets: boolean
+  }
+  interface SeasonSave { done: Record<string, { smor: boolean }>; hats: string[]; finale: boolean }
+  interface Store { level: Level | null; read: boolean | null; lang?: 'nb' | 'en'; seasons: Record<string, SeasonSave> }
+
+  const dataEl = document.getElementById('tg-data')
+  if (dataEl) {
+    const data: Data = JSON.parse(dataEl.textContent ?? '{}')
+    const season = data.season
+    const section = document.getElementById('tg')!
+    const root = document.getElementById('tg-root')!
+    const bar = document.getElementById('tg-bar')!
+    const toastEl = document.getElementById('tg-toast')!
+    const LEVELS: Level[] = ['smanisse', 'laerling', 'mester']
+    const wait = (ms: number) => new Promise<void>(r => setTimeout(r, ms))
+
+    // ── Lagring ──────────────────────────────────────────────────
+    // Progress stays in this browser. No names, no accounts, nothing sent.
+    const STORE_KEY = 'tryllegarden-v1'
+    let store: Store = { level: null, read: null, seasons: {} }
+    try {
+      const raw = localStorage.getItem(STORE_KEY)
+      if (raw) {
+        const parsed = JSON.parse(raw)
+        if (parsed && typeof parsed === 'object') store = { ...store, ...parsed, seasons: parsed.seasons ?? {} }
+      }
+    } catch { /* a fresh start is fine */ }
+    if (!LEVELS.includes(store.level as Level)) store.level = null
+    const save = () => { try { localStorage.setItem(STORE_KEY, JSON.stringify(store)) } catch { /* ignore */ } }
+    // Ask the browser to keep this data (Safari may otherwise clear it after a
+    // week without a visit). Asked once, after the first ornament is hung.
+    let persistAsked = false
+    function askPersist() {
+      if (persistAsked || !navigator.storage?.persist) return
+      persistAsked = true
+      navigator.storage.persisted?.().then(already => { if (!already) return navigator.storage.persist() }).catch(() => { /* fine */ })
+    }
+    // Each season keeps its own tree, so a new season starts empty.
+    const mine: SeasonSave = (store.seasons[season.key] ??= { done: {}, hats: [], finale: false })
+    mine.done ??= {}
+    mine.hats ??= []
+
+    // ── Språk og tekst ───────────────────────────────────────────
+    const lang: 'nb' | 'en' = data.englishEnabled && store.lang === 'en' ? 'en' : 'nb'
+    const t = (nb: string, en: string) => (lang === 'en' ? en : nb)
+    const fill = (s: string) =>
+      s.replace(/\{jente\}/g, data.names.jente).replace(/\{gutt\}/g, data.names.gutt).replace(/\{gard\}/g, data.names.gard)
+    /** A text field in the active language; missing English falls back to Norwegian. */
+    const L = (obj: any, field: string): string => fill(String((lang === 'en' && obj[field + 'En']) || obj[field] || ''))
+    const esc = (s: string) =>
+      s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
+
+    /** A small picture from the ornament sheet, as markup. */
+    const pic = (name: string, cls: string) => `<img class="${cls}" src="/images/tryllegarden/pynt/${name}.webp" alt="" aria-hidden="true">`
+    const ornamentOf = (p: Place) => p.ornamentImageUrl ? `<img class="tg-orn-img" src="${esc(p.ornamentImageUrl)}" alt="">` : esc(p.ornament)
+    const topOf = (cls: string) => season.collectionTopUrl ? `<img class="${cls}" src="${esc(season.collectionTopUrl)}" alt="">` : esc(season.collectionTop)
+    const LEVEL_NAMES: Record<Level, { name: string; age: string; icon: string }> = {
+      smanisse: { name: t('Smånisse', 'Little Nisse'),            age: t('4–6 år', 'Ages 4–6'),         icon: pic('sokk', 'tg-lvlicon') },
+      laerling: { name: t('Tryllelærling', 'Apprentice'),         age: t('7–9 år', 'Ages 7–9'),         icon: pic('hatt', 'tg-lvlicon') },
+      mester:   { name: t('Tryllemester', 'Master Magician'),     age: t('10 år og oppover', 'Ages 10+'), icon: pic('stjerne8', 'tg-lvlicon') },
+    }
+    const level = (): Level => store.level ?? 'smanisse'
+    const levelIndex = (l: Level | undefined) => Math.max(0, LEVELS.indexOf(l ?? 'smanisse'))
+    /** Items that belong on the current level. */
+    const forLevel = (items: Item[]) => items.filter(i => levelIndex(i.from) <= levelIndex(level()))
+
+    // ── Opplesing (talesyntese i nettleseren) ────────────────────
+    // Only offered when the browser has a voice for the language. Never
+    // required: every spoken line is also on screen.
+    const synth: SpeechSynthesis | null = 'speechSynthesis' in window ? window.speechSynthesis : null
+    let voice: SpeechSynthesisVoice | null = null
+    let speakingEl: Element | null = null
+    function findVoice() {
+      if (!synth) return
+      const voices = synth.getVoices()
+      const want = lang === 'en' ? ['en-gb', 'en'] : ['nb', 'no']
+      voice = null
+      for (const prefix of want) {
+        voice = voices.find(v => v.lang?.toLowerCase().replace('_', '-').startsWith(prefix)) ?? null
+        if (voice) break
+      }
+      section.classList.toggle('tg-can-speak', !!voice)
+    }
+    findVoice()
+    synth?.addEventListener?.('voiceschanged', findVoice)
+    function hush() {
+      synth?.cancel()
+      speakingEl?.classList.remove('is-speaking')
+      speakingEl = null
+    }
+    function speak(text: string, el?: Element | null) {
+      if (!synth || !voice || !text) return
+      hush()
+      const u = new SpeechSynthesisUtterance(text)
+      u.voice = voice
+      u.lang = voice.lang
+      u.rate = 0.9
+      const clear = () => { if (speakingEl === el) { el?.classList.remove('is-speaking'); speakingEl = null } }
+      u.onend = clear
+      u.onerror = clear
+      speakingEl = el ?? null
+      el?.classList.add('is-speaking')
+      synth.speak(u)
+    }
+    /** Read automatically, if "Les for meg" is on. */
+    const auto = (text: string, el?: Element | null) => { if (store.read) speak(text, el) }
+    window.addEventListener('pagehide', () => synth?.cancel())
+
+    section.addEventListener('click', e => {
+      const btn = (e.target as HTMLElement).closest?.('[data-say]') as HTMLElement | null
+      if (!btn) return
+      const host = btn.closest('.tg-bubble, .tg-card') ?? btn
+      if (speakingEl === host) hush()
+      else speak(btn.dataset.say ?? '', host)
+    })
+    const sayBtn = (text: string) =>
+      `<button type="button" class="tg-say" data-say="${esc(text)}" aria-label="${t('Les høyt', 'Read aloud')}">🔊</button>`
+
+    // ── Småting ──────────────────────────────────────────────────
+    let toastTimer = 0
+    function toast(text: string) {
+      toastEl.textContent = text
+      toastEl.classList.add('is-on')
+      clearTimeout(toastTimer)
+      toastTimer = window.setTimeout(() => toastEl.classList.remove('is-on'), 3200)
+    }
+    function show(html: string) {
+      hush()
+      root.innerHTML = html
+      const focus = root.querySelector<HTMLElement>('[data-focus]')
+      focus?.focus({ preventScroll: true })
+      section.scrollIntoView({ block: 'start', behavior: 'auto' })
+    }
+    const shuffle = <T,>(list: T[]): T[] => {
+      const a = [...list]
+      for (let i = a.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1))
+        ;[a[i], a[j]] = [a[j], a[i]]
+      }
+      return a
+    }
+
+    async function ask<T>(body: Record<string, unknown>): Promise<T | null> {
+      try {
+        const res = await fetch('/api/tryllegarden', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ ...body, lang }),
+        })
+        if (!res.ok) throw new Error(`HTTP ${res.status}`)
+        return (await res.json()) as T
+      } catch {
+        return null
+      }
+    }
+
+    // ── Tegninger (reserve til de ekte illustrasjonene er på plass) ─
+    const SKY = `<defs><linearGradient id="tgSky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0f1b3d"/><stop offset="1" stop-color="#3d5490"/></linearGradient></defs><rect width="160" height="100" fill="url(#tgSky)"/>`
+    const STARS = [[12, 10], [30, 22], [48, 8], [66, 18], [84, 9], [104, 20], [150, 30], [20, 34], [118, 6]]
+      .map(([x, y]) => `<circle cx="${x}" cy="${y}" r=".7" fill="#fff" opacity=".8"/>`).join('')
+    const SNOWFALL = [[8, 40], [26, 12], [44, 52], [61, 28], [77, 8], [96, 44], [112, 24], [131, 50], [147, 14], [154, 62], [18, 70], [70, 66]]
+      .map(([x, y]) => `<circle cx="${x}" cy="${y}" r=".9" fill="#fff" opacity=".7"/>`).join('')
+    const spruce = (x: number, y: number, s: number) =>
+      `<path d="M${x} ${y} l${6 * s} ${-18 * s} l${6 * s} ${18 * s}z" fill="#1f5c3a"/><path d="M${x + 2 * s} ${y - 9 * s} l${4 * s} ${-12 * s} l${4 * s} ${12 * s}z" fill="#2a7148"/><path d="M${x + 3.4 * s} ${y - 17 * s} l${2.6 * s} ${-4.5 * s} l${2.6 * s} ${4.5 * s}z" fill="#f4f8fc"/>`
+    const BACKDROPS: Record<string, string> = {
+      map: `${SKY}${STARS}<circle cx="136" cy="15" r="7" fill="#fdf3c4"/>
+        <path d="M0 50 Q40 38 80 48 T160 42 V100 H0Z" fill="#c9d6ea"/>
+        ${spruce(4, 52, 1)}${spruce(140, 50, 1.1)}${spruce(60, 30, .7)}${spruce(104, 34, .6)}
+        <path d="M0 62 Q50 52 100 62 T160 58 V100 H0Z" fill="#eaf0f8"/>
+        <path d="M30 100 Q60 70 80 62 Q100 70 128 100Z" fill="#dbe4f0"/>`,
+      tun: `${SKY}${STARS}<circle cx="24" cy="16" r="7" fill="#fdf3c4"/>
+        <path d="M0 60 Q40 50 80 58 T160 54 V100 H0Z" fill="#c9d6ea"/>
+        ${spruce(6, 60, 1.1)}${spruce(24, 58, .8)}
+        <rect x="92" y="30" width="50" height="32" fill="#8e2a24"/><path d="M87 31 L117 12 L147 31Z" fill="#f4f7fb"/>
+        <rect x="110" y="42" width="14" height="20" fill="#5b1915"/><path d="M110 42 l14 20 M124 42 l-14 20" stroke="#f4f7fb" stroke-width=".8"/>
+        <rect x="97" y="38" width="7" height="7" fill="#f6c453"/><rect x="130" y="38" width="7" height="7" fill="#f6c453"/>
+        <path d="M0 70 Q50 62 100 70 T160 66 V100 H0Z" fill="#f4f8fc"/>
+        <path d="M40 66 v10 M52 65 v10 M64 66 v10 M76 67 v10 M36 69 h44 M36 73 h44" stroke="#7a5230" stroke-width="1.2"/>`,
+      fjos: `<rect width="160" height="100" fill="#6b4226"/>
+        ${[20, 40, 60, 80, 100, 120, 140].map(x => `<path d="M${x} 0 V62" stroke="#573419" stroke-width="1"/>`).join('')}
+        <rect x="108" y="10" width="34" height="26" fill="#1c2c5a"/><path d="M125 10 V36 M108 23 H142" stroke="#8a5a34" stroke-width="2"/><rect x="106" y="8" width="38" height="30" fill="none" stroke="#8a5a34" stroke-width="2.5"/>
+        <circle cx="30" cy="20" r="16" fill="#f6c453" opacity=".25"/><rect x="26" y="12" width="8" height="12" rx="1.5" fill="#f6c453"/><path d="M30 4 V12 M25 12 H35 M25 24 H35" stroke="#3b2a18" stroke-width="1.5"/>
+        <rect x="0" y="62" width="160" height="38" fill="#4a2e17"/>
+        <rect x="14" y="52" width="132" height="8" rx="2" fill="#b98548"/><rect x="22" y="60" width="6" height="34" fill="#9a6b36"/><rect x="132" y="60" width="6" height="34" fill="#9a6b36"/>
+        <rect x="66" y="36" width="28" height="16" rx="3" fill="#2b2b33"/><path d="M62 38 H98" stroke="#2b2b33" stroke-width="3" stroke-linecap="round"/>
+        <rect x="0" y="74" width="26" height="20" rx="2" fill="#d9b24c"/><path d="M0 81 H26 M0 87 H26" stroke="#b48d2f" stroke-width="1"/>`,
+      lave: `${SKY}${SNOWFALL}
+        <path d="M0 70 Q40 62 80 68 T160 64 V100 H0Z" fill="#c9d6ea"/>
+        <rect x="0" y="0" width="16" height="78" fill="#8e2a24"/><path d="M16 0 V78" stroke="#6f1f1a" stroke-width="1.5"/>
+        ${spruce(138, 68, 1.2)}
+        <rect x="78.5" y="20" width="3" height="68" fill="#7a5230"/>
+        <rect x="34" y="37" width="92" height="2.4" rx="1" fill="#7a5230"/>
+        <path d="M80 4 L66 24 Q80 30 94 24Z" fill="#e3b94a"/><path d="M80 4 L72 24 M80 4 L80 26 M80 4 L88 24" stroke="#c2962d" stroke-width=".8"/><path d="M68 22 Q80 27 92 22" stroke="#b3262d" stroke-width="1.6" fill="none"/>
+        <path d="M0 80 Q50 72 100 80 T160 76 V100 H0Z" fill="#f4f8fc"/>
+        <path d="M4 72 H156 M4 76.5 H156" stroke="#7a5230" stroke-width="1.3"/>
+        ${[12, 36, 60, 100, 124, 148].map(x => `<path d="M${x} 68 V84" stroke="#7a5230" stroke-width="1.6"/>`).join('')}`,
+    }
+    // Indoor rooms share one drawing: plank wall, lantern, window, floor.
+    const room = (wall: string, plank: string, floor: string, extra: string) =>
+      `<rect width="160" height="100" fill="${wall}"/>
+        ${[20, 40, 60, 80, 100, 120, 140].map(x => `<path d="M${x} 0 V66" stroke="${plank}" stroke-width="1"/>`).join('')}
+        <rect x="112" y="10" width="30" height="24" fill="#1c2c5a"/><path d="M127 10 V34 M112 22 H142" stroke="#8a5a34" stroke-width="2"/><rect x="110" y="8" width="34" height="28" fill="none" stroke="#8a5a34" stroke-width="2.5"/>
+        <circle cx="28" cy="18" r="15" fill="#f6c453" opacity=".25"/><rect x="24" y="11" width="8" height="12" rx="1.5" fill="#f6c453"/><path d="M28 3 V11 M23 11 H33 M23 23 H33" stroke="#3b2a18" stroke-width="1.5"/>
+        <rect x="0" y="66" width="160" height="34" fill="${floor}"/>${extra}`
+    BACKDROPS.stall = room('#6b4226', '#573419', '#4a2e17',
+      `<rect x="0" y="50" width="160" height="5" fill="#8a5a34"/>${[30, 80, 130].map(x => `<rect x="${x}" y="50" width="4" height="40" fill="#8a5a34"/>`).join('')}
+       <rect x="122" y="74" width="34" height="20" rx="2" fill="#d9b24c"/><path d="M122 81 H156 M122 87 H156" stroke="#b48d2f" stroke-width="1"/>`)
+    BACKDROPS.bakst = room('#efe3cf', '#dccdb2', '#7a5230',
+      `<rect x="56" y="18" width="46" height="48" rx="3" fill="#b9b3ab"/><path d="M66 66 V46 Q79 34 92 46 V66Z" fill="#2b2b33"/><path d="M70 66 Q79 50 88 66Z" fill="#f08a2c"/><path d="M75 66 Q79 57 83 66Z" fill="#f6c453"/>
+       <rect x="6" y="70" width="148" height="7" rx="2" fill="#b98548"/>`)
+    BACKDROPS.stue = room('#7c3b33', '#69302a', '#5b3a22',
+      `<rect x="58" y="26" width="44" height="40" fill="#8f8a84"/><rect x="54" y="22" width="52" height="6" fill="#6f6a64"/><path d="M66 66 V46 H94 V66Z" fill="#2b2b33"/><path d="M72 66 Q80 48 88 66Z" fill="#f08a2c"/>
+       <path d="M56 26 Q80 34 104 26" stroke="#1f5c3a" stroke-width="3" fill="none"/><rect x="62" y="28" width="5" height="9" rx="2" fill="#b3262d"/><rect x="93" y="28" width="5" height="9" rx="2" fill="#b3262d"/>
+       <ellipse cx="80" cy="86" rx="46" ry="8" fill="#a8473d"/>`)
+    BACKDROPS.stabbur = `<rect width="160" height="100" fill="#5e3b22"/>
+        ${[20, 40, 60, 80, 100, 120, 140].map(x => `<path d="M${x} 0 V100" stroke="#4d2f1a" stroke-width="1"/>`).join('')}
+        <circle cx="80" cy="6" r="22" fill="#f6c453" opacity=".22"/>
+        <rect x="6" y="38" width="148" height="4" fill="#b98548"/><rect x="6" y="56" width="148" height="4" fill="#b98548"/><rect x="6" y="74" width="148" height="4" fill="#b98548"/>
+        <rect x="6" y="6" width="4" height="90" fill="#9a6b36"/><rect x="150" y="6" width="4" height="90" fill="#9a6b36"/>`
+    BACKDROPS.sti = `${SKY}${STARS}<circle cx="134" cy="14" r="6" fill="#fdf3c4"/>
+        <path d="M0 52 Q40 42 80 50 T160 46 V100 H0Z" fill="#c9d6ea"/>
+        ${spruce(2, 54, 1)}${spruce(142, 52, 1.1)}${spruce(70, 44, .6)}
+        <path d="M0 66 Q50 58 100 66 T160 62 V100 H0Z" fill="#f4f8fc"/>
+        <path d="M0 84 Q80 74 160 84 V100 H0Z" fill="#dbe4f0"/>`
+
+    const backdropSvg = (name: string) =>
+      `<svg class="tg-backdrop" viewBox="0 0 160 100" preserveAspectRatio="xMidYMid slice" aria-hidden="true">${BACKDROPS[name] ?? BACKDROPS.tun}</svg>`
+    const sceneArt = (p: Place) =>
+      p.sceneImageUrl
+        ? `<img class="tg-backdrop" src="${esc(p.sceneImageUrl)}" alt="${esc(p.sceneAlt ?? '')}">`
+        : backdropSvg(p.backdrop ?? 'tun')
+
+    const birdSvg = (c: string[] = []) => {
+      const [body = '#777', breast = '#ddd', cap = '#222'] = c
+      return `<svg viewBox="0 0 40 34" aria-hidden="true"><path d="M9 22 Q4 13 0 11 Q5 22 9 27Z" fill="${body}"/><ellipse cx="19" cy="20" rx="13" ry="10" fill="${body}"/><ellipse cx="21" cy="23" rx="8.5" ry="6.5" fill="${breast}"/><circle cx="29" cy="11" r="7" fill="${cap}"/><circle cx="30.5" cy="13.5" r="3.6" fill="#fff" opacity=".85"/><circle cx="31.5" cy="10" r="1.5" fill="#fff"/><circle cx="31.9" cy="10" r=".8" fill="#111"/><path d="M35.5 10.5 l4.5 1.6 l-4.5 1.6z" fill="#e0a030"/><path d="M17 30 v3.5 M22 30 v3.5" stroke="#3b2a18" stroke-width="1.3" stroke-linecap="round"/></svg>`
+    }
+    const HAT = pic('nisselue', 'tg-tally-icon')
+    const itemArt = (i: Item) =>
+      i.imageUrl ? `<img src="${esc(i.imageUrl)}" alt="">`
+      : i.colors ? birdSvg(i.colors)
+      : `<span aria-hidden="true">${esc(i.emoji ?? '❔')}</span>`
+
+    // The children's face depends on what is said: a question points, an
+    // exclamation is surprised, the rest waves. Lines can set a pose themselves.
+    const poseFor = (line: Line): Pose =>
+      line.pose ?? (/\?/.test(line.text) ? 'peker' : /!/.test(line.text) ? 'overrasket' : 'hei')
+    const avatarFor = (who: Who, pose: Pose): string | null =>
+      who === 'jente' || who === 'gutt' ? `/images/tryllegarden/ansikt/${who}-${pose}.webp`
+      : who === 'nisse' ? '/images/tryllegarden/ansikt/nisse.webp'
+      : null
+    const whoName = (who: Who) =>
+      who === 'jente' ? data.names.jente
+      : who === 'gutt' ? data.names.gutt
+      : who === 'nisse' ? t('Lapp fra nissen', 'A note from the nisse')
+      : ''
+    function bubble(line: Line): string {
+      const text = L(line, 'text')
+      const avatar = avatarFor(line.who, poseFor(line))
+      return `<div class="tg-bubble tg-bubble--${line.who}">
+        ${avatar ? `<img class="tg-avatar" src="${avatar}" alt="" width="80" height="80">` : `<span class="tg-avatar tg-avatar--book" aria-hidden="true">📖</span>`}
+        <div class="tg-bubble-body">${whoName(line.who) ? `<p class="tg-who">${esc(whoName(line.who))}</p>` : ''}<p class="tg-text">${esc(text)}</p></div>
+        ${sayBtn(text)}
+      </div>`
+    }
+    /** Whole figures standing together, for the happy moments. */
+    const figures = (names: string[]) =>
+      `<div class="tg-figs" aria-hidden="true">${names.map(n => `<img src="/images/tryllegarden/figur/${n}.webp" alt="" loading="lazy">`).join('')}</div>`
+    /** The nisse peeking out: one of two pictures, always the same for a place. */
+    const peekFor = (key: string) => `/images/tryllegarden/titt/titt-${(key.length % 2) + 1}.webp`
+
+    // ── Linja øverst: kart, nivå, opplesing, språk ───────────────
+    /** Set while a mini-game is on screen: restarts it on the new level. */
+    let restartGame: (() => void) | null = null
+
+    function renderBar() {
+      bar.hidden = store.level === null
+      bar.innerHTML = `
+        <button type="button" class="tg-chip" data-act="map">🗺️ <span>${t('Gården', 'The farm')}</span></button>
+        <div class="tg-levels" role="group" aria-label="${t('Vanskelighetsgrad', 'Difficulty')}">
+          ${LEVELS.map(l => `<button type="button" class="tg-chip${l === level() ? ' is-on' : ''}" data-level="${l}" aria-pressed="${l === level()}" title="${esc(LEVEL_NAMES[l].age)}">${LEVEL_NAMES[l].icon} <span>${esc(LEVEL_NAMES[l].name)}</span></button>`).join('')}
+        </div>
+        <button type="button" class="tg-chip tg-speech-only${store.read ? ' is-on' : ''}" data-act="read" aria-pressed="${!!store.read}">🔊 <span>${t('Les for meg', 'Read to me')}</span></button>
+        ${data.englishEnabled ? `<button type="button" class="tg-chip" data-act="lang" lang="${lang === 'en' ? 'nb' : 'en'}">${lang === 'en' ? '🇳🇴 <span>Norsk</span>' : '🇬🇧 <span>English</span>'}</button>` : ''}`
+    }
+    bar.addEventListener('click', e => {
+      const btn = (e.target as HTMLElement).closest('button') as HTMLButtonElement | null
+      if (!btn) return
+      const newLevel = btn.dataset.level as Level | undefined
+      if (newLevel) {
+        if (newLevel === store.level) return
+        store.level = newLevel
+        save()
+        renderBar()
+        toast(t(`Nå er du ${LEVEL_NAMES[newLevel].name}.`, `You are now ${LEVEL_NAMES[newLevel].name}.`))
+        restartGame?.()
+        return
+      }
+      if (btn.dataset.act === 'map') renderMap()
+      if (btn.dataset.act === 'read') {
+        store.read = !store.read
+        save()
+        if (!store.read) hush()
+        renderBar()
+      }
+      if (btn.dataset.act === 'lang') {
+        store.lang = lang === 'en' ? 'nb' : 'en'
+        save()
+        location.reload()
+      }
+    })
+
+    // ── Start ────────────────────────────────────────────────────
+    function renderStart() {
+      restartGame = null
+      const intro = L(season, 'intro')
+      const started = store.level !== null
+      show(`<div class="tg-card tg-start">
+        ${season.heroImageUrl ? `<img class="tg-hero-img" src="${esc(season.heroImageUrl)}" alt="${esc(season.heroAlt ?? '')}">` : ''}
+        <p class="tg-kicker">${t('Tryllemuseet for barn', 'Tryllemuseet for children')}</p>
+        <h1 class="tg-title" tabindex="-1" data-focus>${esc(L(season, 'title'))}</h1>
+        ${season.subtitle ? `<p class="tg-subtitle">${esc(L(season, 'subtitle'))}</p>` : ''}
+        <p class="tg-lead">${esc(intro)} ${sayBtn(intro)}</p>
+        <h2 class="tg-h2">${started ? t('Hvem er du i dag?', 'Who are you today?') : t('Hvem er du?', 'Who are you?')}</h2>
+        <div class="tg-pick">
+          ${LEVELS.map(l => `<button type="button" class="tg-pick-btn${l === store.level ? ' is-on' : ''}" data-pick="${l}">
+            <span class="tg-pick-icon" aria-hidden="true">${LEVEL_NAMES[l].icon}</span>
+            <strong>${esc(LEVEL_NAMES[l].name)}</strong>
+            <span>${esc(LEVEL_NAMES[l].age)}</span>
+          </button>`).join('')}
+        </div>
+        <p class="tg-note">${t('Du kan bytte når som helst. Ingen kan tape her.', 'You can change at any time. Nobody can lose here.')}</p>
+        <p class="tg-center"><button type="button" class="tg-link" id="tg-havecode" aria-expanded="false" aria-controls="tg-codeform">${t('Har du en lagrekode fra før?', 'Do you have a save code?')}</button></p>
+        <form class="tg-codeform" id="tg-codeform" hidden>
+          <label for="tg-code">${t('Skriv inn lagrekoden din', 'Type your save code')}</label>
+          <div class="tg-codeform-row">
+            <input id="tg-code" name="code" type="text" inputmode="text" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="${esc(season.key.toUpperCase().replace(/[^A-Z0-9]/g, ''))}-XXXXX-XXXXX-XXXXX" aria-describedby="tg-codeerr">
+            <button type="submit" class="tg-btn">${t('Fortsett', 'Continue')}</button>
+          </div>
+          <p class="tg-codeerr" id="tg-codeerr" role="alert"></p>
+        </form>
+      </div>`)
+      const form = root.querySelector<HTMLFormElement>('#tg-codeform')!
+      const toggle = root.querySelector<HTMLButtonElement>('#tg-havecode')!
+      toggle.addEventListener('click', () => {
+        form.hidden = !form.hidden
+        toggle.setAttribute('aria-expanded', String(!form.hidden))
+        if (!form.hidden) form.querySelector<HTMLInputElement>('input')!.focus()
+      })
+      form.addEventListener('submit', e => {
+        e.preventDefault()
+        const err = form.querySelector<HTMLElement>('#tg-codeerr')!
+        const result = decodeProgress(form.querySelector('input')!.value, season.key, season.places)
+        if (!result.ok) {
+          err.textContent = result.reason === 'season'
+            ? t('Den koden hører til en annen sesong.', 'That code belongs to a different season.')
+            : t('Koden stemmer ikke. Sjekk at du har skrevet den riktig.', 'The code is not right. Check that you typed it correctly.')
+          return
+        }
+        const merged = mergeProgress(mine, result)
+        mine.done = merged.done
+        mine.hats = merged.hats
+        mine.finale = merged.finale
+        if (result.level) store.level = result.level
+        if (result.read !== null && store.read === null) store.read = result.read
+        save()
+        renderBar()
+        renderMap()
+        toast(t('Fremgangen din er hentet!', 'Your progress is back!'))
+      })
+      root.querySelectorAll<HTMLButtonElement>('[data-pick]').forEach(btn =>
+        btn.addEventListener('click', () => {
+          store.level = btn.dataset.pick as Level
+          // The youngest get everything read aloud unless they have chosen otherwise.
+          if (store.read === null) store.read = store.level === 'smanisse'
+          save()
+          renderBar()
+          renderMap()
+        }),
+      )
+    }
+
+    // ── Kartet og treet ──────────────────────────────────────────
+    const TREE_SLOTS = [[50, 40], [36, 60], [64, 60], [50, 72], [28, 82], [72, 82], [44, 88], [58, 52], [60, 90]]
+    const allDone = () => season.places.every(p => mine.done[p.key])
+
+    function renderMap(celebrate?: string) {
+      restartGame = null
+      const doneCount = season.places.filter(p => mine.done[p.key]).length
+      const hats = season.places.filter(p => mine.hats.includes(p.key)).length
+      const smor = season.places.filter(p => mine.done[p.key]?.smor).length
+      const collection = L(season, 'collectionName')
+      const ornaments = season.places
+        .map((p, i) => ({ p, slot: TREE_SLOTS[i % TREE_SLOTS.length] }))
+        .filter(o => mine.done[o.p.key])
+        .map(o => `<span class="tg-ornament${o.p.key === celebrate ? ' is-new' : ''}" style="left:${o.slot[0]}%;top:${o.slot[1]}%" aria-hidden="true">${ornamentOf(o.p)}</span>`)
+        .join('')
+      const status = allDone()
+        ? (mine.finale ? t('Stjerna lyser på toppen!', 'The star is shining on top!') : t('All pynten henger! Nå mangler bare stjerna.', 'All the ornaments are up! Only the star is missing.'))
+        : t(`${doneCount} av ${season.places.length} pynt henger på treet.`, `${doneCount} of ${season.places.length} ornaments are on the tree.`)
+      const where = t('Hvor vil du gå?', 'Where do you want to go?')
+
+      show(`<div class="tg-card">
+        <div class="tg-head"><h1 class="tg-h1" tabindex="-1" data-focus>${esc(fill('{gard}'))}</h1>${sayBtn(`${where} ${status}`)}</div>
+        <p class="tg-lead tg-lead--tight">${esc(where)}</p>
+        <div class="tg-scene tg-map">
+          ${season.mapImageUrl ? `<img class="tg-backdrop" src="${esc(season.mapImageUrl)}" alt="${esc(season.mapAlt ?? '')}">` : backdropSvg('map')}
+          <div class="tg-tree" role="img" aria-label="${esc(`${collection}. ${status}`)}">
+            <svg viewBox="0 0 60 80" aria-hidden="true"><rect x="26" y="68" width="8" height="12" fill="#6b4226"/><path d="M30 6 L10 34 H20 L6 54 H18 L4 72 H56 L42 54 H54 L40 34 H50Z" fill="#1f5c3a"/><path d="M30 6 L22 18 Q30 22 38 18Z" fill="#f4f8fc"/></svg>
+            ${ornaments}
+            ${mine.finale ? `<span class="tg-treetop" aria-hidden="true">${topOf('tg-top-img')}</span>` : ''}
+          </div>
+          ${season.places.map(p => `<button type="button" class="tg-spot${mine.done[p.key] ? ' is-done' : ''}" data-place="${esc(p.key)}" style="left:${p.mapX}%;top:${p.mapY}%">
+            <span class="tg-spot-icon" aria-hidden="true">${esc(p.icon)}</span>
+            <span class="tg-spot-name">${esc(L(p, 'title'))}${mine.done[p.key] ? ` <span aria-hidden="true">✓</span><span class="tg-sr">${t(' (ferdig)', ' (done)')}</span>` : ''}</span>
+          </button>`).join('')}
+        </div>
+        <p class="tg-status">${esc(status)}</p>
+        <ul class="tg-tally">
+          <li>${HAT} ${t(`Nisseluer funnet: ${hats} av ${season.places.length}`, `Nisse hats found: ${hats} of ${season.places.length}`)}</li>
+          <li>${pic('smor', 'tg-tally-icon')} ${t(`Smørøyne: ${smor}`, `Butter-eyes: ${smor}`)} <small>${t('(for steder uten hint)', '(for places done without hints)')}</small></li>
+        </ul>
+        <p class="tg-center"><button type="button" class="tg-btn tg-btn--ghost" id="tg-savecode" aria-expanded="false" aria-controls="tg-codebox">💾 ${t('Lagre fremgang', 'Save progress')}</button></p>
+        <div class="tg-fact" id="tg-codebox" hidden></div>
+        ${allDone() ? `<p class="tg-center"><button type="button" class="tg-btn tg-btn--glow" data-act="finale">${topOf('tg-btn-icon')} ${esc(mine.finale ? L(season, 'loftName') : L(season, 'finaleTitle'))}</button></p>` : ''}
+      </div>`)
+      root.querySelectorAll<HTMLButtonElement>('[data-place]').forEach(btn =>
+        btn.addEventListener('click', () => {
+          const place = season.places.find(p => p.key === btn.dataset.place)
+          if (place) runPlace(place)
+        }),
+      )
+      root.querySelector('[data-act="finale"]')?.addEventListener('click', () => runFinale())
+      root.querySelector<HTMLButtonElement>('#tg-savecode')!.addEventListener('click', e => {
+        const btn = e.currentTarget as HTMLButtonElement
+        const box = root.querySelector<HTMLElement>('#tg-codebox')!
+        if (!box.hidden) { box.hidden = true; btn.setAttribute('aria-expanded', 'false'); return }
+        const code = encodeProgress(season.key, season.places, mine, { level: store.level, read: store.read })
+        box.innerHTML = `
+          <h2 class="tg-h2">${t('Din lagrekode', 'Your save code')}</h2>
+          <p class="tg-code" id="tg-codetext">${esc(code)}</p>
+          <p>${t('Skriv den ned eller send den til deg selv. På en annen mobil eller PC trykker du «Har du en lagrekode fra før?» på startsiden og skriver inn koden. Da fortsetter du der du slapp.', 'Write it down or send it to yourself. On another phone or computer, tap “Do you have a save code?” on the start page and type it in. Then you carry on where you left off.')}</p>
+          <p class="tg-center"><button type="button" class="tg-btn tg-btn--ghost" id="tg-copycode">📋 ${t('Kopier koden', 'Copy the code')}</button></p>`
+        box.hidden = false
+        btn.setAttribute('aria-expanded', 'true')
+        askPersist()
+        box.querySelector('#tg-copycode')!.addEventListener('click', async () => {
+          try {
+            await navigator.clipboard.writeText(code)
+            toast(t('Koden er kopiert.', 'The code is copied.'))
+          } catch {
+            // No clipboard access: select the text so it can be copied by hand.
+            const range = document.createRange()
+            range.selectNodeContents(box.querySelector('#tg-codetext')!)
+            const sel = window.getSelection(); sel?.removeAllRanges(); sel?.addRange(range)
+            toast(t('Trykk og hold på koden for å kopiere.', 'Press and hold the code to copy it.'))
+          }
+        })
+        box.scrollIntoView({ block: 'nearest', behavior: 'smooth' })
+      })
+      if (celebrate) toast(t('Pynten henger på treet!', 'The ornament is on the tree!'))
+      auto(`${where} ${status}`)
+    }
+
+    // ── Samtale: én replikk om gangen ────────────────────────────
+    function dialog(title: string, lines: Line[], nextLabel: string, onEnd: () => void) {
+      show(`<div class="tg-card">
+        <h1 class="tg-h1" tabindex="-1" data-focus>${esc(title)}</h1>
+        <div class="tg-talk" id="tg-talk"></div>
+        <p class="tg-center"><button type="button" class="tg-btn" id="tg-next"></button></p>
+      </div>`)
+      const talk = root.querySelector('#tg-talk')!
+      const next = root.querySelector<HTMLButtonElement>('#tg-next')!
+      let i = 0
+      const step = () => {
+        if (i >= lines.length) { onEnd(); return }
+        talk.insertAdjacentHTML('beforeend', bubble(lines[i]))
+        const el = talk.lastElementChild!
+        auto(L(lines[i], 'text'), el)
+        i++
+        next.textContent = i >= lines.length ? nextLabel : t('Videre ▶', 'Next ▶')
+        el.scrollIntoView({ block: 'nearest', behavior: 'smooth' })
+      }
+      next.addEventListener('click', step)
+      if (lines.length === 0) onEnd()
+      else step()
+    }
+
+    // ── Et sted: samtale → minispill → visste du at → nissens triks ─
+    interface GameApi { msg: (text: string, speakIt?: boolean) => void; done: () => void; wait: typeof wait }
+    interface Game { reveal: () => void }
+
+    function runPlace(place: Place) {
+      const title = L(place, 'title')
+      dialog(title, place.intro, t('Jeg hjelper til!', 'I will help!'), () => playGame(place))
+    }
+
+    /** Mechanics played below the picture: the scene is only a strip of decor. */
+    const SHORT_SCENE = ['rekkefolge', 'folg-traden', 'monster', 'flett']
+
+    function playGame(place: Place) {
+      const title = L(place, 'title')
+      const task = L(place, 'task')
+      const hints = (lang === 'en' && place.hintsEn?.length ? place.hintsEn : place.hints ?? []).map(fill)
+      let hintStep = 0
+      let finished = false
+      restartGame = () => playGame(place)
+
+      show(`<div class="tg-card tg-game tg-lvl-${level()}">
+        <div class="tg-head"><h1 class="tg-h1" tabindex="-1" data-focus>${esc(title)}</h1>${sayBtn(task)}</div>
+        <p class="tg-task">${esc(task)}</p>
+        <div class="tg-scene${SHORT_SCENE.includes(place.mechanic) ? (place.sceneImageUrl ? ' tg-scene--mid' : ' tg-scene--short') : ''}" id="tg-scene">
+          ${sceneArt(place)}
+          ${place.nisseX != null && place.nisseY != null ? `<button type="button" class="tg-hat${place.nisseInScene ? ' tg-hat--ghost' : ''}${mine.hats.includes(place.key) ? ' is-found' : ''}" id="tg-hat" style="left:${place.nisseX}%;top:${place.nisseY}%" aria-label="${t('Noe rødt som stikker fram', 'Something red peeking out')}">${place.nisseInScene ? '' : `<img src="${peekFor(place.key)}" alt="">`}</button>` : ''}
+        </div>
+        <div id="tg-board"></div>
+        <p class="tg-msg" id="tg-msg" role="status" aria-live="polite"></p>
+        <p class="tg-center"><button type="button" class="tg-btn tg-btn--ghost" id="tg-hint">🤫 ${t('Nissen hvisker', 'The nisse whispers')}</button></p>
+      </div>`)
+      const scene = root.querySelector<HTMLElement>('#tg-scene')!
+      const board = root.querySelector<HTMLElement>('#tg-board')!
+      const msgEl = root.querySelector<HTMLElement>('#tg-msg')!
+      const hintBtn = root.querySelector<HTMLButtonElement>('#tg-hint')!
+
+      const api: GameApi = {
+        msg(text, speakIt = true) {
+          msgEl.textContent = text
+          if (speakIt) auto(text, msgEl)
+        },
+        done() {
+          if (finished) return
+          finished = true
+          restartGame = null
+          hintBtn.disabled = true
+          window.setTimeout(() => afterGame(place, hintStep === 0), 900)
+        },
+        wait,
+      }
+
+      root.querySelector('#tg-hat')?.addEventListener('click', e => {
+        const hat = e.currentTarget as HTMLElement
+        if (!mine.hats.includes(place.key)) {
+          mine.hats.push(place.key)
+          save()
+        }
+        hat.classList.add('is-found')
+        toast(t('Hihi! Du fant nissen. Han gjemmer seg på alle stedene.', 'Hee hee! You found the nisse. He hides in every place.'))
+      })
+
+      const game: Game =
+        place.mechanic === 'rekkefolge' ? gameOrder(place, board, api)
+        : place.mechanic === 'husk' ? gameRemember(place, scene, board, api)
+        : place.mechanic === 'folg-traden' ? gameThread(place, board, api)
+        : place.mechanic === 'monster' ? gamePattern(place, board, api)
+        : place.mechanic === 'flett' ? gameWeave(place, board, api)
+        : place.mechanic === 'forandret' ? gameChanged(place, scene, board, api)
+        : place.mechanic === 'tenn' ? gameLights(place, scene, board, api)
+        : gameFind(place, scene, board, api)
+
+      hintBtn.addEventListener('click', () => {
+        if (finished) return
+        hintStep = Math.min(hintStep + 1, 3)
+        if (hintStep <= 2 && hints[hintStep - 1]) {
+          api.msg(hints[hintStep - 1])
+        } else {
+          hintStep = 3
+          game.reveal()
+          api.msg(t('Se der det lyser!', 'Look where it glows!'))
+        }
+        hintBtn.textContent = `🤫 ${t('Nissen hvisker', 'The nisse whispers')} (${hintStep}/3)`
+      })
+      auto(task)
+    }
+
+    // Minispill 1: finn tingene i bildet.
+    function gameFind(place: Place, scene: HTMLElement, board: HTMLElement, api: GameApi): Game {
+      const items = forLevel(place.items)
+      const found = new Set<string>()
+      scene.insertAdjacentHTML('beforeend', items.map(i =>
+        `<button type="button" class="tg-thing" data-k="${esc(i.key)}" style="left:${i.x ?? 50}%;top:${i.y ?? 50}%" aria-label="${esc(L(i, 'label'))}">${itemArt(i)}</button>`,
+      ).join(''))
+      board.innerHTML = `<ul class="tg-checklist">${items.map(i =>
+        `<li data-k="${esc(i.key)}">${itemArt(i)} <span>${esc(L(i, 'label'))}</span></li>`).join('')}</ul>`
+      scene.querySelectorAll<HTMLButtonElement>('.tg-thing').forEach(btn =>
+        btn.addEventListener('click', () => {
+          const key = btn.dataset.k!
+          if (found.has(key)) return
+          found.add(key)
+          btn.classList.remove('is-hint')
+          btn.classList.add('is-found')
+          board.querySelector(`li[data-k="${key}"]`)?.classList.add('is-found')
+          const item = items.find(i => i.key === key)!
+          const left = items.length - found.size
+          api.msg(left === 0
+            ? t(`${L(item, 'label')}! Du fant alt!`, `${L(item, 'label')}! You found everything!`)
+            : t(`${L(item, 'label')}! ${left} igjen.`, `${L(item, 'label')}! ${left} to go.`))
+          if (left === 0) api.done()
+        }),
+      )
+      return {
+        reveal() {
+          const next = items.find(i => !found.has(i.key))
+          if (next) scene.querySelector(`.tg-thing[data-k="${next.key}"]`)?.classList.add('is-hint')
+        },
+      }
+    }
+
+    // Minispill 2: riktig rekkefølge.
+    function gameOrder(place: Place, board: HTMLElement, api: GameApi): Game {
+      const items = forLevel(place.items)
+      const steps = items.filter(i => !i.decoy).sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
+      const cards = shuffle(items)
+      let next = 0
+      let wrong = 0
+      board.innerHTML = `
+        <ol class="tg-slots">${steps.map((_, n) => `<li class="tg-slot" data-n="${n}"><span class="tg-slot-num">${n + 1}</span><span class="tg-slot-body"></span></li>`).join('')}</ol>
+        <div class="tg-cards">${cards.map(i => `<button type="button" class="tg-cardbtn" data-k="${esc(i.key)}">${itemArt(i)} <span>${esc(L(i, 'label'))}</span></button>`).join('')}</div>`
+      const cardEl = (key: string) => board.querySelector<HTMLButtonElement>(`.tg-cardbtn[data-k="${key}"]`)
+      const reveal = () => { if (steps[next]) cardEl(steps[next].key)?.classList.add('is-hint') }
+      board.querySelectorAll<HTMLButtonElement>('.tg-cardbtn').forEach(btn =>
+        btn.addEventListener('click', () => {
+          const item = items.find(i => i.key === btn.dataset.k)!
+          if (item.decoy) {
+            btn.disabled = true
+            btn.classList.add('is-out')
+            api.msg(L(item, 'wrong') || t('Den hører ikke hjemme her!', 'That one does not belong here!'))
+            return
+          }
+          if (item.key !== steps[next].key) {
+            wrong++
+            btn.classList.remove('is-shake')
+            void btn.offsetWidth
+            btn.classList.add('is-shake')
+            api.msg(t('Ikke helt ennå. Hva må skje før det?', 'Not quite yet. What has to happen before that?'))
+            // The youngest are shown the way after two tries.
+            if (level() === 'smanisse' && wrong >= 2) reveal()
+            return
+          }
+          wrong = 0
+          const slot = board.querySelector(`.tg-slot[data-n="${next}"]`)!
+          slot.classList.add('is-filled')
+          slot.querySelector('.tg-slot-body')!.innerHTML = `${itemArt(item)} <span>${esc(L(item, 'label'))}</span>`
+          btn.hidden = true
+          next++
+          if (next === steps.length) {
+            api.msg(t('Ferdig! Alt i riktig rekkefølge.', 'Done! Everything in the right order.'))
+            api.done()
+          } else {
+            api.msg(t('Riktig! Hva kommer så?', 'Right! What comes next?'), false)
+          }
+        }),
+      )
+      return { reveal }
+    }
+
+    // Minispill 3: husk rekkefølgen.
+    function gameRemember(place: Place, scene: HTMLElement, board: HTMLElement, api: GameApi): Game {
+      const birds = forLevel(place.items)
+      const params = place.levels?.[level()] ?? {}
+      const rounds = params.rounds?.length ? params.rounds : [2, 3]
+      let round = 0
+      let seq: Item[] = []
+      let pos = 0
+      let busy = true
+      let alive = true
+      const backwards = () => !!params.reverse && round === rounds.length - 1
+      const expected = () => (backwards() ? seq[seq.length - 1 - pos] : seq[pos])
+
+      scene.insertAdjacentHTML('beforeend', birds.map(i =>
+        `<button type="button" class="tg-bird" data-k="${esc(i.key)}" style="left:${i.x ?? 50}%;top:${i.y ?? 50}%">${itemArt(i)}<span class="tg-bird-name">${esc(L(i, 'label'))}</span></button>`,
+      ).join(''))
+      board.innerHTML = `<p class="tg-center"><button type="button" class="tg-btn tg-btn--ghost" id="tg-again">🔁 ${t('Vis en gang til', 'Show me again')}</button></p>`
+      const el = (key: string) => scene.querySelector<HTMLButtonElement>(`.tg-bird[data-k="${key}"]`)!
+      const clearHints = () => scene.querySelectorAll('.is-hint').forEach(b => b.classList.remove('is-hint'))
+      // Leaving the place (or changing level) stops a running sequence.
+      const here = () => alive && scene.isConnected
+
+      async function play() {
+        busy = true
+        pos = 0
+        clearHints()
+        api.msg(t('Se nøye etter!', 'Watch closely!'))
+        await wait(900)
+        for (const b of seq) {
+          if (!here()) return
+          el(b.key).classList.add('is-on')
+          await wait(850)
+          if (!here()) return
+          el(b.key).classList.remove('is-on')
+          await wait(300)
+        }
+        if (!here()) return
+        busy = false
+        api.msg(backwards()
+          ? t('Din tur! Denne gangen baklengs: den siste fuglen først.', 'Your turn! Backwards this time: the last bird first.')
+          : t('Din tur! Trykk på fuglene i samme rekkefølge.', 'Your turn! Tap the birds in the same order.'))
+      }
+      function newRound() {
+        seq = []
+        for (let n = 0; n < rounds[round]; n++) {
+          // Never the same bird twice in a row.
+          const pool = birds.filter(b => b !== seq[seq.length - 1])
+          seq.push(pool[Math.floor(Math.random() * pool.length)])
+        }
+        void play()
+      }
+      scene.querySelectorAll<HTMLButtonElement>('.tg-bird').forEach(btn =>
+        btn.addEventListener('click', async () => {
+          if (busy) return
+          clearHints()
+          if (btn.dataset.k !== expected().key) {
+            busy = true
+            api.msg(t('Oi, det ble ikke helt riktig. Se en gang til!', 'Oops, not quite. Watch once more!'))
+            await wait(1400)
+            if (here()) void play()
+            return
+          }
+          btn.classList.add('is-ok')
+          window.setTimeout(() => btn.classList.remove('is-ok'), 400)
+          pos++
+          if (pos < seq.length) return
+          round++
+          busy = true
+          if (round === rounds.length) {
+            alive = false
+            api.msg(t('Du husket alle sammen!', 'You remembered them all!'))
+            api.done()
+            return
+          }
+          api.msg(t('Flott! Én runde til, litt lengre.', 'Lovely! One more round, a little longer.'))
+          await wait(1600)
+          if (here()) newRound()
+        }),
+      )
+      board.querySelector('#tg-again')!.addEventListener('click', () => { if (!busy) void play() })
+      newRound()
+      return { reveal() { if (!busy && expected()) el(expected().key).classList.add('is-hint') } }
+    }
+
+    /** The level's numbers, one per round (see FarmLevelParams.rounds). */
+    const roundsFor = (place: Place, fallback: Record<Level, number[]>) => {
+      const r = place.levels?.[level()]?.rounds
+      return r?.length ? r : fallback[level()]
+    }
+    const pick = <T,>(list: T[]): T => list[Math.floor(Math.random() * list.length)]
+
+    // Minispill 4: følg tråden.
+    function gameThread(place: Place, board: HTMLElement, api: GameApi): Game {
+      const pool = forLevel(place.items)
+      const rounds = roundsFor(place, { smanisse: [3, 3], laerling: [4, 4], mester: [5, 6] })
+      const COLORS = ['#d9423a', '#2f6fc0', '#3d9a55', '#c08a1e', '#8a4fb0', '#1f8f95']
+      let round = 0
+      let goal = 0
+      let ends: number[] = []
+      let locked = false
+
+      function newRound() {
+        const n = Math.max(2, Math.min(rounds[round], pool.length))
+        const things = shuffle(pool).slice(0, n)
+        // ends[i] = which thing the braid from bow i ends at. Never straight down for everyone.
+        do { ends = shuffle(things.map((_, i) => i)) } while (n > 2 && ends.every((e, i) => e === i))
+        goal = Math.floor(Math.random() * n)
+        const xs = things.map((_, i) => ((i + 0.5) * 100) / n)
+        const sameColour = level() !== 'smanisse'
+        const paths = ends.map((e, i) => {
+          // Swing out to another column on the way, so the braids cross.
+          const mid = xs[(i * 2 + 1 + round) % n]
+          const d = `M${xs[i]} 2 C${xs[i]} 16 ${mid} 14 ${mid} 30 C${mid} 46 ${xs[e]} 44 ${xs[e]} 58`
+          const colour = sameColour ? '#d7b46a' : COLORS[i % COLORS.length]
+          return `<g class="tg-braid" data-i="${i}"><path d="${d}" stroke="#3b2a18" stroke-width="4.2"/><path d="${d}" stroke="${colour}" stroke-width="2.6"/></g>`
+        }).join('')
+        board.innerHTML = `
+          <div class="tg-thread" style="--n:${n}">
+            <div class="tg-thread-row">${things.map((_, i) => `<button type="button" class="tg-bow" data-i="${i}" aria-label="${t(`Sløyfe ${i + 1}`, `Bow ${i + 1}`)}"><span aria-hidden="true">🎀</span><b>${i + 1}</b></button>`).join('')}</div>
+            <svg class="tg-thread-svg" viewBox="0 0 100 60" preserveAspectRatio="none" fill="none" stroke-linecap="round" aria-hidden="true">${paths}</svg>
+            <div class="tg-thread-row">${things.map((th, i) => `<span class="tg-end${i === goal ? ' is-goal' : ''}">${itemArt(th)}</span>`).join('')}</div>
+          </div>`
+        const goalLabel = L(things[goal], 'label')
+        api.msg(t(`Hvilken sløyfe har fletta som ender ved ${goalLabel}?`, `Which bow's braid ends at ${goalLabel}?`))
+        locked = false
+        board.querySelectorAll<HTMLButtonElement>('.tg-bow').forEach(btn =>
+          btn.addEventListener('click', async () => {
+            if (locked) return
+            const i = Number(btn.dataset.i)
+            board.querySelectorAll('.tg-braid').forEach(b => b.classList.remove('is-lit', 'is-hint'))
+            board.querySelector(`.tg-braid[data-i="${i}"]`)!.classList.add('is-lit')
+            if (ends[i] !== goal) {
+              api.msg(t(`Den fletta endte ved ${L(things[ends[i]], 'label')}. Prøv en gang til!`, `That braid ended at ${L(things[ends[i]], 'label')}. Try again!`))
+              return
+            }
+            locked = true
+            round++
+            if (round === rounds.length) {
+              api.msg(t('Riktig! Du fulgte alle flettene.', 'Right! You followed every braid.'))
+              api.done()
+              return
+            }
+            api.msg(t('Riktig! Én flette til.', 'Right! One more braid.'))
+            await api.wait(1500)
+            if (board.isConnected) newRound()
+          }),
+        )
+      }
+      newRound()
+      return {
+        reveal() {
+          const i = ends.indexOf(goal)
+          board.querySelector(`.tg-braid[data-i="${i}"]`)?.classList.add('is-hint')
+        },
+      }
+    }
+
+    // Minispill 5: fortsett mønsteret.
+    function gamePattern(place: Place, board: HTMLElement, api: GameApi): Game {
+      const kinds = forLevel(place.items)
+      const rounds = roundsFor(place, { smanisse: [6, 6], laerling: [8, 8], mester: [9, 10] })
+      // The repeating unit of each row; letters become kinds of biscuit.
+      const UNITS: Record<Level, string[]> = {
+        smanisse: ['AB', 'AAB', 'ABB'],
+        laerling: ['ABC', 'AABB', 'ABBC', 'ABAC'],
+        mester:   ['ABCD', 'AABC', 'ABCB', 'ABBCC', 'ABCAD'],
+      }
+      let round = 0
+      let row: Item[] = []
+      let holes: number[] = []
+      let locked = false
+
+      function newRound() {
+        const usable = UNITS[level()].filter(u => new Set(u).size <= kinds.length)
+        const unit = pick(usable.length ? usable : ['AB'])
+        const cast = shuffle(kinds)
+        const length = Math.max(unit.length + 2, rounds[round])
+        row = Array.from({ length }, (_, i) => cast[unit.charCodeAt(i % unit.length) - 65])
+        // The first unit is always whole, so the pattern can be read.
+        const free = row.map((_, i) => i).filter(i => i >= unit.length)
+        const want = level() === 'smanisse' ? 1 : level() === 'laerling' ? 2 : 3
+        holes = level() === 'smanisse'
+          ? [length - 1]
+          : shuffle(free).slice(0, Math.min(want, free.length)).sort((a, b) => a - b)
+        const choices = shuffle([...new Set(row)].concat(level() === 'mester' ? kinds.filter(k => !row.includes(k)).slice(0, 1) : []))
+        board.innerHTML = `
+          <div class="tg-row" role="img" aria-label="${esc(row.map((k, i) => (holes.includes(i) ? '?' : L(k, 'label'))).join(', '))}">
+            ${row.map((k, i) => `<span class="tg-cell${holes.includes(i) ? ' is-hole' : ''}" data-i="${i}">${holes.includes(i) ? '?' : itemArt(k)}</span>`).join('')}
+          </div>
+          <div class="tg-cards">${choices.map(k => `<button type="button" class="tg-cardbtn" data-k="${esc(k.key)}">${itemArt(k)} <span>${esc(L(k, 'label'))}</span></button>`).join('')}</div>`
+        locked = false
+        mark()
+        api.msg(t('Hvilken kake mangler der det lyser?', 'Which biscuit is missing where it glows?'), false)
+        board.querySelectorAll<HTMLButtonElement>('.tg-cardbtn').forEach(btn =>
+          btn.addEventListener('click', async () => {
+            if (locked || !holes.length) return
+            board.querySelectorAll('.is-hint').forEach(b => b.classList.remove('is-hint'))
+            const at = holes[0]
+            if (btn.dataset.k !== row[at].key) {
+              btn.classList.remove('is-shake')
+              void btn.offsetWidth
+              btn.classList.add('is-shake')
+              api.msg(t('Ikke den. Si mønsteret høyt fra starten!', 'Not that one. Say the pattern aloud from the start!'))
+              return
+            }
+            const cell = board.querySelector(`.tg-cell[data-i="${at}"]`)!
+            cell.classList.remove('is-hole', 'is-now')
+            cell.classList.add('is-filled')
+            cell.innerHTML = itemArt(row[at])
+            holes.shift()
+            if (holes.length) { mark(); return }
+            locked = true
+            round++
+            if (round === rounds.length) {
+              api.msg(t('Alle kakene er på plass!', 'Every biscuit is in place!'))
+              api.done()
+              return
+            }
+            api.msg(t('Riktig! En ny rad.', 'Right! A new row.'))
+            await api.wait(1400)
+            if (board.isConnected) newRound()
+          }),
+        )
+      }
+      function mark() {
+        board.querySelectorAll('.is-now').forEach(c => c.classList.remove('is-now'))
+        board.querySelector(`.tg-cell[data-i="${holes[0]}"]`)?.classList.add('is-now')
+      }
+      newRound()
+      return {
+        reveal() {
+          if (holes.length) board.querySelector(`.tg-cardbtn[data-k="${row[holes[0]].key}"]`)?.classList.add('is-hint')
+        },
+      }
+    }
+
+    // Minispill 6: flett kurven.
+    function gameWeave(place: Place, board: HTMLElement, api: GameApi): Game {
+      const rounds = roundsFor(place, { smanisse: [2, 3], laerling: [3, 4], mester: [4, 5] })
+      const [on, off] = [place.items[0], place.items[1] ?? place.items[0]]
+      const onColour = on?.colors?.[0] ?? '#b3262d'
+      const offColour = off?.colors?.[0] ?? '#ffffff'
+      const PATTERNS: ((r: number, c: number) => boolean)[] = [
+        (r, c) => (r + c) % 2 === 0,
+        (r, c) => (r + c) % 3 === 0,
+        (r, c) => ((r >> 1) + (c >> 1)) % 2 === 0,
+        (r, c) => r % 2 === 0,
+      ]
+      let round = 0
+      let size = 2
+      let target: boolean[] = []
+      let state: boolean[] = []
+      let locked = false
+
+      const grid = (cells: boolean[], cls: string, live: boolean) =>
+        `<div class="tg-weave ${cls}" style="--n:${size}">${cells.map((v, i) => live
+          ? `<button type="button" class="tg-sq" data-i="${i}" aria-pressed="${v}" aria-label="${t(`Rad ${Math.floor(i / size) + 1}, rute ${(i % size) + 1}`, `Row ${Math.floor(i / size) + 1}, square ${(i % size) + 1}`)}: ${esc(L(v ? on : off, 'label'))}" style="background:${v ? onColour : offColour}"></button>`
+          : `<span class="tg-sq" style="background:${v ? onColour : offColour}"></span>`).join('')}</div>`
+
+      function newRound() {
+        size = rounds[round]
+        // The plain basket weave for the youngest; other weaves for the masters.
+        const make = level() === 'mester' ? pick(PATTERNS) : PATTERNS[0]
+        target = Array.from({ length: size * size }, (_, i) => make(Math.floor(i / size), i % size))
+        state = target.map(() => false)
+        board.innerHTML = `<div class="tg-weave-wrap">
+          <figure><figcaption>${t('Mønsteret', 'The pattern')}</figcaption>${grid(target, 'tg-weave--small', false)}</figure>
+          <figure><figcaption>${t('Kurven din', 'Your basket')}</figcaption>${grid(state, '', true)}</figure>
+        </div>`
+        locked = false
+        board.querySelectorAll<HTMLButtonElement>('button.tg-sq').forEach(btn =>
+          btn.addEventListener('click', async () => {
+            if (locked) return
+            const i = Number(btn.dataset.i)
+            state[i] = !state[i]
+            btn.classList.remove('is-hint')
+            btn.style.background = state[i] ? onColour : offColour
+            btn.setAttribute('aria-pressed', String(state[i]))
+            btn.setAttribute('aria-label', btn.getAttribute('aria-label')!.replace(/: .*$/, `: ${L(state[i] ? on : off, 'label')}`))
+            if (state.some((v, n) => v !== target[n])) return
+            locked = true
+            round++
+            if (round === rounds.length) {
+              api.msg(t('Kurven er ferdig flettet!', 'The basket is woven!'))
+              api.done()
+              return
+            }
+            api.msg(t('Helt likt! Nå en litt større kurv.', 'Just the same! Now a slightly bigger basket.'))
+            await api.wait(1500)
+            if (board.isConnected) newRound()
+          }),
+        )
+      }
+      newRound()
+      return {
+        reveal() {
+          const i = state.findIndex((v, n) => v !== target[n])
+          if (i >= 0) board.querySelector(`button.tg-sq[data-i="${i}"]`)?.classList.add('is-hint')
+        },
+      }
+    }
+
+    // Minispill 7: hva er forandret?
+    function gameChanged(place: Place, scene: HTMLElement, board: HTMLElement, api: GameApi): Game {
+      const pool = forLevel(place.items).filter(i => i.x != null && i.y != null)
+      const rounds = roundsFor(place, { smanisse: [3, 4], laerling: [5, 6], mester: [7, 8] })
+      let round = 0
+      let before: Item[] = []
+      let after: Item[] = []
+      let changed = 0
+      let phase: 'look' | 'guess' | 'busy' = 'look'
+
+      const clear = () => scene.querySelectorAll('.tg-shelf, .tg-curtain').forEach(e => e.remove())
+      const draw = (things: Item[], live: boolean) => {
+        clear()
+        scene.insertAdjacentHTML('beforeend', things.map((th, n) => {
+          // A swapped-in thing stands where the old one stood.
+          const at = before[n]
+          const style = `left:${at.x}%;top:${at.y}%`
+          return live
+            ? `<button type="button" class="tg-thing tg-shelf" data-n="${n}" style="${style}" aria-label="${esc(L(th, 'label'))}">${itemArt(th)}</button>`
+            : `<span class="tg-thing tg-shelf" style="${style}" role="img" aria-label="${esc(L(th, 'label'))}">${itemArt(th)}</span>`
+        }).join(''))
+        if (live) scene.querySelectorAll<HTMLButtonElement>('button.tg-shelf').forEach(b => b.addEventListener('click', () => guess(Number(b.dataset.n))))
+      }
+      function look() {
+        phase = 'look'
+        draw(before, false)
+        board.innerHTML = `<p class="tg-center"><button type="button" class="tg-btn" id="tg-ready">${t('Jeg er klar!', 'I am ready!')}</button></p>`
+        board.querySelector('#tg-ready')!.addEventListener('click', swap)
+        api.msg(t('Se nøye på hyllene. Trykk når du er klar.', 'Look closely at the shelves. Tap when you are ready.'))
+      }
+      async function swap() {
+        phase = 'busy'
+        board.innerHTML = ''
+        clear()
+        scene.insertAdjacentHTML('beforeend', `<div class="tg-curtain">${t('Hysj … nissen lister seg inn', 'Shh … the nisse is tiptoeing in')}</div>`)
+        api.msg(t('Hysj … nissen lister seg inn.', 'Shh … the nisse is tiptoeing in.'))
+        await api.wait(1800)
+        if (!scene.isConnected) return
+        guessing()
+      }
+      function guessing() {
+        phase = 'guess'
+        draw(after, true)
+        board.innerHTML = `<p class="tg-center"><button type="button" class="tg-btn tg-btn--ghost" id="tg-peek">👀 ${t('Se hvordan det var', 'Show how it was')}</button></p>`
+        board.querySelector('#tg-peek')!.addEventListener('click', async () => {
+          if (phase !== 'guess') return
+          phase = 'busy'
+          draw(before, false)
+          api.msg(t('Slik sto det før.', 'This is how it was.'), false)
+          await api.wait(2600)
+          if (scene.isConnected) guessing()
+        })
+        api.msg(t('Hva har nissen byttet ut? Trykk på det.', 'What did the nisse swap? Tap it.'))
+      }
+      async function guess(n: number) {
+        if (phase !== 'guess') return
+        if (n !== changed) {
+          api.msg(t(`Nei, ${L(after[n], 'label').toLowerCase()} sto der hele tida. Prøv igjen!`, `No, that was there all along. Try again!`))
+          return
+        }
+        phase = 'busy'
+        scene.querySelector(`button.tg-shelf[data-n="${n}"]`)?.classList.add('is-found')
+        round++
+        if (round === rounds.length) {
+          api.msg(t('Riktig! Deg lurer han ikke.', 'Right! He cannot fool you.'))
+          api.done()
+          return
+        }
+        api.msg(t('Riktig! Én gang til, med flere ting.', 'Right! Once more, with more things.'))
+        await api.wait(1600)
+        if (scene.isConnected) newRound()
+      }
+      function newRound() {
+        // One thing must be left over to swap in.
+        const n = Math.max(2, Math.min(rounds[round], pool.length - 1))
+        const mixed = shuffle(pool)
+        before = mixed.slice(0, n)
+        changed = Math.floor(Math.random() * n)
+        after = [...before]
+        after[changed] = mixed[n]
+        look()
+      }
+      newRound()
+      return {
+        reveal() {
+          if (phase === 'guess') scene.querySelector(`button.tg-shelf[data-n="${changed}"]`)?.classList.add('is-hint')
+        },
+      }
+    }
+
+    // Minispill 8: tenn lyktene.
+    function gameLights(place: Place, scene: HTMLElement, board: HTMLElement, api: GameApi): Game {
+      const rounds = roundsFor(place, { smanisse: [4], laerling: [4, 4], mester: [4, 5] })
+      const art = place.items[0]
+      // Smånisse: light them in order. Tryllelærling: a lantern also flips the
+      // one to its right. Tryllemester: both neighbours.
+      const reach = level() === 'smanisse' ? [0] : level() === 'laerling' ? [0, 1] : [-1, 0, 1]
+      let round = 0
+      let lit: boolean[] = []
+      let locked = false
+
+      const press = (state: boolean[], i: number) => {
+        for (const d of reach) if (state[i + d] !== undefined) state[i + d] = !state[i + d]
+      }
+      /** The fewest lanterns to press from here, by trying every combination. */
+      function solution(): number[] {
+        const n = lit.length
+        let best: number[] | null = null
+        for (let mask = 1; mask < 1 << n; mask++) {
+          const s = [...lit]
+          const presses: number[] = []
+          for (let i = 0; i < n; i++) if (mask & (1 << i)) { press(s, i); presses.push(i) }
+          if (s.every(Boolean) && (!best || presses.length < best.length)) best = presses
+        }
+        return best ?? []
+      }
+      function paint() {
+        scene.querySelectorAll<HTMLButtonElement>('.tg-lantern').forEach((b, i) => {
+          b.classList.toggle('is-lit', lit[i])
+          b.setAttribute('aria-pressed', String(lit[i]))
+          b.setAttribute('aria-label', `${t('Lykt', 'Lantern')} ${i + 1}: ${lit[i] ? t('tent', 'lit') : t('slukket', 'dark')}`)
+        })
+      }
+      function newRound() {
+        const n = rounds[round]
+        lit = Array(n).fill(reach.length === 1 ? false : true)
+        if (reach.length > 1) {
+          // Scramble from "all lit" with real presses, so it can always be solved.
+          do {
+            lit = Array(n).fill(true)
+            for (let i = 0; i < n; i++) if (Math.random() < 0.5) press(lit, i)
+          } while (lit.every(Boolean))
+        }
+        scene.querySelectorAll('.tg-lantern').forEach(e => e.remove())
+        scene.insertAdjacentHTML('beforeend', lit.map((_, i) =>
+          `<button type="button" class="tg-lantern" data-i="${i}" style="left:${((i + 0.5) * 100) / n}%;top:62%">${itemArt(art)}<b>${i + 1}</b></button>`).join(''))
+        paint()
+        locked = false
+        scene.querySelectorAll<HTMLButtonElement>('.tg-lantern').forEach(btn =>
+          btn.addEventListener('click', async () => {
+            if (locked) return
+            const i = Number(btn.dataset.i)
+            scene.querySelectorAll('.is-hint').forEach(b => b.classList.remove('is-hint'))
+            if (reach.length === 1) {
+              const next = lit.indexOf(false)
+              if (i !== next) {
+                api.msg(lit[i]
+                  ? t('Den lyser allerede.', 'That one is already lit.')
+                  : t(`Først lykt nummer ${next + 1}. Én søndag om gangen!`, `Lantern number ${next + 1} first. One Sunday at a time!`))
+                return
+              }
+              lit[i] = true
+            } else {
+              press(lit, i)
+            }
+            paint()
+            if (!lit.every(Boolean)) return
+            locked = true
+            round++
+            if (round === rounds.length) {
+              api.msg(t('Alle lyktene lyser!', 'All the lanterns are lit!'))
+              api.done()
+              return
+            }
+            api.msg(t('Alle lyser! Nissen tuller til lyktene en gang til.', 'All lit! The nisse muddles the lanterns once more.'))
+            await api.wait(1700)
+            if (scene.isConnected) newRound()
+          }),
+        )
+      }
+      newRound()
+      board.innerHTML = ''
+      return {
+        reveal() {
+          const i = reach.length === 1 ? lit.indexOf(false) : solution()[0]
+          if (i != null && i >= 0) scene.querySelector(`.tg-lantern[data-i="${i}"]`)?.classList.add('is-hint')
+        },
+      }
+    }
+
+    // ── Etter minispillet ────────────────────────────────────────
+    function afterGame(place: Place, noHints: boolean) {
+      const done = L(place, 'done')
+      const short = L(place, 'traditionShort')
+      const long = level() === 'smanisse' ? '' : L(place, 'traditionLong')
+      const fact = [short, long].filter(Boolean).join(' ')
+      show(`<div class="tg-card">
+        <h1 class="tg-h1" tabindex="-1" data-focus>${esc(L(place, 'title'))}</h1>
+        <div class="tg-talk">${bubble({ who: 'jente', text: done, pose: 'jubler' })}</div>
+        <div class="tg-fact">
+          <div class="tg-head"><h2 class="tg-h2">${t('Visste du at …', 'Did you know …')}</h2>${sayBtn(fact)}</div>
+          <p>${esc(short)}</p>
+          ${long ? `<p>${esc(long)}</p>` : ''}
+          ${place.traditionLinkUrl ? `<p><a href="${esc(place.traditionLinkUrl)}">${esc(place.traditionLinkLabel || t('Les mer', 'Read more'))}</a></p>` : ''}
+        </div>
+        ${noHints ? `<p class="tg-note">${pic('smor', 'tg-tally-icon')} ${t('Du klarte det uten hint. Nissen la et smørøye i grøten din!', 'You did it without hints. The nisse put a butter-eye in your porridge!')}</p>` : ''}
+        <p class="tg-center"><button type="button" class="tg-btn" id="tg-next">${t('Hva har nissen lagt igjen? ▶', 'What did the nisse leave? ▶')}</button></p>
+      </div>`)
+      root.querySelector('#tg-next')!.addEventListener('click', () => showTrick(place, noHints))
+      auto(`${done} ${t('Visste du at …', 'Did you know …')} ${fact}`)
+    }
+
+    function showTrick(place: Place, noHints: boolean) {
+      const title = L(place, 'trickTitle')
+      const effect = L(place, 'trickEffect')
+      const loft = L(season, 'loftName')
+      const canReveal = data.secrets && place.hasTrick
+      show(`<div class="tg-card">
+        <p class="tg-kicker">${t('Nissens triks', 'The nisse’s trick')}</p>
+        <div class="tg-head"><h1 class="tg-h1" tabindex="-1" data-focus>${esc(title)}</h1>${sayBtn(`${title}. ${effect}`)}</div>
+        <p class="tg-lead tg-lead--tight">${esc(effect)}</p>
+        ${place.trickAge ? `<p class="tg-age">${t(`Passer fra ${place.trickAge} år`, `Suits ages ${place.trickAge} and up`)}</p>` : ''}
+        ${place.trickAge && place.trickAge >= 7 && level() === 'smanisse' ? `<p class="tg-note">${t('Dette trikset er litt vanskelig. Be en voksen hjelpe til!', 'This trick is a little tricky. Ask a grown-up to help!')}</p>` : ''}
+        <div class="tg-secret" id="tg-secret">
+          ${canReveal
+            ? `<p class="tg-center"><button type="button" class="tg-btn tg-btn--ghost" id="tg-reveal">🔑 ${t('Vis hemmeligheten', 'Show the secret')}</button></p>`
+            : `<p class="tg-note">${t(`Hemmeligheten ligger på ${loft}.`, `The secret is kept in ${loft}.`)}</p>`}
+        </div>
+        <p class="tg-center"><button type="button" class="tg-btn" id="tg-hang">${ornamentOf(place)} ${t('Heng pynten på treet', 'Hang the ornament on the tree')}</button></p>
+      </div>`)
+      const secret = root.querySelector<HTMLElement>('#tg-secret')!
+      root.querySelector('#tg-reveal')?.addEventListener('click', async e => {
+        const btn = e.currentTarget as HTMLButtonElement
+        btn.disabled = true
+        const res = await ask<{ title: string; html: string; text?: string; videos?: { label: string; embed?: string; url?: string }[] }>({ action: 'trick', place: place.key })
+        if (!res?.html) {
+          btn.disabled = false
+          toast(t('Nissen sover visst. Prøv igjen om litt.', 'The nisse seems to be asleep. Try again in a moment.'))
+          return
+        }
+        // Rendered on the server from the museum's own trick document.
+        // Videos load only now, after the child asked for the secret.
+        const videos = (res.videos ?? []).map(v => v.embed
+          ? `<figure class="tg-video"><div class="tg-video-wrap"><iframe src="${esc(v.embed)}" title="${esc(v.label || t('Video', 'Video'))}" loading="lazy" allow="fullscreen; picture-in-picture" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe></div>${v.label ? `<figcaption>${esc(v.label)}</figcaption>` : ''}</figure>`
+          : v.url ? `<p><a href="${esc(v.url)}" target="_blank" rel="noopener noreferrer">▶ ${esc(v.label || t('Se video', 'Watch video'))}</a></p>` : '').join('')
+        secret.innerHTML = `<div class="tg-secret-body"><div class="tg-head"><p class="tg-note">🤫 ${t('En tryllekunstner forteller aldri hvordan det gjøres!', 'A magician never tells how it is done!')}</p>${res.text ? sayBtn(res.text) : ''}</div>${videos}${res.html}</div>`
+        secret.querySelector<HTMLElement>('.tg-secret-body')!.scrollIntoView({ block: 'nearest', behavior: 'smooth' })
+      })
+      root.querySelector('#tg-hang')!.addEventListener('click', () => {
+        // A golden butter-eye, once earned, is kept on replays.
+        mine.done[place.key] = { smor: noHints || !!mine.done[place.key]?.smor }
+        save()
+        if (Object.keys(mine.done).length === 1) askPersist()
+        renderMap(place.key)
+      })
+      auto(`${title}. ${effect}`)
+    }
+
+    // ── Avslutning: stjerna og nøkkelen til det hemmelige stedet ─
+    function runFinale() {
+      const loft = L(season, 'loftName')
+      const ending = () => {
+        mine.finale = true
+        save()
+        show(`<div class="tg-card tg-finale">
+          <p class="tg-star" aria-hidden="true">${topOf('tg-star-img')}</p>
+          ${figures(['jente-jubler', 'nisse-klapper', 'gutt-jubler'])}
+          <h1 class="tg-h1" tabindex="-1" data-focus>${esc(loft)}</h1>
+          <p class="tg-lead tg-lead--tight">${t(`Her ligger alle triksene du har fått av nissen. Vis dem til noen du er glad i!`, `Here are all the tricks the nisse gave you. Show them to someone you love!`)}</p>
+          <div id="tg-key">
+            ${data.secrets
+              ? `<p class="tg-center"><button type="button" class="tg-btn tg-btn--glow" id="tg-open">${pic('nokkel', 'tg-btn-icon')} ${t(`Åpne ${loft}`, `Open ${loft}`)}</button></p>`
+              : `<p class="tg-note">${t(`${loft} er stengt akkurat nå. Prøv igjen senere.`, `${loft} is closed right now. Try again later.`)}</p>`}
+          </div>
+          <p class="tg-center"><button type="button" class="tg-btn tg-btn--ghost" id="tg-back">🗺️ ${t('Tilbake til gården', 'Back to the farm')}</button></p>
+        </div>`)
+        root.querySelector('#tg-back')!.addEventListener('click', () => renderMap())
+        root.querySelector('#tg-open')?.addEventListener('click', async e => {
+          const btn = e.currentTarget as HTMLButtonElement
+          btn.disabled = true
+          const res = await ask<{ url: string; code: string }>({ action: 'finale' })
+          if (!res?.url) {
+            btn.disabled = false
+            toast(t('Nissen finner ikke nøkkelen. Prøv igjen om litt.', 'The nisse cannot find the key. Try again in a moment.'))
+            return
+          }
+          root.querySelector('#tg-key')!.innerHTML = `
+            <div class="tg-fact">
+              <h2 class="tg-h2">${t('Nissens hemmelige ord', 'The nisse’s secret word')}</h2>
+              <p class="tg-code">${esc(res.code)}</p>
+              <p>${t('Skriv det ned sammen med en voksen. Da kommer du inn igjen senere, også på en annen mobil eller PC.', 'Write it down with a grown-up. Then you can get back in later, on another phone or computer too.')}</p>
+            </div>
+            <p class="tg-center"><a class="tg-btn tg-btn--glow" href="${esc(res.url)}">${pic('nokkel', 'tg-btn-icon')} ${t(`Gå inn på ${loft}`, `Enter ${loft}`)}</a></p>`
+        })
+      }
+      // Put the show together: three numbers from the nisse's tricks and a
+      // magic word. There are no wrong choices.
+      const compose = () => {
+        const tricks = season.places.map(p => L(p, 'trickTitle')).filter(Boolean)
+        const words = ((lang === 'en' && season.showWordsEn?.length ? season.showWordsEn : season.showWords) ?? []).map(fill)
+        if (!words.length) words.push('Hokus pokus')
+        const slots = [t('Først', 'First'), t('Så', 'Then'), t('Til slutt', 'Last')].slice(0, Math.min(3, tricks.length))
+        const chosen: (string | null)[] = slots.map(() => null)
+        let word = words[0]
+        const draw = () => {
+          show(`<div class="tg-card">
+            <h1 class="tg-h1" tabindex="-1" data-focus>${t('Lag forestillingen', 'Plan the show')}</h1>
+            <p class="tg-lead tg-lead--tight">${t('Velg tre triks, ett til hver plass. Alt du velger, blir bra!', 'Choose three tricks, one for each spot. Whatever you choose will be good!')}</p>
+            ${slots.map((label, n) => `<fieldset class="tg-slotpick"><legend>${esc(label)}</legend>
+              <div class="tg-cards">${tricks.map((tr, k) => {
+                const taken = chosen.some((c, m) => c === tr && m !== n)
+                return `<button type="button" class="tg-cardbtn${chosen[n] === tr ? ' is-picked' : ''}" data-slot="${n}" data-trick="${k}" aria-pressed="${chosen[n] === tr}"${taken ? ' disabled' : ''}><span>${esc(tr)}</span></button>`
+              }).join('')}</div></fieldset>`).join('')}
+            <fieldset class="tg-slotpick"><legend>${t('Trylleordet', 'The magic word')}</legend>
+              <div class="tg-cards">${words.map((w, k) => `<button type="button" class="tg-cardbtn${w === word ? ' is-picked' : ''}" data-word="${k}" aria-pressed="${w === word}"><span>${esc(w)}!</span></button>`).join('')}</div></fieldset>
+            <p class="tg-center"><button type="button" class="tg-btn tg-btn--glow" id="tg-showtime"${chosen.includes(null) ? ' disabled' : ''}>🎩 ${t('Start forestillingen', 'Start the show')}</button></p>
+          </div>`)
+          root.querySelectorAll<HTMLButtonElement>('[data-slot]').forEach(b => b.addEventListener('click', () => {
+            const n = Number(b.dataset.slot)
+            const tr = tricks[Number(b.dataset.trick)]
+            chosen[n] = chosen[n] === tr ? null : tr
+            const y = window.scrollY
+            draw()
+            window.scrollTo(0, y)
+          }))
+          root.querySelectorAll<HTMLButtonElement>('[data-word]').forEach(b => b.addEventListener('click', () => {
+            word = words[Number(b.dataset.word)]
+            const y = window.scrollY
+            draw()
+            window.scrollTo(0, y)
+          }))
+          root.querySelector('#tg-showtime')!.addEventListener('click', perform)
+        }
+        const perform = () => {
+          const [a, b, c] = chosen as string[]
+          const lines: Line[] = [
+            { who: 'forteller', text: t('Lyktene dempes. Kua, hesten, sauene og katten sitter helt stille.', 'The lanterns dim. The cow, the horse, the sheep and the cat sit perfectly still.') },
+            { who: 'jente', pose: 'jubler', text: t(`Mine damer og herrer, kuer og sauer! Først: ${a}. ${word}!`, `Ladies and gentlemen, cows and sheep! First: ${a}. ${word}!`) },
+            { who: 'forteller', text: t('Dyra måper. Katten glemmer å vaske seg.', 'The animals gape. The cat forgets to wash.') },
+            ...(b ? [{ who: 'gutt' as Who, pose: 'jubler' as Pose, text: t(`Og nå: ${b}. ${word}!`, `And now: ${b}. ${word}!`) }] : []),
+            ...(c ? [{ who: 'jente' as Who, pose: 'jubler' as Pose, text: t(`Til slutt det aller beste: ${c}. Alle sammen: ${word}!`, `And last, the very best: ${c}. All together: ${word}!`) }] : []),
+            { who: 'forteller', text: t('Helt bakerst sitter en liten kar med rød lue. Han klapper så vottene ryker.', 'At the very back sits a little fellow in a red hat. He claps until his mittens smoke.') },
+            { who: 'nisse', text: t('Takk for hjelpa, og takk for forestillingen. Triksene mine ligger på loftet. Hilsen N.', 'Thank you for the help, and for the show. My tricks are in the loft. Yours, N.') },
+            { who: 'gutt', text: t(`Nissen har gitt oss nøkkelen til ${loft}! Men husk: En tryllekunstner forteller aldri hvordan det gjøres.`, `The nisse has given us the key to ${loft}! But remember: a magician never tells how it is done.`) },
+          ]
+          dialog(t('Juleforestillingen', 'The Christmas show'), lines, t('Ta imot nøkkelen 🔑', 'Take the key 🔑'), ending)
+        }
+        draw()
+      }
+      if (mine.finale) ending()
+      else dialog(L(season, 'finaleTitle'), season.finale, t('Lag forestillingen ▶', 'Plan the show ▶'), compose)
+    }
+
+    renderBar()
+    renderStart()
+  }
+</script>
+
+<style is:global>
+  /* Everything is prefixed tg- and global: the game's markup is built in the
+     browser, so Astro's scoped styles would not reach it. */
+  .tg {
+    --tg-sky: #14213d; --tg-ground: #eef3f8; --tg-accent: #b3262d; --tg-accent2: #1f5c3a; --tg-glow: #f6c453;
+    background: linear-gradient(180deg, var(--tg-sky) 0%, color-mix(in srgb, var(--tg-sky) 70%, #5b79b8) 100%);
+    padding: var(--space-5) var(--space-4) var(--space-7);
+    font-family: var(--font-ui);
+    color: var(--ink);
+    flex: 1;
+    /* The site header is sticky: keep the game's top bar clear of it. */
+    scroll-margin-top: calc(var(--header-h) + 8px);
+  }
+  .tg-wrap { max-width: 860px; margin: 0 auto; }
+  .tg-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+  .tg-center { text-align: center; }
+  .tg :focus-visible { outline: 3px solid var(--tg-glow); outline-offset: 3px; }
+  .tg h1:focus { outline: none; }
+
+  .tg-card {
+    background: var(--tg-ground);
+    border-radius: 20px;
+    padding: clamp(1rem, 4vw, 2rem);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, .35);
+  }
+  .tg-card > * + * { margin-top: var(--space-4); }
+  .tg-hero-img { width: 100%; height: auto; aspect-ratio: 7 / 5; object-fit: cover; border-radius: 14px; display: block; }
+  .tg-kicker { font-size: .85rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--tg-accent2); }
+  .tg-title { font-family: var(--font-display); font-size: clamp(1.8rem, 6vw, 2.8rem); line-height: 1.15; color: var(--tg-accent); margin-top: var(--space-2); }
+  .tg-subtitle { font-family: var(--font-display); font-size: clamp(1.1rem, 3.5vw, 1.5rem); color: var(--tg-accent2); margin-top: var(--space-1); }
+  .tg-h1 { font-family: var(--font-display); font-size: clamp(1.5rem, 5vw, 2.1rem); line-height: 1.2; color: var(--tg-accent); }
+  .tg-h2 { font-size: 1.2rem; font-weight: 700; color: var(--tg-accent2); }
+  .tg-lead { font-size: 1.2rem; line-height: 1.55; }
+  .tg-lead--tight { margin-top: var(--space-2); }
+  .tg-task { font-size: 1.2rem; font-weight: 600; margin-top: var(--space-2); }
+  .tg-note { font-size: 1rem; color: var(--ink-mid); }
+  .tg-status { font-size: 1.15rem; font-weight: 700; text-align: center; }
+  .tg-head { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); }
+
+  /* Buttons: big enough for small fingers. */
+  .tg-btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: .5rem;
+    min-height: 56px; padding: .75rem 1.6rem;
+    font: 700 1.15rem var(--font-ui); color: #fff; text-decoration: none;
+    background: var(--tg-accent); border: 0; border-radius: 999px; cursor: pointer;
+    box-shadow: 0 4px 0 color-mix(in srgb, var(--tg-accent) 65%, #000);
+  }
+  .tg-btn:hover { filter: brightness(1.08); }
+  .tg-btn:active { transform: translateY(2px); box-shadow: 0 2px 0 color-mix(in srgb, var(--tg-accent) 65%, #000); }
+  .tg-btn:disabled { opacity: .55; cursor: default; }
+  .tg-btn--ghost { background: #fff; color: var(--tg-accent2); box-shadow: inset 0 0 0 2px var(--tg-accent2); }
+  .tg-btn--glow { background: var(--tg-glow); color: var(--ink); box-shadow: 0 4px 0 color-mix(in srgb, var(--tg-glow) 60%, #000), 0 0 24px color-mix(in srgb, var(--tg-glow) 70%, transparent); }
+  .tg-say {
+    flex-shrink: 0; width: 48px; height: 48px; border-radius: 50%; border: 0; cursor: pointer;
+    background: #fff; font-size: 1.3rem; box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--tg-accent2) 40%, transparent);
+    display: none; vertical-align: middle;
+  }
+  .tg-can-speak .tg-say { display: inline-flex; align-items: center; justify-content: center; }
+  .tg-speech-only { display: none !important; }
+  .tg-can-speak .tg-speech-only { display: inline-flex !important; }
+  .is-speaking { box-shadow: 0 0 0 3px var(--tg-glow); border-radius: 14px; }
+
+  /* Top bar */
+  .tg-bar { display: flex; flex-wrap: wrap; gap: var(--space-2); align-items: center; justify-content: center; margin-bottom: var(--space-4); }
+  .tg-bar[hidden] { display: none; }
+  .tg-levels { display: inline-flex; gap: var(--space-1); flex-wrap: wrap; justify-content: center; }
+  .tg-chip {
+    display: inline-flex; align-items: center; gap: .35rem; min-height: 44px; padding: .4rem .9rem;
+    font: 600 .95rem var(--font-ui); color: #fff; cursor: pointer;
+    background: rgba(255, 255, 255, .12); border: 2px solid rgba(255, 255, 255, .35); border-radius: 999px;
+  }
+  .tg-chip.is-on { background: var(--tg-glow); border-color: var(--tg-glow); color: var(--ink); }
+
+  /* Start: who are you? */
+  .tg-pick { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-3); }
+  .tg-pick-btn {
+    display: flex; flex-direction: column; align-items: center; gap: .25rem; padding: var(--space-4) var(--space-2);
+    background: #fff; border: 3px solid transparent; border-radius: 16px; cursor: pointer;
+    font: 400 1rem var(--font-ui); color: var(--ink); box-shadow: var(--shadow);
+  }
+  .tg-pick-btn strong { font-size: 1.15rem; color: var(--tg-accent); }
+  .tg-pick-btn:hover, .tg-pick-btn.is-on { border-color: var(--tg-glow); }
+  .tg-pick-icon { font-size: 2.6rem; line-height: 1; }
+
+  /* Speech bubbles */
+  .tg-talk { display: flex; flex-direction: column; gap: var(--space-3); }
+  .tg-bubble { display: flex; align-items: center; gap: var(--space-3); background: #fff; border-radius: 18px; padding: var(--space-3); box-shadow: var(--shadow-sm); animation: tg-pop .3s ease-out; }
+  .tg-bubble--gutt { flex-direction: row-reverse; }
+  .tg-bubble--nisse { background: #fff8e6; font-family: var(--font-body); font-style: italic; }
+  .tg-bubble--forteller { background: transparent; box-shadow: none; }
+  .tg-bubble-body { flex: 1; }
+  .tg-avatar { width: 64px; height: 64px; border-radius: 50%; object-fit: cover; object-position: center top; flex-shrink: 0; border: 3px solid var(--tg-glow); background: #fff; }
+  .tg-avatar--book { display: flex; align-items: center; justify-content: center; font-size: 1.8rem; background: #fff; border-color: transparent; }
+  .tg-who { font-size: .85rem; font-weight: 700; color: var(--tg-accent2); }
+  .tg-text { font-size: 1.2rem; line-height: 1.45; }
+
+  /* Scenes */
+  .tg-scene { position: relative; aspect-ratio: 16 / 10; border-radius: 16px; overflow: hidden; background: var(--tg-sky); }
+  .tg-scene--short { aspect-ratio: 16 / 6; }
+  .tg-scene--mid { aspect-ratio: 16 / 8; }
+  .tg-scene--mid .tg-backdrop { object-position: center 60%; }
+  .tg-backdrop { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  .tg-thing, .tg-bird, .tg-hat, .tg-spot {
+    position: absolute; transform: translate(-50%, -50%); background: none; border: 0; padding: 0; cursor: pointer; line-height: 1;
+  }
+  .tg-thing { width: 12%; aspect-ratio: 1; font-size: clamp(1.2rem, 5.2vw, 2.6rem); display: flex; align-items: center; justify-content: center; border-radius: 50%; }
+  .tg-thing img { width: 100%; height: 100%; object-fit: contain; }
+  .tg-lvl-smanisse .tg-thing { width: 16%; font-size: clamp(1.6rem, 7vw, 3.4rem); }
+  .tg-lvl-mester .tg-thing { width: 9%; font-size: clamp(.95rem, 3.6vw, 1.8rem); opacity: .85; }
+  .tg-thing.is-found { opacity: 1; background: color-mix(in srgb, var(--tg-glow) 75%, transparent); box-shadow: 0 0 0 3px #fff; cursor: default; }
+  .is-hint { animation: tg-glow 1s ease-in-out infinite; border-radius: 16px; box-shadow: 0 0 0 4px var(--tg-glow); }
+  .tg-hat { width: 14%; min-width: 56px; opacity: .92; transform: translate(-50%, -62%); }
+  .tg-hat img, .tg-hat svg { width: 100%; height: auto; display: block; }
+  .tg-hat--ghost { width: 12%; aspect-ratio: 1; border-radius: 50%; transform: translate(-50%, -50%); opacity: 1; }
+  .tg-hat--ghost.is-found { box-shadow: 0 0 0 4px var(--tg-glow), 0 0 18px var(--tg-glow); }
+  .tg-hat.is-found { opacity: 1; filter: drop-shadow(0 0 6px var(--tg-glow)); }
+
+  .tg-checklist { list-style: none; display: flex; flex-wrap: wrap; gap: var(--space-2); justify-content: center; padding: 0; margin-top: var(--space-3); }
+  .tg-checklist li { display: inline-flex; align-items: center; gap: .4rem; background: #fff; border-radius: 999px; padding: .35rem .9rem; font-weight: 600; font-size: 1.05rem; }
+  .tg-checklist li img, .tg-checklist li svg { width: 1.6rem; height: 1.6rem; }
+  .tg-checklist li.is-found { background: var(--tg-accent2); color: #fff; }
+  .tg-checklist li.is-found::after { content: '✓'; font-weight: 700; }
+
+  /* Order game */
+  .tg-slots { list-style: none; padding: 0; display: grid; gap: var(--space-2); margin-top: var(--space-3); }
+  .tg-slot { display: flex; align-items: center; gap: var(--space-3); min-height: 56px; padding: .4rem .8rem; border: 2px dashed color-mix(in srgb, var(--tg-accent2) 50%, transparent); border-radius: 14px; font-size: 1.1rem; }
+  .tg-slot.is-filled { border-style: solid; border-color: var(--tg-accent2); background: #fff; font-weight: 600; animation: tg-pop .3s ease-out; }
+  .tg-slot-num { flex-shrink: 0; width: 2rem; height: 2rem; border-radius: 50%; background: var(--tg-accent2); color: #fff; font-weight: 700; display: flex; align-items: center; justify-content: center; }
+  .tg-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: var(--space-2); margin-top: var(--space-4); }
+  .tg-cardbtn { display: flex; align-items: center; gap: var(--space-3); min-height: 64px; padding: .6rem 1rem; text-align: left; background: #fff; border: 3px solid transparent; border-radius: 14px; cursor: pointer; font: 600 1.1rem var(--font-ui); color: var(--ink); box-shadow: var(--shadow); }
+  .tg-cardbtn > span[aria-hidden], .tg-slot-body > span[aria-hidden] { font-size: 1.8rem; line-height: 1; }
+  .tg-cardbtn img, .tg-slot-body img { width: 3.4rem; height: 3.4rem; object-fit: contain; flex-shrink: 0; }
+  .tg-slot-body { display: inline-flex; align-items: center; gap: var(--space-3); }
+  .tg-cardbtn:hover { border-color: var(--tg-glow); }
+  .tg-cardbtn.is-out { opacity: .4; text-decoration: line-through; cursor: default; }
+  .tg-cardbtn.is-hint { border-color: var(--tg-glow); }
+  .tg-cardbtn.is-shake { animation: tg-shake .35s; }
+  .tg-cardbtn[hidden] { display: none; }
+
+  /* Memory game */
+  .tg-bird { width: 17%; display: flex; flex-direction: column; align-items: center; border-radius: 14px; padding: 1%; transition: transform .2s; }
+  .tg-bird svg, .tg-bird img { width: 100%; height: auto; display: block; }
+  .tg-bird-name { font: 700 clamp(.6rem, 2.1vw, .95rem) var(--font-ui); color: #fff; background: rgba(0, 0, 0, .5); border-radius: 999px; padding: .1em .6em; margin-top: 2px; white-space: nowrap; }
+  .tg-bird.is-on { transform: translate(-50%, -62%) scale(1.25); background: color-mix(in srgb, var(--tg-glow) 80%, transparent); }
+  .tg-bird.is-ok { background: color-mix(in srgb, #7bd88f 80%, transparent); }
+
+  /* Follow the braid */
+  .tg-thread { max-width: 560px; margin: var(--space-3) auto 0; }
+  .tg-thread-row { display: grid; grid-template-columns: repeat(var(--n), 1fr); justify-items: center; }
+  .tg-bow { min-width: 56px; min-height: 56px; background: #fff; border: 3px solid transparent; border-radius: 14px; cursor: pointer; font-size: 1.6rem; line-height: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; box-shadow: var(--shadow); }
+  .tg-bow b { font: 700 .9rem var(--font-ui); color: var(--tg-accent2); }
+  .tg-bow:hover { border-color: var(--tg-glow); }
+  .tg-thread-svg { display: block; width: 100%; height: clamp(170px, 42vw, 260px); }
+  .tg-braid.is-lit path:last-child { stroke: var(--tg-accent); stroke-width: 3.4; }
+  .tg-braid.is-hint { animation: none; box-shadow: none; }
+  .tg-braid.is-hint path:last-child { stroke: var(--tg-glow); stroke-width: 4; }
+  .tg-end { font-size: 2rem; line-height: 1; padding: .2rem .5rem; border-radius: 12px; border: 3px solid transparent; }
+  .tg-end img { width: 2.4rem; height: 2.4rem; object-fit: contain; }
+  .tg-end.is-goal { border-color: var(--tg-accent); background: #fff; }
+
+  /* Continue the pattern */
+  .tg-row { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin-top: var(--space-3); }
+  .tg-cell { width: clamp(38px, 9.5vw, 58px); aspect-ratio: 1; display: flex; align-items: center; justify-content: center; background: #fff; border-radius: 12px; font-size: clamp(1.3rem, 5vw, 2rem); line-height: 1; border: 3px solid transparent; }
+  .tg-cell img { width: 80%; height: 80%; object-fit: contain; }
+  .tg-cell.is-hole { background: transparent; border: 3px dashed color-mix(in srgb, var(--tg-accent2) 55%, transparent); color: var(--tg-accent2); font-weight: 700; }
+  .tg-cell.is-now { border-style: solid; border-color: var(--tg-glow); box-shadow: 0 0 12px var(--tg-glow); }
+  .tg-cell.is-filled { animation: tg-pop .3s ease-out; }
+
+  /* Weave the basket */
+  .tg-weave-wrap { display: flex; flex-wrap: wrap; gap: var(--space-5); justify-content: center; align-items: flex-end; margin-top: var(--space-3); }
+  .tg-weave-wrap figure { margin: 0; text-align: center; }
+  .tg-weave-wrap figcaption { font-weight: 700; color: var(--tg-accent2); margin-bottom: var(--space-2); }
+  .tg-weave { display: grid; grid-template-columns: repeat(var(--n), 1fr); gap: 4px; padding: 6px; background: #7a5230; border-radius: 12px; width: min(72vw, 300px); margin: 0 auto; }
+  .tg-weave--small { width: min(38vw, 150px); }
+  .tg-sq { aspect-ratio: 1; border-radius: 6px; border: 2px solid rgba(0, 0, 0, .25); padding: 0; display: block; }
+  button.tg-sq { cursor: pointer; }
+
+  /* What changed? */
+  .tg-shelf { cursor: default; }
+  button.tg-shelf { cursor: pointer; }
+  .tg-lvl-mester .tg-shelf { opacity: 1; }
+  .tg-curtain { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; text-align: center; padding: var(--space-4); background: color-mix(in srgb, var(--tg-sky) 92%, transparent); color: #fff; font: 700 clamp(1.1rem, 4vw, 1.6rem) var(--font-ui); animation: tg-pop .3s ease-out; }
+
+  /* Light the lanterns */
+  .tg-lantern { position: absolute; transform: translate(-50%, -50%); background: none; border: 0; padding: 4px; cursor: pointer; border-radius: 16px; display: flex; flex-direction: column; align-items: center; font-size: clamp(2rem, 9vw, 4rem); line-height: 1; filter: grayscale(1) brightness(.55); transition: filter .2s; }
+  .tg-lantern img { width: clamp(44px, 12vw, 90px); height: auto; }
+  .tg-lantern b { font: 700 clamp(.8rem, 2.6vw, 1.1rem) var(--font-ui); color: #fff; background: rgba(0, 0, 0, .5); border-radius: 999px; padding: 0 .6em; margin-top: 4px; }
+  .tg-lantern.is-lit { filter: drop-shadow(0 0 14px var(--tg-glow)); }
+
+  /* The show */
+  .tg-slotpick { border: 0; padding: 0; margin-inline: 0; min-width: 0; }
+  .tg-slotpick legend { font-weight: 700; font-size: 1.15rem; color: var(--tg-accent2); padding: 0; }
+  .tg-slotpick .tg-cards { display: flex; flex-wrap: wrap; gap: var(--space-2); margin-top: var(--space-2); }
+  .tg-slotpick .tg-cardbtn { min-height: 44px; padding: .35rem .9rem; font-size: 1rem; border-radius: 999px; }
+  .tg-cardbtn.is-picked { border-color: var(--tg-accent2); background: color-mix(in srgb, var(--tg-glow) 35%, #fff); }
+  .tg-cardbtn:disabled { opacity: .4; cursor: default; }
+
+  .tg-msg { min-height: 2.2em; text-align: center; font-size: 1.2rem; font-weight: 700; color: var(--tg-accent2); }
+
+  /* Fact and secret cards */
+  .tg-fact { background: #fff; border-left: 6px solid var(--tg-glow); border-radius: 14px; padding: var(--space-4); font-size: 1.15rem; line-height: 1.55; }
+  .tg-fact > * + * { margin-top: var(--space-2); }
+  .tg-secret-body { background: #fff8e6; border: 2px dashed var(--tg-glow); border-radius: 14px; padding: var(--space-4); font-size: 1.1rem; line-height: 1.55; animation: tg-pop .3s ease-out; }
+  .tg-secret-body > * + * { margin-top: var(--space-3); }
+  .tg-age { display: inline-block; font-weight: 700; font-size: .95rem; color: var(--tg-accent2); background: #fff; border-radius: 999px; padding: .2rem .8rem; }
+  .tg-video { margin: 0; }
+  .tg-video-wrap { position: relative; aspect-ratio: 16 / 9; border-radius: 12px; overflow: hidden; background: #000; }
+  .tg-video-wrap iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+  .tg-video figcaption { font-size: .95rem; color: var(--ink-mid); margin-top: var(--space-1); }
+  .tg-secret-body h4 { font-size: 1.15rem; color: var(--tg-accent); }
+  .tg-secret-body ol, .tg-secret-body ul { padding-left: 1.4em; }
+  .tg-secret-body li + li { margin-top: var(--space-2); }
+  .tg-secret-body img { max-width: 100%; height: auto; border-radius: 10px; }
+  .tg-code { font: 700 1.8rem ui-monospace, monospace; letter-spacing: .12em; color: var(--tg-accent); }
+  #tg-codetext { font-size: clamp(1rem, 4.6vw, 1.6rem); letter-spacing: .06em; overflow-wrap: anywhere; user-select: all; }
+  .tg-link { background: none; border: 0; padding: .5rem; font: 600 1rem var(--font-ui); color: var(--tg-accent2); text-decoration: underline; cursor: pointer; min-height: 44px; }
+  .tg-codeform { background: #fff; border-radius: 14px; padding: var(--space-4); }
+  .tg-codeform label { display: block; font-weight: 700; margin-bottom: var(--space-2); color: var(--tg-accent2); }
+  .tg-codeform-row { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+  .tg-codeform input { flex: 1 1 14rem; min-height: 56px; padding: .5rem 1rem; font: 700 1.1rem ui-monospace, monospace; letter-spacing: .06em; text-transform: uppercase; border: 3px solid var(--tg-accent2); border-radius: 12px; min-width: 0; }
+  .tg-codeerr { min-height: 1.4em; margin-top: var(--space-2); font-weight: 700; color: var(--tg-accent); }
+
+  /* Map */
+  .tg-map { aspect-ratio: 16 / 12; }
+  .tg-tree { position: absolute; left: 62%; top: 52%; width: 13%; transform: translate(-50%, -50%); }
+  .tg-tree svg { width: 100%; height: auto; display: block; }
+  .tg-ornament { position: absolute; transform: translate(-50%, -50%); font-size: clamp(.9rem, 3.4vw, 1.7rem); line-height: 1; }
+  .tg-orn-img { width: clamp(18px, 4.6vw, 34px); height: auto; display: block; }
+  .tg-top-img { width: clamp(30px, 7.5vw, 56px); height: auto; display: block; }
+  .tg-star-img { height: 4.5rem; width: auto; }
+  .tg-lvlicon { height: 1.5em; width: auto; vertical-align: middle; }
+  .tg-pick-icon .tg-lvlicon { height: 3rem; }
+  .tg-tally-icon { width: 1.6rem; height: 1.6rem; object-fit: contain; vertical-align: middle; }
+  .tg-btn-icon { height: 1.5em; width: auto; vertical-align: middle; }
+  .tg-ornament.is-new { animation: tg-drop .7s ease-out; }
+  .tg-treetop { position: absolute; left: 50%; top: 4%; transform: translate(-50%, -50%); font-size: clamp(1.4rem, 5.5vw, 2.8rem); line-height: 1; filter: drop-shadow(0 0 10px var(--tg-glow)); }
+  .tg-spot { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+  .tg-spot-icon { width: clamp(38px, 8.6vw, 68px); aspect-ratio: 1; border-radius: 50%; background: #fff; border: 4px solid var(--tg-glow); font-size: clamp(1.5rem, 6vw, 2.5rem); display: flex; align-items: center; justify-content: center; box-shadow: 0 0 18px color-mix(in srgb, var(--tg-glow) 70%, transparent); }
+  .tg-spot-name { font: 700 clamp(.68rem, 2.2vw, 1rem) var(--font-ui); color: #fff; background: var(--tg-accent); border-radius: 999px; padding: .15em .8em; white-space: nowrap; }
+  .tg-spot.is-done .tg-spot-icon { border-color: var(--tg-accent2); box-shadow: none; }
+  .tg-spot.is-done .tg-spot-name { background: var(--tg-accent2); }
+  .tg-spot:hover .tg-spot-icon { transform: scale(1.06); }
+  .tg-tally { list-style: none; padding: 0; display: flex; flex-wrap: wrap; gap: var(--space-2) var(--space-5); justify-content: center; font-size: 1.05rem; }
+  .tg-tally li { display: inline-flex; align-items: center; gap: .4rem; }
+  .tg-tally svg { width: 1.5rem; height: 1.5rem; }
+  .tg-tally small { color: var(--ink-mid); }
+
+  .tg-finale { text-align: center; }
+  .tg-figs { display: flex; justify-content: center; align-items: flex-end; gap: var(--space-2); }
+  .tg-figs img { height: clamp(120px, 30vw, 210px); width: auto; }
+  .tg-star { font-size: 4rem; line-height: 1; filter: drop-shadow(0 0 16px var(--tg-glow)); }
+
+  .tg-toast {
+    position: fixed; left: 50%; bottom: 1.25rem; transform: translate(-50%, 150%); z-index: 50;
+    max-width: min(92vw, 520px); padding: .8rem 1.3rem; border-radius: 999px;
+    background: var(--ink); color: #fff; font: 600 1.05rem var(--font-ui); text-align: center;
+    transition: transform .25s ease-out; pointer-events: none;
+  }
+  .tg-toast.is-on { transform: translate(-50%, 0); }
+
+  @keyframes tg-pop { from { transform: scale(.94); opacity: 0; } to { transform: none; opacity: 1; } }
+  @keyframes tg-shake { 25% { transform: translateX(-6px); } 75% { transform: translateX(6px); } }
+  @keyframes tg-glow { 0%, 100% { box-shadow: 0 0 0 3px var(--tg-glow), 0 0 10px var(--tg-glow); } 50% { box-shadow: 0 0 0 7px var(--tg-glow), 0 0 26px var(--tg-glow); } }
+  @keyframes tg-drop { from { transform: translate(-50%, -260%) scale(1.6); opacity: 0; } to { transform: translate(-50%, -50%); opacity: 1; } }
+
+  @media (max-width: 560px) {
+    .tg { padding-inline: var(--space-2); }
+    .tg-pick { grid-template-columns: 1fr; }
+    .tg-pick-btn { flex-direction: row; justify-content: flex-start; gap: var(--space-3); padding: var(--space-3) var(--space-4); }
+    .tg-chip span { display: none; }
+    .tg-chip.is-on span { display: inline; }
+    .tg-avatar { width: 52px; height: 52px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .tg *, .tg-toast { animation: none !important; transition: none !important; }
+    .tg-bird.is-on { transform: translate(-50%, -50%); box-shadow: 0 0 0 4px #fff; }
+  }
+</style>

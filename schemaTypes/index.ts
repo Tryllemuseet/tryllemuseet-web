@@ -41,6 +41,8 @@ import { quizConfig }      from './quizConfig'
 import { quizTheme }       from './quizTheme'
 import { quizQuestion }    from './quizQuestion'
 import { gameConfig }      from './gameConfig'
+import { farmGameConfig }  from './farmGameConfig'
+import { farmSeason }      from './farmSeason'
 import { gameChapter }     from './gameChapter'
 import { gamePreview }     from './gamePreview'
 import { bakTeppetPage }   from './bakTeppetPage'
@@ -90,6 +92,8 @@ export const schemaTypes = [
   quizTheme,
   quizQuestion,
   gameConfig,
+  farmGameConfig,
+  farmSeason,
   event,
 
   // Dokumenttyper — Opptredener
