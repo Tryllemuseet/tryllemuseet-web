@@ -174,6 +174,8 @@ const paletteStyle = `--tg-sky:${pal.sky};--tg-ground:${pal.ground};--tg-accent:
     traditionLinkUrl?: string; traditionLinkLabel?: string
     trickTitle: string; trickTitleEn?: string; trickEffect: string; trickEffectEn?: string; trickAge?: number
     hasTrick: boolean; nisseX?: number; nisseY?: number; nisseInScene?: boolean
+    dancer?: { name: string; imageUrl: string; x: number; y: number; size?: number }
+    craft?: { title: string; titleEn?: string; needs?: string; needsEn?: string; steps: { text: string; textEn?: string; imageUrl?: string }[] }
   }
   interface Season {
     key: string; title: string; titleEn?: string; subtitle?: string; subtitleEn?: string
@@ -1397,6 +1399,16 @@ const paletteStyle = `--tg-sky:${pal.sky};--tg-ground:${pal.ground};--tg-accent:
       let timer = 0
 
       const clear = () => scene.querySelectorAll('.tg-countitem').forEach(e => e.remove())
+      // A friend in the scene (Loco the cockatoo) who dances at every right answer.
+      const friend = place.dancer
+      scene.querySelector('.tg-dancer')?.remove()
+      if (friend) scene.insertAdjacentHTML('beforeend', `<img class="tg-dancer" src="${esc(friend.imageUrl)}" alt="${esc(friend.name)}" style="left:${friend.x}%;top:${friend.y}%;width:${friend.size ?? 11}%">`)
+      const dance = (forever = false) => {
+        const el = scene.querySelector('.tg-dancer')
+        if (!el) return
+        el.classList.add('is-dancing')
+        if (!forever) window.setTimeout(() => el.classList.remove('is-dancing'), 1500)
+      }
       function show() {
         clear()
         clearTimeout(timer)
@@ -1444,10 +1456,12 @@ const paletteStyle = `--tg-sky:${pal.sky};--tg-ground:${pal.ground};--tg-accent:
             btn.classList.add('is-right')
             round++
             if (round === rounds.length) {
-              api.msg(t('Riktig! Du telte alt.', 'Right! You counted everything.'))
+              dance(true)
+              api.msg(friend ? t(`Riktig! Du telte alt. Se, ${friend.name} danser!`, `Right! You counted everything. Look, ${friend.name} is dancing!`) : t('Riktig! Du telte alt.', 'Right! You counted everything.'))
               api.done()
               return
             }
+            dance()
             api.msg(t('Riktig! Her kommer nye.', 'Right! Here come new ones.'), false)
             await api.wait(1500)
             if (board.isConnected) newRound()
@@ -1535,6 +1549,13 @@ const paletteStyle = `--tg-sky:${pal.sky};--tg-ground:${pal.ground};--tg-accent:
       const short = L(place, 'traditionShort')
       const long = level() === 'smanisse' ? '' : L(place, 'traditionLong')
       const fact = [short, long].filter(Boolean).join(' ')
+      const craft = place.craft
+      const craftText = craft ? [L(craft, 'needs'), ...craft.steps.map((s, i) => `${i + 1}. ${L(s, 'text')}`)].filter(Boolean).join(' ') : ''
+      const craftHtml = craft ? `<details class="tg-craft">
+          <summary>✂️ ${esc(L(craft, 'title'))}</summary>
+          <div class="tg-head"><p>${esc(L(craft, 'needs'))}</p>${sayBtn(craftText)}</div>
+          <ol>${craft.steps.map(s => `<li>${s.imageUrl ? `<img src="${esc(s.imageUrl)}" alt="" loading="lazy" width="400" height="300">` : ''}<p>${esc(L(s, 'text'))}</p></li>`).join('')}</ol>
+        </details>` : ''
       show(`<div class="tg-card">
         <h1 class="tg-h1" tabindex="-1" data-focus>${esc(L(place, 'title'))}</h1>
         <div class="tg-talk">${bubble({ who: 'jente', text: done, pose: 'jubler' })}</div>
@@ -1544,6 +1565,7 @@ const paletteStyle = `--tg-sky:${pal.sky};--tg-ground:${pal.ground};--tg-accent:
           ${long ? `<p>${esc(long)}</p>` : ''}
           ${place.traditionLinkUrl ? `<p><a href="${esc(place.traditionLinkUrl)}">${esc(place.traditionLinkLabel || t('Les mer', 'Read more'))}</a></p>` : ''}
         </div>
+        ${craftHtml}
         ${noHints ? `<p class="tg-note">${pic('smor', 'tg-tally-icon')} ${t('Du klarte det uten hint. Nissen la et smørøye i grøten din!', 'You did it without hints. The nisse put a butter-eye in your porridge!')}</p>` : ''}
         <p class="tg-center"><button type="button" class="tg-btn" id="tg-next">${t('Hva har nissen lagt igjen? ▶', 'What did the nisse leave? ▶')}</button></p>
       </div>`)
@@ -1926,6 +1948,21 @@ const paletteStyle = `--tg-sky:${pal.sky};--tg-ground:${pal.ground};--tg-accent:
   .tg-guess-num { min-width: 1.8rem; height: 1.8rem; border-radius: 50%; background: var(--tg-accent2); color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 700; }
   .tg-guess.is-right { border-color: var(--tg-accent2); background: color-mix(in srgb, var(--tg-glow) 35%, #fff); }
   .tg-guess.is-shake { animation: tg-shake .35s; }
+  .tg-dancer { position: absolute; transform: translate(-50%, -50%); height: auto; pointer-events: none; transform-origin: 50% 90%; filter: drop-shadow(0 3px 3px rgba(0, 0, 0, .4)); }
+  .tg-dancer.is-dancing { animation: tg-dance .5s ease-in-out infinite; }
+  @keyframes tg-dance {
+    0%, 100% { transform: translate(-50%, -50%) rotate(-12deg); }
+    25% { transform: translate(-50%, -62%) rotate(0deg); }
+    50% { transform: translate(-50%, -50%) rotate(12deg); }
+    75% { transform: translate(-50%, -62%) rotate(0deg); }
+  }
+  .tg-craft { background: #fff; border-radius: 14px; padding: var(--space-3) var(--space-4); font-size: 1.1rem; line-height: 1.5; }
+  .tg-craft summary { cursor: pointer; font-weight: 700; color: var(--tg-accent2); padding: var(--space-1) 0; }
+  .tg-craft ol { list-style: none; margin: var(--space-3) 0 0; padding: 0; counter-reset: craft; display: grid; gap: var(--space-4); }
+  .tg-craft li { counter-increment: craft; display: grid; grid-template-columns: minmax(110px, 38%) 1fr; gap: var(--space-3); align-items: center; }
+  .tg-craft li img { width: 100%; height: auto; border-radius: 10px; }
+  @media (max-width: 520px) { .tg-craft li { grid-template-columns: 1fr; gap: var(--space-2); } .tg-craft li img { max-width: 280px; margin: 0 auto; } }
+  .tg-craft li p::before { content: counter(craft) '. '; font-weight: 700; color: var(--tg-accent2); }
   .tg-countitem { position: absolute; transform: translate(-50%, -50%); height: auto; pointer-events: none; filter: drop-shadow(0 3px 3px rgba(0, 0, 0, .35)); }
   .tg-numbers { display: flex; flex-wrap: wrap; gap: var(--space-2); justify-content: center; margin-top: var(--space-3); }
   .tg-num { min-width: 56px; min-height: 56px; border-radius: 14px; border: 3px solid transparent; background: #fff; box-shadow: var(--shadow); font: 700 1.5rem var(--font-ui); color: var(--tg-accent); cursor: pointer; }
