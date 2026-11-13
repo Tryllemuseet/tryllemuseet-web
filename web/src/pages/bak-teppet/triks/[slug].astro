@@ -26,6 +26,7 @@ import {
   loginUrl,
   setPrivateHeaders,
   videoEmbedUrl,
+  withNorwegianCaptions,
 } from '../../../lib/bakTeppet'
 
 setPrivateHeaders(Astro.response.headers)
@@ -182,7 +183,7 @@ const related = trick.relatedTricks ?? []
             <figure class="kt-video">
               <div class="kt-video-wrap">
                 <iframe
-                  src={embed}
+                  src={withNorwegianCaptions(embed)}
                   title={v.label ?? `Video: ${trick.title}`}
                   loading="lazy"
                   allow="accelerometer; encrypted-media; gyroscope; picture-in-picture; fullscreen"

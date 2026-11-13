@@ -129,4 +129,4 @@ export function failedAttemptDelay() {
   return new Promise(resolve => setTimeout(resolve, 800))
 }
 
-export { videoEmbedUrl } from './trickMedia'
+export { videoEmbedUrl, withNorwegianCaptions } from './trickMedia'
