@@ -125,6 +125,14 @@ const place = defineArrayMember({
       description: 'Julesesongens innebygde steder heter tunet, fjoset, laven, stallen, bakstehuset, stua, stabburet og lyktestien. Samme nøkkel = feltene du fyller ut her erstatter de innebygde. Ny nøkkel = nytt sted.',
       validation: R => R.required().regex(/^[a-z0-9-]+$/).error('Bare små bokstaver, tall og bindestrek.'),
     }),
+    defineField({
+      name: 'slot',
+      title: 'Plassnummer (lagrekode)',
+      type: 'number',
+      group: 'main',
+      description: 'Et fast nummer fra 0 til 15 som gjør at stedet kan huskes i lagrekoden. Hvert sted må ha sitt eget nummer. Endre det aldri etter at barn kan ha koder. Julesesongens innebygde steder har nummer 0–7, så nye steder bør starte på 8. Et sted uten nummer huskes ikke i koden.',
+      validation: R => R.integer().min(0).max(15),
+    }),
     defineField({ name: 'title', title: 'Navn', type: 'string', group: 'main' }),
     defineField({ name: 'titleEn', title: 'Navn (engelsk)', type: 'string', group: 'main' }),
     defineField({

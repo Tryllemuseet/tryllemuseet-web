@@ -3728,7 +3728,7 @@ export async function getFarmSeasonDoc(key: string): Promise<Record<string, unkn
       loftName, loftNameEn, kitSlug, showWords, showWordsEn,
       "hidden": places[isVisible == false].key,
       places[isVisible != false] {
-        key, title, titleEn, mechanic, icon, mapX, mapY, ornament,
+        key, slot, title, titleEn, mechanic, icon, mapX, mapY, ornament,
         "ornamentImage": ornamentImage { asset->{ _ref, url } },
         "sceneImage": sceneImage { asset->{ _ref, url }, alt },
         intro[] { who, text, textEn },
