@@ -93,6 +93,10 @@ kulene du har tegnet):
 
 ---
 
+> **Oppdatert 13. november (senere):** Bryggerhuset er byttet ut med **Sykkelverkstedet**
+> (Årvoll gård har et sykkelverksted). Scenebildet fra bryggerhuset brukes ikke
+> lenger. Hønsehuset er nå et rom i låvebygget. Julekurven i Stua er et hjerte.
+>
 > **Status 13. november:** Alle fem stedene i del 2 er bygget (Klokketårnet,
 > Skogen, Porten, Bryggerhuset og Hønsehuset) med museets scenebilder. Klokketårnet
 > har de fem tegnede bjellene, Skogen de seks trærne og Hønsehuset hønene og
@@ -118,17 +122,18 @@ illustrasjoner.
 |---|---|---|---|
 | Klokketårnet | det lille tårnet på mønet (44, 6) | `husk` (bjeller) | ingen |
 | Skogen | skogkanten til høyre (93, 48) | ny: `sammenlign` | ny mekanikk |
-| Bryggerhuset | **nytt bygg** til høyre i tunet (87, 62) | ny: `sorter` | ny mekanikk |
-| Hønsehuset | **nytt bygg** til venstre (8, 48) | ny: `tell` | ny mekanikk |
+| Sykkelverkstedet (før: Bryggerhuset) | **nytt bygg** til høyre i tunet (88, 67) | `sorter` | bygget |
+| Hønsehuset | **en del av låvebygget** (9, 18) | `tell` | bygget |
 | Porten (bonus) | veien nede til venstre (10, 90) | ny: `gjett-hvem` | ny mekanikk |
 
 Koordinatene er prosent fra venstre og fra toppen av kartet.
 
 ### Kart versjon 2
 
-Kartet må få to nye små bygg: **Bryggerhuset** (en liten bygning i snøen
-til høyre for tunet) og **Hønsehuset** (et lite hus med liten luke og
-hønsegård til venstre). Alle andre bygg og stier skal stå akkurat der de står
+Kartet må få ett nytt lite bygg: **Sykkelverkstedet** til høyre for tunet (se
+bestillingen under sted 3). **Hønsehuset** trenger ikke eget bygg. Det er et
+rom i låven, så tegn gjerne en liten hønseluke med rampe og et opplyst vindu
+på låveveggen, øverst til venstre. Alle andre bygg og stier skal stå akkurat der de står
 nå, så knappene på dagens steder fortsatt treffer. Juletreet tegnes ikke på
 kartet, som nå.
 
@@ -201,33 +206,66 @@ lenke.
 
 ---
 
-### 3. Bryggerhuset – «Lysene på rad»
+### 3. Sykkelverkstedet – «Fastnøklene på rad»
 
-**Idé.** Her støpte man lys i gamle dager. Nissen har satt lysene feil, og
-spilleren setter dem fra kortest til lengst.
+*Erstatter Bryggerhuset. Årvoll gård har et sykkelverksted, og
+stedet bruker samme plass i lagrekoden.*
 
-**Minispill.** Ny mekanikk `sorter`: trykk på tingene i riktig rekkefølge
-etter størrelse.
+**Idé.** Om vinteren fikser verkstedet sparker og kjelker også. Nissen har
+lånt fastnøklene og hengt dem hulter til bulter. Spilleren henger dem på
+rekke fra kortest til lengst.
+
+**Minispill.** `sorter`: trykk på tingene i rekkefølge etter lengde.
 
 | Nivå | Regler |
 |---|---|
-| Smånisse | tre lys, stor forskjell |
-| Tryllelærling | fire lys |
-| Tryllemester | seks lys, noen nesten like høye |
+| Smånisse | tre fastnøkler, stor forskjell |
+| Tryllelærling | fire, så fem |
+| Tryllemester | fem, så seks nesten like lange, siste runde motsatt vei |
 
-**Tradisjon (utkast).** Før elektrisiteten støpte folk lysene selv av talg
-eller stearin. Lys var viktig i de mørke vintermånedene.
+**Tradisjon (utkast).** Før i tida reparerte folk tingene sine i stedet for å
+kjøpe nytt. Før jul ble sleder, kjelker og sparker satt i stand.
 
-**Triks (effekt).** *Blyanten som går gjennom papiret.* En blyant stikkes
-tvers gjennom et ark uten at arket får hull. Sikkerhet: ingen levende lys
-brukes i trikset.
+**Triks (effekt).** *Pendelen som lystrer.* En mutter i en tråd begynner å
+svinge når du ber den om det.
 
-**Illustrasjoner.**
+**Bestilling til tegneren**
 
-- Scene: bryggerhus med stor kjele på ovn, lysformer på en hylle, snorer med
-  lys til tørk, trebenk. Fri flate foran. Nissen tegnes inn bak kjelen.
-- Seks lys i ulike høyder (hvite og røde), 400 × 800 px, gjennomsiktig.
-- Pynt: lite rødt lys.
+*Scene (viktigst).* Liggende 16:9, minst 1600 × 900 px, samme strek, lys og
+farger som Fjøset og Hønsehuset (varmt lyktelys inne, blå vinternatt ute).
+
+- Et lite verksted i en gammel uthusbygning med tømmer- eller panelvegger og
+  tregulv.
+- Midt i bildet, litt til venstre: en barnesykkel i reparasjonsstativ, gjerne
+  rød, med ett hjul tatt av.
+- En **spark** og en **kjelke** står lent mot veggen, så det er tydelig at det er vinter.
+- På veggen til høyre: en **tom verktøytavle** med kroker (nøklene legger
+  spillet oppå). To–tre sykkelhjul og en sykkelslange henger høyere oppe.
+- En arbeidsbenk med skrustikke, oljekanne, ringeklokke og en boks med
+  muttere. En tent lykt og en liten julekrans eller granbar som pynt.
+- Vindu med snø utenfor.
+- **Nissen** titter fram bak et sykkelhjul til venstre, i lua si. Vennlig og
+  litt skøyeraktig, ikke skummel.
+- **Den nederste tredelen av bildet skal være rolig** (gulv, ingen viktige
+  detaljer). Der legger spillet knapper og tekst.
+- Ingen tekst eller skilt i bildet.
+
+*Løse deler,* hver for seg på gjennomsiktig bakgrunn (PNG eller WebP):
+
+- **Seks fastnøkler** i samme stil, men tydelig ulik lengde, tegnet stående
+  (hode opp). Omtrent 200 × 300 px for den korteste og 200 × 900 px for den
+  lengste, med jevne trinn imellom. Stålgrå, gjerne med litt farge på
+  skaftet så de er lette å se.
+- **Pynt til juletreet:** en liten fastnøkkel med rød sløyfe, eller en
+  sykkelbjelle med sløyfe, 400 × 400 px.
+- **Kartknapp:** en liten sykkel eller et sykkelhjul, 200 × 200 px.
+
+*Kartet (versjon 2).* Et lite bygg til høyre for tunet, omtrent 88 % fra
+venstre og 67 % fra toppen: lav uthusbygning med dobbel dør, en sykkel og en
+spark lent mot veggen, og lys i vinduet.
+
+Til tegningene er på plass bruker spillet en enkel reservebakgrunn og tegnede
+nøkler.
 
 ---
 

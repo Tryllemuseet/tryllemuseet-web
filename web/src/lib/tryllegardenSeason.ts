@@ -458,7 +458,7 @@ const jul: FarmSeason = {
       traditionShort:
         'Julekurver flettes av to papirbiter til et hjerte og henges på juletreet. Ofte ligger det godteri oppi.',
       traditionLong:
-        'Før i tida laget familien julepynten selv: kurver, lenker av glanspapir og engler av papp. Mange gjør det fortsatt.',
+        'En ekte julekurv er litt magisk: Papirremsene er doble og tres gjennom hverandre, ikke bare over og under. Derfor kan hjertet åpnes, som en liten pose.',
       trickTitle: 'Gå gjennom et julekort',
       trickEffect:
         'Du viser fram et helt vanlig julekort og sier at du kan gå tvers gjennom det. Ingen tror deg. Noen klipp senere stiger du rett gjennom kortet!',
@@ -710,24 +710,24 @@ const jul: FarmSeason = {
       nisseX: 35, nisseY: 71, nisseInScene: true,
     },
     {
-      key: 'bryggerhuset',
+      key: 'sykkelverkstedet',
       slot: 11,
       bonus: true,
-      title: 'Bryggerhuset',
+      title: 'Sykkelverkstedet',
       mechanic: 'sorter',
-      icon: '🕯️',
+      icon: '🚲',
       mapX: 88, mapY: 67,
-      ornament: '🕯️',
-      sceneImageUrl: '/images/tryllegarden/scene/bryggerhuset.webp',
-      sceneAlt: 'Inne i bryggerhuset: en stor kjele over ilden, trebøtter, kakeformer på hyllene og en tent lykt. Nissen titter inn fra døra.',
+      ornament: '🔧',
+      backdrop: 'stall',
+      sceneAlt: 'Inne i sykkelverkstedet: en sykkel i reparasjonsstativ, en spark, hjul på veggen og en verktøytavle. Nissen titter fram bak et sykkelhjul.',
       intro: [
-        { who: 'jente', text: 'Her i bryggerhuset støpte man lys før i tida. Det er varmt av ilden!' },
-        { who: 'gutt',  text: 'Men nissen har rotet til lysene. De står i hytt og vær.' },
-        { who: 'jente', text: 'Kan du sette dem på rekke, fra det korteste til det lengste?' },
+        { who: 'gutt',  text: 'Her er sykkelverkstedet! Om vinteren fikser de sparker og kjelker her også.' },
+        { who: 'jente', text: 'Men se på verktøytavla. Nissen har lånt fastnøklene og hengt dem hulter til bulter.' },
+        { who: 'gutt',  text: 'Kan du henge dem på rekke, fra den korteste til den lengste?' },
       ],
-      task: 'Trykk på lysene i rekkefølge: først det korteste, så det neste, helt til det lengste.',
+      task: 'Trykk på fastnøklene i rekkefølge: først den korteste, så den neste, helt til den lengste.',
       items: [
-        { key: 'lys', label: 'Lys' },
+        { key: 'nokkel', label: 'Fastnøkkel' },
       ],
       levels: {
         smanisse: { rounds: [3] },
@@ -735,20 +735,20 @@ const jul: FarmSeason = {
         mester:   { rounds: [5, 6] },
       },
       hints: [
-        'Se først hvilket lys som er aller kortest.',
-        'Sammenlign to og to lys som står ved siden av hverandre.',
+        'Se først hvilken fastnøkkel som er aller kortest.',
+        'Sammenlign to og to som henger ved siden av hverandre.',
       ],
-      done: 'Alle lysene står på rekke! En tryllekunstner har orden på tingene sine.',
+      done: 'Alle fastnøklene henger på rekke! En tryllekunstner har orden på tingene sine.',
       traditionShort:
-        'Før elektrisiteten støpte folk lysene selv, av talg eller stearin. Lys var viktig i de mørke vintermånedene.',
+        'Før i tida reparerte folk tingene sine i stedet for å kjøpe nytt. Før jul ble sleder, kjelker og sparker satt i stand.',
       traditionLong:
-        'I bryggerhuset var det plass til store kjeler og mye damp, så her ble mange av de store jobbene på gården gjort.',
+        'En spark eller en kjelke var en stor julegave. Med den kunne barna renne i bakkene hele romjula.',
       trickTitle: 'Pendelen som lystrer',
       trickEffect:
-        'En liten ring henger i en tråd og står helt stille. Du ber den svinge – og den begynner å svinge, uten at du tar på den!',
+        'En mutter henger i en tråd og står helt stille. Du ber den svinge – og den begynner å svinge, uten at du tar på den!',
       trickAge: 7,
       trickSlug: 'pendelen-som-lystrer',
-      nisseX: 10, nisseY: 55, nisseInScene: true,
+      nisseX: 12, nisseY: 40,
     },
     {
       key: 'honsehuset',
@@ -761,11 +761,12 @@ const jul: FarmSeason = {
       ornament: '🥚',
       ornamentImageUrl: '/images/tryllegarden/honsehus/egg-1.webp',
       sceneImageUrl: '/images/tryllegarden/scene/honsehuset.webp',
-      sceneAlt: 'Inne i hønsehuset: reirkasser med halm og egg, en tent lykt, et vindu mot nattehimmelen og et trau. Nissen titter fram fra en reirkasse.',
+      sceneAlt: 'Hønsenes rom innerst i låven: reirkasser med halm og egg, en tent lykt, et vindu mot nattehimmelen og et trau. Nissen titter fram fra en reirkasse.',
       intro: [
-        { who: 'gutt',  text: 'Dyra skal ha ekstra god mat på julaften. Også hønene!' },
-        { who: 'jente', text: 'Nissen har prøvd å telle hønene og eggene, men han mister alltid tellingen.' },
-        { who: 'gutt',  text: 'Kan du hjelpe ham? Se godt etter, og tell.' },
+        { who: 'gutt',  text: 'Innerst i låven har hønene sitt eget lille rom. Det er hønsehuset!' },
+        { who: 'jente', text: 'Dyra skal ha ekstra god mat på julaften. Også hønene.' },
+        { who: 'gutt',  text: 'Nissen har prøvd å telle hønene og eggene, men han mister alltid tellingen.' },
+        { who: 'jente', text: 'Kan du hjelpe ham? Se godt etter, og tell.' },
       ],
       task: 'Se godt etter. Tell, og trykk på riktig tall.',
       items: [
@@ -788,7 +789,7 @@ const jul: FarmSeason = {
       traditionShort:
         'På julaften fikk husdyra ekstra mat. Mange mente at dyra skulle ha det fint før menneskene satte seg til bords.',
       traditionLong:
-        'Hønene fikk gjerne litt ekstra korn, og noen satte ut en skål grøt til nissen.',
+        'Hønene fikk gjerne litt ekstra korn. De bodde ofte i et lunt hjørne av låven eller fjøset, der de andre dyra holdt varmen.',
       trickTitle: 'Egget som røper seg',
       trickEffect:
         'To egg ser helt like ut. Du kan si hvilket som er kokt og hvilket som er rått, uten å knekke dem!',
