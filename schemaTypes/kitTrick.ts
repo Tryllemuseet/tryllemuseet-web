@@ -255,7 +255,12 @@ export const kitTrick = defineType({
           name: 'kitVideo',
           type: 'object',
           fields: [
-            defineField({ name: 'label', title: 'Tittel', type: 'string' }),
+            defineField({
+              name: 'label',
+              title: 'Tittel',
+              type: 'string',
+              description: 'Skriv «Effekt» for en video som bare viser hva publikum ser, og for eksempel «Forklaring» for metoden. I Tryllegården vises «Effekt» først.',
+            }),
             defineField({ name: 'url', title: 'URL', type: 'url', validation: R => R.required() }),
           ],
           preview: { select: { title: 'label', subtitle: 'url' } },

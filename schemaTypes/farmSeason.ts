@@ -229,6 +229,14 @@ const place = defineArrayMember({
     }),
     defineField({ name: 'trickEffectEn', title: 'Det publikum ser (engelsk)', type: 'text', rows: 3, group: 'trick' }),
     defineField({
+      name: 'trickAge',
+      title: 'Passer fra alder',
+      type: 'number',
+      group: 'trick',
+      description: 'Laveste alder trikset passer for. Vises på kortet, og Smånisse får beskjed om å be en voksen hjelpe til når det er 7 eller mer.',
+      validation: R => R.min(3).max(16).integer(),
+    }),
+    defineField({
       name: 'trickSlug',
       title: 'Tryllebeskrivelsens adresse (slug)',
       type: 'string',

@@ -168,7 +168,7 @@ const paletteStyle = `--tg-sky:${pal.sky};--tg-ground:${pal.ground};--tg-accent:
     hints: string[]; hintsEn?: string[]; done: string; doneEn?: string
     traditionShort: string; traditionShortEn?: string; traditionLong?: string; traditionLongEn?: string
     traditionLinkUrl?: string; traditionLinkLabel?: string
-    trickTitle: string; trickTitleEn?: string; trickEffect: string; trickEffectEn?: string
+    trickTitle: string; trickTitleEn?: string; trickEffect: string; trickEffectEn?: string; trickAge?: number
     hasTrick: boolean; nisseX?: number; nisseY?: number; nisseInScene?: boolean
   }
   interface Season {
@@ -1277,6 +1277,8 @@ const paletteStyle = `--tg-sky:${pal.sky};--tg-ground:${pal.ground};--tg-accent:
         <p class="tg-kicker">${t('Nissens triks', 'The nisse’s trick')}</p>
         <div class="tg-head"><h1 class="tg-h1" tabindex="-1" data-focus>${esc(title)}</h1>${sayBtn(`${title}. ${effect}`)}</div>
         <p class="tg-lead tg-lead--tight">${esc(effect)}</p>
+        ${place.trickAge ? `<p class="tg-age">${t(`Passer fra ${place.trickAge} år`, `Suits ages ${place.trickAge} and up`)}</p>` : ''}
+        ${place.trickAge && place.trickAge >= 7 && level() === 'smanisse' ? `<p class="tg-note">${t('Dette trikset er litt vanskelig. Be en voksen hjelpe til!', 'This trick is a little tricky. Ask a grown-up to help!')}</p>` : ''}
         <div class="tg-secret" id="tg-secret">
           ${canReveal
             ? `<p class="tg-center"><button type="button" class="tg-btn tg-btn--ghost" id="tg-reveal">🔑 ${t('Vis hemmeligheten', 'Show the secret')}</button></p>`
@@ -1288,14 +1290,18 @@ const paletteStyle = `--tg-sky:${pal.sky};--tg-ground:${pal.ground};--tg-accent:
       root.querySelector('#tg-reveal')?.addEventListener('click', async e => {
         const btn = e.currentTarget as HTMLButtonElement
         btn.disabled = true
-        const res = await ask<{ title: string; html: string }>({ action: 'trick', place: place.key })
+        const res = await ask<{ title: string; html: string; text?: string; videos?: { label: string; embed?: string; url?: string }[] }>({ action: 'trick', place: place.key })
         if (!res?.html) {
           btn.disabled = false
           toast(t('Nissen sover visst. Prøv igjen om litt.', 'The nisse seems to be asleep. Try again in a moment.'))
           return
         }
         // Rendered on the server from the museum's own trick document.
-        secret.innerHTML = `<div class="tg-secret-body"><p class="tg-note">🤫 ${t('En tryllekunstner forteller aldri hvordan det gjøres!', 'A magician never tells how it is done!')}</p>${res.html}</div>`
+        // Videos load only now, after the child asked for the secret.
+        const videos = (res.videos ?? []).map(v => v.embed
+          ? `<figure class="tg-video"><div class="tg-video-wrap"><iframe src="${esc(v.embed)}" title="${esc(v.label || t('Video', 'Video'))}" loading="lazy" allow="fullscreen; picture-in-picture" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe></div>${v.label ? `<figcaption>${esc(v.label)}</figcaption>` : ''}</figure>`
+          : v.url ? `<p><a href="${esc(v.url)}" target="_blank" rel="noopener noreferrer">▶ ${esc(v.label || t('Se video', 'Watch video'))}</a></p>` : '').join('')
+        secret.innerHTML = `<div class="tg-secret-body"><div class="tg-head"><p class="tg-note">🤫 ${t('En tryllekunstner forteller aldri hvordan det gjøres!', 'A magician never tells how it is done!')}</p>${res.text ? sayBtn(res.text) : ''}</div>${videos}${res.html}</div>`
         secret.querySelector<HTMLElement>('.tg-secret-body')!.scrollIntoView({ block: 'nearest', behavior: 'smooth' })
       })
       root.querySelector('#tg-hang')!.addEventListener('click', () => {
@@ -1611,6 +1617,11 @@ const paletteStyle = `--tg-sky:${pal.sky};--tg-ground:${pal.ground};--tg-accent:
   .tg-fact > * + * { margin-top: var(--space-2); }
   .tg-secret-body { background: #fff8e6; border: 2px dashed var(--tg-glow); border-radius: 14px; padding: var(--space-4); font-size: 1.1rem; line-height: 1.55; animation: tg-pop .3s ease-out; }
   .tg-secret-body > * + * { margin-top: var(--space-3); }
+  .tg-age { display: inline-block; font-weight: 700; font-size: .95rem; color: var(--tg-accent2); background: #fff; border-radius: 999px; padding: .2rem .8rem; }
+  .tg-video { margin: 0; }
+  .tg-video-wrap { position: relative; aspect-ratio: 16 / 9; border-radius: 12px; overflow: hidden; background: #000; }
+  .tg-video-wrap iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+  .tg-video figcaption { font-size: .95rem; color: var(--ink-mid); margin-top: var(--space-1); }
   .tg-secret-body h4 { font-size: 1.15rem; color: var(--tg-accent); }
   .tg-secret-body ol, .tg-secret-body ul { padding-left: 1.4em; }
   .tg-secret-body li + li { margin-top: var(--space-2); }

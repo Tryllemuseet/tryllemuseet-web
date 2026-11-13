@@ -409,6 +409,12 @@ is on. Editors test it with the preview link.
 - **Finale:** when all eight ornaments hang, the player composes a show
   (three of the nisse's tricks and a magic word), the animals watch, and the
   nisse hands over the key to Nisseloftet (`/bak-teppet/nissens-tryllesekk`).
+- **The trick card** reuses the closed area's tryllebeskrivelser: text, steps
+  and step pictures, plus a read-aloud button and the trick's videos (a video
+  titled "Effekt" is shown first; embedded players load only after the child
+  taps "Vis hemmeligheten"; YouTube players only suggest videos from the same
+  channel). The card shows the trick's recommended age (`trickAge` on the
+  place), and Smånisse is asked to get a grown-up's help for tricks from age 7.
 - Nine tricks and the bundle "Nissens tryllesekk" exist in the `lukket`
   dataset. The ninth, "Tryllekunstnerens tre regler", is the finale's lesson.
 - Norwegian only. The interface has English strings and every content field

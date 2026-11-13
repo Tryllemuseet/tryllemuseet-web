@@ -111,6 +111,8 @@ export interface FarmPlace {
   trickTitle:     string
   trickTitleEn?:  string
   trickEffect:    string
+  /** Youngest age the trick suits (our estimate until children have tried it). */
+  trickAge?:      number
   trickEffectEn?: string
   /** Slug of the kitTrick document (private dataset) with the method. */
   trickSlug?: string
@@ -215,6 +217,7 @@ const jul: FarmSeason = {
       trickTitle: 'Strikken som hopper',
       trickEffect:
         'Du setter en strikk rundt pekefingeren og langfingeren. Du knytter hånda og sier trylleordet. Vips – strikken har hoppet over til de to andre fingrene!',
+      trickAge: 6,
       trickSlug: 'strikken-som-hopper',
       nisseX: 63, nisseY: 19, nisseInScene: true,
     },
@@ -258,6 +261,7 @@ const jul: FarmSeason = {
       trickTitle: 'Kanelstanga av gummi',
       trickEffect:
         'Du viser fram en hard kanelstang. Så rister du forsiktig på den – og plutselig ser den myk ut, som om den var av gummi!',
+      trickAge: 5,
       trickSlug: 'kanelstanga-av-gummi',
       nisseX: 90, nisseY: 83, nisseInScene: true,
     },
@@ -302,6 +306,7 @@ const jul: FarmSeason = {
       trickTitle: 'Fuglen på neket',
       trickEffect:
         'På den ene siden av en papirskive er det en fugl. På den andre siden er det et julenek. Du snurrer skiva – og plutselig sitter fuglen på neket!',
+      trickAge: 6,
       trickSlug: 'fuglen-pa-neket',
       nisseX: 92, nisseY: 84,
     },
@@ -345,6 +350,7 @@ const jul: FarmSeason = {
       trickTitle: 'Den umulige knuten',
       trickEffect:
         'Du ber en venn knyte en knute på et bånd uten å slippe endene. Det går ikke! Men du klarer det på et blunk.',
+      trickAge: 7,
       trickSlug: 'den-umulige-knuten',
       nisseX: 92, nisseY: 30,
     },
@@ -388,6 +394,7 @@ const jul: FarmSeason = {
       trickTitle: 'Pepperkaka som vet svaret',
       trickEffect:
         'En venn tenker på et hemmelig tall og regner litt i hodet. Så løfter du på en pepperkake. Under den ligger en lapp – med svaret!',
+      trickAge: 8,
       trickSlug: 'pepperkaka-som-vet-svaret',
       nisseX: 7, nisseY: 34,
     },
@@ -427,6 +434,7 @@ const jul: FarmSeason = {
       trickTitle: 'Gå gjennom et julekort',
       trickEffect:
         'Du viser fram et helt vanlig julekort og sier at du kan gå tvers gjennom det. Ingen tror deg. Noen klipp senere stiger du rett gjennom kortet!',
+      trickAge: 8,
       trickSlug: 'ga-gjennom-et-julekort',
       nisseX: 93, nisseY: 26,
     },
@@ -474,6 +482,7 @@ const jul: FarmSeason = {
       trickTitle: 'Klementinen som teller',
       trickEffect:
         'Du holder opp en klementin og sier hvor mange båter den har inni. Så skreller du den, og alle teller. Det stemmer!',
+      trickAge: 8,
       trickSlug: 'klementinen-som-teller',
       nisseX: 50, nisseY: 90,
     },
@@ -512,6 +521,7 @@ const jul: FarmSeason = {
       trickTitle: 'Tankeleser-lysene',
       trickEffect:
         'Den ene tryllekunstneren går ut av rommet. Publikum velger ett lys. Tryllekunstneren kommer inn igjen – og vet hvilket lys det var!',
+      trickAge: 9,
       trickSlug: 'tankeleser-lysene',
       nisseX: 6, nisseY: 70,
     },
