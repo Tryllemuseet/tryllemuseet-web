@@ -404,7 +404,7 @@ is on. Editors test it with the preview link.
   | Klokketårnet | `husk` | 2 → 6 bells that differ in colour, last round backwards on Tryllemester |
   | Skogen | `gjett` | 3 → 6 trees; "find the tallest" → "the second tallest" and combined clues |
   | Porten (extra) | `gjett` | 3 → 6 costumes (emoji until drawn) and riddles |
-  | Sykkelverkstedet (extra) | `sorter` | 3 → 6 spanners to put in order by length, the last round the other way on Tryllemester. Replaced Bryggerhuset (same slot 11); an item with key `lys` is drawn as a candle, anything else as a spanner |
+  | Sykkelverkstedet (extra) | `sorter` | 3 → 6 drawn spanners (items with a picture and `size` = length) to put in order by length, the last round the other way on Tryllemester. Replaced Bryggerhuset (same slot 11); an item with key `lys` is drawn as a candle, anything else as a spanner |
   | Fuglehuset (extra, key `honsehuset`; the cockatoo Loco is the place's `dancer`: two poses in the same frame, swapped while he dances at every right answer) | `tell` | count eggs, and hens on harder levels; Smånisse can look as long as they like, older children see them for a few seconds and can look again |
 
 - Hint ladder "Nissen hvisker" (two spoken hints, then the answer glows),
