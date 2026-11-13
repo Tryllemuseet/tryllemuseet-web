@@ -165,8 +165,9 @@ kom fra pamfletten. QR-koden blir da litt tettere.
 3. **Test med barn** i hver aldersgruppe, helst fra pamfletten.
 4. **Scenen til Lyktestien** og gjerne nytt kart med Fuglehuset og Bakstehuset.
 5. **Test av QR-koden** på flere telefoner og i dårlig lys.
-6. **Praktisk informasjon** som mangler her: åpningstider, adresse og dato for
-   julearrangementet. Jeg har ikke lagt inn noe av dette.
+6. **Praktisk informasjon:** åpningstider (søndager 12–15), adresse og lenke til
+   aktivitetsoversikten står nå på baksiden. Pamfletten har ingen datoer for
+   enkeltarrangementer, siden de står i aktivitetsoversikten.
 
 To ting å tenke på:
 
@@ -192,10 +193,35 @@ brukes i dag bare på sidene under «Lær et triks», som er slått av. Anbefalt
 
 Jeg kan gjøre ferdig noe av dette:
 
-- **Trykkeklar PDF** av hele pamfletten: A4 brettet til A5, tekstene over, de to
-  oppgavene som er laget, QR-koden og museets scenebilder. Forsiden og
-  strekversjonene mangler tegninger, så de får plassholdere.
+- ~~**Trykkeklar PDF**~~ **Laget** (se punkt 10).
 - **Kort lenke** `/tryllegarden` med omdirigering, og en nedlastbar
   oppgaveside på nettsiden så barna også kan skrive ut oppgavene hjemme.
 - **Flere oppgaver:** nissekoden, prikk-til-prikk og tryllegåtene.
 - **Boksen «Til voksne»** i Tryllegården.
+
+## 10. Trykkeklar PDF (førsteutkast)
+
+Laget med `bygg-pamflett.py` fra tekstene i den filen. Endre tekst der, kjør
+`python3 docs/pamflett/bygg-pamflett.py`, så bygges begge PDF-ene på nytt.
+
+| Fil | Hva |
+|---|---|
+| `pamflett-trykk.pdf` | Til trykkeriet: to A4-ark liggende, 3 mm utfall, beskjæringsmerker og falsemerker. Ark 1 er utsiden (bakside \| forside), ark 2 er innsiden (side 2 \| side 3). Trykkes tosidig og brettes én gang. |
+| `pamflett-lese.pdf` | Til korrektur: fire A5-sider i lesefølge, uten merker. |
+| `pamflett-trykk.html`, `pamflett-lese.html` | Kilden til PDF-ene. |
+
+**Må avklares før trykk:**
+
+- **Forsiden har for lav oppløsning.** Scenen fra Tunet er 1600 px bred og blir
+  rundt 100 dpi når den dekker hele forsiden. Det holder til korrektur, men ikke
+  til trykk. Forsiden trenger en egen tegning i minst 2000 × 2800 px
+  (se punkt 4).
+- **Logoene er rasterbilder.** `LOGO-bred.png` er 784 px bred og gir rundt
+  320 dpi i størrelsen som er brukt, så det fungerer. Be likevel om
+  vektorfiler (SVG, EPS eller PDF) hvis trykkeriet krever det.
+- **Fargene er RGB.** Trykkeriet konverterer til CMYK, og de dype røde og gullfargene
+  kan bli litt dempet. Be om prøvetrykk.
+- **Fonter:** Cinzel og Source Sans 3 (begge åpne, Google Fonts) er innebygd i PDF-en.
+- **QR-kodene** (spill og aktivitetsoversikt) er ikke skannet med telefon herfra.
+- **Spillet må være slått på** før noe trykkes, og den lange lenken
+  `tryllemuseet.no/barn/tryllegarden` virker først da.
