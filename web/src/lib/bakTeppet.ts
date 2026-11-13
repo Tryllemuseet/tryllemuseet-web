@@ -129,12 +129,4 @@ export function failedAttemptDelay() {
   return new Promise(resolve => setTimeout(resolve, 800))
 }
 
-/** YouTube (incl. unlisted) and Vimeo (incl. private-link "/123/abc") URLs →
- *  embeddable player URL; anything else → null (rendered as a plain link). */
-export function videoEmbedUrl(url: string): string | null {
-  const yt = url.match(/(?:youtube\.com\/(?:watch\?(?:.*&)?v=|embed\/|shorts\/)|youtu\.be\/)([\w-]{11})/)
-  if (yt) return `https://www.youtube-nocookie.com/embed/${yt[1]}`
-  const vimeo = url.match(/vimeo\.com\/(?:video\/)?(\d+)(?:\/([\da-f]+))?/)
-  if (vimeo) return `https://player.vimeo.com/video/${vimeo[1]}${vimeo[2] ? `?h=${vimeo[2]}` : ''}`
-  return null
-}
+export { videoEmbedUrl } from './trickMedia'

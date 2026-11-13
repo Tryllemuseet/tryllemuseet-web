@@ -28,12 +28,14 @@ import {
   getKitAccessList,
   getKitTrickBySlug,
   portableTextToHtml,
+  portableTextToPlainText,
   privateUrlFor,
   type FarmGameConfig,
   type KitFigure,
   type KitTrick,
   type KitTrickSectionKind,
 } from './sanity'
+import { videoPayload } from './trickMedia'
 import { BUILT_IN_SEASONS, DEFAULT_SEASON_KEY, mergeSeason, type FarmSeason } from './tryllegardenSeason'
 
 export const TRYLLEGARDEN_PATH = '/barn/tryllegarden'
@@ -113,6 +115,24 @@ function trickHtml(trick: KitTrick, en: boolean): string {
   return parts.join('')
 }
 
+/** The same card as plain text, for the read-aloud button. */
+function trickText(trick: KitTrick, en: boolean): string {
+  const parts: string[] = [trick.title]
+  for (const s of trick.sections ?? []) {
+    if (s.kind === 'effekt') continue
+    const heading = s.heading || SECTION_TITLES[s.kind]?.[en ? 1 : 0] || ''
+    if (heading) parts.push(`${heading}.`)
+    const body = portableTextToPlainText(s.body)
+    if (body) parts.push(body)
+    if (s.listItems?.length) parts.push(s.listItems.join('. ') + '.')
+    ;(s.steps ?? []).forEach((step, n) => {
+      const text = portableTextToPlainText(step.text)
+      parts.push(`${n + 1}. ${step.title ? `${step.title}. ` : ''}${text}`)
+    })
+  }
+  return parts.join(' ')
+}
+
 // ── The endpoint ──────────────────────────────────────────────────
 
 export interface TryllegardenRequest {
@@ -168,7 +188,12 @@ export async function answer(req: TryllegardenRequest, cookies: AstroCookies): P
     const trick = await getKitTrickBySlug(priv.client, place.trickSlug)
     // Only tricks in the season's own bundle.
     if (!trick || !trick.kitIds.includes(kit._id)) return reply(404, { error: 'missing' })
-    return reply(200, { title: trick.title, html: trickHtml(trick, en) })
+    return reply(200, {
+      title: trick.title,
+      html: trickHtml(trick, en),
+      text: trickText(trick, en),
+      videos: videoPayload(trick.videos),
+    })
   } catch (err) {
     console.error('[tryllegarden] could not read the private dataset', err)
     return reply(503, { error: 'unavailable' })

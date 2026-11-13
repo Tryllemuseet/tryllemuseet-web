@@ -3741,7 +3741,7 @@ export async function getFarmSeasonDoc(key: string): Promise<Record<string, unkn
         hints, hintsEn, done, doneEn,
         traditionShort, traditionShortEn, traditionLong, traditionLongEn,
         traditionLinkUrl, traditionLinkLabel,
-        trickTitle, trickTitleEn, trickEffect, trickEffectEn, trickSlug,
+        trickTitle, trickTitleEn, trickEffect, trickEffectEn, trickAge, trickSlug,
         nisseX, nisseY, nisseInScene
       }
     }
