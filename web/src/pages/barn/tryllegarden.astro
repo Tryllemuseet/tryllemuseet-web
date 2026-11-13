@@ -1635,7 +1635,7 @@ const paletteStyle = `--tg-sky:${pal.sky};--tg-ground:${pal.ground};--tg-accent:
       root.querySelector('#tg-reveal')?.addEventListener('click', async e => {
         const btn = e.currentTarget as HTMLButtonElement
         btn.disabled = true
-        const res = await ask<{ title: string; html: string; text?: string; videos?: { label: string; embed?: string; url?: string }[] }>({ action: 'trick', place: place.key })
+        const res = await ask<{ title: string; html: string; text?: string; videos?: { label: string; embed?: string; url?: string; portrait?: boolean }[] }>({ action: 'trick', place: place.key })
         if (!res?.html) {
           btn.disabled = false
           toast(t('Nissen sover visst. Prøv igjen om litt.', 'The nisse seems to be asleep. Try again in a moment.'))
@@ -1644,7 +1644,7 @@ const paletteStyle = `--tg-sky:${pal.sky};--tg-ground:${pal.ground};--tg-accent:
         // Rendered on the server from the museum's own trick document.
         // Videos load only now, after the child asked for the secret.
         const videos = (res.videos ?? []).map(v => v.embed
-          ? `<figure class="tg-video"><div class="tg-video-wrap"><iframe src="${esc(v.embed)}" title="${esc(v.label || t('Video', 'Video'))}" loading="lazy" allow="fullscreen; picture-in-picture" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe></div>${v.label ? `<figcaption>${esc(v.label)}</figcaption>` : ''}</figure>`
+          ? `<figure class="tg-video${v.portrait ? ' tg-video--portrait' : ''}"><div class="tg-video-wrap"><iframe src="${esc(v.embed)}" title="${esc(v.label || t('Video', 'Video'))}" loading="lazy" allow="fullscreen; picture-in-picture" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe></div>${v.label ? `<figcaption>${esc(v.label)}</figcaption>` : ''}</figure>`
           : v.url ? `<p><a href="${esc(v.url)}" target="_blank" rel="noopener noreferrer">▶ ${esc(v.label || t('Se video', 'Watch video'))}</a></p>` : '').join('')
         secret.innerHTML = `<div class="tg-secret-body"><div class="tg-head"><p class="tg-note">🤫 ${t('En tryllekunstner forteller aldri hvordan det gjøres!', 'A magician never tells how it is done!')}</p>${res.text ? sayBtn(res.text) : ''}</div>${videos}${res.html}</div>`
         secret.querySelector<HTMLElement>('.tg-secret-body')!.scrollIntoView({ block: 'nearest', behavior: 'smooth' })
@@ -1976,6 +1976,8 @@ const paletteStyle = `--tg-sky:${pal.sky};--tg-ground:${pal.ground};--tg-accent:
   .tg-age { display: inline-block; font-weight: 700; font-size: .95rem; color: var(--tg-accent2); background: #fff; border-radius: 999px; padding: .2rem .8rem; }
   .tg-video { margin: 0; }
   .tg-video-wrap { position: relative; aspect-ratio: 16 / 9; border-radius: 12px; overflow: hidden; background: #000; }
+  .tg-video--portrait { max-width: min(100%, 20rem); margin-inline: auto; }
+  .tg-video--portrait .tg-video-wrap { aspect-ratio: 9 / 16; }
   .tg-video-wrap iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
   .tg-video figcaption { font-size: .95rem; color: var(--ink-mid); margin-top: var(--space-1); }
   .tg-clue { display: flex; align-items: center; justify-content: center; gap: var(--space-3); min-height: 3.2rem; margin-top: var(--space-3); padding: var(--space-3) var(--space-4); background: #fff; border-radius: 14px; font-size: 1.2rem; font-weight: 700; text-align: center; box-shadow: var(--shadow-sm); }

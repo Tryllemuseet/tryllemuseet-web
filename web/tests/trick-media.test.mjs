@@ -7,7 +7,7 @@ const source = readFileSync(new URL('../src/lib/trickMedia.ts', import.meta.url)
 const { code } = await transform(source, { loader: 'ts', format: 'cjs' })
 const mod = { exports: {} }
 new Function('module', 'exports', code)(mod, mod.exports)
-const { videoEmbedUrl, videoPayload } = mod.exports
+const { videoEmbedUrl, videoPayload, withNorwegianCaptions } = mod.exports
 
 test('YouTube and Vimeo links become players, other links do not', () => {
   assert.equal(videoEmbedUrl('https://youtu.be/abcdefghijk'), 'https://www.youtube-nocookie.com/embed/abcdefghijk')
@@ -21,8 +21,24 @@ test('the game card gets the effect video first, YouTube limited to the same cha
     { label: 'Effekt', url: 'https://www.youtube.com/watch?v=abcdefghijk' },
   ])
   assert.deepEqual(out.map(v => v.label), ['Effekt', 'Forklaring'])
-  assert.equal(out[0].embed, 'https://www.youtube-nocookie.com/embed/abcdefghijk?rel=0')
-  assert.equal(out[1].embed, 'https://player.vimeo.com/video/123456')
+  assert.equal(out[0].embed, 'https://www.youtube-nocookie.com/embed/abcdefghijk?rel=0&cc_load_policy=1&cc_lang_pref=no&hl=no')
+  assert.equal(out[1].embed, 'https://player.vimeo.com/video/123456?texttrack=no')
+})
+
+test('players are asked for Norwegian subtitles', () => {
+  assert.equal(withNorwegianCaptions('https://www.youtube-nocookie.com/embed/abcdefghijk'), 'https://www.youtube-nocookie.com/embed/abcdefghijk?cc_load_policy=1&cc_lang_pref=no&hl=no')
+  assert.equal(withNorwegianCaptions('https://player.vimeo.com/video/123456?h=abcdef0123'), 'https://player.vimeo.com/video/123456?h=abcdef0123&texttrack=no')
+  assert.equal(withNorwegianCaptions('https://example.test/film'), 'https://example.test/film')
+})
+
+test('Shorts and videos marked as standing get a portrait player', () => {
+  const out = videoPayload([
+    { label: 'A', url: 'https://www.youtube.com/shorts/abcdefghijk' },
+    { label: 'B', url: 'https://youtu.be/abcdefghijk', portrait: true },
+    { label: 'C', url: 'https://youtu.be/abcdefghijk' },
+  ])
+  assert.deepEqual(out.map(v => v.portrait), [true, true, undefined])
+  assert.ok(out[0].embed.startsWith('https://www.youtube-nocookie.com/embed/abcdefghijk?'))
 })
 
 test('unembeddable https links stay links, anything else is dropped', () => {
