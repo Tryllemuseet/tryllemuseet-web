@@ -308,9 +308,9 @@ const jul: FarmSeason = {
         'Juleneket er et knippe med havre som henges opp ute til jul. Da får småfuglene også julemat.',
       traditionLong:
         'Før i tida sparte bonden de fineste kornstråene fra høsten til juleneket. Kom det mange fugler, trodde folk at det ble et godt år.',
-      trickTitle: 'Fuglen på neket',
+      trickTitle: 'Thaumatropen',
       trickEffect:
-        'På den ene siden av en papirskive er det en fugl. På den andre siden er det et julenek. Du snurrer skiva – og plutselig sitter fuglen på neket!',
+        'På den ene siden av en papirskive er det en fugl. På den andre siden er det et julenek. Du snurrer skiva – og plutselig sitter fuglen på neket! Slik trylte folk med bilder for 200 år siden, lenge før film var funnet opp.',
       trickAge: 6,
       trickSlug: 'fuglen-pa-neket',
       nisseX: 92, nisseY: 84,
