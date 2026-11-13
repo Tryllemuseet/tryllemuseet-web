@@ -821,7 +821,7 @@ const jul: FarmSeason = {
       trickAge: 8,
       trickSlug: 'egget-som-roper-seg',
       nisseX: 66, nisseY: 59, nisseInScene: true,
-      dancer: { name: 'Loco', imageUrl: '/images/tryllegarden/honsehus/loco.svg', x: 24, y: 31, size: 11 },
+      dancer: { name: 'Loco', imageUrl: '/images/tryllegarden/honsehus/loco.webp', x: 24, y: 26, size: 12 },
     },
   ],
   finaleTitle: 'Stjerna på treet',
