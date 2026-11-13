@@ -26,6 +26,8 @@ import {
   loginUrl,
   setPrivateHeaders,
   videoEmbedUrl,
+  withNorwegianCaptions,
+  isPortraitVideo,
 } from '../../../lib/bakTeppet'
 
 setPrivateHeaders(Astro.response.headers)
@@ -179,10 +181,10 @@ const related = trick.relatedTricks ?? []
         {trick.videos.map(v => {
           const embed = videoEmbedUrl(v.url)
           return embed ? (
-            <figure class="kt-video">
+            <figure class={`kt-video${isPortraitVideo(v.url, v.portrait) ? ' kt-video--portrait' : ''}`}>
               <div class="kt-video-wrap">
                 <iframe
-                  src={embed}
+                  src={withNorwegianCaptions(embed)}
                   title={v.label ?? `Video: ${trick.title}`}
                   loading="lazy"
                   allow="accelerometer; encrypted-media; gyroscope; picture-in-picture; fullscreen"
@@ -373,6 +375,8 @@ const related = trick.relatedTricks ?? []
 
   .kt-video { margin: 0 0 1.25rem; max-width: 42rem; }
   .kt-video-wrap { position: relative; aspect-ratio: 16/9; border-radius: 4px; overflow: hidden; background: #000; }
+  .kt-video--portrait { max-width: 21rem; }
+  .kt-video--portrait .kt-video-wrap { aspect-ratio: 9/16; }
   .kt-video-wrap iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
   .kt-video figcaption { font-family: var(--font-ui); font-size: 0.85rem; color: #666; margin-top: 0.4rem; }
   .kt-link { font-family: var(--font-ui); font-weight: 600; color: var(--burgundy); }

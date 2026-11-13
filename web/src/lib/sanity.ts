@@ -3492,6 +3492,8 @@ type SanityImageRef = { asset: { _ref: string; url: string }; alt?: string }
 export interface KitVideo {
   label?: string
   url:    string
+  /** Standing (9:16) video; Shorts links are detected without it. */
+  portrait?: boolean
 }
 
 export interface KitFigure {
@@ -3671,7 +3673,7 @@ export async function getKitTrickBySlug(client: SanityClientLike, slug: string):
         figures[] ${KIT_FIGURE},
         steps[] { _key, title, text[] { ${KIT_RICH_TEXT} }, figures[] ${KIT_FIGURE} }
       },
-      videos[] { label, url },
+      videos[] { label, url, portrait },
       "relatedTricks": relatedTricks[${KIT_TRICK_REF_FILTER}]->{ ${KIT_TRICK_CARD} },
       sourceText[] { ${KIT_RICH_TEXT} },
       sourceFacts[] { _key, label, value },
@@ -3728,13 +3730,14 @@ export async function getFarmSeasonDoc(key: string): Promise<Record<string, unkn
       loftName, loftNameEn, kitSlug, showWords, showWordsEn,
       "hidden": places[isVisible == false].key,
       places[isVisible != false] {
-        key, slot, title, titleEn, mechanic, icon, mapX, mapY, ornament,
+        key, slot, bonus, title, titleEn, mechanic, icon, mapX, mapY, ornament,
+        clues[] { text, textEn, answer, levels },
         "ornamentImage": ornamentImage { asset->{ _ref, url } },
         "sceneImage": sceneImage { asset->{ _ref, url }, alt },
         intro[] { who, text, textEn },
         task, taskEn,
         items[] {
-          key, label, labelEn, emoji, x, y, from, order, decoy, wrong, wrongEn, colors,
+          key, label, labelEn, emoji, x, y, from, order, decoy, wrong, wrongEn, colors, size, filter, anon,
           "image": image { asset->{ _ref, url } }
         },
         levels { smanisse { rounds, reverse }, laerling { rounds, reverse }, mester { rounds, reverse } },

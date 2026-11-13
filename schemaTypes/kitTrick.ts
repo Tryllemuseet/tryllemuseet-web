@@ -262,6 +262,13 @@ export const kitTrick = defineType({
               description: 'Skriv «Effekt» for en video som bare viser hva publikum ser, og for eksempel «Forklaring» for metoden. I Tryllegården vises «Effekt» først.',
             }),
             defineField({ name: 'url', title: 'URL', type: 'url', validation: R => R.required() }),
+            defineField({
+              name: 'portrait',
+              title: 'Stående video',
+              type: 'boolean',
+              description: 'Slå på for stående videoer (9:16), så de vises i stående ramme. YouTube Shorts-lenker (youtube.com/shorts/…) oppdages automatisk.',
+              initialValue: false,
+            }),
           ],
           preview: { select: { title: 'label', subtitle: 'url' } },
         }),

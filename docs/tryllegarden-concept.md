@@ -388,7 +388,7 @@ is on. Editors test it with the preview link.
 **What is in it**
 
 - Start screen with the three levels, the farm map with the Christmas tree,
-  and **eight places**. Each has dialogue, a mini-game, "visste du at", the
+  and **thirteen places**. Porten, Sykkelverkstedet and Fuglehuset (key `honsehuset`) are extras (`bonus`) and are not needed to open the finale. Each has dialogue, a mini-game, "visste du at", the
   nisse's trick and an ornament for the tree.
 
   | Place | Mechanic | What changes with the level |
@@ -401,6 +401,11 @@ is on. Editors test it with the preview link.
   | Stua | `flett` | 2×2 → 5×5 basket, other weaves on Tryllemester |
   | Stabburet | `forandret` | 3 → 9 things on the shelves |
   | Lyktestien | `tenn` | in order → a lantern also flips its neighbours |
+  | Klokketårnet | `husk` | 2 → 6 bells that differ in colour, last round backwards on Tryllemester |
+  | Skogen | `gjett` | 3 → 6 trees; "find the tallest" → "the second tallest" and combined clues |
+  | Porten (extra) | `gjett` | 3 → 6 costumes (emoji until drawn) and riddles |
+  | Sykkelverkstedet (extra) | `sorter` | 3 → 6 drawn spanners (items with a picture and `size` = length) to put in order by length, the last round the other way on Tryllemester. Replaced Bryggerhuset (same slot 11); an item with key `lys` is drawn as a candle, anything else as a spanner |
+  | Fuglehuset (extra, key `honsehuset`; the cockatoo Loco is the place's `dancer`: two poses in the same frame, swapped while he dances at every right answer) | `tell` | count eggs, and hens on harder levels; Smånisse can look as long as they like, older children see them for a few seconds and can look again |
 
 - Hint ladder "Nissen hvisker" (two spoken hints, then the answer glows),
   golden smørøyne for hint-free places, and a hidden nisse in every scene.
