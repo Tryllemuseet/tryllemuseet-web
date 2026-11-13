@@ -21,8 +21,8 @@ export type FarmLevel = 'smanisse' | 'laerling' | 'mester'
 export const FARM_LEVELS: FarmLevel[] = ['smanisse', 'laerling', 'mester']
 
 /** Mini-game mechanics the engine can play. A new one needs code. */
-export type FarmMechanic = 'finn' | 'rekkefolge' | 'husk' | 'folg-traden' | 'monster' | 'flett' | 'forandret' | 'tenn' | 'gjett'
-export const FARM_MECHANICS: FarmMechanic[] = ['finn', 'rekkefolge', 'husk', 'folg-traden', 'monster', 'flett', 'forandret', 'tenn', 'gjett']
+export type FarmMechanic = 'finn' | 'rekkefolge' | 'husk' | 'folg-traden' | 'monster' | 'flett' | 'forandret' | 'tenn' | 'gjett' | 'tell' | 'sorter'
+export const FARM_MECHANICS: FarmMechanic[] = ['finn', 'rekkefolge', 'husk', 'folg-traden', 'monster', 'flett', 'forandret', 'tenn', 'gjett', 'tell', 'sorter']
 
 export type FarmSpeaker = 'jente' | 'gutt' | 'nisse' | 'forteller'
 
@@ -80,7 +80,8 @@ export interface FarmLevelParams {
    * One number per round. What the number means depends on the mechanic:
    * husk = birds to remember, folg-traden = braids, monster = biscuits in the
    * row, flett = squares per side, forandret = things on the shelf,
-   * tenn = lanterns, gjett = the first number is how many rounds are played.
+   * tenn = lanterns, gjett = the first number is how many rounds are played,
+   * tell = the most things in a round, sorter = candles in a round.
    */
   rounds?: number[]
   /** husk: the last round must be answered backwards. */
@@ -572,12 +573,11 @@ const jul: FarmSeason = {
       ],
       task: 'Se hvilken bjelle som ringer først. Trykk på bjellene i samme rekkefølge.',
       items: [
-        { key: 'gull',   label: 'Gullbjella',    imageUrl: '/images/tryllegarden/pynt/gullbjelle.webp', x: 20, y: 76, size: 16 },
-        { key: 'kobber', label: 'Kobberbjella',  imageUrl: '/images/tryllegarden/pynt/gullbjelle.webp', x: 36, y: 76, size: 16, filter: 'hue-rotate(-18deg) saturate(1.2) brightness(.8)' },
-        { key: 'grønn',  label: 'Grønn bjelle',  imageUrl: '/images/tryllegarden/pynt/gullbjelle.webp', x: 80, y: 76, size: 16, filter: 'hue-rotate(70deg) saturate(1.4)' },
-        { key: 'sølv',   label: 'Sølvbjella',    imageUrl: '/images/tryllegarden/pynt/gullbjelle.webp', x: 61, y: 76, size: 16, filter: 'grayscale(1) brightness(1.25)', from: 'laerling' },
-        { key: 'rød',    label: 'Rød bjelle',    imageUrl: '/images/tryllegarden/pynt/gullbjelle.webp', x: 8,  y: 76, size: 16, filter: 'hue-rotate(-40deg) saturate(2.2) brightness(.9)', from: 'mester' },
-        { key: 'blå',    label: 'Blå bjelle',    imageUrl: '/images/tryllegarden/pynt/gullbjelle.webp', x: 92, y: 76, size: 16, filter: 'hue-rotate(165deg) saturate(1.6)', from: 'mester' },
+        { key: 'gull',   label: 'Gullbjella',   imageUrl: '/images/tryllegarden/klokker/gull.webp',   x: 14, y: 72, size: 14 },
+        { key: 'grønn',  label: 'Grønn bjelle', imageUrl: '/images/tryllegarden/klokker/gronn.webp',  x: 30, y: 72, size: 14 },
+        { key: 'rød',    label: 'Rød bjelle',   imageUrl: '/images/tryllegarden/klokker/rod.webp',    x: 64, y: 72, size: 14 },
+        { key: 'sølv',   label: 'Sølvbjella',   imageUrl: '/images/tryllegarden/klokker/solv.webp',   x: 80, y: 72, size: 14, from: 'laerling' },
+        { key: 'kobber', label: 'Kobberbjella', imageUrl: '/images/tryllegarden/klokker/kobber.webp', x: 44, y: 72, size: 14, from: 'mester' },
       ],
       levels: {
         smanisse: { rounds: [2, 3] },
@@ -585,7 +585,7 @@ const jul: FarmSeason = {
         mester:   { rounds: [4, 5], reverse: true },
       },
       hints: [
-        'Si fargene høyt mens bjellene ringer: gull, grønn, kobber …',
+        'Si fargene høyt mens bjellene ringer: gull, grønn, rød …',
         'Trykk på «Vis en gang til» og følg med på den første bjella.',
       ],
       done: 'For en hukommelse! En tryllekunstner husker rekkefølgen, selv når mye skjer.',
@@ -606,7 +606,7 @@ const jul: FarmSeason = {
       title: 'Skogen',
       mechanic: 'gjett',
       icon: '🌲',
-      mapX: 91, mapY: 47,
+      mapX: 90, mapY: 43,
       ornament: '🌲',
       sceneImageUrl: '/images/tryllegarden/scene/skogen.webp',
       sceneAlt: 'Skogen en stjerneklar vinternatt. Fotspor i snøen fører til et stort tre, og nissen titter fram bak stammen.',
@@ -708,6 +708,93 @@ const jul: FarmSeason = {
       trickAge: 9,
       trickSlug: 'mynten-bak-oret',
       nisseX: 35, nisseY: 71, nisseInScene: true,
+    },
+    {
+      key: 'bryggerhuset',
+      slot: 11,
+      bonus: true,
+      title: 'Bryggerhuset',
+      mechanic: 'sorter',
+      icon: '🕯️',
+      mapX: 85, mapY: 67,
+      ornament: '🕯️',
+      sceneImageUrl: '/images/tryllegarden/scene/bryggerhuset.webp',
+      sceneAlt: 'Inne i bryggerhuset: en stor kjele over ilden, trebøtter, kakeformer på hyllene og en tent lykt. Nissen titter inn fra døra.',
+      intro: [
+        { who: 'jente', text: 'Her i bryggerhuset støpte man lys før i tida. Det er varmt av ilden!' },
+        { who: 'gutt',  text: 'Men nissen har rotet til lysene. De står i hytt og vær.' },
+        { who: 'jente', text: 'Kan du sette dem på rekke, fra det korteste til det lengste?' },
+      ],
+      task: 'Trykk på lysene i rekkefølge: først det korteste, så det neste, helt til det lengste.',
+      items: [
+        { key: 'lys', label: 'Lys' },
+      ],
+      levels: {
+        smanisse: { rounds: [3] },
+        laerling: { rounds: [4, 5] },
+        mester:   { rounds: [5, 6] },
+      },
+      hints: [
+        'Se først hvilket lys som er aller kortest.',
+        'Sammenlign to og to lys som står ved siden av hverandre.',
+      ],
+      done: 'Alle lysene står på rekke! En tryllekunstner har orden på tingene sine.',
+      traditionShort:
+        'Før elektrisiteten støpte folk lysene selv, av talg eller stearin. Lys var viktig i de mørke vintermånedene.',
+      traditionLong:
+        'I bryggerhuset var det plass til store kjeler og mye damp, så her ble mange av de store jobbene på gården gjort.',
+      trickTitle: 'Pendelen som lystrer',
+      trickEffect:
+        'En liten ring henger i en tråd og står helt stille. Du ber den svinge – og den begynner å svinge, uten at du tar på den!',
+      trickAge: 7,
+      trickSlug: 'pendelen-som-lystrer',
+      nisseX: 10, nisseY: 55, nisseInScene: true,
+    },
+    {
+      key: 'honsehuset',
+      slot: 12,
+      bonus: true,
+      title: 'Hønsehuset',
+      mechanic: 'tell',
+      icon: '🐔',
+      mapX: 13, mapY: 46,
+      ornament: '🥚',
+      ornamentImageUrl: '/images/tryllegarden/honsehus/egg-1.webp',
+      sceneImageUrl: '/images/tryllegarden/scene/honsehuset.webp',
+      sceneAlt: 'Inne i hønsehuset: reirkasser med halm og egg, en tent lykt, et vindu mot nattehimmelen og et trau. Nissen titter fram fra en reirkasse.',
+      intro: [
+        { who: 'gutt',  text: 'Dyra skal ha ekstra god mat på julaften. Også hønene!' },
+        { who: 'jente', text: 'Nissen har prøvd å telle hønene og eggene, men han mister alltid tellingen.' },
+        { who: 'gutt',  text: 'Kan du hjelpe ham? Se godt etter, og tell.' },
+      ],
+      task: 'Se godt etter. Tell, og trykk på riktig tall.',
+      items: [
+        { key: 'egg1',  label: 'Egg',        imageUrl: '/images/tryllegarden/honsehus/egg-1.webp' },
+        { key: 'egg2',  label: 'Egg',        imageUrl: '/images/tryllegarden/honsehus/egg-2.webp', from: 'laerling' },
+        { key: 'hone1', label: 'Hvit høne',  imageUrl: '/images/tryllegarden/honsehus/hone-1.webp', from: 'laerling' },
+        { key: 'hone2', label: 'Brun høne',  imageUrl: '/images/tryllegarden/honsehus/hone-2.webp', from: 'laerling' },
+        { key: 'hone3', label: 'Rød høne',   imageUrl: '/images/tryllegarden/honsehus/hone-3.webp', from: 'laerling' },
+      ],
+      levels: {
+        smanisse: { rounds: [3, 4] },
+        laerling: { rounds: [4, 5, 6] },
+        mester:   { rounds: [6, 7, 8, 9] },
+      },
+      hints: [
+        'Tell høyt, én og én. Pek med fingeren på skjermen.',
+        'Trykk på «Vis en gang til» og tell enda en gang, litt saktere.',
+      ],
+      done: 'Du teller som en ekte regnemester! En tryllekunstner har god oversikt.',
+      traditionShort:
+        'På julaften fikk husdyra ekstra mat. Mange mente at dyra skulle ha det fint før menneskene satte seg til bords.',
+      traditionLong:
+        'Hønene fikk gjerne litt ekstra korn, og noen satte ut en skål grøt til nissen.',
+      trickTitle: 'Egget som røper seg',
+      trickEffect:
+        'To egg ser helt like ut. Du kan si hvilket som er kokt og hvilket som er rått, uten å knekke dem!',
+      trickAge: 8,
+      trickSlug: 'egget-som-roper-seg',
+      nisseX: 66, nisseY: 59, nisseInScene: true,
     },
   ],
   finaleTitle: 'Stjerna på treet',
