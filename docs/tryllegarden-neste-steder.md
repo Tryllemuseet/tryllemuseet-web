@@ -132,11 +132,13 @@ Koordinatene er prosent fra venstre og fra toppen av kartet.
 ### Kart versjon 2
 
 Kartet må få to nye små bygg: **Sykkelverkstedet** til høyre for tunet (se
-bestillingen under sted 3) og **Fuglehuset**. Fuglehuset på Årvoll er et lite,
-rødt hus med saltak og netting i veggene, og en utskåret fugl (tiur) i
-gavlen. Det står vinkelrett ut fra hovedhuset og låven. Tegn gjerne en hvit
-kakadue på en pinne innenfor nettingen, det er Loco. Knappen i spillet flyttes
-dit bygget blir tegnet. Alle andre bygg og stier skal stå akkurat der de står
+bestillingen under sted 3) og **Fuglehuset**. Fuglehuset på Årvoll er et lavt,
+rødt hus med slakt saltak, netting i veggene mot tunet, en hvit dør i den ene
+enden og en utskåret fugl (tiur) i gavlen. Det står på grusplassen rett foran
+låven (det store røde bygget oppe til venstre), vinkelrett ut fra hovedhus og
+låve, med en lavere luftegård av netting bak seg. Tegn gjerne en hvit kakadue
+på en pinne innenfor nettingen, det er Loco, og et par høner og en kanin på
+bakken. Knappen i spillet flyttes dit bygget blir tegnet. Alle andre bygg og stier skal stå akkurat der de står
 nå, så knappene på dagens steder fortsatt treffer. Juletreet tegnes ikke på
 kartet, som nå.
 
