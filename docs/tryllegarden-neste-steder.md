@@ -95,7 +95,8 @@ kulene du har tegnet):
 
 > **Oppdatert 13. november (senere):** Bryggerhuset er byttet ut med **Sykkelverkstedet**
 > (Årvoll gård har et sykkelverksted). Scenebildet fra bryggerhuset brukes ikke
-> lenger. Hønsehuset er nå et rom i låvebygget. Julekurven i Stua er et hjerte.
+> lenger. Hønsehuset heter nå **Fuglehuset**, som på Årvoll gård: et eget lite hus
+> med høner, kanin og (om sommeren) kakaduer, blant dem Loco. Julekurven i Stua er et hjerte.
 >
 > **Status 13. november:** Alle fem stedene i del 2 er bygget (Klokketårnet,
 > Skogen, Porten, Bryggerhuset og Hønsehuset) med museets scenebilder. Klokketårnet
@@ -123,17 +124,19 @@ illustrasjoner.
 | Klokketårnet | det lille tårnet på mønet (44, 6) | `husk` (bjeller) | ingen |
 | Skogen | skogkanten til høyre (93, 48) | ny: `sammenlign` | ny mekanikk |
 | Sykkelverkstedet (før: Bryggerhuset) | **nytt bygg** til høyre i tunet (88, 67) | `sorter` | bygget |
-| Hønsehuset | **en del av låvebygget** (9, 18) | `tell` | bygget |
+| Fuglehuset (før: Hønsehuset) | **eget lite bygg**, vinkelrett ut fra hovedhus og låve | `tell` | bygget |
 | Porten (bonus) | veien nede til venstre (10, 90) | ny: `gjett-hvem` | ny mekanikk |
 
 Koordinatene er prosent fra venstre og fra toppen av kartet.
 
 ### Kart versjon 2
 
-Kartet må få ett nytt lite bygg: **Sykkelverkstedet** til høyre for tunet (se
-bestillingen under sted 3). **Hønsehuset** trenger ikke eget bygg. Det er et
-rom i låven, så tegn gjerne en liten hønseluke med rampe og et opplyst vindu
-på låveveggen, øverst til venstre. Alle andre bygg og stier skal stå akkurat der de står
+Kartet må få to nye små bygg: **Sykkelverkstedet** til høyre for tunet (se
+bestillingen under sted 3) og **Fuglehuset**. Fuglehuset på Årvoll er et lite,
+rødt hus med saltak og netting i veggene, og en utskåret fugl (tiur) i
+gavlen. Det står vinkelrett ut fra hovedhuset og låven. Tegn gjerne en hvit
+kakadue på en pinne innenfor nettingen, det er Loco. Knappen i spillet flyttes
+dit bygget blir tegnet. Alle andre bygg og stier skal stå akkurat der de står
 nå, så knappene på dagens steder fortsatt treffer. Juletreet tegnes ikke på
 kartet, som nå.
 

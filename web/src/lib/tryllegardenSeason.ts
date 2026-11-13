@@ -754,16 +754,17 @@ const jul: FarmSeason = {
       key: 'honsehuset',
       slot: 12,
       bonus: true,
-      title: 'Hønsehuset',
+      title: 'Fuglehuset',
       mechanic: 'tell',
       icon: '🐔',
       mapX: 9, mapY: 18,
       ornament: '🥚',
       ornamentImageUrl: '/images/tryllegarden/honsehus/egg-1.webp',
       sceneImageUrl: '/images/tryllegarden/scene/honsehuset.webp',
-      sceneAlt: 'Hønsenes rom innerst i låven: reirkasser med halm og egg, en tent lykt, et vindu mot nattehimmelen og et trau. Nissen titter fram fra en reirkasse.',
+      sceneAlt: 'Inne i fuglehuset: reirkasser med halm og egg, en tent lykt, et vindu mot nattehimmelen og et trau. Nissen titter fram fra en reirkasse.',
       intro: [
-        { who: 'gutt',  text: 'Innerst i låven har hønene sitt eget lille rom. Det er hønsehuset!' },
+        { who: 'gutt',  text: 'Dette er fuglehuset! Her bor hønene, og en kanin.' },
+        { who: 'jente', text: 'Om sommeren bor kakaduen Loco her også. Han danser når noen spiller musikk! Nå er han inne i varmen.' },
         { who: 'jente', text: 'Dyra skal ha ekstra god mat på julaften. Også hønene.' },
         { who: 'gutt',  text: 'Nissen har prøvd å telle hønene og eggene, men han mister alltid tellingen.' },
         { who: 'jente', text: 'Kan du hjelpe ham? Se godt etter, og tell.' },
@@ -789,7 +790,7 @@ const jul: FarmSeason = {
       traditionShort:
         'På julaften fikk husdyra ekstra mat. Mange mente at dyra skulle ha det fint før menneskene satte seg til bords.',
       traditionLong:
-        'Hønene fikk gjerne litt ekstra korn. De bodde ofte i et lunt hjørne av låven eller fjøset, der de andre dyra holdt varmen.',
+        'Hønene fikk gjerne litt ekstra korn, og noen satte ut en skål grøt til nissen.',
       trickTitle: 'Egget som røper seg',
       trickEffect:
         'To egg ser helt like ut. Du kan si hvilket som er kokt og hvilket som er rått, uten å knekke dem!',

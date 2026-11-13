@@ -388,7 +388,7 @@ is on. Editors test it with the preview link.
 **What is in it**
 
 - Start screen with the three levels, the farm map with the Christmas tree,
-  and **thirteen places**. Porten, Sykkelverkstedet and Hønsehuset are extras (`bonus`) and are not needed to open the finale. Each has dialogue, a mini-game, "visste du at", the
+  and **thirteen places**. Porten, Sykkelverkstedet and Fuglehuset (key `honsehuset`) are extras (`bonus`) and are not needed to open the finale. Each has dialogue, a mini-game, "visste du at", the
   nisse's trick and an ornament for the tree.
 
   | Place | Mechanic | What changes with the level |
