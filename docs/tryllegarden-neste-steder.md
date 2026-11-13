@@ -103,7 +103,7 @@ kulene du har tegnet):
 > julekurv» med fem trinn. De fem trinnbildene er enkle tegninger laget fra
 > bunnen av til dette spillet (`lag/julekurv-1…5.svg`), ikke bearbeidede
 > fotografier. Tegneren kan gjerne erstatte dem i samme stil som resten. Loco
-> er museets egen tegning (`honsehus/loco.webp`).
+> er museets egne tegninger, to positurer (`honsehus/loco.webp` og `loco-danser.webp`), dempet litt mot lyktelyset.
 > Begge deler ligger foreløpig bare i koden, ikke som felt i Studio.
 >
 > **Status 13. november:** Alle fem stedene i del 2 er bygget (Klokketårnet,

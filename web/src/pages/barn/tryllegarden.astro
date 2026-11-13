@@ -174,7 +174,7 @@ const paletteStyle = `--tg-sky:${pal.sky};--tg-ground:${pal.ground};--tg-accent:
     traditionLinkUrl?: string; traditionLinkLabel?: string
     trickTitle: string; trickTitleEn?: string; trickEffect: string; trickEffectEn?: string; trickAge?: number
     hasTrick: boolean; nisseX?: number; nisseY?: number; nisseInScene?: boolean
-    dancer?: { name: string; imageUrl: string; x: number; y: number; size?: number }
+    dancer?: { name: string; imageUrl: string; danceImageUrl?: string; x: number; y: number; size?: number }
     craft?: { title: string; titleEn?: string; needs?: string; needsEn?: string; steps: { text: string; textEn?: string; imageUrl?: string }[] }
   }
   interface Season {
@@ -1403,11 +1403,28 @@ const paletteStyle = `--tg-sky:${pal.sky};--tg-ground:${pal.ground};--tg-accent:
       const friend = place.dancer
       scene.querySelector('.tg-dancer')?.remove()
       if (friend) scene.insertAdjacentHTML('beforeend', `<img class="tg-dancer" src="${esc(friend.imageUrl)}" alt="${esc(friend.name)}" style="left:${friend.x}%;top:${friend.y}%;width:${friend.size ?? 11}%">`)
+      if (friend?.danceImageUrl) new Image().src = friend.danceImageUrl
+      let flap = 0
       const dance = (forever = false) => {
-        const el = scene.querySelector('.tg-dancer')
-        if (!el) return
+        const el = scene.querySelector<HTMLImageElement>('.tg-dancer')
+        if (!el || !friend) return
         el.classList.add('is-dancing')
-        if (!forever) window.setTimeout(() => el.classList.remove('is-dancing'), 1500)
+        // With a second pose, swap between the two: wings out, wings in.
+        clearInterval(flap)
+        if (friend.danceImageUrl) {
+          let out = true
+          el.src = friend.danceImageUrl
+          flap = window.setInterval(() => {
+            if (!el.isConnected) { clearInterval(flap); return }
+            out = !out
+            el.src = out ? friend.danceImageUrl! : friend.imageUrl
+          }, 450)
+        }
+        if (!forever) window.setTimeout(() => {
+          clearInterval(flap)
+          el.classList.remove('is-dancing')
+          el.src = friend.imageUrl
+        }, 1800)
       }
       function show() {
         clear()
@@ -1949,12 +1966,12 @@ const paletteStyle = `--tg-sky:${pal.sky};--tg-ground:${pal.ground};--tg-accent:
   .tg-guess.is-right { border-color: var(--tg-accent2); background: color-mix(in srgb, var(--tg-glow) 35%, #fff); }
   .tg-guess.is-shake { animation: tg-shake .35s; }
   .tg-dancer { position: absolute; transform: translate(-50%, -50%); height: auto; pointer-events: none; transform-origin: 50% 90%; filter: drop-shadow(0 3px 3px rgba(0, 0, 0, .4)); }
-  .tg-dancer.is-dancing { animation: tg-dance .5s ease-in-out infinite; }
+  .tg-dancer.is-dancing { animation: tg-dance .9s ease-in-out infinite; }
   @keyframes tg-dance {
-    0%, 100% { transform: translate(-50%, -50%) rotate(-12deg); }
-    25% { transform: translate(-50%, -62%) rotate(0deg); }
-    50% { transform: translate(-50%, -50%) rotate(12deg); }
-    75% { transform: translate(-50%, -62%) rotate(0deg); }
+    0%, 100% { transform: translate(-50%, -50%) rotate(-7deg); }
+    25% { transform: translate(-50%, -54%) rotate(0deg); }
+    50% { transform: translate(-50%, -50%) rotate(7deg); }
+    75% { transform: translate(-50%, -54%) rotate(0deg); }
   }
   .tg-craft { background: #fff; border-radius: 14px; padding: var(--space-3) var(--space-4); font-size: 1.1rem; line-height: 1.5; }
   .tg-craft summary { cursor: pointer; font-weight: 700; color: var(--tg-accent2); padding: var(--space-1) 0; }
