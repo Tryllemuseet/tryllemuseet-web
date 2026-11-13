@@ -1473,6 +1473,9 @@ const paletteStyle = `--tg-sky:${pal.sky};--tg-ground:${pal.ground};--tg-accent:
       let next = 0
       let locked = false
       const backwards = () => lvl === 'mester' && round === rounds.length - 1
+      // Candles are the built-in look; any other item (key != 'lys') is drawn as a spanner.
+      const tool = !!place.items[0] && place.items[0].key !== 'lys'
+      const name = tool ? L(place.items[0], 'label') : t('Lys', 'Candle')
 
       function newRound() {
         const n = rounds[round]
@@ -1483,10 +1486,14 @@ const paletteStyle = `--tg-sky:${pal.sky};--tg-ground:${pal.ground};--tg-accent:
         next = 0
         locked = false
         const shown = shuffle(order)
-        const q = backwards()
-          ? t('Nå: trykk på lysene fra det lengste til det korteste.', 'Now: tap the candles from the longest to the shortest.')
-          : t('Trykk på lysene fra det korteste til det lengste.', 'Tap the candles from the shortest to the longest.')
-        board.innerHTML = `<div class="tg-candles">${shown.map((c, k) => `<button type="button" class="tg-candle" data-id="${c.id}" style="--h:${c.h}" aria-label="${t('Lys', 'Candle')} ${k + 1}"><span class="tg-flame"></span><span class="tg-candle-num"></span></button>`).join('')}</div>`
+        const q = tool
+          ? (backwards()
+            ? t('Nå: trykk fra den lengste til den korteste.', 'Now: tap from the longest to the shortest.')
+            : t('Trykk fra den korteste til den lengste.', 'Tap from the shortest to the longest.'))
+          : (backwards()
+            ? t('Nå: trykk på lysene fra det lengste til det korteste.', 'Now: tap the candles from the longest to the shortest.')
+            : t('Trykk på lysene fra det korteste til det lengste.', 'Tap the candles from the shortest to the longest.'))
+        board.innerHTML = `<div class="tg-candles">${shown.map((c, k) => `<button type="button" class="tg-candle${tool ? ' tg-candle--tool' : ''}" data-id="${c.id}" style="--h:${c.h}" aria-label="${esc(name)} ${k + 1}">${tool ? '' : '<span class="tg-flame"></span>'}<span class="tg-candle-num"></span></button>`).join('')}</div>`
         api.msg(q)
         board.querySelectorAll<HTMLButtonElement>('.tg-candle').forEach(btn =>
           btn.addEventListener('click', async () => {
@@ -1496,9 +1503,9 @@ const paletteStyle = `--tg-sky:${pal.sky};--tg-ground:${pal.ground};--tg-accent:
               btn.classList.remove('is-shake')
               void btn.offsetWidth
               btn.classList.add('is-shake')
-              api.msg(backwards()
-                ? t('Finnes det et lengre lys?', 'Is there a longer candle?')
-                : t('Finnes det et kortere lys?', 'Is there a shorter candle?'))
+              api.msg(tool
+                ? (backwards() ? t('Finnes det en som er lengre?', 'Is there a longer one?') : t('Finnes det en som er kortere?', 'Is there a shorter one?'))
+                : (backwards() ? t('Finnes det et lengre lys?', 'Is there a longer candle?') : t('Finnes det et kortere lys?', 'Is there a shorter candle?')))
               return
             }
             next++
@@ -1508,11 +1515,11 @@ const paletteStyle = `--tg-sky:${pal.sky};--tg-ground:${pal.ground};--tg-accent:
             locked = true
             round++
             if (round === rounds.length) {
-              api.msg(t('Alle lysene står på rekke!', 'All the candles are in a row!'))
+              api.msg(tool ? t('Alt henger på rekke!', 'Everything is in a row!') : t('Alle lysene står på rekke!', 'All the candles are in a row!'))
               api.done()
               return
             }
-            api.msg(t('Riktig! Nye lys.', 'Right! New candles.'), false)
+            api.msg(tool ? t('Riktig! En gang til.', 'Right! Once more.') : t('Riktig! Nye lys.', 'Right! New candles.'), false)
             await api.wait(1500)
             if (board.isConnected) newRound()
           }),
@@ -1930,6 +1937,9 @@ const paletteStyle = `--tg-sky:${pal.sky};--tg-ground:${pal.ground};--tg-accent:
   .tg-candle::before { content: ''; position: absolute; left: 50%; top: -6px; width: 3px; height: 8px; background: #3b2a18; transform: translateX(-50%); }
   .tg-flame { position: absolute; left: 50%; top: -28px; width: 14px; height: 22px; transform: translateX(-50%); background: radial-gradient(circle at 50% 70%, #fff6c4, #f6c453 55%, #e8892b); border-radius: 50% 50% 50% 50% / 62% 62% 38% 38%; box-shadow: 0 0 12px #f6c453; }
   .tg-candle-num { margin-bottom: 6px; width: 1.6rem; height: 1.6rem; border-radius: 50%; background: var(--tg-accent2); color: #fff; font: 700 .9rem var(--font-ui); display: none; align-items: center; justify-content: center; }
+  /* The same game with spanners instead of candles (Sykkelverkstedet): a steel shaft with a ring at the top. */
+  .tg-candle--tool { background: linear-gradient(90deg, transparent 13px, #8d99a6 13px, #dfe6ec 20px, #8d99a6 27px, transparent 27px); border-color: transparent; border-radius: 0; }
+  .tg-candle--tool::before { left: 50%; top: -22px; width: 34px; height: 34px; box-sizing: border-box; background: transparent; border: 9px solid #a9b4bf; border-radius: 50%; box-shadow: inset 0 0 0 1px #6f7a86, 0 0 0 1px #6f7a86; }
   .tg-candle.is-taken { opacity: .55; cursor: default; }
   .tg-candle.is-taken .tg-candle-num { display: flex; }
   .tg-candle.is-shake { animation: tg-shake .35s; }
