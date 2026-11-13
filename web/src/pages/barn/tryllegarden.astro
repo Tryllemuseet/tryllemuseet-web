@@ -1846,7 +1846,10 @@ const paletteStyle = `--tg-sky:${pal.sky};--tg-ground:${pal.ground};--tg-accent:
   /* Speech bubbles */
   .tg-talk { display: flex; flex-direction: column; gap: var(--space-3); }
   .tg-bubble { display: flex; align-items: center; gap: var(--space-3); background: #fff; border-radius: 18px; padding: var(--space-3); box-shadow: var(--shadow-sm); animation: tg-pop .3s ease-out; }
+  /* Tiril (jente) speaks on the left, Trym (gutt) on the right: avatar and text each on their own side. */
+  .tg-bubble--jente .tg-bubble-body { text-align: left; }
   .tg-bubble--gutt { flex-direction: row-reverse; }
+  .tg-bubble--gutt .tg-bubble-body { text-align: right; }
   .tg-bubble--nisse { background: #fff8e6; font-family: var(--font-body); font-style: italic; }
   .tg-bubble--forteller { background: transparent; box-shadow: none; }
   .tg-bubble-body { flex: 1; }
