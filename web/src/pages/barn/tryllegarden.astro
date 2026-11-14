@@ -18,7 +18,7 @@
 export const prerender = false
 
 import BaseLayout from '../../layouts/BaseLayout.astro'
-import { getFarmGameConfig, getGamePreview } from '../../lib/sanity'
+import { getFarmGameConfig, getGamePreview, getGodeRadConfig } from '../../lib/sanity'
 import { getPrivateClient, failedAttemptDelay } from '../../lib/bakTeppet'
 import {
   PREVIEW_PARAM,
@@ -66,6 +66,19 @@ const isActive = config?.isActive === true || preview
 const season = isActive ? await loadFarmSeason(config) : null
 const playable = isActive && !!season
 
+// The shared «Gode råd» texts (Sanity: godeRadConfig); the adults' part is shown
+// on the trick card. A failure here only means no box.
+let adults: { heading: string; items: string[] } | null = null
+if (playable) {
+  try {
+    const gr = await getGodeRadConfig()
+    const items = (gr.voksneRad ?? []).map(s => String(s).trim()).filter(Boolean)
+    if (items.length) adults = { heading: gr.voksneHeading?.trim() || 'Til voksne', items }
+  } catch (err) {
+    console.error('[tryllegarden] could not load the advice for adults', err)
+  }
+}
+
 if (!isActive || preview) {
   // Not cached while the game is off: the CDN ignores cookies, so a cached
   // "coming soon" page would hide the game from a preview browser (and a
@@ -99,6 +112,7 @@ const payload = playable
         places: season!.places.map(({ trickSlug, ...p }) => ({ ...p, hasTrick: !!trickSlug })),
       },
       names,
+      adults,
       englishEnabled: config?.englishEnabled === true,
       // Without the private token there are no secrets to hand out.
       secrets: !!priv && !!season!.kitSlug,
@@ -190,6 +204,7 @@ const paletteStyle = `--tg-sky:${pal.sky};--tg-ground:${pal.ground};--tg-accent:
   interface Data {
     season: Season
     names: { jente: string; gutt: string; gard: string }
+    adults?: { heading: string; items: string[] } | null
     englishEnabled: boolean
     secrets: boolean
   }
@@ -1623,6 +1638,10 @@ const paletteStyle = `--tg-sky:${pal.sky};--tg-ground:${pal.ground};--tg-accent:
       const effect = L(place, 'trickEffect')
       const loft = L(season, 'loftName')
       const canReveal = data.secrets && place.hasTrick
+      // Advice for the grown-up next to the child (Norwegian only: the texts are not translated).
+      const adultsHtml = lang !== 'en' && data.adults?.items.length
+        ? `<details class="tg-adults"><summary>🧑‍🤝‍🧑 ${esc(data.adults.heading)}</summary><ul>${data.adults.items.map(i => `<li>${esc(i)}</li>`).join('')}</ul></details>`
+        : ''
       show(`<div class="tg-card">
         <p class="tg-kicker">${t('Nissens triks', 'The nisse’s trick')}</p>
         <div class="tg-head"><h1 class="tg-h1" tabindex="-1" data-focus>${esc(title)}</h1>${sayBtn(`${title}. ${effect}`)}</div>
@@ -1634,6 +1653,7 @@ const paletteStyle = `--tg-sky:${pal.sky};--tg-ground:${pal.ground};--tg-accent:
             ? `<p class="tg-center"><button type="button" class="tg-btn tg-btn--ghost" id="tg-reveal">🔑 ${t('Vis hemmeligheten', 'Show the secret')}</button></p>`
             : `<p class="tg-note">${L(place, 'trickNote') || t(`Hemmeligheten ligger på ${loft}.`, `The secret is kept in ${loft}.`)}</p>`}
         </div>
+        ${adultsHtml}
         <p class="tg-center"><button type="button" class="tg-btn" id="tg-hang">${ornamentOf(place)} ${t('Heng pynten på treet', 'Hang the ornament on the tree')}</button></p>
       </div>`)
       const secret = root.querySelector<HTMLElement>('#tg-secret')!
@@ -2017,6 +2037,9 @@ const paletteStyle = `--tg-sky:${pal.sky};--tg-ground:${pal.ground};--tg-accent:
   .tg-craft li img { width: 100%; height: auto; border-radius: 10px; }
   @media (max-width: 520px) { .tg-craft li { grid-template-columns: 1fr; gap: var(--space-2); } .tg-craft li img { max-width: 280px; margin: 0 auto; } }
   .tg-craft li p::before { content: counter(craft) '. '; font-weight: 700; color: var(--tg-accent2); }
+  .tg-adults { background: #fff; border-radius: 14px; padding: var(--space-3) var(--space-4); font-size: 1.05rem; line-height: 1.5; border-left: 6px solid var(--tg-accent2); }
+  .tg-adults summary { cursor: pointer; font-weight: 700; color: var(--tg-accent2); padding: var(--space-1) 0; }
+  .tg-adults ul { margin: var(--space-2) 0 0; padding-left: 1.2rem; display: grid; gap: var(--space-2); }
   .tg-loftpic { width: 100%; height: auto; display: block; border-radius: 16px; margin: var(--space-3) 0; box-shadow: var(--shadow-sm); }
   .tg-countitem { position: absolute; transform: translate(-50%, -50%); height: auto; pointer-events: none; filter: drop-shadow(0 3px 3px rgba(0, 0, 0, .35)); }
   .tg-numbers { display: flex; flex-wrap: wrap; gap: var(--space-2); justify-content: center; margin-top: var(--space-3); }
