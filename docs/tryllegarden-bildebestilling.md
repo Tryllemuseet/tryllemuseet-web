@@ -11,9 +11,10 @@ Alt som mangler har en reserve i spillet i dag, så ingenting haster teknisk.
 - **Løse ting:** seks fugler, eple og sukkertøy, seks julekaker, ti ting til
   stabburshyllene, seks julebukk-kostymer, seks fastnøkler.
 - **Juletrepynt:** hestesko, pepperkakehjerte, julehjerte, marsipangris, lykt,
-  gran, halmbukk, sykkelbjelle. Alle tretten steder har nå tegnet pynt.
+  gran, halmbukk, sykkelbjelle. Alle tretten første steder har tegnet pynt; Tryllemuseet bruker foreløpig et kort-emoji (🃏) og trenger en egen pyntetegning.
 - **Kartknapp** til Sykkelverkstedet.
 - **Loco** i fire positurer.
+- **Tryllemuseet** (scene med Jan og to barn ved kortbordet) og **Nisseloftet** (nøkkelen og esken). Begge er foreløpig lagt inn slik de ble levert.
 
 ## Felles krav
 

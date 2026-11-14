@@ -24,7 +24,7 @@ export const FARM_LEVELS: FarmLevel[] = ['smanisse', 'laerling', 'mester']
 export type FarmMechanic = 'finn' | 'rekkefolge' | 'husk' | 'folg-traden' | 'monster' | 'flett' | 'forandret' | 'tenn' | 'gjett' | 'tell' | 'sorter'
 export const FARM_MECHANICS: FarmMechanic[] = ['finn', 'rekkefolge', 'husk', 'folg-traden', 'monster', 'flett', 'forandret', 'tenn', 'gjett', 'tell', 'sorter']
 
-export type FarmSpeaker = 'jente' | 'gutt' | 'nisse' | 'forteller'
+export type FarmSpeaker = 'jente' | 'gutt' | 'nisse' | 'forteller' | 'jan'
 
 export type FarmPose = 'hei' | 'peker' | 'overrasket' | 'jubler'
 
@@ -138,6 +138,12 @@ export interface FarmPlace {
   traditionShortEn?: string
   traditionLong?:    string
   traditionLongEn?:  string
+  /** Shown instead of the «secret is kept in …» note when the place has no trick method (hasTrick false). */
+  trickNote?:     string
+  trickNoteEn?:   string
+  /** What the child looks at in «forandret»: «hyllene» (default), «kortene» … */
+  lookAt?:        string
+  lookAtEn?:      string
   traditionLinkUrl?:   string
   traditionLinkLabel?: string
   /** The nisse's trick: what the audience sees. Never the method. */
@@ -177,6 +183,8 @@ export interface FarmSeason {
   mapAlt?:      string
   /** The tree the ornaments hang on, drawn big over the middle of the map. Without one, a small drawn fir is used. */
   treeImageUrl?: string
+  /** Picture on the Nisseloftet screen at the end (the key and the box). */
+  loftImageUrl?: string
   /** Colours of the game's frame. Any CSS colour. */
   palette: { sky: string; ground: string; accent: string; accent2: string; glow: string }
   /** The thing being filled: "Juletreet", "Påskekurven" … */
@@ -211,6 +219,7 @@ const jul: FarmSeason = {
     'På {gard} (Årvoll gård?) skjer det rare ting før jul. Noen har spist grøten. Noen har flettet høyet. {jente} og {gutt} tror det bor en nisse i fjøset – og at han kan trylle!',
   mapImageUrl: '/images/tryllegarden/kart-jul.webp',
   treeImageUrl: '/images/tryllegarden/juletre.webp',
+  loftImageUrl: '/images/tryllegarden/scene/nisseloftet.webp',
   mapAlt: 'Tryllegården sett ovenfra en vinterkveld: låven, stabburet og stua i snøen, med lykter langs stien.',
   heroImageUrl: '/images/tryllegarden/jul-laven.webp',
   heroAlt: 'To tryllebarn med flosshatt tryller en hvit kanin opp av en hatt på låven, mens fjøsnissen ser på og klapper.',
@@ -848,6 +857,60 @@ const jul: FarmSeason = {
       trickSlug: 'egget-som-roper-seg',
       nisseX: 66, nisseY: 59, nisseInScene: true,
       dancer: { name: 'Loco', imageUrl: '/images/tryllegarden/honsehus/loco.webp', danceImageUrl: '/images/tryllegarden/honsehus/loco-danser.webp', idleImageUrls: ['/images/tryllegarden/honsehus/loco-skra-1.webp', '/images/tryllegarden/honsehus/loco-skra-2.webp'], x: 24.5, y: 24.7, size: 22 },
+    },
+    {
+      key: 'tryllemuseet',
+      slot: 13,
+      bonus: true,
+      title: 'Tryllemuseet',
+      mechanic: 'forandret',
+      icon: '🎩',
+      iconImageUrl: '/hero-mark-gold.png',
+      mapX: 27, mapY: 20,
+      ornament: '🃏',
+      sceneImageUrl: '/images/tryllegarden/scene/tryllemuseet.webp',
+      sceneAlt: 'Inne i Tryllemuseet: tryllekunstneren Jan holder opp et ess og viser to barn i flosshatt et triks rundt et grønt kortbord. På veggen henger en tavle, plakater og hyller med bøker, og en kanin titter opp av en hatt.',
+      intro: [
+        { who: 'jente', text: 'Bak låven, over låvebrua, ligger Tryllemuseet! Der bor tryllekunsten hele året.' },
+        { who: 'jan',   text: 'Hei, jeg heter Jan, og jeg er tryllekunstner her. Se på kortene på bordet. Når du ikke ser etter, bytter jeg ett av dem.' },
+        { who: 'gutt',  text: 'Klarer du å se hvilket kort som er byttet?' },
+      ],
+      task: 'Se nøye på kortene. Finn kortet Jan har byttet ut.',
+      lookAt: 'kortene',
+      lookAtEn: 'the cards',
+      items: [
+        { key: 'kort1', label: 'Spar ess', imageUrl: '/images/tryllegarden/kortspill/kort-01.svg', x: 11.0, y: 95, size: 8.6 },
+        { key: 'kort2', label: 'Hjerter konge', imageUrl: '/images/tryllegarden/kortspill/kort-02.svg', x: 19.7, y: 95, size: 8.6 },
+        { key: 'kort3', label: 'Ruter dame', imageUrl: '/images/tryllegarden/kortspill/kort-03.svg', x: 28.3, y: 95, size: 8.6 },
+        { key: 'kort4', label: 'Kløver knekt', imageUrl: '/images/tryllegarden/kortspill/kort-04.svg', x: 37.0, y: 95, size: 8.6 },
+        { key: 'kort5', label: 'Hjerter ti', imageUrl: '/images/tryllegarden/kortspill/kort-05.svg', x: 45.7, y: 95, size: 8.6 },
+        { key: 'kort6', label: 'Spar sju', imageUrl: '/images/tryllegarden/kortspill/kort-06.svg', x: 54.4, y: 95, size: 8.6 },
+        { key: 'kort7', label: 'Ruter fem', imageUrl: '/images/tryllegarden/kortspill/kort-07.svg', x: 63.0, y: 95, size: 8.6 },
+        { key: 'kort8', label: 'Kløver to', imageUrl: '/images/tryllegarden/kortspill/kort-08.svg', x: 71.7, y: 95, size: 8.6 },
+        { key: 'kort9', label: 'Kløver ni', imageUrl: '/images/tryllegarden/kortspill/kort-09.svg', x: 80.4, y: 95, size: 8.6 },
+        { key: 'kort10', label: 'Hjerter fire', imageUrl: '/images/tryllegarden/kortspill/kort-10.svg', x: 89.0, y: 95, size: 8.6 },
+      ],
+      levels: {
+        smanisse: { rounds: [3, 4] },
+        laerling: { rounds: [5, 6] },
+        mester:   { rounds: [7, 8, 9] },
+      },
+      hints: [
+        'Si kortene høyt, fra venstre mot høyre, før du trykker på «Jeg er klar».',
+        'Trykk på «Se hvordan det var» og sammenlign ett kort om gangen.',
+      ],
+      done: 'Skarpe øyne! Jan ble imponert. En tryllekunstner ser det minste som forandrer seg.',
+      traditionShort:
+        'Tryllemuseet ligger på Årvoll gård, på baksiden av låven. Der samles tryllekunstens historie, og der kan du møte ekte tryllekunstnere.',
+      traditionLong:
+        'Tryllegården er laget ut fra Årvoll gård i Oslo, der Tryllemuseet holder til. Museet er åpent søndager kl. 12–15, og inngangen er gratis.',
+      traditionLinkUrl: '/aktiviteter',
+      traditionLinkLabel: 'Se når det er kurs og forestilling',
+      trickTitle: 'Møt Jan på ekte',
+      trickEffect:
+        'Jan tryller for deg i museet, og på kurs kan du lære å gjøre det selv. Hemmeligheten hans må du få fortalt av ham selv!',
+      trickNote: 'Kom innom Tryllemuseet søndager kl. 12–15, så viser Jan deg hvordan.',
+      nisseX: 94, nisseY: 52,
     },
   ],
   finaleTitle: 'Stjerna på treet',
