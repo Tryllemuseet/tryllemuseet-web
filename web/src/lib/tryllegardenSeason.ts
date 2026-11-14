@@ -208,10 +208,10 @@ const jul: FarmSeason = {
   title: 'Jul på Tryllegården',
   subtitle: 'Fjøsnissens hemmelighet',
   intro:
-    'På {gard} skjer det rare ting før jul. Noen har spist grøten. Noen har flettet høyet. {jente} og {gutt} tror det bor en nisse i fjøset – og at han kan trylle!',
+    'På {gard} (Årvoll gård?) skjer det rare ting før jul. Noen har spist grøten. Noen har flettet høyet. {jente} og {gutt} tror det bor en nisse i fjøset – og at han kan trylle!',
   mapImageUrl: '/images/tryllegarden/kart-jul.webp',
   treeImageUrl: '/images/tryllegarden/juletre.webp',
-  mapAlt: 'Årvoll gård sett ovenfra en vinterkveld: låven, stabburet og stua i snøen, med lykter langs stien.',
+  mapAlt: 'Tryllegården sett ovenfra en vinterkveld: låven, stabburet og stua i snøen, med lykter langs stien.',
   heroImageUrl: '/images/tryllegarden/jul-laven.webp',
   heroAlt: 'To tryllebarn med flosshatt tryller en hvit kanin opp av en hatt på låven, mens fjøsnissen ser på og klapper.',
   palette: { sky: '#14213d', ground: '#eef3f8', accent: '#b3262d', accent2: '#1f5c3a', glow: '#f6c453' },

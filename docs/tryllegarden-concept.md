@@ -368,7 +368,7 @@ museum QR ornament, English, and the next season — layers on without rework.
 
 | Question | Decision |
 |---|---|
-| The farm's name | **Årvoll gård**, by name |
+| The farm's name | **Tryllegården** (changed 14 Nov from «Årvoll gård»). A few texts hint at the real place with «(Årvoll gård?)» or «(på Årvoll?)» to tie the game to where Tryllemuseet lives |
 | The children's names | **Tiril and Trym** |
 | Which tricks, and whether to give methods away | Left to the concept: the ten beginners' effects in the table of places, methods included in Nisseloftet |
 | Rhythm | **Everything open at once** (`open`) |

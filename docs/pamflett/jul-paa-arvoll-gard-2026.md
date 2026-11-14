@@ -119,7 +119,7 @@ under halve siden blir skarpe nok. De ferdige filene ligger i
 > Trym å finne fjøsnissen, og lær et ekte tryllekunststykke. Gratis!
 
 **Innside, velkommen:**
-> Hei! Jeg er Tiril, og dette er Trym. Hos oss på Årvoll gård skjer det rare
+> Hei! Jeg er Tiril, og dette er Trym. Hos oss på Tryllegården (Årvoll gård?) skjer det rare
 > ting før jul. Noen har spist grøten, og noen har flettet høyet. Vi tror det
 > bor en nisse i fjøset, og at han kan trylle! Vil du hjelpe oss?
 >
