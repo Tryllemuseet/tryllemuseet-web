@@ -152,7 +152,7 @@ const paletteStyle = `--tg-sky:${pal.sky};--tg-ground:${pal.ground};--tg-accent:
   import { encodeProgress, decodeProgress, mergeProgress } from '../../lib/tryllegardenSave'
 
   type Level = 'smanisse' | 'laerling' | 'mester'
-  type Who = 'jente' | 'gutt' | 'nisse' | 'forteller'
+  type Who = 'jente' | 'gutt' | 'nisse' | 'forteller' | 'jan'
   type Pose = 'hei' | 'peker' | 'overrasket' | 'jubler'
   interface Line { who: Who; text: string; textEn?: string; pose?: Pose }
   interface Item {
@@ -173,6 +173,7 @@ const paletteStyle = `--tg-sky:${pal.sky};--tg-ground:${pal.ground};--tg-accent:
     traditionShort: string; traditionShortEn?: string; traditionLong?: string; traditionLongEn?: string
     traditionLinkUrl?: string; traditionLinkLabel?: string
     trickTitle: string; trickTitleEn?: string; trickEffect: string; trickEffectEn?: string; trickAge?: number
+    trickNote?: string; trickNoteEn?: string; lookAt?: string; lookAtEn?: string
     hasTrick: boolean; nisseX?: number; nisseY?: number; nisseInScene?: boolean
     dancer?: { name: string; imageUrl: string; danceImageUrl?: string; idleImageUrls?: string[]; x: number; y: number; size?: number }
     craft?: { title: string; titleEn?: string; needs?: string; needsEn?: string; steps: { text: string; textEn?: string; imageUrl?: string }[] }
@@ -180,7 +181,7 @@ const paletteStyle = `--tg-sky:${pal.sky};--tg-ground:${pal.ground};--tg-accent:
   interface Season {
     key: string; title: string; titleEn?: string; subtitle?: string; subtitleEn?: string
     intro: string; introEn?: string; heroImageUrl?: string; heroAlt?: string
-    mapImageUrl?: string; mapAlt?: string; treeImageUrl?: string
+    mapImageUrl?: string; mapAlt?: string; treeImageUrl?: string; loftImageUrl?: string
     collectionName: string; collectionNameEn?: string; collectionTop: string; collectionTopUrl?: string
     places: Place[]; finaleTitle: string; finaleTitleEn?: string; finale: Line[]
     loftName: string; loftNameEn?: string
@@ -439,11 +440,13 @@ const paletteStyle = `--tg-sky:${pal.sky};--tg-ground:${pal.ground};--tg-accent:
     const avatarFor = (who: Who, pose: Pose): string | null =>
       who === 'jente' || who === 'gutt' ? `/images/tryllegarden/ansikt/${who}-${pose}.webp`
       : who === 'nisse' ? '/images/tryllegarden/ansikt/nisse.webp'
+      : who === 'jan' ? '/images/tryllegarden/ansikt/jan.webp'
       : null
     const whoName = (who: Who) =>
       who === 'jente' ? data.names.jente
       : who === 'gutt' ? data.names.gutt
       : who === 'nisse' ? t('Lapp fra nissen', 'A note from the nisse')
+      : who === 'jan' ? 'Jan'
       : ''
     function bubble(line: Line): string {
       const text = L(line, 'text')
@@ -1168,7 +1171,7 @@ const paletteStyle = `--tg-sky:${pal.sky};--tg-ground:${pal.ground};--tg-accent:
         scene.insertAdjacentHTML('beforeend', things.map((th, n) => {
           // A swapped-in thing stands where the old one stood.
           const at = before[n]
-          const style = `left:${at.x}%;top:${at.y}%`
+          const style = `left:${at.x}%;top:${at.y}%${at.size ? `;width:${at.size}%` : ''}`
           return live
             ? `<button type="button" class="tg-thing tg-shelf" data-n="${n}" style="${style}" aria-label="${esc(L(th, 'label'))}">${itemArt(th)}</button>`
             : `<span class="tg-thing tg-shelf" style="${style}" role="img" aria-label="${esc(L(th, 'label'))}">${itemArt(th)}</span>`
@@ -1180,7 +1183,7 @@ const paletteStyle = `--tg-sky:${pal.sky};--tg-ground:${pal.ground};--tg-accent:
         draw(before, false)
         board.innerHTML = `<p class="tg-center"><button type="button" class="tg-btn" id="tg-ready">${t('Jeg er klar!', 'I am ready!')}</button></p>`
         board.querySelector('#tg-ready')!.addEventListener('click', swap)
-        api.msg(t('Se nøye på hyllene. Trykk når du er klar.', 'Look closely at the shelves. Tap when you are ready.'))
+        api.msg(lang === 'en' ? `Look closely at ${L(place, 'lookAt') || 'the shelves'}. Tap when you are ready.` : `Se nøye på ${L(place, 'lookAt') || 'hyllene'}. Trykk når du er klar.`)
       }
       async function swap() {
         phase = 'busy'
@@ -1629,7 +1632,7 @@ const paletteStyle = `--tg-sky:${pal.sky};--tg-ground:${pal.ground};--tg-accent:
         <div class="tg-secret" id="tg-secret">
           ${canReveal
             ? `<p class="tg-center"><button type="button" class="tg-btn tg-btn--ghost" id="tg-reveal">🔑 ${t('Vis hemmeligheten', 'Show the secret')}</button></p>`
-            : `<p class="tg-note">${t(`Hemmeligheten ligger på ${loft}.`, `The secret is kept in ${loft}.`)}</p>`}
+            : `<p class="tg-note">${L(place, 'trickNote') || t(`Hemmeligheten ligger på ${loft}.`, `The secret is kept in ${loft}.`)}</p>`}
         </div>
         <p class="tg-center"><button type="button" class="tg-btn" id="tg-hang">${ornamentOf(place)} ${t('Heng pynten på treet', 'Hang the ornament on the tree')}</button></p>
       </div>`)
@@ -1669,7 +1672,7 @@ const paletteStyle = `--tg-sky:${pal.sky};--tg-ground:${pal.ground};--tg-accent:
         save()
         show(`<div class="tg-card tg-finale">
           <p class="tg-star" aria-hidden="true">${topOf('tg-star-img')}</p>
-          ${figures(['jente-jubler', 'nisse-klapper', 'gutt-jubler'])}
+          ${season.loftImageUrl ? `<img class="tg-loftpic" src="${esc(season.loftImageUrl)}" alt="">` : figures(['jente-jubler', 'nisse-klapper', 'gutt-jubler'])}
           <h1 class="tg-h1" tabindex="-1" data-focus>${esc(loft)}</h1>
           <p class="tg-lead tg-lead--tight">${t(`Her ligger alle triksene du har fått av nissen. Vis dem til noen du er glad i!`, `Here are all the tricks the nisse gave you. Show them to someone you love!`)}</p>
           <div id="tg-key">
@@ -2014,6 +2017,7 @@ const paletteStyle = `--tg-sky:${pal.sky};--tg-ground:${pal.ground};--tg-accent:
   .tg-craft li img { width: 100%; height: auto; border-radius: 10px; }
   @media (max-width: 520px) { .tg-craft li { grid-template-columns: 1fr; gap: var(--space-2); } .tg-craft li img { max-width: 280px; margin: 0 auto; } }
   .tg-craft li p::before { content: counter(craft) '. '; font-weight: 700; color: var(--tg-accent2); }
+  .tg-loftpic { width: 100%; height: auto; display: block; border-radius: 16px; margin: var(--space-3) 0; box-shadow: var(--shadow-sm); }
   .tg-countitem { position: absolute; transform: translate(-50%, -50%); height: auto; pointer-events: none; filter: drop-shadow(0 3px 3px rgba(0, 0, 0, .35)); }
   .tg-numbers { display: flex; flex-wrap: wrap; gap: var(--space-2); justify-content: center; margin-top: var(--space-3); }
   .tg-num { min-width: 56px; min-height: 56px; border-radius: 14px; border: 3px solid transparent; background: #fff; box-shadow: var(--shadow); font: 700 1.5rem var(--font-ui); color: var(--tg-accent); cursor: pointer; }

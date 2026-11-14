@@ -35,6 +35,7 @@ const line = defineArrayMember({
           { title: 'Tryllegutten', value: 'gutt' },
           { title: 'Lapp fra nissen', value: 'nisse' },
           { title: 'Forteller', value: 'forteller' },
+          { title: 'Jan (tryllekunstner i Tryllemuseet)', value: 'jan' },
         ],
         layout: 'radio',
       },

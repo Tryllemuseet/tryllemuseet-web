@@ -388,7 +388,7 @@ is on. Editors test it with the preview link.
 **What is in it**
 
 - Start screen with the three levels, the farm map with the Christmas tree,
-  and **thirteen places**. Porten, Sykkelverkstedet and Fuglehuset (key `honsehuset`) are extras (`bonus`) and are not needed to open the finale. Each has dialogue, a mini-game, "visste du at", the
+  and **fourteen places**. Porten, Sykkelverkstedet and Fuglehuset (key `honsehuset`) are extras (`bonus`) and are not needed to open the finale. Each has dialogue, a mini-game, "visste du at", the
   nisse's trick and an ornament for the tree.
 
   | Place | Mechanic | What changes with the level |
@@ -405,6 +405,7 @@ is on. Editors test it with the preview link.
   | Skogen | `gjett` | 3 → 6 trees; "find the tallest" → "the second tallest" and combined clues |
   | Porten (extra) | `gjett` | 3 → 6 costumes (emoji until drawn) and riddles |
   | Sykkelverkstedet (extra) | `sorter` | 3 → 6 drawn spanners (items with a picture and `size` = length) to put in order by length, the last round the other way on Tryllemester. Replaced Bryggerhuset (same slot 11); an item with key `lys` is drawn as a candle, anything else as a spanner |
+  | Tryllemuseet (extra, slot 13) | `forandret` | Jan (a real museum instructor, with his consent) shows ten playing cards and swaps one; the child finds it. The place has no trick method: its «secret» is an invitation to meet Jan (Sundays 12–15) with a link to the activity overview. New optional place fields `lookAt` (what the child looks at) and `trickNote`; new speaker `jan` |
   | Fuglehuset (extra, key `honsehuset`; the cockatoo Loco is the place's `dancer`: two poses in the same frame, swapped while he dances at every right answer) | `tell` | count eggs, and hens on harder levels; Smånisse can look as long as they like, older children see them for a few seconds and can look again |
 
 - Hint ladder "Nissen hvisker" (two spoken hints, then the answer glows),
