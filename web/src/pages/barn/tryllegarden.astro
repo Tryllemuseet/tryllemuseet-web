@@ -180,7 +180,7 @@ const paletteStyle = `--tg-sky:${pal.sky};--tg-ground:${pal.ground};--tg-accent:
   interface Season {
     key: string; title: string; titleEn?: string; subtitle?: string; subtitleEn?: string
     intro: string; introEn?: string; heroImageUrl?: string; heroAlt?: string
-    mapImageUrl?: string; mapAlt?: string
+    mapImageUrl?: string; mapAlt?: string; treeImageUrl?: string
     collectionName: string; collectionNameEn?: string; collectionTop: string; collectionTopUrl?: string
     places: Place[]; finaleTitle: string; finaleTitleEn?: string; finale: Line[]
     loftName: string; loftNameEn?: string
@@ -572,6 +572,8 @@ const paletteStyle = `--tg-sky:${pal.sky};--tg-ground:${pal.ground};--tg-accent:
     }
 
     // ── Kartet og treet ──────────────────────────────────────────
+    // With the big tree picture the slots are in % of the tree box (about 3:8), wide at the bottom, narrow at the top.
+    const IMG_TREE_SLOTS = [[50, 20], [44, 32], [56, 32], [38, 45], [50, 45], [62, 45], [32, 58], [44, 58], [56, 58], [68, 58], [26, 72], [38, 72], [50, 72], [62, 72]]
     const TREE_SLOTS = [[50, 40], [36, 60], [64, 60], [50, 72], [28, 82], [72, 82], [44, 88], [58, 52], [60, 90], [46, 50], [54, 80], [34, 72], [42, 66], [66, 74]]
     // The finale opens when every place that is not an extra has its ornament.
     const allDone = () => season.places.filter(p => !p.bonus).every(p => mine.done[p.key])
@@ -583,7 +585,7 @@ const paletteStyle = `--tg-sky:${pal.sky};--tg-ground:${pal.ground};--tg-accent:
       const smor = season.places.filter(p => mine.done[p.key]?.smor).length
       const collection = L(season, 'collectionName')
       const ornaments = season.places
-        .map((p, i) => ({ p, slot: TREE_SLOTS[i % TREE_SLOTS.length] }))
+        .map((p, i) => ({ p, slot: (season.treeImageUrl ? IMG_TREE_SLOTS : TREE_SLOTS)[i % TREE_SLOTS.length] }))
         .filter(o => mine.done[o.p.key])
         .map(o => `<span class="tg-ornament${o.p.key === celebrate ? ' is-new' : ''}" style="left:${o.slot[0]}%;top:${o.slot[1]}%" aria-hidden="true">${ornamentOf(o.p)}</span>`)
         .join('')
@@ -597,8 +599,8 @@ const paletteStyle = `--tg-sky:${pal.sky};--tg-ground:${pal.ground};--tg-accent:
         <p class="tg-lead tg-lead--tight">${esc(where)}</p>
         <div class="tg-scene tg-map">
           ${season.mapImageUrl ? `<img class="tg-backdrop" src="${esc(season.mapImageUrl)}" alt="${esc(season.mapAlt ?? '')}">` : backdropSvg('map')}
-          <div class="tg-tree" role="img" aria-label="${esc(`${collection}. ${status}`)}">
-            <svg viewBox="0 0 60 80" aria-hidden="true"><rect x="26" y="68" width="8" height="12" fill="#6b4226"/><path d="M30 6 L10 34 H20 L6 54 H18 L4 72 H56 L42 54 H54 L40 34 H50Z" fill="#1f5c3a"/><path d="M30 6 L22 18 Q30 22 38 18Z" fill="#f4f8fc"/></svg>
+          <div class="tg-tree${season.treeImageUrl ? ' tg-tree--img' : ''}" role="img" aria-label="${esc(`${collection}. ${status}`)}">
+            ${season.treeImageUrl ? `<img class="tg-tree-pic" src="${esc(season.treeImageUrl)}" alt="">` : `<svg viewBox="0 0 60 80" aria-hidden="true"><rect x="26" y="68" width="8" height="12" fill="#6b4226"/><path d="M30 6 L10 34 H20 L6 54 H18 L4 72 H56 L42 54 H54 L40 34 H50Z" fill="#1f5c3a"/><path d="M30 6 L22 18 Q30 22 38 18Z" fill="#f4f8fc"/></svg>`}
             ${ornaments}
             ${mine.finale ? `<span class="tg-treetop" aria-hidden="true">${topOf('tg-top-img')}</span>` : ''}
           </div>
@@ -2050,6 +2052,12 @@ const paletteStyle = `--tg-sky:${pal.sky};--tg-ground:${pal.ground};--tg-accent:
   .tg-map { aspect-ratio: 16 / 12; }
   .tg-tree { position: absolute; left: 62%; top: 52%; width: 13%; transform: translate(-50%, -50%); }
   .tg-tree svg { width: 100%; height: auto; display: block; }
+  /* The big tree: its foot stands in the middle of the yard and the top reaches well above the stable roof. */
+  .tg-tree--img { left: 54%; top: 68%; width: 15%; transform: translate(-50%, -100%); }
+  .tg-tree--img .tg-ornament { font-size: clamp(.7rem, 2.6vw, 1.3rem); }
+  .tg-tree--img .tg-orn-img { width: clamp(13px, 3.1vw, 25px); }
+  .tg-tree-pic { width: 100%; height: auto; display: block; filter: drop-shadow(0 .4rem .5rem rgba(0, 0, 0, .35)); }
+  .tg-tree--img .tg-treetop { top: 1%; }
   .tg-ornament { position: absolute; transform: translate(-50%, -50%); font-size: clamp(.9rem, 3.4vw, 1.7rem); line-height: 1; }
   .tg-orn-img { width: clamp(18px, 4.6vw, 34px); height: auto; display: block; }
   .tg-top-img { width: clamp(30px, 7.5vw, 56px); height: auto; display: block; }

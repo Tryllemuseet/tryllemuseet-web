@@ -58,7 +58,7 @@ toppen.
 | Porten | 21, 68 (ved gjerdet til venstre) | en åpen grind i gjerdet |
 | Lyktestien | 36, 82 | som i dag |
 
-Juletreet midt på tunet skal fortsatt stå uten pynt (pynten henger spillet på).
+Juletreet er nå et eget bilde (`web/public/images/tryllegarden/juletre.webp`, en av granene fra Skogen) som spillet legger oppå kartet midt på tunet, så kartet skal ikke ha noe tre der. Originalen er bare 403 px høy og blir litt uskarp på store skjermer; en ny, større tegning av treet i samme stil ville være bedre.
 
 ## 3. Trinnbilder til «Lag din egen julekurv» (Stua)
 
