@@ -38,8 +38,8 @@ export const farmGameConfig = defineType({
       name: 'farmName',
       title: 'Gårdens navn',
       type: 'string',
-      initialValue: 'Årvoll gård',
-      description: 'Settes inn der tekstene har {gard}.',
+      initialValue: 'Tryllegården',
+      description: 'Settes inn der tekstene har {gard}. Standard er «Tryllegården»; enkelte tekster hinter med «(Årvoll gård?)» eller «(på Årvoll?)» for å knytte spillet til der Tryllemuseet holder til.',
     }),
     defineField({
       name: 'girlName',

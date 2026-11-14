@@ -56,7 +56,7 @@ PAGE2 = f'''
 <div class="bg paper"></div>
 <div class="content">
   <h2>Hei, vi er Tiril og Trym</h2>
-  <p>Hos oss på Årvoll gård skjer det litt rare ting før jul. Noen har spist
+  <p>Hos oss på Tryllegården (Årvoll gård?) skjer det litt rare ting før jul. Noen har spist
   grøten, og noen har flettet manken til hesten. Vi tror det bor en nisse i
   fjøset. Vil du være med og lete?</p>
   <ol class="steps">

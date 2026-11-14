@@ -78,7 +78,7 @@ if (!isActive || preview) {
 const names = {
   jente: config?.girlName?.trim() || 'Tiril',
   gutt:  config?.boyName?.trim()  || 'Trym',
-  gard:  config?.farmName?.trim() || 'Årvoll gård',
+  gard:  config?.farmName?.trim() || 'Tryllegården',
 }
 const fill = (s: string) =>
   s.replace(/\{jente\}/g, names.jente).replace(/\{gutt\}/g, names.gutt).replace(/\{gard\}/g, names.gard)
@@ -88,7 +88,7 @@ const teaser = season ?? BUILT_IN_SEASONS[config?.activeSeason?.trim() || DEFAUL
 const pageTitle = teaser.title
 const comingSoonTitle = config?.comingSoonTitle?.trim() || 'Hysj … nissen gjør seg klar'
 const comingSoonText = config?.comingSoonText?.trim() ||
-  fill('Snart kan du bli med {jente} og {gutt} til {gard} og finne ut hvem som tryller i fjøset. Kom tilbake om litt!')
+  fill('Snart kan du bli med {jente} og {gutt} til {gard} (på Årvoll?) og finne ut hvem som tryller i fjøset. Kom tilbake om litt!')
 
 // What the browser gets: the season without the slugs into the closed area.
 const payload = playable
@@ -111,7 +111,7 @@ const paletteStyle = `--tg-sky:${pal.sky};--tg-ground:${pal.ground};--tg-accent:
 
 <BaseLayout
   title={`${pageTitle} — Tryllemuseet`}
-  description="Bli med tryllebarna til gården og finn ut hvem som tryller i fjøset. Et koselig spill for barn, med nissens egne trylletriks."
+  description="Bli med tryllebarna til Tryllegården og finn ut hvem som tryller i fjøset. Et koselig spill for barn, med nissens egne trylletriks."
   noindex={config?.isActive !== true}
 >
   <section class="tg" id="tg" style={paletteStyle}>
