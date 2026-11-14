@@ -175,6 +175,8 @@ export interface FarmSeason {
   /** Picture of the whole farm, 4:3. Places sit on it at mapX/mapY. Without one, a drawn placeholder is used. */
   mapImageUrl?: string
   mapAlt?:      string
+  /** The tree the ornaments hang on, drawn big over the middle of the map. Without one, a small drawn fir is used. */
+  treeImageUrl?: string
   /** Colours of the game's frame. Any CSS colour. */
   palette: { sky: string; ground: string; accent: string; accent2: string; glow: string }
   /** The thing being filled: "Juletreet", "Påskekurven" … */
@@ -208,6 +210,7 @@ const jul: FarmSeason = {
   intro:
     'På {gard} skjer det rare ting før jul. Noen har spist grøten. Noen har flettet høyet. {jente} og {gutt} tror det bor en nisse i fjøset – og at han kan trylle!',
   mapImageUrl: '/images/tryllegarden/kart-jul.webp',
+  treeImageUrl: '/images/tryllegarden/juletre.webp',
   mapAlt: 'Årvoll gård sett ovenfra en vinterkveld: låven, stabburet og stua i snøen, med lykter langs stien.',
   heroImageUrl: '/images/tryllegarden/jul-laven.webp',
   heroAlt: 'To tryllebarn med flosshatt tryller en hvit kanin opp av en hatt på låven, mens fjøsnissen ser på og klapper.',
@@ -225,7 +228,7 @@ const jul: FarmSeason = {
       title: 'Tunet',
       mechanic: 'finn',
       icon: '👣',
-      mapX: 55, mapY: 46,
+      mapX: 62, mapY: 54,
       ornament: '🔴',
       ornamentImageUrl: '/images/tryllegarden/pynt/kule-rod.webp',
       sceneImageUrl: '/images/tryllegarden/scene/tunet.webp',
@@ -247,7 +250,7 @@ const jul: FarmSeason = {
       ],
       hints: [
         'Se nøye i snøen, helt nederst.',
-        'Noe ligger ved låveveggen, og noe ligger ved gjerdet.',
+        'Noe ligger ved den røde veggen, og noe ligger ved gjerdet.',
       ],
       done: 'Bra sett! En tryllekunstner må se det ingen andre ser.',
       traditionShort:
@@ -359,12 +362,12 @@ const jul: FarmSeason = {
       title: 'Stallen',
       mechanic: 'folg-traden',
       icon: '🐴',
-      mapX: 47, mapY: 32,
+      mapX: 43, mapY: 32,
       ornament: '🟣',
       ornamentImageUrl: '/images/tryllegarden/pynt/hestesko.webp',
       backdrop: 'stall',
       sceneImageUrl: '/images/tryllegarden/scene/stallen.webp',
-      sceneAlt: 'Inne i stallen. Fjordhesten Blakken står i spiltauet med lang, lys man. Seletøy, bjelle og lykt henger på veggen, og nissen titter fram bak en høyball.',
+      sceneAlt: 'Inne i stallen. Fjordhesten Blakken står i boksen sin med lang, lys man. Seletøy, bjelle og lykt henger på veggen, og nissen titter fram bak en høyball.',
       intro: [
         { who: 'gutt',  text: 'Se på Blakken! Noen har flettet manken hans i natt.' },
         { who: 'jente', text: 'Det heter nisseflette. Og nissen har knyttet noe fast i enden av hver flette!' },
@@ -542,9 +545,9 @@ const jul: FarmSeason = {
       ],
       done: 'Deg lurer han ikke! En tryllekunstner legger merke til det minste som forandrer seg.',
       traditionShort:
-        'I julegrøten gjemmes det en mandel. Den som finner mandelen, får en marsipangris!',
-      traditionLong:
         'På stabburet oppbevarte gården maten gjennom vinteren. Huset står på stolper, så musene ikke kommer seg inn.',
+      traditionLong:
+        'Til jul hentet man fram det beste fra stabburet. I julegrøten gjemmes det en mandel, og den som finner mandelen, får en marsipangris!',
       trickTitle: 'Klementinen som teller',
       trickEffect:
         'Du holder opp en klementin og sier hvor mange båter den har inni. Så skreller du den, og alle teller. Det stemmer!',
@@ -652,7 +655,7 @@ const jul: FarmSeason = {
       intro: [
         { who: 'gutt',  text: 'Nissen vil ha et juletre, men han har glemt hvordan et fint tre ser ut!' },
         { who: 'jente', text: 'Han har gitt oss små ledetråder. Se godt på trærne og finn det rette.' },
-        { who: 'gutt',  text: 'Fotsporene går mot skogen. Er det nissen som har gått her?' },
+        { who: 'gutt',  text: 'Fotsporene går mellom trærne. Er det nissen som har gått her?' },
       ],
       task: 'Les ledetråden. Trykk på treet nissen vil ha.',
       items: [
@@ -757,7 +760,7 @@ const jul: FarmSeason = {
       mechanic: 'sorter',
       icon: '🚲',
       iconImageUrl: '/images/tryllegarden/verktoy/sykkel-knapp.webp',
-      mapX: 83, mapY: 28,
+      mapX: 80, mapY: 22,
       ornament: '🔧',
       ornamentImageUrl: '/images/tryllegarden/pynt/sykkelbjelle.webp',
       sceneImageUrl: '/images/tryllegarden/scene/sykkelverkstedet.webp',
@@ -812,9 +815,9 @@ const jul: FarmSeason = {
       intro: [
         { who: 'gutt',  text: 'Dette er fuglehuset! Her bor hønene, og en kanin.' },
         { who: 'jente', text: 'Og der sitter kakaduen Loco! Han er på julebesøk. Loco danser når han blir glad.' },
-        { who: 'jente', text: 'Dyra skal ha ekstra god mat på julaften. Også hønene.' },
-        { who: 'gutt',  text: 'Nissen har prøvd å telle hønene og eggene, men han mister alltid tellingen.' },
-        { who: 'jente', text: 'Kan du hjelpe ham? Tell riktig, så danser Loco for deg.' },
+        { who: 'gutt',  text: 'Dyra skal ha ekstra god mat på julaften. Også hønene.' },
+        { who: 'jente', text: 'Nissen har prøvd å telle hønene og eggene, men han mister alltid tellingen.' },
+        { who: 'gutt',  text: 'Kan du hjelpe ham? Tell riktig, så danser Loco for deg.' },
       ],
       task: 'Se godt etter. Tell, og trykk på riktig tall.',
       items: [
