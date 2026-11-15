@@ -485,6 +485,7 @@ const paletteStyle = `--tg-sky:${pal.sky};--tg-ground:${pal.ground};--tg-accent:
     function renderBar() {
       bar.hidden = store.level === null
       bar.innerHTML = `
+        <a class="tg-chip tg-exit" href="/barn" aria-label="${t('Tilbake til Tryllemuseet for barn', 'Back to Tryllemuseet for children')}">←</a>
         <button type="button" class="tg-chip" data-act="map">🗺️ <span>${t('Gården', 'The farm')}</span></button>
         <div class="tg-levels" role="group" aria-label="${t('Vanskelighetsgrad', 'Difficulty')}">
           ${LEVELS.map(l => `<button type="button" class="tg-chip${l === level() ? ' is-on' : ''}" data-level="${l}" aria-pressed="${l === level()}" title="${esc(LEVEL_NAMES[l].age)}">${LEVEL_NAMES[l].icon} <span>${esc(LEVEL_NAMES[l].name)}</span></button>`).join('')}
@@ -1798,6 +1799,9 @@ const paletteStyle = `--tg-sky:${pal.sky};--tg-ground:${pal.ground};--tg-accent:
     scroll-margin-top: calc(var(--header-h) + 8px);
   }
   .tg-wrap { max-width: 860px; margin: 0 auto; }
+  .tg-wrap:has(.tg-game, .tg-card > .tg-map) { max-width: 1240px; }
+  .tg-card { max-width: 860px; margin-inline: auto; }
+  .tg-wrap:has(.tg-game, .tg-card > .tg-map) .tg-game, .tg-wrap:has(.tg-game, .tg-card > .tg-map) .tg-card:has(> .tg-map) { max-width: none; }
   .tg-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
   .tg-center { text-align: center; }
   .tg :focus-visible { outline: 3px solid var(--tg-glow); outline-offset: 3px; }
@@ -1884,22 +1888,29 @@ const paletteStyle = `--tg-sky:${pal.sky};--tg-ground:${pal.ground};--tg-accent:
   .tg-text { font-size: 1.2rem; line-height: 1.45; }
 
   /* Scenes */
-  .tg-scene { position: relative; aspect-ratio: 16 / 10; border-radius: 16px; overflow: hidden; background: var(--tg-sky); }
-  .tg-scene--short { aspect-ratio: 16 / 6; }
-  .tg-scene--mid { aspect-ratio: 16 / 8; }
+  .tg-scene {
+    --ar: 1.6;
+    position: relative; aspect-ratio: 16 / 10; border-radius: 16px; overflow: hidden; background: var(--tg-sky);
+    /* Never taller than the screen has room for: on a low (landscape) screen the scene gets narrower, not cut off. */
+    width: min(100%, calc((100dvh - 12rem) * var(--ar)));
+    margin-inline: auto;
+    container-type: inline-size;
+  }
+  .tg-scene--short { aspect-ratio: 16 / 6; --ar: 2.667; }
+  .tg-scene--mid { aspect-ratio: 16 / 8; --ar: 2; }
   .tg-scene--mid .tg-backdrop { object-position: center 60%; }
   .tg-backdrop { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
   .tg-thing, .tg-bird, .tg-hat, .tg-spot {
     position: absolute; transform: translate(-50%, -50%); background: none; border: 0; padding: 0; cursor: pointer; line-height: 1;
   }
-  .tg-thing { width: 12%; aspect-ratio: 1; font-size: clamp(1.2rem, 5.2vw, 2.6rem); display: flex; align-items: center; justify-content: center; border-radius: 50%; }
+  .tg-thing { width: 12%; aspect-ratio: 1; font-size: clamp(1.2rem, 5.72cqw, 2.6rem); display: flex; align-items: center; justify-content: center; border-radius: 50%; }
   .tg-thing img { width: 100%; height: 100%; object-fit: contain; }
   /* Things on a shelf stand on it: x/y is the middle of the thing's foot. */
   .tg-shelf, .tg-lvl-smanisse .tg-shelf, .tg-lvl-mester .tg-shelf { width: 10%; transform: translate(-50%, -100%); border-radius: 8px; align-items: flex-end; opacity: 1; }
   .tg-shelf img { object-position: 50% 100%; filter: drop-shadow(0 2px 2px rgba(0, 0, 0, .4)); }
   .tg-spot-icon img { width: 100%; height: 100%; object-fit: contain; display: block; }
-  .tg-lvl-smanisse .tg-thing { width: 16%; font-size: clamp(1.6rem, 7vw, 3.4rem); }
-  .tg-lvl-mester .tg-thing { width: 9%; font-size: clamp(.95rem, 3.6vw, 1.8rem); opacity: .85; }
+  .tg-lvl-smanisse .tg-thing { width: 16%; font-size: clamp(1.6rem, 7.7cqw, 3.4rem); }
+  .tg-lvl-mester .tg-thing { width: 9%; font-size: clamp(.95rem, 3.96cqw, 1.8rem); opacity: .85; }
   .tg-thing.is-found { opacity: 1; background: color-mix(in srgb, var(--tg-glow) 75%, transparent); box-shadow: 0 0 0 3px #fff; cursor: default; }
   .is-hint { animation: tg-glow 1s ease-in-out infinite; border-radius: 16px; box-shadow: 0 0 0 4px var(--tg-glow); }
   .tg-hat { width: 14%; min-width: 56px; opacity: .92; transform: translate(-50%, -62%); }
@@ -1933,7 +1944,7 @@ const paletteStyle = `--tg-sky:${pal.sky};--tg-ground:${pal.ground};--tg-accent:
   /* Memory game */
   .tg-bird { width: 17%; display: flex; flex-direction: column; align-items: center; border-radius: 14px; padding: 1%; transition: transform .2s; }
   .tg-bird svg, .tg-bird img { width: 100%; height: auto; display: block; }
-  .tg-bird-name { font: 700 clamp(.6rem, 2.1vw, .95rem) var(--font-ui); color: #fff; background: rgba(0, 0, 0, .5); border-radius: 999px; padding: .1em .6em; margin-top: 2px; white-space: nowrap; }
+  .tg-bird-name { font: 700 clamp(.6rem, 2.31cqw, .95rem) var(--font-ui); color: #fff; background: rgba(0, 0, 0, .5); border-radius: 999px; padding: .1em .6em; margin-top: 2px; white-space: nowrap; }
   .tg-bird.is-on { transform: translate(-50%, -62%) scale(1.25); background: color-mix(in srgb, var(--tg-glow) 80%, transparent); }
   .tg-bird.is-ok { background: color-mix(in srgb, #7bd88f 80%, transparent); }
 
@@ -1982,8 +1993,8 @@ const paletteStyle = `--tg-sky:${pal.sky};--tg-ground:${pal.ground};--tg-accent:
 
   /* Light the lanterns */
   .tg-lantern { position: absolute; transform: translate(-50%, -50%); background: none; border: 0; padding: 4px; cursor: pointer; border-radius: 16px; display: flex; flex-direction: column; align-items: center; font-size: clamp(2rem, 9vw, 4rem); line-height: 1; filter: grayscale(1) brightness(.55); transition: filter .2s; }
-  .tg-lantern img { width: clamp(44px, 12vw, 90px); height: auto; }
-  .tg-lantern b { font: 700 clamp(.8rem, 2.6vw, 1.1rem) var(--font-ui); color: #fff; background: rgba(0, 0, 0, .5); border-radius: 999px; padding: 0 .6em; margin-top: 4px; }
+  .tg-lantern img { width: clamp(44px, 13.2cqw, 90px); height: auto; }
+  .tg-lantern b { font: 700 clamp(.8rem, 2.86cqw, 1.1rem) var(--font-ui); color: #fff; background: rgba(0, 0, 0, .5); border-radius: 999px; padding: 0 .6em; margin-top: 4px; }
   .tg-lantern.is-lit { filter: drop-shadow(0 0 14px var(--tg-glow)); }
 
   /* The show */
@@ -2076,28 +2087,28 @@ const paletteStyle = `--tg-sky:${pal.sky};--tg-ground:${pal.ground};--tg-accent:
   .tg-codeerr { min-height: 1.4em; margin-top: var(--space-2); font-weight: 700; color: var(--tg-accent); }
 
   /* Map */
-  .tg-map { aspect-ratio: 16 / 12; }
+  .tg-map { aspect-ratio: 16 / 12; --ar: 1.333; }
   .tg-tree { position: absolute; left: 62%; top: 52%; width: 13%; transform: translate(-50%, -50%); }
   .tg-tree svg { width: 100%; height: auto; display: block; }
   /* The big tree: its foot stands in the middle of the yard and the top reaches well above the stable roof. */
   .tg-tree--img { left: 54%; top: 68%; width: 15%; transform: translate(-50%, -100%); }
-  .tg-tree--img .tg-ornament { font-size: clamp(.7rem, 2.6vw, 1.3rem); }
-  .tg-tree--img .tg-orn-img { width: clamp(13px, 3.1vw, 25px); }
+  .tg-tree--img .tg-ornament { font-size: clamp(.7rem, 2.86cqw, 1.3rem); }
+  .tg-tree--img .tg-orn-img { width: clamp(13px, 3.41cqw, 25px); }
   .tg-tree-pic { width: 100%; height: auto; display: block; filter: drop-shadow(0 .4rem .5rem rgba(0, 0, 0, .35)); }
   .tg-tree--img .tg-treetop { top: 1%; }
-  .tg-ornament { position: absolute; transform: translate(-50%, -50%); font-size: clamp(.9rem, 3.4vw, 1.7rem); line-height: 1; }
-  .tg-orn-img { width: clamp(18px, 4.6vw, 34px); height: auto; display: block; }
-  .tg-top-img { width: clamp(30px, 7.5vw, 56px); height: auto; display: block; }
+  .tg-ornament { position: absolute; transform: translate(-50%, -50%); font-size: clamp(.9rem, 3.74cqw, 1.7rem); line-height: 1; }
+  .tg-orn-img { width: clamp(18px, 5.06cqw, 34px); height: auto; display: block; }
+  .tg-top-img { width: clamp(30px, 8.25cqw, 56px); height: auto; display: block; }
   .tg-star-img { height: 4.5rem; width: auto; }
   .tg-lvlicon { height: 1.5em; width: auto; vertical-align: middle; }
   .tg-pick-icon .tg-lvlicon { height: 3rem; }
   .tg-tally-icon { width: 1.6rem; height: 1.6rem; object-fit: contain; vertical-align: middle; }
   .tg-btn-icon { height: 1.5em; width: auto; vertical-align: middle; }
   .tg-ornament.is-new { animation: tg-drop .7s ease-out; }
-  .tg-treetop { position: absolute; left: 50%; top: 4%; transform: translate(-50%, -50%); font-size: clamp(1.4rem, 5.5vw, 2.8rem); line-height: 1; filter: drop-shadow(0 0 10px var(--tg-glow)); }
+  .tg-treetop { position: absolute; left: 50%; top: 4%; transform: translate(-50%, -50%); font-size: clamp(1.4rem, 6.05cqw, 2.8rem); line-height: 1; filter: drop-shadow(0 0 10px var(--tg-glow)); }
   .tg-spot { display: flex; flex-direction: column; align-items: center; gap: 4px; }
-  .tg-spot-icon { width: clamp(38px, 8.6vw, 68px); aspect-ratio: 1; border-radius: 50%; background: #fff; border: 4px solid var(--tg-glow); font-size: clamp(1.5rem, 6vw, 2.5rem); display: flex; align-items: center; justify-content: center; box-shadow: 0 0 18px color-mix(in srgb, var(--tg-glow) 70%, transparent); }
-  .tg-spot-name { font: 700 clamp(.68rem, 2.2vw, 1rem) var(--font-ui); color: #fff; background: var(--tg-accent); border-radius: 999px; padding: .15em .8em; white-space: nowrap; }
+  .tg-spot-icon { width: clamp(38px, 9.46cqw, 68px); aspect-ratio: 1; border-radius: 50%; background: #fff; border: 4px solid var(--tg-glow); font-size: clamp(1.5rem, 6.6cqw, 2.5rem); display: flex; align-items: center; justify-content: center; box-shadow: 0 0 18px color-mix(in srgb, var(--tg-glow) 70%, transparent); }
+  .tg-spot-name { font: 700 clamp(.68rem, 2.42cqw, 1rem) var(--font-ui); color: #fff; background: var(--tg-accent); border-radius: 999px; padding: .15em .8em; white-space: nowrap; }
   .tg-spot.is-done .tg-spot-icon { border-color: var(--tg-accent2); box-shadow: none; }
   .tg-spot.is-done .tg-spot-name { background: var(--tg-accent2); }
   .tg-spot:hover .tg-spot-icon { transform: scale(1.06); }
@@ -2131,6 +2142,30 @@ const paletteStyle = `--tg-sky:${pal.sky};--tg-ground:${pal.ground};--tg-accent:
     .tg-chip span { display: none; }
     .tg-chip.is-on span { display: inline; }
     .tg-avatar { width: 52px; height: 52px; }
+  }
+  /* Wide landscape (tablet, laptop, desktop): picture on the left, task and board on the right. */
+  @media (min-width: 640px) and (min-aspect-ratio: 5 / 4) {
+    .tg-game:has(> .tg-scene) {
+      display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr);
+      column-gap: var(--space-6); row-gap: var(--space-3); align-items: start; grid-auto-rows: min-content;
+    }
+    .tg-game:has(> .tg-scene) > * { grid-column: 2; margin-top: 0; }
+    .tg-game:has(> .tg-scene) > .tg-scene { grid-column: 1; grid-row: 1 / span 8; position: sticky; top: calc(var(--header-h) + 1rem); width: min(100%, calc((100dvh - var(--header-h) - 3rem) * var(--ar))); }
+    .tg-card:has(> .tg-map) {
+      display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
+      column-gap: var(--space-6); row-gap: var(--space-3); align-items: start; grid-auto-rows: min-content;
+    }
+    .tg-card:has(> .tg-map) > * { grid-column: 2; margin-top: 0; }
+    .tg-card:has(> .tg-map) > .tg-map { grid-column: 1; grid-row: 1 / span 8; position: sticky; top: calc(var(--header-h) + 1rem); width: min(100%, calc((100dvh - var(--header-h) - 3rem) * var(--ar))); }
+  }
+  /* Short landscape (phone on its side): hide the site chrome, keep a way back. */
+  .tg-exit { display: none; }
+  @media (max-height: 520px) and (orientation: landscape) {
+    body:has(#tg) .site-header, body:has(#tg) .site-footer { display: none; }
+    body:has(#tg) { --header-h: 0px; }
+    body:has(#tg) main { padding-top: 0; }
+    .tg-exit { display: inline-flex; }
+    .tg-scene { width: min(100%, calc((100dvh - 8rem) * var(--ar))); }
   }
   @media (prefers-reduced-motion: reduce) {
     .tg *, .tg-toast { animation: none !important; transition: none !important; }
