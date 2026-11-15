@@ -18,7 +18,7 @@
 export const prerender = false
 
 import BaseLayout from '../../layouts/BaseLayout.astro'
-import { getFarmGameConfig, getGamePreview } from '../../lib/sanity'
+import { getFarmGameConfig, getGamePreview, getGodeRadConfig } from '../../lib/sanity'
 import { getPrivateClient, failedAttemptDelay } from '../../lib/bakTeppet'
 import {
   PREVIEW_PARAM,
@@ -66,6 +66,19 @@ const isActive = config?.isActive === true || preview
 const season = isActive ? await loadFarmSeason(config) : null
 const playable = isActive && !!season
 
+// The shared «Gode råd» texts (Sanity: godeRadConfig); the adults' part is shown
+// on the trick card. A failure here only means no box.
+let adults: { heading: string; items: string[] } | null = null
+if (playable) {
+  try {
+    const gr = await getGodeRadConfig()
+    const items = (gr.voksneRad ?? []).map(s => String(s).trim()).filter(Boolean)
+    if (items.length) adults = { heading: gr.voksneHeading?.trim() || 'Til voksne', items }
+  } catch (err) {
+    console.error('[tryllegarden] could not load the advice for adults', err)
+  }
+}
+
 if (!isActive || preview) {
   // Not cached while the game is off: the CDN ignores cookies, so a cached
   // "coming soon" page would hide the game from a preview browser (and a
@@ -78,7 +91,7 @@ if (!isActive || preview) {
 const names = {
   jente: config?.girlName?.trim() || 'Tiril',
   gutt:  config?.boyName?.trim()  || 'Trym',
-  gard:  config?.farmName?.trim() || 'Årvoll gård',
+  gard:  config?.farmName?.trim() || 'Tryllegården',
 }
 const fill = (s: string) =>
   s.replace(/\{jente\}/g, names.jente).replace(/\{gutt\}/g, names.gutt).replace(/\{gard\}/g, names.gard)
@@ -88,7 +101,7 @@ const teaser = season ?? BUILT_IN_SEASONS[config?.activeSeason?.trim() || DEFAUL
 const pageTitle = teaser.title
 const comingSoonTitle = config?.comingSoonTitle?.trim() || 'Hysj … nissen gjør seg klar'
 const comingSoonText = config?.comingSoonText?.trim() ||
-  fill('Snart kan du bli med {jente} og {gutt} til {gard} og finne ut hvem som tryller i fjøset. Kom tilbake om litt!')
+  fill('Snart kan du bli med {jente} og {gutt} til {gard} (på Årvoll?) og finne ut hvem som tryller i fjøset. Kom tilbake om litt!')
 
 // What the browser gets: the season without the slugs into the closed area.
 const payload = playable
@@ -99,6 +112,7 @@ const payload = playable
         places: season!.places.map(({ trickSlug, ...p }) => ({ ...p, hasTrick: !!trickSlug })),
       },
       names,
+      adults,
       englishEnabled: config?.englishEnabled === true,
       // Without the private token there are no secrets to hand out.
       secrets: !!priv && !!season!.kitSlug,
@@ -111,7 +125,7 @@ const paletteStyle = `--tg-sky:${pal.sky};--tg-ground:${pal.ground};--tg-accent:
 
 <BaseLayout
   title={`${pageTitle} — Tryllemuseet`}
-  description="Bli med tryllebarna til gården og finn ut hvem som tryller i fjøset. Et koselig spill for barn, med nissens egne trylletriks."
+  description="Bli med tryllebarna til Tryllegården og finn ut hvem som tryller i fjøset. Et koselig spill for barn, med nissens egne trylletriks."
   noindex={config?.isActive !== true}
 >
   <section class="tg" id="tg" style={paletteStyle}>
@@ -152,7 +166,7 @@ const paletteStyle = `--tg-sky:${pal.sky};--tg-ground:${pal.ground};--tg-accent:
   import { encodeProgress, decodeProgress, mergeProgress } from '../../lib/tryllegardenSave'
 
   type Level = 'smanisse' | 'laerling' | 'mester'
-  type Who = 'jente' | 'gutt' | 'nisse' | 'forteller'
+  type Who = 'jente' | 'gutt' | 'nisse' | 'forteller' | 'jan'
   type Pose = 'hei' | 'peker' | 'overrasket' | 'jubler'
   interface Line { who: Who; text: string; textEn?: string; pose?: Pose }
   interface Item {
@@ -173,6 +187,7 @@ const paletteStyle = `--tg-sky:${pal.sky};--tg-ground:${pal.ground};--tg-accent:
     traditionShort: string; traditionShortEn?: string; traditionLong?: string; traditionLongEn?: string
     traditionLinkUrl?: string; traditionLinkLabel?: string
     trickTitle: string; trickTitleEn?: string; trickEffect: string; trickEffectEn?: string; trickAge?: number
+    trickNote?: string; trickNoteEn?: string; lookAt?: string; lookAtEn?: string
     hasTrick: boolean; nisseX?: number; nisseY?: number; nisseInScene?: boolean
     dancer?: { name: string; imageUrl: string; danceImageUrl?: string; idleImageUrls?: string[]; x: number; y: number; size?: number }
     craft?: { title: string; titleEn?: string; needs?: string; needsEn?: string; steps: { text: string; textEn?: string; imageUrl?: string }[] }
@@ -180,7 +195,7 @@ const paletteStyle = `--tg-sky:${pal.sky};--tg-ground:${pal.ground};--tg-accent:
   interface Season {
     key: string; title: string; titleEn?: string; subtitle?: string; subtitleEn?: string
     intro: string; introEn?: string; heroImageUrl?: string; heroAlt?: string
-    mapImageUrl?: string; mapAlt?: string
+    mapImageUrl?: string; mapAlt?: string; treeImageUrl?: string; loftImageUrl?: string
     collectionName: string; collectionNameEn?: string; collectionTop: string; collectionTopUrl?: string
     places: Place[]; finaleTitle: string; finaleTitleEn?: string; finale: Line[]
     loftName: string; loftNameEn?: string
@@ -189,6 +204,7 @@ const paletteStyle = `--tg-sky:${pal.sky};--tg-ground:${pal.ground};--tg-accent:
   interface Data {
     season: Season
     names: { jente: string; gutt: string; gard: string }
+    adults?: { heading: string; items: string[] } | null
     englishEnabled: boolean
     secrets: boolean
   }
@@ -439,11 +455,13 @@ const paletteStyle = `--tg-sky:${pal.sky};--tg-ground:${pal.ground};--tg-accent:
     const avatarFor = (who: Who, pose: Pose): string | null =>
       who === 'jente' || who === 'gutt' ? `/images/tryllegarden/ansikt/${who}-${pose}.webp`
       : who === 'nisse' ? '/images/tryllegarden/ansikt/nisse.webp'
+      : who === 'jan' ? '/images/tryllegarden/ansikt/jan.webp'
       : null
     const whoName = (who: Who) =>
       who === 'jente' ? data.names.jente
       : who === 'gutt' ? data.names.gutt
       : who === 'nisse' ? t('Lapp fra nissen', 'A note from the nisse')
+      : who === 'jan' ? 'Jan'
       : ''
     function bubble(line: Line): string {
       const text = L(line, 'text')
@@ -572,6 +590,8 @@ const paletteStyle = `--tg-sky:${pal.sky};--tg-ground:${pal.ground};--tg-accent:
     }
 
     // ── Kartet og treet ──────────────────────────────────────────
+    // With the big tree picture the slots are in % of the tree box (about 3:8), wide at the bottom, narrow at the top.
+    const IMG_TREE_SLOTS = [[50, 20], [44, 32], [56, 32], [38, 45], [50, 45], [62, 45], [32, 58], [44, 58], [56, 58], [68, 58], [26, 72], [38, 72], [50, 72], [62, 72]]
     const TREE_SLOTS = [[50, 40], [36, 60], [64, 60], [50, 72], [28, 82], [72, 82], [44, 88], [58, 52], [60, 90], [46, 50], [54, 80], [34, 72], [42, 66], [66, 74]]
     // The finale opens when every place that is not an extra has its ornament.
     const allDone = () => season.places.filter(p => !p.bonus).every(p => mine.done[p.key])
@@ -583,7 +603,7 @@ const paletteStyle = `--tg-sky:${pal.sky};--tg-ground:${pal.ground};--tg-accent:
       const smor = season.places.filter(p => mine.done[p.key]?.smor).length
       const collection = L(season, 'collectionName')
       const ornaments = season.places
-        .map((p, i) => ({ p, slot: TREE_SLOTS[i % TREE_SLOTS.length] }))
+        .map((p, i) => ({ p, slot: (season.treeImageUrl ? IMG_TREE_SLOTS : TREE_SLOTS)[i % TREE_SLOTS.length] }))
         .filter(o => mine.done[o.p.key])
         .map(o => `<span class="tg-ornament${o.p.key === celebrate ? ' is-new' : ''}" style="left:${o.slot[0]}%;top:${o.slot[1]}%" aria-hidden="true">${ornamentOf(o.p)}</span>`)
         .join('')
@@ -597,8 +617,8 @@ const paletteStyle = `--tg-sky:${pal.sky};--tg-ground:${pal.ground};--tg-accent:
         <p class="tg-lead tg-lead--tight">${esc(where)}</p>
         <div class="tg-scene tg-map">
           ${season.mapImageUrl ? `<img class="tg-backdrop" src="${esc(season.mapImageUrl)}" alt="${esc(season.mapAlt ?? '')}">` : backdropSvg('map')}
-          <div class="tg-tree" role="img" aria-label="${esc(`${collection}. ${status}`)}">
-            <svg viewBox="0 0 60 80" aria-hidden="true"><rect x="26" y="68" width="8" height="12" fill="#6b4226"/><path d="M30 6 L10 34 H20 L6 54 H18 L4 72 H56 L42 54 H54 L40 34 H50Z" fill="#1f5c3a"/><path d="M30 6 L22 18 Q30 22 38 18Z" fill="#f4f8fc"/></svg>
+          <div class="tg-tree${season.treeImageUrl ? ' tg-tree--img' : ''}" role="img" aria-label="${esc(`${collection}. ${status}`)}">
+            ${season.treeImageUrl ? `<img class="tg-tree-pic" src="${esc(season.treeImageUrl)}" alt="">` : `<svg viewBox="0 0 60 80" aria-hidden="true"><rect x="26" y="68" width="8" height="12" fill="#6b4226"/><path d="M30 6 L10 34 H20 L6 54 H18 L4 72 H56 L42 54 H54 L40 34 H50Z" fill="#1f5c3a"/><path d="M30 6 L22 18 Q30 22 38 18Z" fill="#f4f8fc"/></svg>`}
             ${ornaments}
             ${mine.finale ? `<span class="tg-treetop" aria-hidden="true">${topOf('tg-top-img')}</span>` : ''}
           </div>
@@ -1166,7 +1186,7 @@ const paletteStyle = `--tg-sky:${pal.sky};--tg-ground:${pal.ground};--tg-accent:
         scene.insertAdjacentHTML('beforeend', things.map((th, n) => {
           // A swapped-in thing stands where the old one stood.
           const at = before[n]
-          const style = `left:${at.x}%;top:${at.y}%`
+          const style = `left:${at.x}%;top:${at.y}%${at.size ? `;width:${at.size}%` : ''}`
           return live
             ? `<button type="button" class="tg-thing tg-shelf" data-n="${n}" style="${style}" aria-label="${esc(L(th, 'label'))}">${itemArt(th)}</button>`
             : `<span class="tg-thing tg-shelf" style="${style}" role="img" aria-label="${esc(L(th, 'label'))}">${itemArt(th)}</span>`
@@ -1178,7 +1198,7 @@ const paletteStyle = `--tg-sky:${pal.sky};--tg-ground:${pal.ground};--tg-accent:
         draw(before, false)
         board.innerHTML = `<p class="tg-center"><button type="button" class="tg-btn" id="tg-ready">${t('Jeg er klar!', 'I am ready!')}</button></p>`
         board.querySelector('#tg-ready')!.addEventListener('click', swap)
-        api.msg(t('Se nøye på hyllene. Trykk når du er klar.', 'Look closely at the shelves. Tap when you are ready.'))
+        api.msg(lang === 'en' ? `Look closely at ${L(place, 'lookAt') || 'the shelves'}. Tap when you are ready.` : `Se nøye på ${L(place, 'lookAt') || 'hyllene'}. Trykk når du er klar.`)
       }
       async function swap() {
         phase = 'busy'
@@ -1618,6 +1638,10 @@ const paletteStyle = `--tg-sky:${pal.sky};--tg-ground:${pal.ground};--tg-accent:
       const effect = L(place, 'trickEffect')
       const loft = L(season, 'loftName')
       const canReveal = data.secrets && place.hasTrick
+      // Advice for the grown-up next to the child (Norwegian only: the texts are not translated).
+      const adultsHtml = lang !== 'en' && data.adults?.items.length
+        ? `<details class="tg-adults"><summary>🧑‍🤝‍🧑 ${esc(data.adults.heading)}</summary><ul>${data.adults.items.map(i => `<li>${esc(i)}</li>`).join('')}</ul></details>`
+        : ''
       show(`<div class="tg-card">
         <p class="tg-kicker">${t('Nissens triks', 'The nisse’s trick')}</p>
         <div class="tg-head"><h1 class="tg-h1" tabindex="-1" data-focus>${esc(title)}</h1>${sayBtn(`${title}. ${effect}`)}</div>
@@ -1627,8 +1651,9 @@ const paletteStyle = `--tg-sky:${pal.sky};--tg-ground:${pal.ground};--tg-accent:
         <div class="tg-secret" id="tg-secret">
           ${canReveal
             ? `<p class="tg-center"><button type="button" class="tg-btn tg-btn--ghost" id="tg-reveal">🔑 ${t('Vis hemmeligheten', 'Show the secret')}</button></p>`
-            : `<p class="tg-note">${t(`Hemmeligheten ligger på ${loft}.`, `The secret is kept in ${loft}.`)}</p>`}
+            : `<p class="tg-note">${L(place, 'trickNote') || t(`Hemmeligheten ligger på ${loft}.`, `The secret is kept in ${loft}.`)}</p>`}
         </div>
+        ${adultsHtml}
         <p class="tg-center"><button type="button" class="tg-btn" id="tg-hang">${ornamentOf(place)} ${t('Heng pynten på treet', 'Hang the ornament on the tree')}</button></p>
       </div>`)
       const secret = root.querySelector<HTMLElement>('#tg-secret')!
@@ -1667,7 +1692,7 @@ const paletteStyle = `--tg-sky:${pal.sky};--tg-ground:${pal.ground};--tg-accent:
         save()
         show(`<div class="tg-card tg-finale">
           <p class="tg-star" aria-hidden="true">${topOf('tg-star-img')}</p>
-          ${figures(['jente-jubler', 'nisse-klapper', 'gutt-jubler'])}
+          ${season.loftImageUrl ? `<img class="tg-loftpic" src="${esc(season.loftImageUrl)}" alt="">` : figures(['jente-jubler', 'nisse-klapper', 'gutt-jubler'])}
           <h1 class="tg-h1" tabindex="-1" data-focus>${esc(loft)}</h1>
           <p class="tg-lead tg-lead--tight">${t(`Her ligger alle triksene du har fått av nissen. Vis dem til noen du er glad i!`, `Here are all the tricks the nisse gave you. Show them to someone you love!`)}</p>
           <div id="tg-key">
@@ -1846,7 +1871,10 @@ const paletteStyle = `--tg-sky:${pal.sky};--tg-ground:${pal.ground};--tg-accent:
   /* Speech bubbles */
   .tg-talk { display: flex; flex-direction: column; gap: var(--space-3); }
   .tg-bubble { display: flex; align-items: center; gap: var(--space-3); background: #fff; border-radius: 18px; padding: var(--space-3); box-shadow: var(--shadow-sm); animation: tg-pop .3s ease-out; }
+  /* Tiril (jente) speaks on the left, Trym (gutt) on the right: avatar and text each on their own side. */
+  .tg-bubble--jente .tg-bubble-body { text-align: left; }
   .tg-bubble--gutt { flex-direction: row-reverse; }
+  .tg-bubble--gutt .tg-bubble-body { text-align: right; }
   .tg-bubble--nisse { background: #fff8e6; font-family: var(--font-body); font-style: italic; }
   .tg-bubble--forteller { background: transparent; box-shadow: none; }
   .tg-bubble-body { flex: 1; }
@@ -2009,6 +2037,10 @@ const paletteStyle = `--tg-sky:${pal.sky};--tg-ground:${pal.ground};--tg-accent:
   .tg-craft li img { width: 100%; height: auto; border-radius: 10px; }
   @media (max-width: 520px) { .tg-craft li { grid-template-columns: 1fr; gap: var(--space-2); } .tg-craft li img { max-width: 280px; margin: 0 auto; } }
   .tg-craft li p::before { content: counter(craft) '. '; font-weight: 700; color: var(--tg-accent2); }
+  .tg-adults { background: #fff; border-radius: 14px; padding: var(--space-3) var(--space-4); font-size: 1.05rem; line-height: 1.5; border-left: 6px solid var(--tg-accent2); }
+  .tg-adults summary { cursor: pointer; font-weight: 700; color: var(--tg-accent2); padding: var(--space-1) 0; }
+  .tg-adults ul { margin: var(--space-2) 0 0; padding-left: 1.2rem; display: grid; gap: var(--space-2); }
+  .tg-loftpic { width: 100%; height: auto; display: block; border-radius: 16px; margin: var(--space-3) 0; box-shadow: var(--shadow-sm); }
   .tg-countitem { position: absolute; transform: translate(-50%, -50%); height: auto; pointer-events: none; filter: drop-shadow(0 3px 3px rgba(0, 0, 0, .35)); }
   .tg-numbers { display: flex; flex-wrap: wrap; gap: var(--space-2); justify-content: center; margin-top: var(--space-3); }
   .tg-num { min-width: 56px; min-height: 56px; border-radius: 14px; border: 3px solid transparent; background: #fff; box-shadow: var(--shadow); font: 700 1.5rem var(--font-ui); color: var(--tg-accent); cursor: pointer; }
@@ -2047,6 +2079,12 @@ const paletteStyle = `--tg-sky:${pal.sky};--tg-ground:${pal.ground};--tg-accent:
   .tg-map { aspect-ratio: 16 / 12; }
   .tg-tree { position: absolute; left: 62%; top: 52%; width: 13%; transform: translate(-50%, -50%); }
   .tg-tree svg { width: 100%; height: auto; display: block; }
+  /* The big tree: its foot stands in the middle of the yard and the top reaches well above the stable roof. */
+  .tg-tree--img { left: 54%; top: 68%; width: 15%; transform: translate(-50%, -100%); }
+  .tg-tree--img .tg-ornament { font-size: clamp(.7rem, 2.6vw, 1.3rem); }
+  .tg-tree--img .tg-orn-img { width: clamp(13px, 3.1vw, 25px); }
+  .tg-tree-pic { width: 100%; height: auto; display: block; filter: drop-shadow(0 .4rem .5rem rgba(0, 0, 0, .35)); }
+  .tg-tree--img .tg-treetop { top: 1%; }
   .tg-ornament { position: absolute; transform: translate(-50%, -50%); font-size: clamp(.9rem, 3.4vw, 1.7rem); line-height: 1; }
   .tg-orn-img { width: clamp(18px, 4.6vw, 34px); height: auto; display: block; }
   .tg-top-img { width: clamp(30px, 7.5vw, 56px); height: auto; display: block; }

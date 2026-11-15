@@ -368,7 +368,7 @@ museum QR ornament, English, and the next season — layers on without rework.
 
 | Question | Decision |
 |---|---|
-| The farm's name | **Årvoll gård**, by name |
+| The farm's name | **Tryllegården** (changed 14 Nov from «Årvoll gård»). A few texts hint at the real place with «(Årvoll gård?)» or «(på Årvoll?)» to tie the game to where Tryllemuseet lives |
 | The children's names | **Tiril and Trym** |
 | Which tricks, and whether to give methods away | Left to the concept: the ten beginners' effects in the table of places, methods included in Nisseloftet |
 | Rhythm | **Everything open at once** (`open`) |
@@ -387,8 +387,9 @@ is on. Editors test it with the preview link.
 
 **What is in it**
 
-- Start screen with the three levels, the farm map with the Christmas tree,
-  and **thirteen places**. Porten, Sykkelverkstedet and Fuglehuset (key `honsehuset`) are extras (`bonus`) and are not needed to open the finale. Each has dialogue, a mini-game, "visste du at", the
+- Start screen with the three levels, the farm map with the big Christmas tree
+  (a picture standing in the middle of the yard, well above the stable roof;
+  `treeImageUrl`), and **fourteen places**. Porten, Sykkelverkstedet and Fuglehuset (key `honsehuset`) are extras (`bonus`) and are not needed to open the finale. Each has dialogue, a mini-game, "visste du at", the
   nisse's trick and an ornament for the tree.
 
   | Place | Mechanic | What changes with the level |
@@ -405,13 +406,14 @@ is on. Editors test it with the preview link.
   | Skogen | `gjett` | 3 → 6 trees; "find the tallest" → "the second tallest" and combined clues |
   | Porten (extra) | `gjett` | 3 → 6 costumes (emoji until drawn) and riddles |
   | Sykkelverkstedet (extra) | `sorter` | 3 → 6 drawn spanners (items with a picture and `size` = length) to put in order by length, the last round the other way on Tryllemester. Replaced Bryggerhuset (same slot 11); an item with key `lys` is drawn as a candle, anything else as a spanner |
+  | Tryllemuseet (extra, slot 13) | `forandret` | Jan (a real museum instructor, with his consent) shows ten playing cards and swaps one; the child finds it. The place has no trick method: its «secret» is an invitation to meet Jan (Sundays 12–15) with a link to the activity overview. New optional place fields `lookAt` (what the child looks at) and `trickNote`; new speaker `jan` |
   | Fuglehuset (extra, key `honsehuset`; the cockatoo Loco is the place's `dancer`: two poses in the same frame, swapped while he dances at every right answer) | `tell` | count eggs, and hens on harder levels; Smånisse can look as long as they like, older children see them for a few seconds and can look again |
 
 - Hint ladder "Nissen hvisker" (two spoken hints, then the answer glows),
   golden smørøyne for hint-free places, and a hidden nisse in every scene.
 - Read-aloud through the browser's speech synthesis when it has a matching
   voice; on by default for Smånisse.
-- **Finale:** when all eight ornaments hang, the player composes a show
+- **Finale:** when every place that is not an extra has its ornament (ten of fourteen), the player composes a show
   (three of the nisse's tricks and a magic word), the animals watch, and the
   nisse hands over the key to Nisseloftet (`/bak-teppet/nissens-tryllesekk`).
 - **Progress across visits and devices.** Progress is kept in the browser. A
@@ -432,8 +434,21 @@ is on. Editors test it with the preview link.
   taps "Vis hemmeligheten"; YouTube players only suggest videos from the same
   channel). The card shows the trick's recommended age (`trickAge` on the
   place), and Smånisse is asked to get a grown-up's help for tricks from age 7.
-- Nine tricks and the bundle "Nissens tryllesekk" exist in the `lukket`
-  dataset. The ninth, "Tryllekunstnerens tre regler", is the finale's lesson.
+- Fourteen tryllebeskrivelser and the bundle "Nissens tryllesekk" exist in the
+  `lukket` dataset. "Tryllekunstnerens tre regler" is the finale's lesson. The
+  five newest (Bjella, Binders, Mynten, Pendelen, Egget) are written from
+  memory and must be tried out with real props before launch.
+- **«Til voksne»** on the trick card: a fold-out with the adults' advice from
+  the shared `godeRadConfig` document («Gode råd (Lær et triks)»), Norwegian
+  only.
+- **Studio can edit it all.** The tree picture, the Nisseloftet picture, the
+  map button picture, the dancing friend (Loco), the «Lag selv» guide, the
+  look-at word and the trick note are fields on «Tryllegården: Sesong»; the
+  built-in pack has the same values, so a document only overrides what it fills
+  in.
+- **Videos:** the trick card asks YouTube and Vimeo for Norwegian subtitles, and
+  YouTube Shorts (or a video marked «Stående video») get a standing player. A
+  start-page video and a course video exist as clips but are not built in yet.
 - Norwegian only. The interface has English strings and every content field
   has an English sibling, but no place text is translated and
   `englishEnabled` is off.

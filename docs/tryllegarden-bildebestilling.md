@@ -11,9 +11,10 @@ Alt som mangler har en reserve i spillet i dag, så ingenting haster teknisk.
 - **Løse ting:** seks fugler, eple og sukkertøy, seks julekaker, ti ting til
   stabburshyllene, seks julebukk-kostymer, seks fastnøkler.
 - **Juletrepynt:** hestesko, pepperkakehjerte, julehjerte, marsipangris, lykt,
-  gran, halmbukk, sykkelbjelle. Alle tretten steder har nå tegnet pynt.
+  gran, halmbukk, sykkelbjelle. Alle tretten første steder har tegnet pynt; Tryllemuseet bruker foreløpig et kort-emoji (🃏) og trenger en egen pyntetegning.
 - **Kartknapp** til Sykkelverkstedet.
 - **Loco** i fire positurer.
+- **Tryllemuseet** (scene med Jan og to barn ved kortbordet) og **Nisseloftet** (nøkkelen og esken). Begge er foreløpig lagt inn slik de ble levert.
 
 ## Felles krav
 
@@ -58,7 +59,7 @@ toppen.
 | Porten | 21, 68 (ved gjerdet til venstre) | en åpen grind i gjerdet |
 | Lyktestien | 36, 82 | som i dag |
 
-Juletreet midt på tunet skal fortsatt stå uten pynt (pynten henger spillet på).
+Juletreet er nå et eget bilde (`web/public/images/tryllegarden/juletre.webp`, en av granene fra Skogen) som spillet legger oppå kartet midt på tunet, så kartet skal ikke ha noe tre der. Originalen er bare 403 px høy og blir litt uskarp på store skjermer; en ny, større tegning av treet i samme stil ville være bedre.
 
 ## 3. Trinnbilder til «Lag din egen julekurv» (Stua)
 

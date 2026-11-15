@@ -3724,13 +3724,18 @@ export async function getFarmSeasonDoc(key: string): Promise<Record<string, unkn
       key, title, titleEn, subtitle, subtitleEn, intro, introEn,
       "heroImage": heroImage { asset->{ _ref, url }, alt },
       "mapImage": mapImage { asset->{ _ref, url }, alt },
+      "treeImage": treeImage { asset->{ _ref, url } },
+      "loftImage": loftImage { asset->{ _ref, url } },
       palette { sky, ground, accent, accent2, glow },
       collectionName, collectionNameEn, collectionTop,
       finaleTitle, finaleTitleEn, finale[] { who, text, textEn },
       loftName, loftNameEn, kitSlug, showWords, showWordsEn,
       "hidden": places[isVisible == false].key,
       places[isVisible != false] {
-        key, slot, bonus, title, titleEn, mechanic, icon, mapX, mapY, ornament,
+        key, slot, bonus, title, titleEn, mechanic, icon, mapX, mapY, ornament, lookAt, lookAtEn, trickNote, trickNoteEn,
+        "iconImage": iconImage { asset->{ _ref, url } },
+        dancer { name, x, y, size, "image": image { asset->{ _ref, url } }, "danceImage": danceImage { asset->{ _ref, url } }, "idleImages": idleImages[] { asset->{ _ref, url } } },
+        craft { title, titleEn, needs, needsEn, steps[] { text, textEn, "image": image { asset->{ _ref, url } } } },
         clues[] { text, textEn, answer, levels },
         "ornamentImage": ornamentImage { asset->{ _ref, url } },
         "sceneImage": sceneImage { asset->{ _ref, url }, alt },
@@ -3765,6 +3770,12 @@ export async function getFarmSeasonDoc(key: string): Promise<Record<string, unkn
     if (map.alt) doc.mapAlt = map.alt
   }
   delete doc.mapImage
+  const tree: Img = doc.treeImage
+  if (tree?.asset) doc.treeImageUrl = urlFor(tree).width(700).format('webp').url()
+  delete doc.treeImage
+  const loft: Img = doc.loftImage
+  if (loft?.asset) doc.loftImageUrl = urlFor(loft).width(1264).format('webp').url()
+  delete doc.loftImage
   for (const place of (doc.places ?? []) as Record<string, any>[]) {
     const scene: Img = place.sceneImage
     if (scene?.asset) {
@@ -3775,6 +3786,27 @@ export async function getFarmSeasonDoc(key: string): Promise<Record<string, unkn
     const orn: Img = place.ornamentImage
     if (orn?.asset) place.ornamentImageUrl = urlFor(orn).width(200).format('webp').url()
     delete place.ornamentImage
+    const icon: Img = place.iconImage
+    if (icon?.asset) place.iconImageUrl = urlFor(icon).width(240).format('webp').url()
+    delete place.iconImage
+    // A dancer needs a picture and a craft guide needs steps, or they are left out.
+    const dancer = place.dancer
+    if (dancer?.image?.asset) {
+      const idle = ((dancer.idleImages ?? []) as Img[]).filter(i => i?.asset).map(i => urlFor(i).width(700).format('webp').url())
+      place.dancer = {
+        name: dancer.name ?? '', x: dancer.x ?? 50, y: dancer.y ?? 50, size: dancer.size ?? 12,
+        imageUrl: urlFor(dancer.image).width(700).format('webp').url(),
+        ...(dancer.danceImage?.asset ? { danceImageUrl: urlFor(dancer.danceImage).width(700).format('webp').url() } : {}),
+        ...(idle.length ? { idleImageUrls: idle } : {}),
+      }
+    } else delete place.dancer
+    const craft = place.craft
+    if (craft?.title && craft.steps?.length) {
+      craft.steps = (craft.steps as Record<string, any>[]).map(st => {
+        const { image, ...rest } = st
+        return image?.asset ? { ...rest, imageUrl: urlFor(image).width(800).format('webp').url() } : rest
+      })
+    } else delete place.craft
     for (const item of (place.items ?? []) as Record<string, any>[]) {
       if (item.image?.asset) item.imageUrl = urlFor(item.image).width(240).format('webp').url()
       delete item.image
