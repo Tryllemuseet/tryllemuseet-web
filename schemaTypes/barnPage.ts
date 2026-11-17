@@ -19,7 +19,7 @@ export const barnPage = defineType({
         defineField({ name: 'heading', title: 'Overskrift', type: 'string' }),
         defineField({ name: 'headingEm', title: 'Kursiv del av overskrift', type: 'string' }),
         defineField({ name: 'ingress', title: 'Ingress', type: 'text', rows: 3 }),
-        defineField({ name: 'cta1Label', title: 'Knapp 1 — tekst', type: 'string' }),
+        defineField({ name: 'cta1Label', title: 'Knapp 1 — tekst', type: 'string', description: 'Knappen vises bare når både tekst og URL er fylt ut. Tøm begge for å fjerne den.' }),
         defineField({ name: 'cta1Href', title: 'Knapp 1 — URL', type: 'string' }),
         defineField({ name: 'cta2Label', title: 'Knapp 2 — tekst', type: 'string' }),
         defineField({ name: 'cta2Href', title: 'Knapp 2 — URL', type: 'string' }),
@@ -97,6 +97,13 @@ export const barnPage = defineType({
       title: 'Kurs-banner',
       type: 'object',
       fields: [
+        defineField({
+          name: 'visible',
+          title: 'Vis banneret',
+          type: 'boolean',
+          initialValue: true,
+          description: 'Slå av når det ikke er kurs å melde seg på. Banneret skjules uten at teksten slettes.',
+        }),
         defineField({ name: 'heading', title: 'Overskrift', type: 'string' }),
         defineField({ name: 'tekst', title: 'Tekst', type: 'text', rows: 3 }),
         defineField({ name: 'knappLabel', title: 'Knapp — tekst', type: 'string' }),

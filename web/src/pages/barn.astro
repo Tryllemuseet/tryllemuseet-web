@@ -15,7 +15,10 @@ const [bp, config, storyPaths, farmConfig] = await Promise.all([
 ])
 // The farm game (/barn/tryllegarden) is only linked while its switch is on.
 const farmSeason = BUILT_IN_SEASONS[farmConfig?.activeSeason?.trim() || DEFAULT_SEASON_KEY]
-const farmTeaserTitle = farmSeason?.title ?? 'Tryllegården'
+const farmTeaserTitle = farmConfig?.teaserTitle?.trim() || farmSeason?.title || 'Tryllegården'
+const farmTeaserLabel = farmConfig?.teaserLabel?.trim() || 'Spill'
+const farmTeaserText = farmConfig?.teaserText?.trim() || 'Bli med tryllebarna til Tryllegården (på Årvoll?) og finn ut hvem som tryller i fjøset. Nissen lærer deg sine egne triks.'
+const farmTeaserButton = farmConfig?.teaserButton?.trim() || 'Spill nå'
 // Houdini er høstens hovedutstilling og har den eneste ferdige interaktive
 // historien akkurat nå — teaseren under peker rett dit så lenge den finnes,
 // og faller tilbake til den generelle historier-oversikten ellers.
@@ -50,6 +53,9 @@ const kurs = bp?.kursBanner ?? {
 // «Lær et triks» er ikke lansert i produksjon ennå (se siteConfig.laerEtTriksActive)
 // — redaktørinnholdet i hero.cta2 peker dit i dag, så skjul den knappen mens
 // funksjonen er av i stedet for å la den peke til en uannonsert side.
+// The first button is optional: it only shows when both label and URL are filled in
+// (clear them in Studio when there are no courses to point to).
+const showCta1 = !!hero.cta1Href && !!hero.cta1Label
 const showCta2 = hero.cta2Href && (config.laerEtTriksActive || !hero.cta2Href.startsWith('/barn/laer-et-triks'))
 ---
 
@@ -60,7 +66,7 @@ const showCta2 = hero.cta2Href && (config.laerEtTriksActive || !hero.cta2Href.st
 
   <!-- ── HERO ─────────────────────────────────────────────────── -->
   <PageHero label={hero.label} title={`${hero.heading} ${hero.headingEm}`} intro={hero.ingress} theme="dark">
-    <Button variant="secondary" href={hero.cta1Href}>{hero.cta1Label}</Button>
+    {showCta1 && <Button variant="secondary" href={hero.cta1Href}>{hero.cta1Label}</Button>}
     {showCta2 && <Button variant="outline" href={hero.cta2Href} class="hero-btn-outline">{hero.cta2Label}</Button>}
   </PageHero>
 
@@ -70,11 +76,11 @@ const showCta2 = hero.cta2Href && (config.laerEtTriksActive || !hero.cta2Href.st
       <AnimateIn>
       <div class="container triks-teaser-inner">
         <div>
-          <span class="etikett">Spill</span>
+          <span class="etikett">{farmTeaserLabel}</span>
           <h2>{farmTeaserTitle}</h2>
-          <p>Bli med tryllebarna til Tryllegården (på Årvoll?) og finn ut hvem som tryller i fjøset. Nissen lærer deg sine egne triks.</p>
+          <p>{farmTeaserText}</p>
         </div>
-        <Button variant="primary" href="/barn/tryllegarden">Spill nå</Button>
+        <Button variant="primary" href="/barn/tryllegarden">{farmTeaserButton}</Button>
       </div>
       </AnimateIn>
     </section>
@@ -186,6 +192,7 @@ const showCta2 = hero.cta2Href && (config.laerEtTriksActive || !hero.cta2Href.st
   </section>
 
   <!-- ── KURSBANNER ───────────────────────────────────────────── -->
+  {kurs.visible !== false && (
   <section class="kurs-banner">
     <AnimateIn>
     <div class="container kurs-banner-inner">
@@ -197,6 +204,7 @@ const showCta2 = hero.cta2Href && (config.laerEtTriksActive || !hero.cta2Href.st
     </div>
     </AnimateIn>
   </section>
+  )}
 
 </BaseLayout>
 

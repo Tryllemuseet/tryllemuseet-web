@@ -703,7 +703,7 @@ export interface BarnPage {
     label: string; heading: string; tekst: any[]
     detaljer: string[]; knappLabel: string; knappHref: string
   }
-  kursBanner: { heading: string; tekst: string; knappLabel: string; knappHref: string }
+  kursBanner: { visible?: boolean; heading: string; tekst: string; knappLabel: string; knappHref: string }
   laerEtTriksHero?: { label: string; heading: string; ingress: string }
 }
 
@@ -762,7 +762,7 @@ export async function getBarnPage(): Promise<BarnPage | null> {
         },
         detaljer, knappLabel, knappHref
       },
-      kursBanner { heading, tekst, knappLabel, knappHref },
+      kursBanner { visible, heading, tekst, knappLabel, knappHref },
       laerEtTriksHero { label, heading, ingress }
     }
   `)
@@ -3395,6 +3395,10 @@ export interface GameConfig {
   introEn?:         string
   comingSoonTitle?: string
   comingSoonText?:  string
+  teaserLabel?:     string
+  teaserTitle?:     string
+  teaserText?:      string
+  teaserButton?:    string
 }
 
 // ── Spørringer: Det trettende kabinett ───────────────────────────
@@ -3710,7 +3714,8 @@ export async function getFarmGameConfig(): Promise<FarmGameConfig | null> {
     *[_type == "farmGameConfig"][0] {
       isActive, englishEnabled, activeSeason,
       farmName, girlName, boyName,
-      comingSoonTitle, comingSoonText
+      comingSoonTitle, comingSoonText,
+      teaserLabel, teaserTitle, teaserText, teaserButton
     }
   `)
 }
