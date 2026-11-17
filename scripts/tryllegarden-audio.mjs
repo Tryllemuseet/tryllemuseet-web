@@ -4,6 +4,10 @@
 //   node scripts/tryllegarden-audio.mjs list [--lang=nb|en] [--season=jul]
 //       Writes docs/tryllegarden-lyd/replikker-<lang>.md and .json: every line
 //       the voices say, with id, speaker, context and the exact words.
+//   node scripts/tryllegarden-audio.mjs import <folder> [--variant=v1] [--pick=<id>:v2,<id>:v3] [--lang=nb]
+//       Copies <id>_<variant>.mp3 from a delivery folder to
+//       web/public/audio/tryllegarden/<lang>/<id>.mp3 (default variant v1,
+//       --pick overrides it per line), then runs build.
 //   node scripts/tryllegarden-audio.mjs build
 //       Scans web/public/audio/tryllegarden/<lang>/<id>.<ext>, writes
 //       manifest.json, and reports lines without a clip and clips whose line
@@ -12,7 +16,7 @@
 // Reads the built-in season pack only. Lines edited in Studio get a new id and
 // therefore fall back to speech synthesis until they are recorded again.
 // See docs/tryllegarden-lyd/README.md.
-import { readdirSync, writeFileSync, mkdirSync, existsSync } from 'node:fs'
+import { readdirSync, writeFileSync, mkdirSync, existsSync, copyFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { dirname, join, extname } from 'node:path'
 import { BUILT_IN_SEASONS } from '../web/src/lib/tryllegardenSeason.ts'
@@ -94,6 +98,28 @@ if (cmd === 'list') {
   for (const l of lines) { byWho[l.who] ??= { n: 0, c: 0 }; byWho[l.who].n++; byWho[l.who].c += l.text.length }
   console.log(`${lines.length} lines, ${lines.reduce((n, l) => n + l.text.length, 0)} characters`)
   console.table(byWho)
+} else if (cmd === 'import') {
+  const dir = rest.find(a => !a.startsWith('--'))
+  if (!dir || !existsSync(dir)) { console.error('Usage: import <folder> [--variant=v1] [--pick=id:v2,...]'); process.exit(1) }
+  const variant = opt.variant ?? 'v1'
+  const picks = Object.fromEntries((opt.pick ?? '').split(',').filter(Boolean).map(x => x.split(':')))
+  const known = new Set(lines.map(l => l.id))
+  const out = join(AUDIO_DIR, lang)
+  mkdirSync(out, { recursive: true })
+  const files = new Set(readdirSync(dir))
+  const ids = [...new Set([...files].map(f => /^([0-9a-z]{7})_v\d\.\w+$/.exec(f)?.[1]).filter(Boolean))]
+  let n = 0
+  for (const id of ids) {
+    if (!known.has(id)) { console.log(`Skipped ${id}: no such line in the game (the text has changed?)`); continue }
+    const v = picks[id] ?? variant
+    const f = [...files].find(x => x.startsWith(`${id}_${v}.`))
+    if (!f) { console.log(`Skipped ${id}: no ${v} file`); continue }
+    copyFileSync(join(dir, f), join(out, `${id}${extname(f)}`))
+    n++
+  }
+  console.log(`Copied ${n} clips to ${out}`)
+  process.argv[2] = 'build'
+  await import(`${import.meta.url}?build`)
 } else if (cmd === 'build') {
   const manifest = { version: 1, lines: {} }
   const stale = []
