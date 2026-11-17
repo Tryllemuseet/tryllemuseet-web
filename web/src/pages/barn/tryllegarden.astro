@@ -164,6 +164,7 @@ const paletteStyle = `--tg-sky:${pal.sky};--tg-ground:${pal.ground};--tg-accent:
 
 <script>
   import { encodeProgress, decodeProgress, mergeProgress } from '../../lib/tryllegardenSave'
+  import { audioKey } from '../../lib/tryllegardenAudio'
 
   type Level = 'smanisse' | 'laerling' | 'mester'
   type Who = 'jente' | 'gutt' | 'nisse' | 'forteller' | 'jan'
@@ -272,12 +273,18 @@ const paletteStyle = `--tg-sky:${pal.sky};--tg-ground:${pal.ground};--tg-accent:
     /** Items that belong on the current level. */
     const forLevel = (items: Item[]) => items.filter(i => levelIndex(i.from) <= levelIndex(level()))
 
-    // ── Opplesing (talesyntese i nettleseren) ────────────────────
-    // Only offered when the browser has a voice for the language. Never
-    // required: every spoken line is also on screen.
+    // ── Opplesing ────────────────────────────────────────────────
+    // Recorded clips first (public/audio/tryllegarden, found by a hash of the
+    // line's text, see lib/tryllegardenAudio.ts); the browser's speech
+    // synthesis for every line that has no clip. Never required: every
+    // spoken line is also on screen.
     const synth: SpeechSynthesis | null = 'speechSynthesis' in window ? window.speechSynthesis : null
     let voice: SpeechSynthesisVoice | null = null
     let speakingEl: Element | null = null
+    let audioEl: HTMLAudioElement | null = null
+    let speakToken = 0
+    let clips: Record<string, string> = {}
+    const updateCanSpeak = () => section.classList.toggle('tg-can-speak', !!voice || Object.keys(clips).length > 0)
     function findVoice() {
       if (!synth) return
       const voices = synth.getVoices()
@@ -287,42 +294,79 @@ const paletteStyle = `--tg-sky:${pal.sky};--tg-ground:${pal.ground};--tg-accent:
         voice = voices.find(v => v.lang?.toLowerCase().replace('_', '-').startsWith(prefix)) ?? null
         if (voice) break
       }
-      section.classList.toggle('tg-can-speak', !!voice)
+      updateCanSpeak()
     }
     findVoice()
     synth?.addEventListener?.('voiceschanged', findVoice)
+    fetch('/audio/tryllegarden/manifest.json')
+      .then(r => (r.ok ? r.json() : null))
+      .then(m => { if (m?.lines) { clips = m.lines; updateCanSpeak() } })
+      .catch(() => {})
+    const clipFor = (text: string): string | null => {
+      const rel = clips[audioKey(lang, text)]
+      return rel ? `/audio/tryllegarden/${rel}` : null
+    }
     function hush() {
+      speakToken++
       synth?.cancel()
+      audioEl?.pause()
+      audioEl = null
       speakingEl?.classList.remove('is-speaking')
       speakingEl = null
     }
-    function speak(text: string, el?: Element | null) {
-      if (!synth || !voice || !text) return
-      hush()
+    function speakSynth(text: string, done: () => void) {
+      if (!synth || !voice || !text) { done(); return }
       const u = new SpeechSynthesisUtterance(text)
       u.voice = voice
       u.lang = voice.lang
       u.rate = 0.9
-      const clear = () => { if (speakingEl === el) { el?.classList.remove('is-speaking'); speakingEl = null } }
-      u.onend = clear
-      u.onerror = clear
-      speakingEl = el ?? null
-      el?.classList.add('is-speaking')
+      u.onend = done
+      u.onerror = done
       synth.speak(u)
     }
+    /** Say one line or several in a row: a clip where there is one, else synthesis. */
+    function speak(parts: string | string[], el?: Element | null) {
+      const list = (Array.isArray(parts) ? parts : [parts]).filter(Boolean)
+      if (!list.length) return
+      if (!list.some(clipFor) && (!synth || !voice)) return
+      hush()
+      const token = speakToken
+      speakingEl = el ?? null
+      el?.classList.add('is-speaking')
+      let i = 0
+      const next = () => {
+        if (token !== speakToken) return
+        if (i >= list.length) {
+          el?.classList.remove('is-speaking')
+          if (speakingEl === el) speakingEl = null
+          return
+        }
+        const text = list[i++]
+        const clip = clipFor(text)
+        if (!clip) { speakSynth(text, next); return }
+        const a = new Audio(clip)
+        audioEl = a
+        let fell = false
+        const fallBack = () => { if (!fell) { fell = true; speakSynth(text, next) } }
+        a.onended = next
+        a.onerror = fallBack
+        a.play().catch(fallBack)
+      }
+      next()
+    }
     /** Read automatically, if "Les for meg" is on. */
-    const auto = (text: string, el?: Element | null) => { if (store.read) speak(text, el) }
-    window.addEventListener('pagehide', () => synth?.cancel())
+    const auto = (parts: string | string[], el?: Element | null) => { if (store.read) speak(parts, el) }
+    window.addEventListener('pagehide', () => { synth?.cancel(); audioEl?.pause() })
 
     section.addEventListener('click', e => {
       const btn = (e.target as HTMLElement).closest?.('[data-say]') as HTMLElement | null
       if (!btn) return
       const host = btn.closest('.tg-bubble, .tg-card') ?? btn
       if (speakingEl === host) hush()
-      else speak(btn.dataset.say ?? '', host)
+      else speak(btn.dataset.parts ? JSON.parse(btn.dataset.parts) : (btn.dataset.say ?? ''), host)
     })
-    const sayBtn = (text: string) =>
-      `<button type="button" class="tg-say" data-say="${esc(text)}" aria-label="${t('Les høyt', 'Read aloud')}">🔊</button>`
+    const sayBtn = (text: string | string[]) =>
+      `<button type="button" class="tg-say" data-say="${esc(Array.isArray(text) ? text.join(' ') : text)}"${Array.isArray(text) ? ` data-parts="${esc(JSON.stringify(text))}"` : ''} aria-label="${t('Les høyt', 'Read aloud')}">🔊</button>`
 
     // ── Småting ──────────────────────────────────────────────────
     let toastTimer = 0
@@ -1610,6 +1654,7 @@ const paletteStyle = `--tg-sky:${pal.sky};--tg-ground:${pal.ground};--tg-accent:
       const short = L(place, 'traditionShort')
       const long = level() === 'smanisse' ? '' : L(place, 'traditionLong')
       const fact = [short, long].filter(Boolean).join(' ')
+      const factParts = [t('Visste du at …', 'Did you know …'), short, long].filter(Boolean)
       const craft = place.craft
       const craftText = craft ? [L(craft, 'needs'), ...craft.steps.map((s, i) => `${i + 1}. ${L(s, 'text')}`)].filter(Boolean).join(' ') : ''
       const craftHtml = craft ? `<details class="tg-craft">
@@ -1621,7 +1666,7 @@ const paletteStyle = `--tg-sky:${pal.sky};--tg-ground:${pal.ground};--tg-accent:
         <h1 class="tg-h1" tabindex="-1" data-focus>${esc(L(place, 'title'))}</h1>
         <div class="tg-talk">${bubble({ who: 'jente', text: done, pose: 'jubler' })}</div>
         <div class="tg-fact">
-          <div class="tg-head"><h2 class="tg-h2">${t('Visste du at …', 'Did you know …')}</h2>${sayBtn(fact)}</div>
+          <div class="tg-head"><h2 class="tg-h2">${t('Visste du at …', 'Did you know …')}</h2>${sayBtn(factParts)}</div>
           <p>${esc(short)}</p>
           ${long ? `<p>${esc(long)}</p>` : ''}
           ${place.traditionLinkUrl ? `<p><a href="${esc(place.traditionLinkUrl)}">${esc(place.traditionLinkLabel || t('Les mer', 'Read more'))}</a></p>` : ''}
@@ -1631,7 +1676,7 @@ const paletteStyle = `--tg-sky:${pal.sky};--tg-ground:${pal.ground};--tg-accent:
         <p class="tg-center"><button type="button" class="tg-btn" id="tg-next">${t('Hva har nissen lagt igjen? ▶', 'What did the nisse leave? ▶')}</button></p>
       </div>`)
       root.querySelector('#tg-next')!.addEventListener('click', () => showTrick(place, noHints))
-      auto(`${done} ${t('Visste du at …', 'Did you know …')} ${fact}`)
+      auto([done, ...factParts])
     }
 
     function showTrick(place: Place, noHints: boolean) {
