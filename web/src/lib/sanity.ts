@@ -3399,6 +3399,8 @@ export interface GameConfig {
   teaserTitle?:     string
   teaserText?:      string
   teaserButton?:    string
+  voiceEnabled?:    boolean
+  voiceOffScreens?: string[]
 }
 
 // ── Spørringer: Det trettende kabinett ───────────────────────────
@@ -3715,7 +3717,8 @@ export async function getFarmGameConfig(): Promise<FarmGameConfig | null> {
       isActive, englishEnabled, activeSeason,
       farmName, girlName, boyName,
       comingSoonTitle, comingSoonText,
-      teaserLabel, teaserTitle, teaserText, teaserButton
+      teaserLabel, teaserTitle, teaserText, teaserButton,
+      voiceEnabled, voiceOffScreens
     }
   `)
 }

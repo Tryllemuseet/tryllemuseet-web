@@ -83,6 +83,44 @@ export const farmGameConfig = defineType({
     }),
 
     defineField({
+      name: 'voiceEnabled',
+      title: 'Stemmer og opplesning er på',
+      type: 'boolean',
+      initialValue: true,
+      description:
+        'Hovedbryteren for lyd i spillet: de innspilte stemmene og nettleserens opplesning. Av: ingen lyd noe sted, og høyttaler-knappene og «Les for meg» skjules. Endringen vises etter noen minutter.',
+    }),
+    defineField({
+      name: 'voiceOffScreens',
+      title: 'Steder og sider uten lyd',
+      type: 'array',
+      of: [{ type: 'string' }],
+      options: {
+        list: [
+          { title: 'Startsiden', value: 'start' },
+          { title: 'Kartet', value: 'kart' },
+          { title: 'Finalen og Nisseloftet', value: 'finale' },
+          { title: 'Tunet', value: 'tunet' },
+          { title: 'Fjøset', value: 'fjoset' },
+          { title: 'Låven', value: 'laven' },
+          { title: 'Stallen', value: 'stallen' },
+          { title: 'Bakstehuset', value: 'bakstehuset' },
+          { title: 'Stua', value: 'stua' },
+          { title: 'Stabburet', value: 'stabburet' },
+          { title: 'Lyktestien', value: 'lyktestien' },
+          { title: 'Klokketårnet', value: 'klokketarnet' },
+          { title: 'Skogen', value: 'skogen' },
+          { title: 'Porten', value: 'porten' },
+          { title: 'Sykkelverkstedet', value: 'sykkelverkstedet' },
+          { title: 'Fuglehuset', value: 'honsehuset' },
+          { title: 'Tryllemuseet', value: 'tryllemuseet' },
+        ],
+      },
+      description:
+        'Kryss av de stedene eller sidene som ikke skal ha lyd, for eksempel mens en stemme ikke er godkjent ennå. Gjelder samtalene, oppgavene, hintene og triksene på stedet. Sider som ikke er avkrysset har lyd så lenge hovedbryteren over er på.',
+    }),
+
+    defineField({
       name: 'comingSoonTitle',
       title: '«Kommer snart»-tittel',
       type: 'string',

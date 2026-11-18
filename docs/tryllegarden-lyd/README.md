@@ -31,3 +31,12 @@ Skriver `docs/tryllegarden-lyd/replikker-<språk>.md` og `.json`. Gi `brief.md` 
 ## Etter tekstendringer
 
 Kjør `list` og `build` igjen. `build` skriver «Missing» for replikker uten klipp og «Not used» for klipp som ikke lenger passer en replikk. Slett de ubrukte filene.
+
+## Slå lyd av og på (Studio)
+
+Under «Tryllegården: Innstillinger» finnes to felt:
+
+- **Stemmer og opplesning er på** (`voiceEnabled`): hovedbryteren. Av betyr ingen lyd noe sted: verken innspilte stemmer eller nettleserens opplesning, og høyttaler-knappene og «Les for meg» skjules.
+- **Steder og sider uten lyd** (`voiceOffScreens`): kryss av enkelte steder, kartet, startsiden eller finalen. Der skjules høyttaler-knappene og ingenting leses opp, mens resten av spillet har lyd. Nyttig mens en stemme ikke er godkjent ennå.
+
+Spillsiden leses ved hver visning (hurtigbuffer opptil fem minutter), så endringen vises uten nytt bygg. Barnet har i tillegg sin egen bryter, «Les for meg» i linja øverst, som slår automatisk opplesning av og på.
