@@ -114,6 +114,7 @@ const payload = playable
       names,
       adults,
       englishEnabled: config?.englishEnabled === true,
+      voice: { enabled: config?.voiceEnabled !== false, offScreens: config?.voiceOffScreens ?? [] },
       // Without the private token there are no secrets to hand out.
       secrets: !!priv && !!season!.kitSlug,
     }
@@ -207,6 +208,7 @@ const paletteStyle = `--tg-sky:${pal.sky};--tg-ground:${pal.ground};--tg-accent:
     names: { jente: string; gutt: string; gard: string }
     adults?: { heading: string; items: string[] } | null
     englishEnabled: boolean
+    voice?: { enabled: boolean; offScreens: string[] }
     secrets: boolean
   }
   interface SeasonSave { done: Record<string, { smor: boolean }>; hats: string[]; finale: boolean }
@@ -284,7 +286,13 @@ const paletteStyle = `--tg-sky:${pal.sky};--tg-ground:${pal.ground};--tg-accent:
     let audioEl: HTMLAudioElement | null = null
     let speakToken = 0
     let clips: Record<string, string> = {}
-    const updateCanSpeak = () => section.classList.toggle('tg-can-speak', !!voice || Object.keys(clips).length > 0)
+    // Editors can switch sound off for the whole game or for single screens
+    // (farmGameConfig.voiceEnabled / voiceOffScreens). `screenKey` is the
+    // place key, or 'start', 'kart' or 'finale'.
+    let screenKey = 'start'
+    const voiceOn = () => data.voice?.enabled !== false && !(data.voice?.offScreens ?? []).includes(screenKey)
+    const enterScreen = (key: string) => { screenKey = key; section.classList.toggle('tg-voice-off', !voiceOn()); section.classList.toggle('tg-voice-all-off', data.voice?.enabled === false) }
+    const updateCanSpeak = () => section.classList.toggle('tg-can-speak', data.voice?.enabled !== false && (!!voice || Object.keys(clips).length > 0))
     function findVoice() {
       if (!synth) return
       const voices = synth.getVoices()
@@ -326,6 +334,7 @@ const paletteStyle = `--tg-sky:${pal.sky};--tg-ground:${pal.ground};--tg-accent:
     }
     /** Say one line or several in a row: a clip where there is one, else synthesis. */
     function speak(parts: string | string[], el?: Element | null) {
+      if (!voiceOn()) return
       const list = (Array.isArray(parts) ? parts : [parts]).filter(Boolean)
       if (!list.length) return
       if (!list.some(clipFor) && (!synth || !voice)) return
@@ -566,6 +575,7 @@ const paletteStyle = `--tg-sky:${pal.sky};--tg-ground:${pal.ground};--tg-accent:
 
     // ── Start ────────────────────────────────────────────────────
     function renderStart() {
+      enterScreen('start')
       restartGame = null
       const intro = L(season, 'intro')
       const started = store.level !== null
@@ -642,6 +652,7 @@ const paletteStyle = `--tg-sky:${pal.sky};--tg-ground:${pal.ground};--tg-accent:
     const allDone = () => season.places.filter(p => !p.bonus).every(p => mine.done[p.key])
 
     function renderMap(celebrate?: string) {
+      enterScreen('kart')
       restartGame = null
       const doneCount = season.places.filter(p => mine.done[p.key]).length
       const hats = season.places.filter(p => mine.hats.includes(p.key)).length
@@ -748,6 +759,7 @@ const paletteStyle = `--tg-sky:${pal.sky};--tg-ground:${pal.ground};--tg-accent:
     interface Game { reveal: () => void }
 
     function runPlace(place: Place) {
+      enterScreen(place.key)
       const title = L(place, 'title')
       dialog(title, place.intro, t('Jeg hjelper til!', 'I will help!'), () => playGame(place))
     }
@@ -756,6 +768,7 @@ const paletteStyle = `--tg-sky:${pal.sky};--tg-ground:${pal.ground};--tg-accent:
     const SHORT_SCENE = ['rekkefolge', 'folg-traden', 'monster', 'flett', 'gjett', 'sorter']
 
     function playGame(place: Place) {
+      enterScreen(place.key)
       const title = L(place, 'title')
       const task = L(place, 'task')
       const hints = (lang === 'en' && place.hintsEn?.length ? place.hintsEn : place.hints ?? []).map(fill)
@@ -1650,6 +1663,7 @@ const paletteStyle = `--tg-sky:${pal.sky};--tg-ground:${pal.ground};--tg-accent:
 
     // ── Etter minispillet ────────────────────────────────────────
     function afterGame(place: Place, noHints: boolean) {
+      enterScreen(place.key)
       const done = L(place, 'done')
       const short = L(place, 'traditionShort')
       const long = level() === 'smanisse' ? '' : L(place, 'traditionLong')
@@ -1680,6 +1694,7 @@ const paletteStyle = `--tg-sky:${pal.sky};--tg-ground:${pal.ground};--tg-accent:
     }
 
     function showTrick(place: Place, noHints: boolean) {
+      enterScreen(place.key)
       const title = L(place, 'trickTitle')
       const effect = L(place, 'trickEffect')
       const loft = L(season, 'loftName')
@@ -1732,6 +1747,7 @@ const paletteStyle = `--tg-sky:${pal.sky};--tg-ground:${pal.ground};--tg-accent:
 
     // ── Avslutning: stjerna og nøkkelen til det hemmelige stedet ─
     function runFinale() {
+      enterScreen('finale')
       const loft = L(season, 'loftName')
       const ending = () => {
         mine.finale = true
@@ -1893,6 +1909,8 @@ const paletteStyle = `--tg-sky:${pal.sky};--tg-ground:${pal.ground};--tg-accent:
   .tg-can-speak .tg-say { display: inline-flex; align-items: center; justify-content: center; }
   .tg-speech-only { display: none !important; }
   .tg-can-speak .tg-speech-only { display: inline-flex !important; }
+  /* Sound switched off for this screen or for the whole game (Studio). */
+  .tg-voice-off .tg-say, .tg-voice-all-off .tg-speech-only { display: none !important; }
   .is-speaking { box-shadow: 0 0 0 3px var(--tg-glow); border-radius: 14px; }
 
   /* Top bar */
