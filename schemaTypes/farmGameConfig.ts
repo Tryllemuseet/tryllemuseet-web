@@ -57,6 +57,32 @@ export const farmGameConfig = defineType({
     }),
 
     defineField({
+      name: 'teaserLabel',
+      title: 'Spill-teaser på barnesiden: liten etikett',
+      type: 'string',
+      description: 'Lille teksten over tittelen i teaseren på /barn. Tomt felt gir «Spill».',
+    }),
+    defineField({
+      name: 'teaserTitle',
+      title: 'Spill-teaser på barnesiden: tittel',
+      type: 'string',
+      description: 'Tomt felt gir sesongens tittel (for eksempel «Jul på Tryllegården»).',
+    }),
+    defineField({
+      name: 'teaserText',
+      title: 'Spill-teaser på barnesiden: tekst',
+      type: 'text',
+      rows: 3,
+      description: 'Teksten i teaseren på /barn. Tomt felt gir standardteksten. Endringer vises etter neste bygg av nettstedet.',
+    }),
+    defineField({
+      name: 'teaserButton',
+      title: 'Spill-teaser på barnesiden: knappetekst',
+      type: 'string',
+      description: 'Tomt felt gir «Spill nå».',
+    }),
+
+    defineField({
       name: 'comingSoonTitle',
       title: '«Kommer snart»-tittel',
       type: 'string',
