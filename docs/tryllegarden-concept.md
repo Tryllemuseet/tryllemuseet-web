@@ -277,7 +277,7 @@ player's habits carry over. Autumn is harvest and cosy dark evenings, not
 Halloween horror.
 
 What configuration can change **without code**: which season is active (by
-date window or by hand), texts in both languages, images, palette, the order
+hand today, see below), texts in both languages, images, palette, the order
 and number of places, which mechanic each place uses and its three difficulty
 parameter sets, the collection, the tricks, the unlock mode, and which places
 are visible.
@@ -285,11 +285,60 @@ are visible.
 What needs code: a new *mechanic* (the library starts with the ten in the
 table above), and new art has to be drawn.
 
-**Unlock modes** (per season): `open` (everything at once — chosen for
+**Automatic season switching (wanted, not built yet).** Today
+`farmGameConfig.activeSeason` is set by hand. The museum wants the season to
+follow the calendar on its own once there is more than one season, for
+example Christmas from November to mid-January, winter in January–February,
+Easter in March–April and summer in June–August. A sketch: each season gets a
+date window (month and day, repeating every year; Easter needs its own dates
+per year, since it moves), the game picks the season whose window contains
+today's date in Europe/Oslo, and `activeSeason` stays as a manual override.
+Outside every window the game shows the most recent season or a «kommer
+snart» teaser. The `/barn` teaser is static, so it needs a daily rebuild (or
+to be rendered on demand) to change on time.
+
+**Unlock modes** (per season, only `open` is built): `open` (everything at once — chosen for
 Christmas), `sequential` (one place opens the next) or `dated` (each place has an
 `availableFrom` date). `dated` would give an advent rhythm without the
 content burden of a 24-door calendar; it stays available for a later year. Out of season, the game shows the most recent
 season as a replay, or a "kommer snart" teaser; that is a config choice.
+
+### Ideas for future variants (log, not planned work)
+
+Collected from the museum in November 2026. Nothing here is decided or built;
+it is a list to pick from when a new season is planned.
+
+**Real events on Årvoll gård to tie seasons to.** Årvoll gårds brukerforum
+runs recurring events, supported by Sparebankstiftelsen DNB. A season of the
+game can point to them, but the game itself is a separate project and any
+funding application for it must describe something different from these events.
+
+| Event | When | What happens (from the posters) |
+|---|---|---|
+| Jul på Årvoll gård | Two days at the end of November (2026: 28–29 Nov, 12–16) | Christmas market with stalls, Kafé i Fjøset, sausages and stick bread on the tunet, tree lighting with a school band, pony rides for children, gingerbread workshop and plaster figure painting, a magic show, «møt småissene», open Tryllemuseet, sykkelverksted, chess club and artists |
+| Barnas vinterdag på Årvoll gård | One Sunday in February, date changes every year (2026: Sunday 8 Feb, 12–15; an earlier edition: Sunday 9 Feb) | Magic show, chess tournament (earlier: chess/Rubik's cube), treasure-hunt with rebuses (rebusløp), card workshop, mini ski jump «Ta sjansen», bonfire pan and sausages, Kafé i Fjøset; earlier also a fire show, witches, a woodworking ring (snekring) and a quick magic course from age 8. Open: Tryllemuseet, Sølvsmia, Studio KenGuru, Vevstua, Strikkeloftet, Årvoll sykkelverksted (earlier: silver, ceramics, photo, weaving, knitting) |
+| Sommer på Årvoll gård | One Sunday in June (example: Sunday 14 June, 12–15) | Summer day on the farm with a marching band |
+
+**Places and people that could join a season.**
+
+- **Snekkerverkstedet** (between Tryllemuseet and the barn bridge): woodworking; fits a «bygg i riktig rekkefølge» or measuring mini-game. The Pyramidepuslespillet trick (wood) exists in the closed area.
+- **The artists on the farm** (Sølvsmia, Studio KenGuru, Vevstua, Strikkeloftet, ceramics, photo): a «what did the artist change» or pattern mini-game; the Fargeboka trick exists.
+- **The chess club** (meets in the café in Fjøset): «tenker ett steg fram»; a chess tournament is part of the winter day.
+- **Data training for older people** in the café: a warm background detail in the Fjøset scene rather than its own place.
+- **Parsellhagen** (the allotment garden behind the farm) and **the greenhouse**: summer places (growing, watering, finding vegetables), since the farm has no fields of its own.
+- **Rebusløp and card workshop** from the winter day map well onto the existing `gjett` and `monster` mechanics.
+
+**Limit to remember:** the save code holds 16 place slots; 14 are used by the
+Christmas pack, so a season can reuse slots but one season cannot have more
+than 16 places without a new save-code version.
+
+**Magic kits per season.** A «Vinter på …» and «Sommer på …» kit, each with a
+free «lag selv» part and a ready-made pack, where about five tricks are shared
+with other kits and can also be bought separately. The closed area already
+supports this (a trick is written once and referenced by many kits). A «lag
+selv» guide for a trick prop usually reveals the method, so it belongs behind
+«Vis hemmeligheten» or in the closed area. Sales are kept out of funding
+applications.
 
 ## How it fits the website
 
