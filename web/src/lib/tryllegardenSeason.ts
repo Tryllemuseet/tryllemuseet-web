@@ -101,8 +101,13 @@ export interface FarmPlace {
   key:      string
   /** gjett: the riddles. */
   clues?:   FarmClue[]
-  /** Not needed to open the finale. */
+  /** Not needed to open the finale. Only used when `requiredFor` is not set. */
   bonus?:   boolean
+  /**
+   * Levels on which this place must be done to open the finale. On the other
+   * levels it is an extra. Not set: required on every level unless `bonus`.
+   */
+  requiredFor?: FarmLevel[]
   /** Fixed number 0–15 that identifies the place in a save code. Never change it once players may have codes. */
   slot?:    number
   title:    string
@@ -233,6 +238,7 @@ const jul: FarmSeason = {
   places: [
     {
       key: 'tunet',
+      requiredFor: ['smanisse', 'laerling', 'mester'],
       slot: 0,
       title: 'Tunet',
       mechanic: 'finn',
@@ -275,6 +281,7 @@ const jul: FarmSeason = {
     },
     {
       key: 'fjoset',
+      requiredFor: ['smanisse', 'laerling', 'mester'],
       slot: 1,
       title: 'Fjøset',
       mechanic: 'rekkefolge',
@@ -320,6 +327,7 @@ const jul: FarmSeason = {
     },
     {
       key: 'laven',
+      requiredFor: ['smanisse', 'laerling', 'mester'],
       slot: 2,
       title: 'Låven',
       mechanic: 'husk',
@@ -367,6 +375,7 @@ const jul: FarmSeason = {
     },
     {
       key: 'stallen',
+      requiredFor: ['smanisse', 'laerling', 'mester'],
       slot: 3,
       title: 'Stallen',
       mechanic: 'folg-traden',
@@ -414,6 +423,7 @@ const jul: FarmSeason = {
     },
     {
       key: 'bakstehuset',
+      requiredFor: ['laerling', 'mester'],
       slot: 4,
       title: 'Bakstehuset',
       mechanic: 'monster',
@@ -461,6 +471,7 @@ const jul: FarmSeason = {
     },
     {
       key: 'stua',
+      requiredFor: ['laerling', 'mester'],
       slot: 5,
       title: 'Stua',
       mechanic: 'flett',
@@ -515,6 +526,7 @@ const jul: FarmSeason = {
     },
     {
       key: 'stabburet',
+      requiredFor: ['laerling', 'mester'],
       slot: 6,
       title: 'Stabburet',
       mechanic: 'forandret',
@@ -566,6 +578,7 @@ const jul: FarmSeason = {
     },
     {
       key: 'lyktestien',
+      requiredFor: ['mester'],
       slot: 7,
       title: 'Lyktestien',
       mechanic: 'tenn',
@@ -607,6 +620,7 @@ const jul: FarmSeason = {
     },
     {
       key: 'klokketarnet',
+      requiredFor: ['laerling', 'mester'],
       slot: 8,
       title: 'Klokketårnet',
       mechanic: 'husk',
@@ -652,6 +666,7 @@ const jul: FarmSeason = {
     },
     {
       key: 'skogen',
+      requiredFor: ['mester'],
       slot: 9,
       title: 'Skogen',
       mechanic: 'gjett',
@@ -708,6 +723,7 @@ const jul: FarmSeason = {
     },
     {
       key: 'porten',
+      requiredFor: [],
       slot: 10,
       bonus: true,
       title: 'Porten',
@@ -763,6 +779,7 @@ const jul: FarmSeason = {
     },
     {
       key: 'sykkelverkstedet',
+      requiredFor: ['smanisse'],
       slot: 11,
       bonus: true,
       title: 'Sykkelverkstedet',
@@ -811,6 +828,7 @@ const jul: FarmSeason = {
     },
     {
       key: 'honsehuset',
+      requiredFor: [],
       slot: 12,
       bonus: true,
       title: 'Fuglehuset',
@@ -860,6 +878,7 @@ const jul: FarmSeason = {
     },
     {
       key: 'tryllemuseet',
+      requiredFor: [],
       slot: 13,
       bonus: true,
       title: 'Tryllemuseet',

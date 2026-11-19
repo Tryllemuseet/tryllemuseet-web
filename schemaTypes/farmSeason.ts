@@ -137,6 +137,19 @@ const place = defineArrayMember({
     }),
     defineField({ name: 'bonus', title: 'Ekstra sted (ikke nødvendig for finalen)', type: 'boolean', group: 'main', description: 'På: finalen åpner selv om dette stedet ikke er spilt.' }),
     defineField({
+      name: 'requiredFor',
+      title: 'Må gjøres på nivå',
+      type: 'array',
+      of: [{ type: 'string' }],
+      group: 'main',
+      options: { list: [
+        { title: 'Smånisse (4–6 år)', value: 'smanisse' },
+        { title: 'Tryllelærling (7–9 år)', value: 'laerling' },
+        { title: 'Tryllemester (10 år og oppover)', value: 'mester' },
+      ] },
+      description: 'Nivåene der stedet må være spilt før finalen åpner. På de andre nivåene er det et ekstra sted. Tomt felt: bruker «Ekstra sted» over (av = må gjøres på alle nivåer).',
+    }),
+    defineField({
       name: 'slot',
       title: 'Plassnummer (lagrekode)',
       type: 'number',
