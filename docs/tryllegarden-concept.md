@@ -389,7 +389,7 @@ is on. Editors test it with the preview link.
 
 - Start screen with the three levels, the farm map with the big Christmas tree
   (a picture standing in the middle of the yard, well above the stable roof;
-  `treeImageUrl`), and **fourteen places**. Porten, Sykkelverkstedet and Fuglehuset (key `honsehuset`) are extras (`bonus`) and are not needed to open the finale. Each has dialogue, a mini-game, "visste du at", the
+  `treeImageUrl`), and **fourteen places**. Which places open the finale depends on the level (`requiredFor` per place, decided 2026-11-19 by how hard each place's trick is, with its lesson as a second check): Smånisse (4–6) needs Fjøset, Tunet, Låven, Stallen and Sykkelverkstedet; Tryllelærling (7–9) needs those four plus Klokketårnet, Bakstehuset, Stua and Stabburet; Tryllemester needs the ten from Tunet to Skogen. Porten, Fuglehuset (key `honsehuset`) and Tryllemuseet are extras on every level. Extras show with a dashed ring on the map, and progress is kept when the level changes. The level can only be changed on the start page and the map: inside a place the child asks the nisse for hints instead. Each has dialogue, a mini-game, "visste du at", the
   nisse's trick and an ornament for the tree.
 
   | Place | Mechanic | What changes with the level |

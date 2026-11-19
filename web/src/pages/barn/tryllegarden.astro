@@ -180,7 +180,7 @@ const paletteStyle = `--tg-sky:${pal.sky};--tg-ground:${pal.ground};--tg-accent:
   interface Place {
     key: string; slot?: number; title: string; titleEn?: string
     mechanic: 'finn' | 'rekkefolge' | 'husk' | 'folg-traden' | 'monster' | 'flett' | 'forandret' | 'tenn' | 'gjett' | 'tell' | 'sorter'
-    clues?: Clue[]; bonus?: boolean
+    clues?: Clue[]; bonus?: boolean; requiredFor?: Level[]
     icon: string; iconImageUrl?: string; mapX: number; mapY: number; ornament: string; ornamentImageUrl?: string
     backdrop?: string; sceneImageUrl?: string; sceneAlt?: string
     intro: Line[]; task: string; taskEn?: string; items: Item[]
@@ -291,7 +291,16 @@ const paletteStyle = `--tg-sky:${pal.sky};--tg-ground:${pal.ground};--tg-accent:
     // place key, or 'start', 'kart' or 'finale'.
     let screenKey = 'start'
     const voiceOn = () => data.voice?.enabled !== false && !(data.voice?.offScreens ?? []).includes(screenKey)
-    const enterScreen = (key: string) => { screenKey = key; section.classList.toggle('tg-voice-off', !voiceOn()); section.classList.toggle('tg-voice-all-off', data.voice?.enabled === false) }
+    // The level can only be changed on the start page and the map, never in the
+    // middle of a place: there the nisse's hints help instead.
+    const levelLocked = () => screenKey !== 'start' && screenKey !== 'kart'
+    const enterScreen = (key: string) => {
+      const wasLocked = levelLocked()
+      screenKey = key
+      section.classList.toggle('tg-voice-off', !voiceOn())
+      section.classList.toggle('tg-voice-all-off', data.voice?.enabled === false)
+      if (wasLocked !== levelLocked()) renderBar()
+    }
     const updateCanSpeak = () => section.classList.toggle('tg-can-speak', data.voice?.enabled !== false && (!!voice || Object.keys(clips).length > 0))
     function findVoice() {
       if (!synth) return
@@ -532,8 +541,6 @@ const paletteStyle = `--tg-sky:${pal.sky};--tg-ground:${pal.ground};--tg-accent:
     const peekFor = (key: string) => `/images/tryllegarden/titt/titt-${(key.length % 2) + 1}.webp`
 
     // ── Linja øverst: kart, nivå, opplesing, språk ───────────────
-    /** Set while a mini-game is on screen: restarts it on the new level. */
-    let restartGame: (() => void) | null = null
 
     function renderBar() {
       bar.hidden = store.level === null
@@ -541,7 +548,7 @@ const paletteStyle = `--tg-sky:${pal.sky};--tg-ground:${pal.ground};--tg-accent:
         <a class="tg-chip tg-exit" href="/barn" aria-label="${t('Tilbake til Tryllemuseet for barn', 'Back to Tryllemuseet for children')}">←</a>
         <button type="button" class="tg-chip" data-act="map">🗺️ <span>${t('Gården', 'The farm')}</span></button>
         <div class="tg-levels" role="group" aria-label="${t('Vanskelighetsgrad', 'Difficulty')}">
-          ${LEVELS.map(l => `<button type="button" class="tg-chip${l === level() ? ' is-on' : ''}" data-level="${l}" aria-pressed="${l === level()}" title="${esc(LEVEL_NAMES[l].age)}">${LEVEL_NAMES[l].icon} <span>${esc(LEVEL_NAMES[l].name)}</span></button>`).join('')}
+          ${LEVELS.map(l => `<button type="button" class="tg-chip${l === level() ? ' is-on' : ''}" data-level="${l}" aria-pressed="${l === level()}"${levelLocked() && l !== level() ? ` disabled title="${esc(t('Bytt nivå når du er på kartet', 'Change level on the map'))}"` : ` title="${esc(LEVEL_NAMES[l].age)}"`}>${LEVEL_NAMES[l].icon} <span>${esc(LEVEL_NAMES[l].name)}</span></button>`).join('')}
         </div>
         <button type="button" class="tg-chip tg-speech-only${store.read ? ' is-on' : ''}" data-act="read" aria-pressed="${!!store.read}">🔊 <span>${t('Les for meg', 'Read to me')}</span></button>
         ${data.englishEnabled ? `<button type="button" class="tg-chip" data-act="lang" lang="${lang === 'en' ? 'nb' : 'en'}">${lang === 'en' ? '🇳🇴 <span>Norsk</span>' : '🇬🇧 <span>English</span>'}</button>` : ''}`
@@ -551,12 +558,13 @@ const paletteStyle = `--tg-sky:${pal.sky};--tg-ground:${pal.ground};--tg-accent:
       if (!btn) return
       const newLevel = btn.dataset.level as Level | undefined
       if (newLevel) {
-        if (newLevel === store.level) return
+        if (newLevel === store.level || levelLocked()) return
         store.level = newLevel
         save()
         renderBar()
         toast(t(`Nå er du ${LEVEL_NAMES[newLevel].name}.`, `You are now ${LEVEL_NAMES[newLevel].name}.`))
-        restartGame?.()
+        // The map's count and extras depend on the level.
+        if (screenKey === 'kart') renderMap()
         return
       }
       if (btn.dataset.act === 'map') renderMap()
@@ -576,7 +584,6 @@ const paletteStyle = `--tg-sky:${pal.sky};--tg-ground:${pal.ground};--tg-accent:
     // ── Start ────────────────────────────────────────────────────
     function renderStart() {
       enterScreen('start')
-      restartGame = null
       const intro = L(season, 'intro')
       const started = store.level !== null
       show(`<div class="tg-card tg-start">
@@ -648,13 +655,18 @@ const paletteStyle = `--tg-sky:${pal.sky};--tg-ground:${pal.ground};--tg-accent:
     // With the big tree picture the slots are in % of the tree box (about 3:8), wide at the bottom, narrow at the top.
     const IMG_TREE_SLOTS = [[50, 20], [44, 32], [56, 32], [38, 45], [50, 45], [62, 45], [32, 58], [44, 58], [56, 58], [68, 58], [26, 72], [38, 72], [50, 72], [62, 72]]
     const TREE_SLOTS = [[50, 40], [36, 60], [64, 60], [50, 72], [28, 82], [72, 82], [44, 88], [58, 52], [60, 90], [46, 50], [54, 80], [34, 72], [42, 66], [66, 74]]
-    // The finale opens when every place that is not an extra has its ornament.
-    const allDone = () => season.places.filter(p => !p.bonus).every(p => mine.done[p.key])
+    // Which places a level must play: the youngest get fewer (`requiredFor` per
+    // place; without it every place but the `bonus` ones). The rest are extras.
+    const isRequired = (p: Place, l: Level = level()) => (p.requiredFor ? p.requiredFor.includes(l) : !p.bonus)
+    // The finale opens when every place required on the chosen level has its ornament.
+    const allDone = () => season.places.filter(p => isRequired(p)).every(p => mine.done[p.key])
 
     function renderMap(celebrate?: string) {
       enterScreen('kart')
-      restartGame = null
       const doneCount = season.places.filter(p => mine.done[p.key]).length
+      const required = season.places.filter(p => isRequired(p))
+      const doneRequired = required.filter(p => mine.done[p.key]).length
+      const hasExtras = required.length < season.places.length
       const hats = season.places.filter(p => mine.hats.includes(p.key)).length
       const smor = season.places.filter(p => mine.done[p.key]?.smor).length
       const collection = L(season, 'collectionName')
@@ -664,8 +676,10 @@ const paletteStyle = `--tg-sky:${pal.sky};--tg-ground:${pal.ground};--tg-accent:
         .map(o => `<span class="tg-ornament${o.p.key === celebrate ? ' is-new' : ''}" style="left:${o.slot[0]}%;top:${o.slot[1]}%" aria-hidden="true">${ornamentOf(o.p)}</span>`)
         .join('')
       const status = allDone()
-        ? (mine.finale ? t('Stjerna lyser på toppen!', 'The star is shining on top!') : t('All pynten henger! Nå mangler bare stjerna.', 'All the ornaments are up! Only the star is missing.'))
-        : t(`${doneCount} av ${season.places.length} pynt henger på treet.`, `${doneCount} of ${season.places.length} ornaments are on the tree.`)
+        ? (mine.finale ? t('Stjerna lyser på toppen!', 'The star is shining on top!')
+          : doneCount < season.places.length ? t('Nok pynt henger på treet! Nå mangler bare stjerna.', 'Enough ornaments are up! Only the star is missing.')
+          : t('All pynten henger! Nå mangler bare stjerna.', 'All the ornaments are up! Only the star is missing.'))
+        : t(`${doneRequired} av ${required.length} pynt henger på treet.`, `${doneRequired} of ${required.length} ornaments are on the tree.`)
       const where = t('Hvor vil du gå?', 'Where do you want to go?')
 
       show(`<div class="tg-card">
@@ -678,12 +692,13 @@ const paletteStyle = `--tg-sky:${pal.sky};--tg-ground:${pal.ground};--tg-accent:
             ${ornaments}
             ${mine.finale ? `<span class="tg-treetop" aria-hidden="true">${topOf('tg-top-img')}</span>` : ''}
           </div>
-          ${season.places.map(p => `<button type="button" class="tg-spot${mine.done[p.key] ? ' is-done' : ''}" data-place="${esc(p.key)}" style="left:${p.mapX}%;top:${p.mapY}%">
+          ${season.places.map(p => `<button type="button" class="tg-spot${mine.done[p.key] ? ' is-done' : ''}${isRequired(p) ? '' : ' is-extra'}" data-place="${esc(p.key)}" style="left:${p.mapX}%;top:${p.mapY}%">
             <span class="tg-spot-icon" aria-hidden="true">${p.iconImageUrl ? `<img src="${esc(p.iconImageUrl)}" alt="">` : esc(p.icon)}</span>
-            <span class="tg-spot-name">${esc(L(p, 'title'))}${mine.done[p.key] ? ` <span aria-hidden="true">✓</span><span class="tg-sr">${t(' (ferdig)', ' (done)')}</span>` : ''}</span>
+            <span class="tg-spot-name">${esc(L(p, 'title'))}${isRequired(p) ? '' : `<span class="tg-sr">${t(' (ekstra)', ' (extra)')}</span>`}${mine.done[p.key] ? ` <span aria-hidden="true">✓</span><span class="tg-sr">${t(' (ferdig)', ' (done)')}</span>` : ''}</span>
           </button>`).join('')}
         </div>
         <p class="tg-status">${esc(status)}</p>
+        ${hasExtras ? `<p class="tg-note tg-center">${t('Steder med stiplet ring er ekstra. Du trenger dem ikke for å nå finalen, men nissen blir glad for besøk.', 'Places with a dashed ring are extras. You do not need them for the finale, but the nisse is happy to see you.')}</p>` : ''}
         <ul class="tg-tally">
           <li>${HAT} ${t(`Nisseluer funnet: ${hats} av ${season.places.length}`, `Nisse hats found: ${hats} of ${season.places.length}`)}</li>
           <li>${pic('smor', 'tg-tally-icon')} ${t(`Smørøyne: ${smor}`, `Butter-eyes: ${smor}`)} <small>${t('(for steder uten hint)', '(for places done without hints)')}</small></li>
@@ -774,7 +789,6 @@ const paletteStyle = `--tg-sky:${pal.sky};--tg-ground:${pal.ground};--tg-accent:
       const hints = (lang === 'en' && place.hintsEn?.length ? place.hintsEn : place.hints ?? []).map(fill)
       let hintStep = 0
       let finished = false
-      restartGame = () => playGame(place)
 
       show(`<div class="tg-card tg-game tg-lvl-${level()}">
         <div class="tg-head"><h1 class="tg-h1" tabindex="-1" data-focus>${esc(title)}</h1>${sayBtn(task)}</div>
@@ -800,7 +814,6 @@ const paletteStyle = `--tg-sky:${pal.sky};--tg-ground:${pal.ground};--tg-accent:
         done() {
           if (finished) return
           finished = true
-          restartGame = null
           hintBtn.disabled = true
           window.setTimeout(() => afterGame(place, hintStep === 0), 900)
         },
@@ -2174,6 +2187,9 @@ const paletteStyle = `--tg-sky:${pal.sky};--tg-ground:${pal.ground};--tg-accent:
   .tg-spot-name { font: 700 clamp(.68rem, 2.42cqw, 1rem) var(--font-ui); color: #fff; background: var(--tg-accent); border-radius: 999px; padding: .15em .8em; white-space: nowrap; }
   .tg-spot.is-done .tg-spot-icon { border-color: var(--tg-accent2); box-shadow: none; }
   .tg-spot.is-done .tg-spot-name { background: var(--tg-accent2); }
+  .tg-spot.is-extra .tg-spot-icon { border-style: dashed; box-shadow: none; }
+  .tg-spot.is-extra:not(.is-done) .tg-spot-name { background: color-mix(in srgb, var(--tg-accent) 70%, #000); }
+  .tg-chip:disabled { opacity: .45; cursor: not-allowed; }
   .tg-spot:hover .tg-spot-icon { transform: scale(1.06); }
   .tg-tally { list-style: none; padding: 0; display: flex; flex-wrap: wrap; gap: var(--space-2) var(--space-5); justify-content: center; font-size: 1.05rem; }
   .tg-tally li { display: inline-flex; align-items: center; gap: .4rem; }
