@@ -277,7 +277,7 @@ player's habits carry over. Autumn is harvest and cosy dark evenings, not
 Halloween horror.
 
 What configuration can change **without code**: which season is active (by
-date window or by hand), texts in both languages, images, palette, the order
+hand today, see below), texts in both languages, images, palette, the order
 and number of places, which mechanic each place uses and its three difficulty
 parameter sets, the collection, the tricks, the unlock mode, and which places
 are visible.
@@ -285,7 +285,19 @@ are visible.
 What needs code: a new *mechanic* (the library starts with the ten in the
 table above), and new art has to be drawn.
 
-**Unlock modes** (per season): `open` (everything at once — chosen for
+**Automatic season switching (wanted, not built yet).** Today
+`farmGameConfig.activeSeason` is set by hand. The museum wants the season to
+follow the calendar on its own once there is more than one season, for
+example Christmas from November to mid-January, winter in January–February,
+Easter in March–April and summer in June–August. A sketch: each season gets a
+date window (month and day, repeating every year; Easter needs its own dates
+per year, since it moves), the game picks the season whose window contains
+today's date in Europe/Oslo, and `activeSeason` stays as a manual override.
+Outside every window the game shows the most recent season or a «kommer
+snart» teaser. The `/barn` teaser is static, so it needs a daily rebuild (or
+to be rendered on demand) to change on time.
+
+**Unlock modes** (per season, only `open` is built): `open` (everything at once — chosen for
 Christmas), `sequential` (one place opens the next) or `dated` (each place has an
 `availableFrom` date). `dated` would give an advent rhythm without the
 content burden of a 24-door calendar; it stays available for a later year. Out of season, the game shows the most recent
