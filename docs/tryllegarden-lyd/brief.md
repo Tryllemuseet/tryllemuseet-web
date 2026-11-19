@@ -1,6 +1,6 @@
 # Brief: stemmer til Tryllegården
 
-Du skal lage innspilte stemmer til et norsk barnespill, **Tryllegården**, et rolig og koselig julespill for barn fra omtrent 4 til 12 år. Spillet hører til Tryllemuseet på Årvoll gård i Oslo. Du får en liste med replikker (`replikker-nb.md`). Hver replikk skal leses inn flere ganger, slik at jeg kan velge den beste.
+Du skal lage innspilte stemmer til et norsk barnespill, **Tryllegården**, et rolig og koselig julespill for barn fra omtrent 4 til 12 år. Spillet hører til Tryllemuseet på Årvoll gård i Oslo. Du får en liste med replikker (`replikker-nb.md`, eller bare de som mangler innspilling: `replikker-nb-mangler.md`). Hver replikk skal leses inn flere ganger, slik at jeg kan velge den beste.
 
 ## Det viktigste: konsistens
 
@@ -38,6 +38,9 @@ Sett én skriftlig stemmebeskrivelse per figur i leveransen (modell, stemme-id, 
 | Type `feil svar` | Barnet har trykket på noe som ikke hører hjemme. Mildt, litt humoristisk, aldri belærende. |
 | Type `ferdig` | Barna jubler. Størst energi i hele spillet. |
 | Type `tradisjon` | Fortelleren forteller en liten julefakta. Rolig, varm. |
+| Type `triks: tittel` | Navnet på nissens triks, sagt som en liten overraskelse. |
+| Type `triks: effekt` | Hva publikum ser når trikset vises. Undrende, aldri hvordan det gjøres. |
+| Type `tilbakemelding` | Korte beskjeder mens barnet spiller («Riktig! Hva kommer så?»). Vennlig og oppmuntrende, kort, uten overdreven jubel. Brukes mange ganger, så de må tåle å høres ofte. |
 | Pose `jubler` | Begeistret. |
 
 Rekkefølgen i lista er spillrekkefølgen. Replikken over er den som blir sagt rett før, så du kan ta tonen derfra.

@@ -166,6 +166,7 @@ const paletteStyle = `--tg-sky:${pal.sky};--tg-ground:${pal.ground};--tg-accent:
 <script>
   import { encodeProgress, decodeProgress, mergeProgress } from '../../lib/tryllegardenSave'
   import { audioKey } from '../../lib/tryllegardenAudio'
+  import { PHRASES, type PhraseKey } from '../../lib/tryllegardenPhrases'
 
   type Level = 'smanisse' | 'laerling' | 'mester'
   type Who = 'jente' | 'gutt' | 'nisse' | 'forteller' | 'jan'
@@ -254,6 +255,8 @@ const paletteStyle = `--tg-sky:${pal.sky};--tg-ground:${pal.ground};--tg-accent:
     // ── Språk og tekst ───────────────────────────────────────────
     const lang: 'nb' | 'en' = data.englishEnabled && store.lang === 'en' ? 'en' : 'nb'
     const t = (nb: string, en: string) => (lang === 'en' ? en : nb)
+    /** A fixed sentence from lib/tryllegardenPhrases.ts (listed for recording). */
+    const ph = (k: PhraseKey) => t(PHRASES[k][0], PHRASES[k][1])
     const fill = (s: string) =>
       s.replace(/\{jente\}/g, data.names.jente).replace(/\{gutt\}/g, data.names.gutt).replace(/\{gard\}/g, data.names.gard)
     /** A text field in the active language; missing English falls back to Norwegian. */
@@ -676,14 +679,14 @@ const paletteStyle = `--tg-sky:${pal.sky};--tg-ground:${pal.ground};--tg-accent:
         .map(o => `<span class="tg-ornament${o.p.key === celebrate ? ' is-new' : ''}" style="left:${o.slot[0]}%;top:${o.slot[1]}%" aria-hidden="true">${ornamentOf(o.p)}</span>`)
         .join('')
       const status = allDone()
-        ? (mine.finale ? t('Stjerna lyser på toppen!', 'The star is shining on top!')
-          : doneCount < season.places.length ? t('Nok pynt henger på treet! Nå mangler bare stjerna.', 'Enough ornaments are up! Only the star is missing.')
-          : t('All pynten henger! Nå mangler bare stjerna.', 'All the ornaments are up! Only the star is missing.'))
+        ? (mine.finale ? ph('stjernaLyserPaToppen')
+          : doneCount < season.places.length ? ph('nokPyntHengerPaTreet')
+          : ph('allPyntenHengerNaMangler'))
         : t(`${doneRequired} av ${required.length} pynt henger på treet.`, `${doneRequired} of ${required.length} ornaments are on the tree.`)
-      const where = t('Hvor vil du gå?', 'Where do you want to go?')
+      const where = ph('hvorVilDuGa')
 
       show(`<div class="tg-card">
-        <div class="tg-head"><h1 class="tg-h1" tabindex="-1" data-focus>${esc(fill('{gard}'))}</h1>${sayBtn(`${where} ${status}`)}</div>
+        <div class="tg-head"><h1 class="tg-h1" tabindex="-1" data-focus>${esc(fill('{gard}'))}</h1>${sayBtn([where, status])}</div>
         <p class="tg-lead tg-lead--tight">${esc(where)}</p>
         <div class="tg-scene tg-map">
           ${season.mapImageUrl ? `<img class="tg-backdrop" src="${esc(season.mapImageUrl)}" alt="${esc(season.mapAlt ?? '')}">` : backdropSvg('map')}
@@ -742,7 +745,7 @@ const paletteStyle = `--tg-sky:${pal.sky};--tg-ground:${pal.ground};--tg-accent:
         box.scrollIntoView({ block: 'nearest', behavior: 'smooth' })
       })
       if (celebrate) toast(t('Pynten henger på treet!', 'The ornament is on the tree!'))
-      auto(`${where} ${status}`)
+      auto([where, status])
     }
 
     // ── Samtale: én replikk om gangen ────────────────────────────
@@ -851,7 +854,7 @@ const paletteStyle = `--tg-sky:${pal.sky};--tg-ground:${pal.ground};--tg-accent:
         } else {
           hintStep = 3
           game.reveal()
-          api.msg(t('Se der det lyser!', 'Look where it glows!'))
+          api.msg(ph('seDerDetLyser'))
         }
         hintBtn.textContent = `🤫 ${t('Nissen hvisker', 'The nisse whispers')} (${hintStep}/3)`
       })
@@ -909,7 +912,7 @@ const paletteStyle = `--tg-sky:${pal.sky};--tg-ground:${pal.ground};--tg-accent:
           if (item.decoy) {
             btn.disabled = true
             btn.classList.add('is-out')
-            api.msg(L(item, 'wrong') || t('Den hører ikke hjemme her!', 'That one does not belong here!'))
+            api.msg(L(item, 'wrong') || ph('denHorerIkkeHjemmeHer'))
             return
           }
           if (item.key !== steps[next].key) {
@@ -917,7 +920,7 @@ const paletteStyle = `--tg-sky:${pal.sky};--tg-ground:${pal.ground};--tg-accent:
             btn.classList.remove('is-shake')
             void btn.offsetWidth
             btn.classList.add('is-shake')
-            api.msg(t('Ikke helt ennå. Hva må skje før det?', 'Not quite yet. What has to happen before that?'))
+            api.msg(ph('ikkeHeltEnnaHvaMa'))
             // The youngest are shown the way after two tries.
             if (level() === 'smanisse' && wrong >= 2) reveal()
             return
@@ -929,10 +932,10 @@ const paletteStyle = `--tg-sky:${pal.sky};--tg-ground:${pal.ground};--tg-accent:
           btn.hidden = true
           next++
           if (next === steps.length) {
-            api.msg(t('Ferdig! Alt i riktig rekkefølge.', 'Done! Everything in the right order.'))
+            api.msg(ph('ferdigAltIRiktigRekkefolge'))
             api.done()
           } else {
-            api.msg(t('Riktig! Hva kommer så?', 'Right! What comes next?'), false)
+            api.msg(ph('riktigHvaKommerSa'), false)
           }
         }),
       )
@@ -965,7 +968,7 @@ const paletteStyle = `--tg-sky:${pal.sky};--tg-ground:${pal.ground};--tg-accent:
         busy = true
         pos = 0
         clearHints()
-        api.msg(t('Se nøye etter!', 'Watch closely!'))
+        api.msg(ph('seNoyeEtter'))
         await wait(900)
         for (const b of seq) {
           if (!here()) return
@@ -978,8 +981,8 @@ const paletteStyle = `--tg-sky:${pal.sky};--tg-ground:${pal.ground};--tg-accent:
         if (!here()) return
         busy = false
         api.msg(backwards()
-          ? t('Din tur! Denne gangen baklengs: den siste fuglen først.', 'Your turn! Backwards this time: the last bird first.')
-          : t('Din tur! Trykk på fuglene i samme rekkefølge.', 'Your turn! Tap the birds in the same order.'))
+          ? ph('dinTurDenneGangenBaklengs')
+          : ph('dinTurTrykkPaFuglene'))
       }
       function newRound() {
         seq = []
@@ -996,7 +999,7 @@ const paletteStyle = `--tg-sky:${pal.sky};--tg-ground:${pal.ground};--tg-accent:
           clearHints()
           if (btn.dataset.k !== expected().key) {
             busy = true
-            api.msg(t('Oi, det ble ikke helt riktig. Se en gang til!', 'Oops, not quite. Watch once more!'))
+            api.msg(ph('oiDetBleIkkeHelt'))
             await wait(1400)
             if (here()) void play()
             return
@@ -1009,11 +1012,11 @@ const paletteStyle = `--tg-sky:${pal.sky};--tg-ground:${pal.ground};--tg-accent:
           busy = true
           if (round === rounds.length) {
             alive = false
-            api.msg(t('Du husket alle sammen!', 'You remembered them all!'))
+            api.msg(ph('duHusketAlleSammen'))
             api.done()
             return
           }
-          api.msg(t('Flott! Én runde til, litt lengre.', 'Lovely! One more round, a little longer.'))
+          api.msg(ph('flottEnRundeTilLitt'))
           await wait(1600)
           if (here()) newRound()
         }),
@@ -1077,11 +1080,11 @@ const paletteStyle = `--tg-sky:${pal.sky};--tg-ground:${pal.ground};--tg-accent:
             locked = true
             round++
             if (round === rounds.length) {
-              api.msg(t('Riktig! Du fulgte alle flettene.', 'Right! You followed every braid.'))
+              api.msg(ph('riktigDuFulgteAlleFlettene'))
               api.done()
               return
             }
-            api.msg(t('Riktig! Én flette til.', 'Right! One more braid.'))
+            api.msg(ph('riktigEnFletteTil'))
             await api.wait(1500)
             if (board.isConnected) newRound()
           }),
@@ -1131,7 +1134,7 @@ const paletteStyle = `--tg-sky:${pal.sky};--tg-ground:${pal.ground};--tg-accent:
           <div class="tg-cards">${choices.map(k => `<button type="button" class="tg-cardbtn" data-k="${esc(k.key)}">${itemArt(k)} <span>${esc(L(k, 'label'))}</span></button>`).join('')}</div>`
         locked = false
         mark()
-        api.msg(t('Hvilken kake mangler der det lyser?', 'Which biscuit is missing where it glows?'), false)
+        api.msg(ph('hvilkenKakeManglerDerDet'), false)
         board.querySelectorAll<HTMLButtonElement>('.tg-cardbtn').forEach(btn =>
           btn.addEventListener('click', async () => {
             if (locked || !holes.length) return
@@ -1141,7 +1144,7 @@ const paletteStyle = `--tg-sky:${pal.sky};--tg-ground:${pal.ground};--tg-accent:
               btn.classList.remove('is-shake')
               void btn.offsetWidth
               btn.classList.add('is-shake')
-              api.msg(t('Ikke den. Si mønsteret høyt fra starten!', 'Not that one. Say the pattern aloud from the start!'))
+              api.msg(ph('ikkeDenSiMonsteretHoyt'))
               return
             }
             const cell = board.querySelector(`.tg-cell[data-i="${at}"]`)!
@@ -1153,11 +1156,11 @@ const paletteStyle = `--tg-sky:${pal.sky};--tg-ground:${pal.ground};--tg-accent:
             locked = true
             round++
             if (round === rounds.length) {
-              api.msg(t('Alle kakene er på plass!', 'Every biscuit is in place!'))
+              api.msg(ph('alleKakeneErPaPlass'))
               api.done()
               return
             }
-            api.msg(t('Riktig! En ny rad.', 'Right! A new row.'))
+            api.msg(ph('riktigEnNyRad'))
             await api.wait(1400)
             if (board.isConnected) newRound()
           }),
@@ -1222,11 +1225,11 @@ const paletteStyle = `--tg-sky:${pal.sky};--tg-ground:${pal.ground};--tg-accent:
             locked = true
             round++
             if (round === rounds.length) {
-              api.msg(t('Kurven er ferdig flettet!', 'The basket is woven!'))
+              api.msg(ph('kurvenErFerdigFlettet'))
               api.done()
               return
             }
-            api.msg(t('Helt likt! Nå en litt større kurv.', 'Just the same! Now a slightly bigger basket.'))
+            api.msg(ph('heltLiktNaEnLitt'))
             await api.wait(1500)
             if (board.isConnected) newRound()
           }),
@@ -1276,7 +1279,7 @@ const paletteStyle = `--tg-sky:${pal.sky};--tg-ground:${pal.ground};--tg-accent:
         board.innerHTML = ''
         clear()
         scene.insertAdjacentHTML('beforeend', `<div class="tg-curtain">${t('Hysj … nissen lister seg inn', 'Shh … the nisse is tiptoeing in')}</div>`)
-        api.msg(t('Hysj … nissen lister seg inn.', 'Shh … the nisse is tiptoeing in.'))
+        api.msg(ph('hysjNissenListerSegInn'))
         await api.wait(1800)
         if (!scene.isConnected) return
         guessing()
@@ -1289,11 +1292,11 @@ const paletteStyle = `--tg-sky:${pal.sky};--tg-ground:${pal.ground};--tg-accent:
           if (phase !== 'guess') return
           phase = 'busy'
           draw(before, false)
-          api.msg(t('Slik sto det før.', 'This is how it was.'), false)
+          api.msg(ph('slikStoDetFor'), false)
           await api.wait(2600)
           if (scene.isConnected) guessing()
         })
-        api.msg(t('Hva har nissen byttet ut? Trykk på det.', 'What did the nisse swap? Tap it.'))
+        api.msg(ph('hvaHarNissenByttetUt'))
       }
       async function guess(n: number) {
         if (phase !== 'guess') return
@@ -1305,11 +1308,11 @@ const paletteStyle = `--tg-sky:${pal.sky};--tg-ground:${pal.ground};--tg-accent:
         scene.querySelector(`button.tg-shelf[data-n="${n}"]`)?.classList.add('is-found')
         round++
         if (round === rounds.length) {
-          api.msg(t('Riktig! Deg lurer han ikke.', 'Right! He cannot fool you.'))
+          api.msg(ph('riktigDegLurerHanIkke'))
           api.done()
           return
         }
-        api.msg(t('Riktig! Én gang til, med flere ting.', 'Right! Once more, with more things.'))
+        api.msg(ph('riktigEnGangTilMed'))
         await api.wait(1600)
         if (scene.isConnected) newRound()
       }
@@ -1388,7 +1391,7 @@ const paletteStyle = `--tg-sky:${pal.sky};--tg-ground:${pal.ground};--tg-accent:
               const next = lit.indexOf(false)
               if (i !== next) {
                 api.msg(lit[i]
-                  ? t('Den lyser allerede.', 'That one is already lit.')
+                  ? ph('denLyserAllerede')
                   : t(`Først lykt nummer ${next + 1}. Én søndag om gangen!`, `Lantern number ${next + 1} first. One Sunday at a time!`))
                 return
               }
@@ -1401,11 +1404,11 @@ const paletteStyle = `--tg-sky:${pal.sky};--tg-ground:${pal.ground};--tg-accent:
             locked = true
             round++
             if (round === rounds.length) {
-              api.msg(t('Alle lyktene lyser!', 'All the lanterns are lit!'))
+              api.msg(ph('alleLykteneLyser'))
               api.done()
               return
             }
-            api.msg(t('Alle lyser! Nissen tuller til lyktene en gang til.', 'All lit! The nisse muddles the lanterns once more.'))
+            api.msg(ph('alleLyserNissenTullerTil'))
             await api.wait(1700)
             if (scene.isConnected) newRound()
           }),
@@ -1441,7 +1444,7 @@ const paletteStyle = `--tg-sky:${pal.sky};--tg-ground:${pal.ground};--tg-accent:
         locked = false
         api.msg(text)
       }
-      if (!pool.length) { api.msg(t('Her mangler det ledetråder.', 'There are no clues here.'), false); return { reveal() {} } }
+      if (!pool.length) { api.msg(ph('herManglerDetLedetrader'), false); return { reveal() {} } }
       board.querySelectorAll<HTMLButtonElement>('.tg-guess').forEach(btn =>
         btn.addEventListener('click', async () => {
           if (locked) return
@@ -1449,7 +1452,7 @@ const paletteStyle = `--tg-sky:${pal.sky};--tg-ground:${pal.ground};--tg-accent:
             btn.classList.remove('is-shake')
             void btn.offsetWidth
             btn.classList.add('is-shake')
-            api.msg(t('Ikke den. Les ledetråden en gang til!', 'Not that one. Read the clue once more!'))
+            api.msg(ph('ikkeDenLesLedetradenEn'))
             return
           }
           locked = true
@@ -1457,11 +1460,11 @@ const paletteStyle = `--tg-sky:${pal.sky};--tg-ground:${pal.ground};--tg-accent:
           btn.classList.add('is-right')
           round++
           if (round === rounds) {
-            api.msg(t('Riktig! Du fant dem alle.', 'Right! You found them all.'))
+            api.msg(ph('riktigDuFantDemAlle'))
             api.done()
             return
           }
-          api.msg(t('Riktig! Her kommer en ny ledetråd.', 'Right! Here comes a new clue.'), false)
+          api.msg(ph('riktigHerKommerEnNy'), false)
           await api.wait(1500)
           if (board.isConnected) show()
         }),
@@ -1568,7 +1571,7 @@ const paletteStyle = `--tg-sky:${pal.sky};--tg-ground:${pal.ground};--tg-accent:
               btn.classList.remove('is-shake')
               void btn.offsetWidth
               btn.classList.add('is-shake')
-              api.msg(t('Ikke helt. Se en gang til og tell sakte!', 'Not quite. Look once more and count slowly!'))
+              api.msg(ph('ikkeHeltSeEnGang'))
               if (hideAfter) show()
               return
             }
@@ -1577,12 +1580,12 @@ const paletteStyle = `--tg-sky:${pal.sky};--tg-ground:${pal.ground};--tg-accent:
             round++
             if (round === rounds.length) {
               dance(true)
-              api.msg(friend ? t(`Riktig! Du telte alt. Se, ${friend.name} danser!`, `Right! You counted everything. Look, ${friend.name} is dancing!`) : t('Riktig! Du telte alt.', 'Right! You counted everything.'))
+              api.msg(friend ? t(`Riktig! Du telte alt. Se, ${friend.name} danser!`, `Right! You counted everything. Look, ${friend.name} is dancing!`) : ph('riktigDuTelteAlt'))
               api.done()
               return
             }
             dance()
-            api.msg(t('Riktig! Her kommer nye.', 'Right! Here come new ones.'), false)
+            api.msg(ph('riktigHerKommerNye'), false)
             await api.wait(1500)
             if (board.isConnected) newRound()
           }),
@@ -1649,22 +1652,22 @@ const paletteStyle = `--tg-sky:${pal.sky};--tg-ground:${pal.ground};--tg-accent:
               void btn.offsetWidth
               btn.classList.add('is-shake')
               api.msg(tool
-                ? (backwards() ? t('Finnes det en som er lengre?', 'Is there a longer one?') : t('Finnes det en som er kortere?', 'Is there a shorter one?'))
-                : (backwards() ? t('Finnes det et lengre lys?', 'Is there a longer candle?') : t('Finnes det et kortere lys?', 'Is there a shorter candle?')))
+                ? (backwards() ? ph('finnesDetEnSomEr') : ph('finnesDetEnSomEr2'))
+                : (backwards() ? ph('finnesDetEtLengreLys') : ph('finnesDetEtKortereLys')))
               return
             }
             next++
             btn.classList.add('is-taken')
             btn.querySelector('.tg-candle-num')!.textContent = String(next)
-            if (next < order.length) { api.msg(t('Riktig! Hva kommer så?', 'Right! What comes next?'), false); return }
+            if (next < order.length) { api.msg(ph('riktigHvaKommerSa'), false); return }
             locked = true
             round++
             if (round === rounds.length) {
-              api.msg(tool ? t('Alt henger på rekke!', 'Everything is in a row!') : t('Alle lysene står på rekke!', 'All the candles are in a row!'))
+              api.msg(tool ? ph('altHengerPaRekke') : ph('alleLyseneStarPaRekke'))
               api.done()
               return
             }
-            api.msg(tool ? t('Riktig! En gang til.', 'Right! Once more.') : t('Riktig! Nye lys.', 'Right! New candles.'), false)
+            api.msg(tool ? ph('riktigEnGangTil') : ph('riktigNyeLys'), false)
             await api.wait(1500)
             if (board.isConnected) newRound()
           }),
@@ -1718,7 +1721,7 @@ const paletteStyle = `--tg-sky:${pal.sky};--tg-ground:${pal.ground};--tg-accent:
         : ''
       show(`<div class="tg-card">
         <p class="tg-kicker">${t('Nissens triks', 'The nisse’s trick')}</p>
-        <div class="tg-head"><h1 class="tg-h1" tabindex="-1" data-focus>${esc(title)}</h1>${sayBtn(`${title}. ${effect}`)}</div>
+        <div class="tg-head"><h1 class="tg-h1" tabindex="-1" data-focus>${esc(title)}</h1>${sayBtn([title, effect])}</div>
         <p class="tg-lead tg-lead--tight">${esc(effect)}</p>
         ${place.trickAge ? `<p class="tg-age">${t(`Passer fra ${place.trickAge} år`, `Suits ages ${place.trickAge} and up`)}</p>` : ''}
         ${place.trickAge && place.trickAge >= 7 && level() === 'smanisse' ? `<p class="tg-note">${t('Dette trikset er litt vanskelig. Be en voksen hjelpe til!', 'This trick is a little tricky. Ask a grown-up to help!')}</p>` : ''}
@@ -1755,7 +1758,7 @@ const paletteStyle = `--tg-sky:${pal.sky};--tg-ground:${pal.ground};--tg-accent:
         if (Object.keys(mine.done).length === 1) askPersist()
         renderMap(place.key)
       })
-      auto(`${title}. ${effect}`)
+      auto([title, effect])
     }
 
     // ── Avslutning: stjerna og nøkkelen til det hemmelige stedet ─
