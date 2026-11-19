@@ -3740,7 +3740,7 @@ export async function getFarmSeasonDoc(key: string): Promise<Record<string, unkn
       loftName, loftNameEn, kitSlug, showWords, showWordsEn,
       "hidden": places[isVisible == false].key,
       places[isVisible != false] {
-        key, slot, bonus, title, titleEn, mechanic, icon, mapX, mapY, ornament, lookAt, lookAtEn, trickNote, trickNoteEn,
+        key, slot, bonus, requiredFor, title, titleEn, mechanic, icon, mapX, mapY, ornament, lookAt, lookAtEn, trickNote, trickNoteEn,
         "iconImage": iconImage { asset->{ _ref, url } },
         dancer { name, x, y, size, "image": image { asset->{ _ref, url } }, "danceImage": danceImage { asset->{ _ref, url } }, "idleImages": idleImages[] { asset->{ _ref, url } } },
         craft { title, titleEn, needs, needsEn, steps[] { text, textEn, "image": image { asset->{ _ref, url } } } },
