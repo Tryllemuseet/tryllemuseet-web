@@ -108,17 +108,35 @@
       "before": "Fjøsnissen er en liten kar som bor på gården og passer på dyra. Han er sjenert, så nesten ingen får se ham."
     },
     {
-      "id": "0yxzz56",
+      "id": "1mcvzid",
       "n": 12,
+      "who": "forteller",
+      "text": "Strikken som hopper",
+      "where": "Tunet",
+      "kind": "triks: tittel",
+      "before": "I gamle dager trodde folk at det bodde en nisse på hver gård. Han hadde grå klær og rød lue, og var ikke større enn et barn. Var folk snille mot dyra, hjalp nissen til om natta."
+    },
+    {
+      "id": "0wfhdx0",
+      "n": 13,
+      "who": "forteller",
+      "text": "Du setter en strikk rundt pekefingeren og langfingeren. Du knytter hånda og sier trylleordet. Vips – strikken har hoppet over til de to andre fingrene!",
+      "where": "Tunet",
+      "kind": "triks: effekt",
+      "before": "Strikken som hopper"
+    },
+    {
+      "id": "0yxzz56",
+      "n": 14,
       "who": "gutt",
       "text": "Det lukter grøt her! Men gryta er tom …",
       "where": "Fjøset",
       "kind": "samtale",
-      "before": "I gamle dager trodde folk at det bodde en nisse på hver gård. Han hadde grå klær og rød lue, og var ikke større enn et barn. Var folk snille mot dyra, hjalp nissen til om natta."
+      "before": "Du setter en strikk rundt pekefingeren og langfingeren. Du knytter hånda og sier trylleordet. Vips – strikken har hoppet over til de to andre fingrene!"
     },
     {
       "id": "0yrf70w",
-      "n": 13,
+      "n": 15,
       "who": "jente",
       "text": "Nissen blir så glad for julegrøt. Skal vi koke en ny til ham?",
       "where": "Fjøset",
@@ -127,7 +145,7 @@
     },
     {
       "id": "1160elg",
-      "n": 14,
+      "n": 16,
       "who": "gutt",
       "text": "Da må vi gjøre alt i riktig rekkefølge. Kan du hjelpe oss?",
       "where": "Fjøset",
@@ -136,7 +154,7 @@
     },
     {
       "id": "1yjd3qe",
-      "n": 15,
+      "n": 17,
       "who": "forteller",
       "text": "Trykk på det som skal skje først. Så det neste, helt til grøten er ferdig.",
       "where": "Fjøset",
@@ -145,7 +163,7 @@
     },
     {
       "id": "1gpt3qh",
-      "n": 16,
+      "n": 18,
       "who": "nisse",
       "text": "Grøten må kokes før noen kan spise den.",
       "where": "Fjøset",
@@ -154,7 +172,7 @@
     },
     {
       "id": "1ipkrzz",
-      "n": 17,
+      "n": 19,
       "who": "nisse",
       "text": "Smøret kommer oppå til slutt, og helt sist bæres skåla ut.",
       "where": "Fjøset",
@@ -163,7 +181,7 @@
     },
     {
       "id": "005j1xj",
-      "n": 18,
+      "n": 20,
       "who": "gutt",
       "text": "Sokk i grøten? Nei, fy da! Den hører ikke hjemme her.",
       "where": "Fjøset",
@@ -172,7 +190,7 @@
     },
     {
       "id": "0pffpgs",
-      "n": 19,
+      "n": 21,
       "who": "gutt",
       "text": "Sylteagurk? Det liker ikke nissen. Den hører ikke hjemme her.",
       "where": "Fjøset",
@@ -181,7 +199,7 @@
     },
     {
       "id": "0mqkcpi",
-      "n": 20,
+      "n": 22,
       "who": "jente",
       "text": "Nydelig grøt! En tryllekunstner gjør alltid klart i riktig rekkefølge.",
       "where": "Fjøset",
@@ -191,7 +209,7 @@
     },
     {
       "id": "05d5ats",
-      "n": 21,
+      "n": 23,
       "who": "forteller",
       "text": "På julaften setter mange ut en skål grøt til nissen. På toppen skal det ligge en klatt smør. Det heter smørøye.",
       "where": "Fjøset",
@@ -200,7 +218,7 @@
     },
     {
       "id": "0lz3xm9",
-      "n": 22,
+      "n": 24,
       "who": "forteller",
       "text": "Grøten er en gammel måte å si takk på, fordi nissen har passet på gården hele året. I sagnene blir han sur hvis smøret mangler!",
       "where": "Fjøset",
@@ -208,17 +226,35 @@
       "before": "På julaften setter mange ut en skål grøt til nissen. På toppen skal det ligge en klatt smør. Det heter smørøye."
     },
     {
+      "id": "1n1a06w",
+      "n": 25,
+      "who": "forteller",
+      "text": "Kanelstanga av gummi",
+      "where": "Fjøset",
+      "kind": "triks: tittel",
+      "before": "Grøten er en gammel måte å si takk på, fordi nissen har passet på gården hele året. I sagnene blir han sur hvis smøret mangler!"
+    },
+    {
+      "id": "1ftf60m",
+      "n": 26,
+      "who": "forteller",
+      "text": "Du viser fram en hard kanelstang. Så rister du forsiktig på den – og plutselig ser den myk ut, som om den var av gummi!",
+      "where": "Fjøset",
+      "kind": "triks: effekt",
+      "before": "Kanelstanga av gummi"
+    },
+    {
       "id": "1c4dxd1",
-      "n": 23,
+      "n": 27,
       "who": "jente",
       "text": "Hysj! Det sitter fugler på juleneket.",
       "where": "Låven",
       "kind": "samtale",
-      "before": "Grøten er en gammel måte å si takk på, fordi nissen har passet på gården hele året. I sagnene blir han sur hvis smøret mangler!"
+      "before": "Du viser fram en hard kanelstang. Så rister du forsiktig på den – og plutselig ser den myk ut, som om den var av gummi!"
     },
     {
       "id": "1vch0x2",
-      "n": 24,
+      "n": 28,
       "who": "gutt",
       "text": "De lander én og én. Nissen vet nok hvem som kom først.",
       "where": "Låven",
@@ -227,7 +263,7 @@
     },
     {
       "id": "0lr9sbz",
-      "n": 25,
+      "n": 29,
       "who": "jente",
       "text": "Klarer du å huske rekkefølgen?",
       "where": "Låven",
@@ -236,7 +272,7 @@
     },
     {
       "id": "0ae6kwl",
-      "n": 26,
+      "n": 30,
       "who": "forteller",
       "text": "Se hvem som lander først. Trykk på fuglene i samme rekkefølge.",
       "where": "Låven",
@@ -245,7 +281,7 @@
     },
     {
       "id": "0fkzyxv",
-      "n": 27,
+      "n": 31,
       "who": "nisse",
       "text": "Si navnene høyt mens fuglene lander. Da er det lettere å huske.",
       "where": "Låven",
@@ -254,7 +290,7 @@
     },
     {
       "id": "1pt241u",
-      "n": 28,
+      "n": 32,
       "who": "nisse",
       "text": "Trykk på «Vis en gang til» og følg med på den første fuglen.",
       "where": "Låven",
@@ -263,7 +299,7 @@
     },
     {
       "id": "0l75t1f",
-      "n": 29,
+      "n": 33,
       "who": "jente",
       "text": "For en hukommelse! En tryllekunstner må huske alt – uten å se på lappen.",
       "where": "Låven",
@@ -273,7 +309,7 @@
     },
     {
       "id": "1qdfy5m",
-      "n": 30,
+      "n": 34,
       "who": "forteller",
       "text": "Juleneket er et knippe med havre som henges opp ute til jul. Da får småfuglene også julemat.",
       "where": "Låven",
@@ -282,7 +318,7 @@
     },
     {
       "id": "1i3kh5l",
-      "n": 31,
+      "n": 35,
       "who": "forteller",
       "text": "Før i tida sparte bonden de fineste kornstråene fra høsten til juleneket. Kom det mange fugler, trodde folk at det ble et godt år.",
       "where": "Låven",
@@ -290,17 +326,35 @@
       "before": "Juleneket er et knippe med havre som henges opp ute til jul. Da får småfuglene også julemat."
     },
     {
+      "id": "0km6h3i",
+      "n": 36,
+      "who": "forteller",
+      "text": "Fuglen på neket",
+      "where": "Låven",
+      "kind": "triks: tittel",
+      "before": "Før i tida sparte bonden de fineste kornstråene fra høsten til juleneket. Kom det mange fugler, trodde folk at det ble et godt år."
+    },
+    {
+      "id": "0dvc829",
+      "n": 37,
+      "who": "forteller",
+      "text": "På den ene siden av en snurreskive er det en fugl. På den andre siden er det et julenek. Du snurrer skiva – og plutselig sitter fuglen på neket! En slik snurreskive kalles en thaumatrope, og folk trylte med dem for 200 år siden, lenge før film var funnet opp.",
+      "where": "Låven",
+      "kind": "triks: effekt",
+      "before": "Fuglen på neket"
+    },
+    {
       "id": "15khjc4",
-      "n": 32,
+      "n": 38,
       "who": "gutt",
       "text": "Se på Blakken! Noen har flettet manken hans i natt.",
       "where": "Stallen",
       "kind": "samtale",
-      "before": "Før i tida sparte bonden de fineste kornstråene fra høsten til juleneket. Kom det mange fugler, trodde folk at det ble et godt år."
+      "before": "På den ene siden av en snurreskive er det en fugl. På den andre siden er det et julenek. Du snurrer skiva – og plutselig sitter fuglen på neket! En slik snurreskive kalles en thaumatrope, og folk trylte med dem for 200 år siden, lenge før film var funnet opp."
     },
     {
       "id": "12orxwk",
-      "n": 33,
+      "n": 39,
       "who": "jente",
       "text": "Det heter nisseflette. Og nissen har knyttet noe fast i enden av hver flette!",
       "where": "Stallen",
@@ -309,7 +363,7 @@
     },
     {
       "id": "109ggn1",
-      "n": 34,
+      "n": 40,
       "who": "gutt",
       "text": "Men flettene går i kryss og krok. Kan du følge dem med øynene?",
       "where": "Stallen",
@@ -318,7 +372,7 @@
     },
     {
       "id": "0cricp9",
-      "n": 35,
+      "n": 41,
       "who": "forteller",
       "text": "Følg fletta fra sløyfa og helt ned. Trykk på riktig sløyfe.",
       "where": "Stallen",
@@ -327,7 +381,7 @@
     },
     {
       "id": "1vnypzc",
-      "n": 36,
+      "n": 42,
       "who": "nisse",
       "text": "Start nederst ved tingen, og følg fletta oppover i stedet.",
       "where": "Stallen",
@@ -336,7 +390,7 @@
     },
     {
       "id": "0g9ddou",
-      "n": 37,
+      "n": 43,
       "who": "nisse",
       "text": "Følg med fingeren på skjermen, sakte, gjennom alle kryssene.",
       "where": "Stallen",
@@ -345,7 +399,7 @@
     },
     {
       "id": "1wz9nyd",
-      "n": 38,
+      "n": 44,
       "who": "jente",
       "text": "Du mistet ikke tråden! En tryllekunstner følger med på én ting, selv når mye skjer.",
       "where": "Stallen",
@@ -355,7 +409,7 @@
     },
     {
       "id": "0yrhof0",
-      "n": 39,
+      "n": 45,
       "who": "forteller",
       "text": "Fant bonden fletter i manken på hesten om morgenen, sa folk at nissen hadde vært der. Det het nisseflette.",
       "where": "Stallen",
@@ -364,7 +418,7 @@
     },
     {
       "id": "0m0mnnv",
-      "n": 40,
+      "n": 46,
       "who": "forteller",
       "text": "Folk trodde nissen stelte ekstra godt med hesten han likte best. Flettene skulle få være i fred. Klipte man dem av, kunne nissen bli fornærmet.",
       "where": "Stallen",
@@ -372,17 +426,35 @@
       "before": "Fant bonden fletter i manken på hesten om morgenen, sa folk at nissen hadde vært der. Det het nisseflette."
     },
     {
+      "id": "0z0in4v",
+      "n": 47,
+      "who": "forteller",
+      "text": "Den umulige knuten",
+      "where": "Stallen",
+      "kind": "triks: tittel",
+      "before": "Folk trodde nissen stelte ekstra godt med hesten han likte best. Flettene skulle få være i fred. Klipte man dem av, kunne nissen bli fornærmet."
+    },
+    {
+      "id": "1ukv6dz",
+      "n": 48,
+      "who": "forteller",
+      "text": "Du ber en venn knyte en knute på et bånd uten å slippe endene. Det går ikke! Men du klarer det på et blunk.",
+      "where": "Stallen",
+      "kind": "triks: effekt",
+      "before": "Den umulige knuten"
+    },
+    {
       "id": "0vuoyt8",
-      "n": 41,
+      "n": 49,
       "who": "jente",
       "text": "Mmm, det lukter julekaker! Her bakes det sju slag.",
       "where": "Bakstehuset",
       "kind": "samtale",
-      "before": "Folk trodde nissen stelte ekstra godt med hesten han likte best. Flettene skulle få være i fred. Klipte man dem av, kunne nissen bli fornærmet."
+      "before": "Du ber en venn knyte en knute på et bånd uten å slippe endene. Det går ikke! Men du klarer det på et blunk."
     },
     {
       "id": "0x9szl2",
-      "n": 42,
+      "n": 50,
       "who": "gutt",
       "text": "Kakene skal ligge i mønster i boksen. Men nissen har smakt på noen av dem!",
       "where": "Bakstehuset",
@@ -391,7 +463,7 @@
     },
     {
       "id": "0o8hwrb",
-      "n": 43,
+      "n": 51,
       "who": "jente",
       "text": "Ser du hvilke kaker som mangler?",
       "where": "Bakstehuset",
@@ -400,7 +472,7 @@
     },
     {
       "id": "0ka0u3g",
-      "n": 44,
+      "n": 52,
       "who": "forteller",
       "text": "Se på mønsteret. Trykk på kaka som skal ligge i den tomme plassen.",
       "where": "Bakstehuset",
@@ -409,7 +481,7 @@
     },
     {
       "id": "1wp5myh",
-      "n": 45,
+      "n": 53,
       "who": "nisse",
       "text": "Si navnene på kakene høyt, som en regle. Da hører du mønsteret.",
       "where": "Bakstehuset",
@@ -418,7 +490,7 @@
     },
     {
       "id": "02rfxen",
-      "n": 46,
+      "n": 54,
       "who": "nisse",
       "text": "Se på de første kakene i raden. Mønsteret begynner på nytt etter dem.",
       "where": "Bakstehuset",
@@ -427,7 +499,7 @@
     },
     {
       "id": "0596e6h",
-      "n": 47,
+      "n": 55,
       "who": "jente",
       "text": "Alle kakene er på plass! En tryllekunstner ser mønsteret før alle andre.",
       "where": "Bakstehuset",
@@ -437,7 +509,7 @@
     },
     {
       "id": "1c4vnia",
-      "n": 48,
+      "n": 56,
       "who": "forteller",
       "text": "Til jul skal det være sju slag kaker i huset. Det er en gammel norsk tradisjon.",
       "where": "Bakstehuset",
@@ -446,7 +518,7 @@
     },
     {
       "id": "1gn0lf6",
-      "n": 49,
+      "n": 57,
       "who": "forteller",
       "text": "Ingen er helt enige om hvilke sju det skal være. Pepperkaker, smultringer, krumkaker, sandkaker, berlinerkranser, goro og fattigmann er blant de vanligste.",
       "where": "Bakstehuset",
@@ -454,17 +526,35 @@
       "before": "Til jul skal det være sju slag kaker i huset. Det er en gammel norsk tradisjon."
     },
     {
+      "id": "1fybvd0",
+      "n": 58,
+      "who": "forteller",
+      "text": "Pepperkaka som vet svaret",
+      "where": "Bakstehuset",
+      "kind": "triks: tittel",
+      "before": "Ingen er helt enige om hvilke sju det skal være. Pepperkaker, smultringer, krumkaker, sandkaker, berlinerkranser, goro og fattigmann er blant de vanligste."
+    },
+    {
+      "id": "0mla7zo",
+      "n": 59,
+      "who": "forteller",
+      "text": "En venn tenker på et hemmelig tall og regner litt i hodet. Så løfter du på en pepperkake. Under den ligger en lapp – med svaret!",
+      "where": "Bakstehuset",
+      "kind": "triks: effekt",
+      "before": "Pepperkaka som vet svaret"
+    },
+    {
       "id": "0040e7p",
-      "n": 50,
+      "n": 60,
       "who": "gutt",
       "text": "I stua lager de julepynt. Se, flettede julekurver, formet som hjerter!",
       "where": "Stua",
       "kind": "samtale",
-      "before": "Ingen er helt enige om hvilke sju det skal være. Pepperkaker, smultringer, krumkaker, sandkaker, berlinerkranser, goro og fattigmann er blant de vanligste."
+      "before": "En venn tenker på et hemmelig tall og regner litt i hodet. Så løfter du på en pepperkake. Under den ligger en lapp – med svaret!"
     },
     {
       "id": "0rgjo6k",
-      "n": 51,
+      "n": 61,
       "who": "jente",
       "text": "Nissen har begynt på en, men den ble ikke ferdig.",
       "where": "Stua",
@@ -473,7 +563,7 @@
     },
     {
       "id": "1p8748w",
-      "n": 52,
+      "n": 62,
       "who": "gutt",
       "text": "Annenhver rute skal være rød og hvit. Rutene står på skrå, som ruter i en kortstokk. Kan du flette hjertet ferdig?",
       "where": "Stua",
@@ -482,7 +572,7 @@
     },
     {
       "id": "1mqn7zf",
-      "n": 53,
+      "n": 63,
       "who": "forteller",
       "text": "Trykk på rutene til hjertet ditt er likt mønsteret.",
       "where": "Stua",
@@ -491,7 +581,7 @@
     },
     {
       "id": "1dhorhl",
-      "n": 54,
+      "n": 64,
       "who": "nisse",
       "text": "Ta én skrå rad om gangen.",
       "where": "Stua",
@@ -500,7 +590,7 @@
     },
     {
       "id": "1o99bk2",
-      "n": 55,
+      "n": 65,
       "who": "nisse",
       "text": "Sammenlign rute for rute med mønsteret. Trykk på dem som har feil farge.",
       "where": "Stua",
@@ -509,7 +599,7 @@
     },
     {
       "id": "1789qlo",
-      "n": 56,
+      "n": 66,
       "who": "jente",
       "text": "For et fint julehjerte! En tryllekunstner har tålmodige fingre.",
       "where": "Stua",
@@ -519,7 +609,7 @@
     },
     {
       "id": "1pkv6e3",
-      "n": 57,
+      "n": 67,
       "who": "forteller",
       "text": "Julekurver flettes av to papirbiter til et hjerte og henges på juletreet. Ofte ligger det godteri oppi.",
       "where": "Stua",
@@ -528,7 +618,7 @@
     },
     {
       "id": "1mkz384",
-      "n": 58,
+      "n": 68,
       "who": "forteller",
       "text": "En ekte julekurv er litt magisk: Papirremsene er doble og tres gjennom hverandre, ikke bare over og under. Derfor kan hjertet åpnes, som en liten pose.",
       "where": "Stua",
@@ -536,17 +626,35 @@
       "before": "Julekurver flettes av to papirbiter til et hjerte og henges på juletreet. Ofte ligger det godteri oppi."
     },
     {
+      "id": "1wvc2da",
+      "n": 69,
+      "who": "forteller",
+      "text": "Gå gjennom et julekort",
+      "where": "Stua",
+      "kind": "triks: tittel",
+      "before": "En ekte julekurv er litt magisk: Papirremsene er doble og tres gjennom hverandre, ikke bare over og under. Derfor kan hjertet åpnes, som en liten pose."
+    },
+    {
+      "id": "0f1grbc",
+      "n": 70,
+      "who": "forteller",
+      "text": "Du viser fram et helt vanlig julekort og sier at du kan gå tvers gjennom det. Ingen tror deg. Noen klipp senere stiger du rett gjennom kortet!",
+      "where": "Stua",
+      "kind": "triks: effekt",
+      "before": "Gå gjennom et julekort"
+    },
+    {
       "id": "1xbqgcf",
-      "n": 59,
+      "n": 71,
       "who": "jente",
       "text": "Her på stabburet står all julematen.",
       "where": "Stabburet",
       "kind": "samtale",
-      "before": "En ekte julekurv er litt magisk: Papirremsene er doble og tres gjennom hverandre, ikke bare over og under. Derfor kan hjertet åpnes, som en liten pose."
+      "before": "Du viser fram et helt vanlig julekort og sier at du kan gå tvers gjennom det. Ingen tror deg. Noen klipp senere stiger du rett gjennom kortet!"
     },
     {
       "id": "0c71mtd",
-      "n": 60,
+      "n": 72,
       "who": "gutt",
       "text": "Nissen pleier å stikke innom og bytte om på ting. Bare på moro!",
       "where": "Stabburet",
@@ -555,7 +663,7 @@
     },
     {
       "id": "19d8car",
-      "n": 61,
+      "n": 73,
       "who": "jente",
       "text": "Se godt på hyllene først. Så ser vi om du merker hva han gjør.",
       "where": "Stabburet",
@@ -564,7 +672,7 @@
     },
     {
       "id": "170pjsd",
-      "n": 62,
+      "n": 74,
       "who": "forteller",
       "text": "Se nøye på hyllene. Finn det nissen har byttet ut.",
       "where": "Stabburet",
@@ -573,7 +681,7 @@
     },
     {
       "id": "13puag3",
-      "n": 63,
+      "n": 75,
       "who": "nisse",
       "text": "Si høyt hva som står på hyllene før du trykker på «Jeg er klar».",
       "where": "Stabburet",
@@ -582,7 +690,7 @@
     },
     {
       "id": "06ui133",
-      "n": 64,
+      "n": 76,
       "who": "nisse",
       "text": "Trykk på «Se hvordan det var» og sammenlign én hylle om gangen.",
       "where": "Stabburet",
@@ -591,7 +699,7 @@
     },
     {
       "id": "17s4pib",
-      "n": 65,
+      "n": 77,
       "who": "jente",
       "text": "Deg lurer han ikke! En tryllekunstner legger merke til det minste som forandrer seg.",
       "where": "Stabburet",
@@ -601,7 +709,7 @@
     },
     {
       "id": "0djw05w",
-      "n": 66,
+      "n": 78,
       "who": "forteller",
       "text": "På stabburet oppbevarte gården maten gjennom vinteren. Huset står på stolper, så musene ikke kommer seg inn.",
       "where": "Stabburet",
@@ -610,7 +718,7 @@
     },
     {
       "id": "1t64vhf",
-      "n": 67,
+      "n": 79,
       "who": "forteller",
       "text": "Til jul hentet man fram det beste fra stabburet. I julegrøten gjemmes det en mandel, og den som finner mandelen, får en marsipangris!",
       "where": "Stabburet",
@@ -618,17 +726,35 @@
       "before": "På stabburet oppbevarte gården maten gjennom vinteren. Huset står på stolper, så musene ikke kommer seg inn."
     },
     {
+      "id": "05pdgx6",
+      "n": 80,
+      "who": "forteller",
+      "text": "Klementinen som teller",
+      "where": "Stabburet",
+      "kind": "triks: tittel",
+      "before": "Til jul hentet man fram det beste fra stabburet. I julegrøten gjemmes det en mandel, og den som finner mandelen, får en marsipangris!"
+    },
+    {
+      "id": "0us7fpg",
+      "n": 81,
+      "who": "forteller",
+      "text": "Du holder opp en klementin og sier hvor mange båter den har inni. Så skreller du den, og alle teller. Det stemmer!",
+      "where": "Stabburet",
+      "kind": "triks: effekt",
+      "before": "Klementinen som teller"
+    },
+    {
       "id": "0ok5u4m",
-      "n": 68,
+      "n": 82,
       "who": "gutt",
       "text": "Langs stien står det fire lykter. Én for hver søndag i advent.",
       "where": "Lyktestien",
       "kind": "samtale",
-      "before": "Til jul hentet man fram det beste fra stabburet. I julegrøten gjemmes det en mandel, og den som finner mandelen, får en marsipangris!"
+      "before": "Du holder opp en klementin og sier hvor mange båter den har inni. Så skreller du den, og alle teller. Det stemmer!"
     },
     {
       "id": "077lyxi",
-      "n": 69,
+      "n": 83,
       "who": "jente",
       "text": "Men nissen har tullet med dem. Noen lykter henger sammen!",
       "where": "Lyktestien",
@@ -637,7 +763,7 @@
     },
     {
       "id": "088j7f5",
-      "n": 70,
+      "n": 84,
       "who": "gutt",
       "text": "Klarer du å få alle fire til å lyse samtidig?",
       "where": "Lyktestien",
@@ -646,7 +772,7 @@
     },
     {
       "id": "0lqnyb3",
-      "n": 71,
+      "n": 85,
       "who": "forteller",
       "text": "Trykk på lyktene til alle lyser.",
       "where": "Lyktestien",
@@ -655,7 +781,7 @@
     },
     {
       "id": "0a4cqcq",
-      "n": 72,
+      "n": 86,
       "who": "nisse",
       "text": "Trykk på én lykt og se nøye etter hvilke som forandrer seg.",
       "where": "Lyktestien",
@@ -664,7 +790,7 @@
     },
     {
       "id": "0ad7ny3",
-      "n": 73,
+      "n": 87,
       "who": "nisse",
       "text": "Noen ganger må du slukke en lykt for å få tent en annen.",
       "where": "Lyktestien",
@@ -673,7 +799,7 @@
     },
     {
       "id": "009dxt5",
-      "n": 74,
+      "n": 88,
       "who": "jente",
       "text": "Nå lyser hele stien! En tryllekunstner tenker ett steg fram.",
       "where": "Lyktestien",
@@ -683,7 +809,7 @@
     },
     {
       "id": "1sk6u5k",
-      "n": 75,
+      "n": 89,
       "who": "forteller",
       "text": "I advent tenner vi ett lys hver søndag. Når alle fire lysene brenner, er det snart jul.",
       "where": "Lyktestien",
@@ -692,7 +818,7 @@
     },
     {
       "id": "1fspi1m",
-      "n": 76,
+      "n": 90,
       "who": "forteller",
       "text": "Advent betyr «komme». Det er de fire ukene før jul, da vi venter og gjør alt klart.",
       "where": "Lyktestien",
@@ -700,17 +826,35 @@
       "before": "I advent tenner vi ett lys hver søndag. Når alle fire lysene brenner, er det snart jul."
     },
     {
+      "id": "0nm6q9a",
+      "n": 91,
+      "who": "forteller",
+      "text": "Tankeleser-lysene",
+      "where": "Lyktestien",
+      "kind": "triks: tittel",
+      "before": "Advent betyr «komme». Det er de fire ukene før jul, da vi venter og gjør alt klart."
+    },
+    {
+      "id": "1y0f00e",
+      "n": 92,
+      "who": "forteller",
+      "text": "Den ene tryllekunstneren går ut av rommet. Publikum velger ett lys. Tryllekunstneren kommer inn igjen – og vet hvilket lys det var!",
+      "where": "Lyktestien",
+      "kind": "triks: effekt",
+      "before": "Tankeleser-lysene"
+    },
+    {
       "id": "1govl0r",
-      "n": 77,
+      "n": 93,
       "who": "jente",
       "text": "Hører du det? Noen har ringt i bjellene i klokketårnet!",
       "where": "Klokketårnet",
       "kind": "samtale",
-      "before": "Advent betyr «komme». Det er de fire ukene før jul, da vi venter og gjør alt klart."
+      "before": "Den ene tryllekunstneren går ut av rommet. Publikum velger ett lys. Tryllekunstneren kommer inn igjen – og vet hvilket lys det var!"
     },
     {
       "id": "0cpjw6p",
-      "n": 78,
+      "n": 94,
       "who": "gutt",
       "text": "På julaften klokka fem ringer klokkene inn julen. Nissen øver i hemmelighet.",
       "where": "Klokketårnet",
@@ -719,7 +863,7 @@
     },
     {
       "id": "1kz05x3",
-      "n": 79,
+      "n": 95,
       "who": "jente",
       "text": "Klarer du å huske hvilken bjelle som ringte først, og hvilken som kom etterpå?",
       "where": "Klokketårnet",
@@ -728,7 +872,7 @@
     },
     {
       "id": "06ya7du",
-      "n": 80,
+      "n": 96,
       "who": "forteller",
       "text": "Se hvilken bjelle som ringer først. Trykk på bjellene i samme rekkefølge.",
       "where": "Klokketårnet",
@@ -737,7 +881,7 @@
     },
     {
       "id": "0xa86bu",
-      "n": 81,
+      "n": 97,
       "who": "nisse",
       "text": "Si fargene høyt mens bjellene ringer: gull, grønn, rød …",
       "where": "Klokketårnet",
@@ -746,7 +890,7 @@
     },
     {
       "id": "0cfh0m7",
-      "n": 82,
+      "n": 98,
       "who": "nisse",
       "text": "Trykk på «Vis en gang til» og følg med på den første bjella.",
       "where": "Klokketårnet",
@@ -755,7 +899,7 @@
     },
     {
       "id": "1nidd1y",
-      "n": 83,
+      "n": 99,
       "who": "jente",
       "text": "For en hukommelse! En tryllekunstner husker rekkefølgen, selv når mye skjer.",
       "where": "Klokketårnet",
@@ -765,7 +909,7 @@
     },
     {
       "id": "0wyzyoc",
-      "n": 84,
+      "n": 100,
       "who": "forteller",
       "text": "På julaften klokka 17 ringer kirkeklokkene inn julen. Da skal alt være gjort ferdig, og høytiden begynner.",
       "where": "Klokketårnet",
@@ -774,7 +918,7 @@
     },
     {
       "id": "16sv3i1",
-      "n": 85,
+      "n": 101,
       "who": "forteller",
       "text": "Klokkene er et signal. Når de ringer, legger man fra seg arbeidet og setter seg til å feire.",
       "where": "Klokketårnet",
@@ -782,17 +926,35 @@
       "before": "På julaften klokka 17 ringer kirkeklokkene inn julen. Da skal alt være gjort ferdig, og høytiden begynner."
     },
     {
+      "id": "0ewcn6d",
+      "n": 102,
+      "who": "forteller",
+      "text": "Bjella som lystrer",
+      "where": "Klokketårnet",
+      "kind": "triks: tittel",
+      "before": "Klokkene er et signal. Når de ringer, legger man fra seg arbeidet og setter seg til å feire."
+    },
+    {
+      "id": "0m6ov67",
+      "n": 103,
+      "who": "forteller",
+      "text": "Du holder opp en liten bjelle og ber den ringe – og den ringer. Du ber den være stille – og det blir helt stille!",
+      "where": "Klokketårnet",
+      "kind": "triks: effekt",
+      "before": "Bjella som lystrer"
+    },
+    {
       "id": "0tm0q7v",
-      "n": 86,
+      "n": 104,
       "who": "gutt",
       "text": "Nissen vil ha et juletre, men han har glemt hvordan et fint tre ser ut!",
       "where": "Skogen",
       "kind": "samtale",
-      "before": "Klokkene er et signal. Når de ringer, legger man fra seg arbeidet og setter seg til å feire."
+      "before": "Du holder opp en liten bjelle og ber den ringe – og den ringer. Du ber den være stille – og det blir helt stille!"
     },
     {
       "id": "01y11i3",
-      "n": 87,
+      "n": 105,
       "who": "jente",
       "text": "Han har gitt oss små ledetråder. Se godt på trærne og finn det rette.",
       "where": "Skogen",
@@ -801,7 +963,7 @@
     },
     {
       "id": "1kdk7hb",
-      "n": 88,
+      "n": 106,
       "who": "gutt",
       "text": "Fotsporene går mellom trærne. Er det nissen som har gått her?",
       "where": "Skogen",
@@ -810,7 +972,7 @@
     },
     {
       "id": "17z43tt",
-      "n": 89,
+      "n": 107,
       "who": "forteller",
       "text": "Les ledetråden. Trykk på treet nissen vil ha.",
       "where": "Skogen",
@@ -819,7 +981,7 @@
     },
     {
       "id": "0fqptg5",
-      "n": 90,
+      "n": 108,
       "who": "nisse",
       "text": "Se på alle trærne før du velger. Sammenlikn toppene.",
       "where": "Skogen",
@@ -828,7 +990,7 @@
     },
     {
       "id": "12z1aee",
-      "n": 91,
+      "n": 109,
       "who": "nisse",
       "text": "Se hvor mange greiner hvert tre har, og hvor høyt det rekker.",
       "where": "Skogen",
@@ -837,7 +999,7 @@
     },
     {
       "id": "07d96kg",
-      "n": 92,
+      "n": 110,
       "who": "forteller",
       "text": "Nissen vil ha det høyeste treet.",
       "where": "Skogen",
@@ -846,7 +1008,7 @@
     },
     {
       "id": "0fi07to",
-      "n": 93,
+      "n": 111,
       "who": "forteller",
       "text": "Nissen vil ha det laveste treet.",
       "where": "Skogen",
@@ -855,7 +1017,7 @@
     },
     {
       "id": "11tc3h9",
-      "n": 94,
+      "n": 112,
       "who": "forteller",
       "text": "Nissen vil ha treet med færrest greiner.",
       "where": "Skogen",
@@ -864,7 +1026,7 @@
     },
     {
       "id": "1dkgmoh",
-      "n": 95,
+      "n": 113,
       "who": "forteller",
       "text": "Nissen vil ha et tre som er høyt og tett.",
       "where": "Skogen",
@@ -873,7 +1035,7 @@
     },
     {
       "id": "1t72hrd",
-      "n": 96,
+      "n": 114,
       "who": "forteller",
       "text": "Nissen vil ha et lavt og tett tre.",
       "where": "Skogen",
@@ -882,7 +1044,7 @@
     },
     {
       "id": "1jqj61e",
-      "n": 97,
+      "n": 115,
       "who": "forteller",
       "text": "Nissen vil ha treet som er midt imellom i høyde, og tett.",
       "where": "Skogen",
@@ -891,7 +1053,7 @@
     },
     {
       "id": "0vrhv2u",
-      "n": 98,
+      "n": 116,
       "who": "forteller",
       "text": "Nissen vil ha det nest høyeste treet.",
       "where": "Skogen",
@@ -900,7 +1062,7 @@
     },
     {
       "id": "19ix3ge",
-      "n": 99,
+      "n": 117,
       "who": "forteller",
       "text": "Nissen vil ha det tredje høyeste treet.",
       "where": "Skogen",
@@ -909,7 +1071,7 @@
     },
     {
       "id": "0mxbgn9",
-      "n": 100,
+      "n": 118,
       "who": "jente",
       "text": "Det var det rette treet! En tryllekunstner ser forskjeller andre overser.",
       "where": "Skogen",
@@ -919,7 +1081,7 @@
     },
     {
       "id": "1wc7b7o",
-      "n": 101,
+      "n": 119,
       "who": "forteller",
       "text": "Å hente juletre i skogen er en gammel tradisjon i mange familier.",
       "where": "Skogen",
@@ -928,7 +1090,7 @@
     },
     {
       "id": "0v2b3lf",
-      "n": 102,
+      "n": 120,
       "who": "forteller",
       "text": "Juletreet ble vanlig i norske hjem på 1800-tallet.",
       "where": "Skogen",
@@ -936,17 +1098,35 @@
       "before": "Å hente juletre i skogen er en gammel tradisjon i mange familier."
     },
     {
+      "id": "0ifh3i5",
+      "n": 121,
+      "who": "forteller",
+      "text": "Binders som kobler seg selv",
+      "where": "Skogen",
+      "kind": "triks: tittel",
+      "before": "Juletreet ble vanlig i norske hjem på 1800-tallet."
+    },
+    {
+      "id": "0v30wab",
+      "n": 122,
+      "who": "forteller",
+      "text": "To binders sitter løst på en brettet papirstripe. Du drar i endene – og binderne henger plutselig sammen i en lenke!",
+      "where": "Skogen",
+      "kind": "triks: effekt",
+      "before": "Binders som kobler seg selv"
+    },
+    {
       "id": "0gs4t1s",
-      "n": 103,
+      "n": 123,
       "who": "jente",
       "text": "Mellom jul og nyttår kommer julebukkene! De er utkledd og banker på dørene.",
       "where": "Porten",
       "kind": "samtale",
-      "before": "Juletreet ble vanlig i norske hjem på 1800-tallet."
+      "before": "To binders sitter løst på en brettet papirstripe. Du drar i endene – og binderne henger plutselig sammen i en lenke!"
     },
     {
       "id": "0udjen6",
-      "n": 104,
+      "n": 124,
       "who": "gutt",
       "text": "Ingen skal vite hvem de er. Men vi kan gjette!",
       "where": "Porten",
@@ -955,7 +1135,7 @@
     },
     {
       "id": "160b92i",
-      "n": 105,
+      "n": 125,
       "who": "jente",
       "text": "Jeg gir deg en ledetråd, og du finner kostymet.",
       "where": "Porten",
@@ -964,7 +1144,7 @@
     },
     {
       "id": "1f576rm",
-      "n": 106,
+      "n": 126,
       "who": "forteller",
       "text": "Les ledetråden. Trykk på kostymet som passer.",
       "where": "Porten",
@@ -973,7 +1153,7 @@
     },
     {
       "id": "127nxkh",
-      "n": 107,
+      "n": 127,
       "who": "nisse",
       "text": "Se på alle kostymene før du velger.",
       "where": "Porten",
@@ -982,7 +1162,7 @@
     },
     {
       "id": "1sd8eso",
-      "n": 108,
+      "n": 128,
       "who": "nisse",
       "text": "Hva har kostymet på hodet, eller i hånda?",
       "where": "Porten",
@@ -991,7 +1171,7 @@
     },
     {
       "id": "0tdws12",
-      "n": 109,
+      "n": 129,
       "who": "forteller",
       "text": "Hvem har horn?",
       "where": "Porten",
@@ -1000,7 +1180,7 @@
     },
     {
       "id": "1n01hu6",
-      "n": 110,
+      "n": 130,
       "who": "forteller",
       "text": "Hvem er lodden og elsker honning?",
       "where": "Porten",
@@ -1009,7 +1189,7 @@
     },
     {
       "id": "0zp3139",
-      "n": 111,
+      "n": 131,
       "who": "forteller",
       "text": "Hvem har flosshatt og tryllestav?",
       "where": "Porten",
@@ -1018,7 +1198,7 @@
     },
     {
       "id": "1phagu5",
-      "n": 112,
+      "n": 132,
       "who": "forteller",
       "text": "Hvem har sjal og går med stokk?",
       "where": "Porten",
@@ -1027,7 +1207,7 @@
     },
     {
       "id": "1ieiwu0",
-      "n": 113,
+      "n": 133,
       "who": "forteller",
       "text": "Hvem har skjold og sverd?",
       "where": "Porten",
@@ -1036,7 +1216,7 @@
     },
     {
       "id": "12ymbsb",
-      "n": 114,
+      "n": 134,
       "who": "forteller",
       "text": "Hvem bærer en lysende stjerne og synger?",
       "where": "Porten",
@@ -1045,7 +1225,7 @@
     },
     {
       "id": "0d2p9wc",
-      "n": 115,
+      "n": 135,
       "who": "jente",
       "text": "Du kjente dem igjen! En tryllekunstner skjønner hvem som gjemmer seg.",
       "where": "Porten",
@@ -1055,7 +1235,7 @@
     },
     {
       "id": "12o7qs7",
-      "n": 116,
+      "n": 136,
       "who": "forteller",
       "text": "Å gå julebukk er å kle seg ut og gå fra hus til hus mellom jul og nyttår. Man synger og får noe godt.",
       "where": "Porten",
@@ -1064,7 +1244,7 @@
     },
     {
       "id": "0lcrhqc",
-      "n": 117,
+      "n": 137,
       "who": "forteller",
       "text": "Før i tida var det ofte bare de voksne som gikk. Maskene gjorde at ingen visste hvem som banket på.",
       "where": "Porten",
@@ -1072,17 +1252,35 @@
       "before": "Å gå julebukk er å kle seg ut og gå fra hus til hus mellom jul og nyttår. Man synger og får noe godt."
     },
     {
+      "id": "1c9hz3d",
+      "n": 138,
+      "who": "forteller",
+      "text": "Mynten bak øret",
+      "where": "Porten",
+      "kind": "triks: tittel",
+      "before": "Før i tida var det ofte bare de voksne som gikk. Maskene gjorde at ingen visste hvem som banket på."
+    },
+    {
+      "id": "14k4thp",
+      "n": 139,
+      "who": "forteller",
+      "text": "Du får en mynt til å forsvinne fra hånda – og finner den igjen bak øret til en venn!",
+      "where": "Porten",
+      "kind": "triks: effekt",
+      "before": "Mynten bak øret"
+    },
+    {
       "id": "1be3zet",
-      "n": 118,
+      "n": 140,
       "who": "gutt",
       "text": "Her er sykkelverkstedet! Om vinteren fikser de sparker og kjelker her også.",
       "where": "Sykkelverkstedet",
       "kind": "samtale",
-      "before": "Før i tida var det ofte bare de voksne som gikk. Maskene gjorde at ingen visste hvem som banket på."
+      "before": "Du får en mynt til å forsvinne fra hånda – og finner den igjen bak øret til en venn!"
     },
     {
       "id": "017khvr",
-      "n": 119,
+      "n": 141,
       "who": "jente",
       "text": "Men se på verktøytavla. Nissen har lånt fastnøklene og hengt dem hulter til bulter.",
       "where": "Sykkelverkstedet",
@@ -1091,7 +1289,7 @@
     },
     {
       "id": "1h6o7kw",
-      "n": 120,
+      "n": 142,
       "who": "gutt",
       "text": "Kan du henge dem på rekke, fra den korteste til den lengste?",
       "where": "Sykkelverkstedet",
@@ -1100,7 +1298,7 @@
     },
     {
       "id": "0u6beb3",
-      "n": 121,
+      "n": 143,
       "who": "forteller",
       "text": "Trykk på fastnøklene i rekkefølge: først den korteste, så den neste, helt til den lengste.",
       "where": "Sykkelverkstedet",
@@ -1109,7 +1307,7 @@
     },
     {
       "id": "1jcfyj8",
-      "n": 122,
+      "n": 144,
       "who": "nisse",
       "text": "Se først hvilken fastnøkkel som er aller kortest.",
       "where": "Sykkelverkstedet",
@@ -1118,7 +1316,7 @@
     },
     {
       "id": "06x1py0",
-      "n": 123,
+      "n": 145,
       "who": "nisse",
       "text": "Sammenlign to og to som henger ved siden av hverandre.",
       "where": "Sykkelverkstedet",
@@ -1127,7 +1325,7 @@
     },
     {
       "id": "0p9jfqf",
-      "n": 124,
+      "n": 146,
       "who": "jente",
       "text": "Alle fastnøklene henger på rekke! En tryllekunstner har orden på tingene sine.",
       "where": "Sykkelverkstedet",
@@ -1137,7 +1335,7 @@
     },
     {
       "id": "0730k00",
-      "n": 125,
+      "n": 147,
       "who": "forteller",
       "text": "Før i tida reparerte folk tingene sine i stedet for å kjøpe nytt. Før jul ble sleder, kjelker og sparker satt i stand.",
       "where": "Sykkelverkstedet",
@@ -1146,7 +1344,7 @@
     },
     {
       "id": "0x4pk7x",
-      "n": 126,
+      "n": 148,
       "who": "forteller",
       "text": "En spark eller en kjelke var en stor julegave. Med den kunne barna renne i bakkene hele romjula.",
       "where": "Sykkelverkstedet",
@@ -1154,17 +1352,35 @@
       "before": "Før i tida reparerte folk tingene sine i stedet for å kjøpe nytt. Før jul ble sleder, kjelker og sparker satt i stand."
     },
     {
+      "id": "09x4134",
+      "n": 149,
+      "who": "forteller",
+      "text": "Pendelen som lystrer",
+      "where": "Sykkelverkstedet",
+      "kind": "triks: tittel",
+      "before": "En spark eller en kjelke var en stor julegave. Med den kunne barna renne i bakkene hele romjula."
+    },
+    {
+      "id": "1vkfahf",
+      "n": 150,
+      "who": "forteller",
+      "text": "En mutter henger i en tråd og står helt stille. Du ber den svinge – og den begynner å svinge, uten at du tar på den!",
+      "where": "Sykkelverkstedet",
+      "kind": "triks: effekt",
+      "before": "Pendelen som lystrer"
+    },
+    {
       "id": "15gezkb",
-      "n": 127,
+      "n": 151,
       "who": "gutt",
       "text": "Dette er fuglehuset! Her bor hønene, og en kanin.",
       "where": "Fuglehuset",
       "kind": "samtale",
-      "before": "En spark eller en kjelke var en stor julegave. Med den kunne barna renne i bakkene hele romjula."
+      "before": "En mutter henger i en tråd og står helt stille. Du ber den svinge – og den begynner å svinge, uten at du tar på den!"
     },
     {
       "id": "0qqnolm",
-      "n": 128,
+      "n": 152,
       "who": "jente",
       "text": "Og der sitter kakaduen Loco! Han er på julebesøk. Loco danser når han blir glad.",
       "where": "Fuglehuset",
@@ -1173,7 +1389,7 @@
     },
     {
       "id": "0uowgqf",
-      "n": 129,
+      "n": 153,
       "who": "gutt",
       "text": "Dyra skal ha ekstra god mat på julaften. Også hønene.",
       "where": "Fuglehuset",
@@ -1182,7 +1398,7 @@
     },
     {
       "id": "1xsufh7",
-      "n": 130,
+      "n": 154,
       "who": "jente",
       "text": "Nissen har prøvd å telle hønene og eggene, men han mister alltid tellingen.",
       "where": "Fuglehuset",
@@ -1191,7 +1407,7 @@
     },
     {
       "id": "1iwktb7",
-      "n": 131,
+      "n": 155,
       "who": "gutt",
       "text": "Kan du hjelpe ham? Tell riktig, så danser Loco for deg.",
       "where": "Fuglehuset",
@@ -1200,7 +1416,7 @@
     },
     {
       "id": "0fblt4r",
-      "n": 132,
+      "n": 156,
       "who": "forteller",
       "text": "Se godt etter. Tell, og trykk på riktig tall.",
       "where": "Fuglehuset",
@@ -1209,7 +1425,7 @@
     },
     {
       "id": "1il9wut",
-      "n": 133,
+      "n": 157,
       "who": "nisse",
       "text": "Tell høyt, én og én. Pek med fingeren på skjermen.",
       "where": "Fuglehuset",
@@ -1218,7 +1434,7 @@
     },
     {
       "id": "08gruur",
-      "n": 134,
+      "n": 158,
       "who": "nisse",
       "text": "Trykk på «Vis en gang til» og tell enda en gang, litt saktere.",
       "where": "Fuglehuset",
@@ -1227,7 +1443,7 @@
     },
     {
       "id": "1cmoeq6",
-      "n": 135,
+      "n": 159,
       "who": "jente",
       "text": "Du teller som en ekte regnemester! En tryllekunstner har god oversikt.",
       "where": "Fuglehuset",
@@ -1237,7 +1453,7 @@
     },
     {
       "id": "1smx1et",
-      "n": 136,
+      "n": 160,
       "who": "forteller",
       "text": "På julaften fikk husdyra ekstra mat. Mange mente at dyra skulle ha det fint før menneskene satte seg til bords.",
       "where": "Fuglehuset",
@@ -1246,7 +1462,7 @@
     },
     {
       "id": "1trwd2e",
-      "n": 137,
+      "n": 161,
       "who": "forteller",
       "text": "Hønene fikk gjerne litt ekstra korn, og noen satte ut en skål grøt til nissen.",
       "where": "Fuglehuset",
@@ -1254,17 +1470,35 @@
       "before": "På julaften fikk husdyra ekstra mat. Mange mente at dyra skulle ha det fint før menneskene satte seg til bords."
     },
     {
+      "id": "0msbsh8",
+      "n": 162,
+      "who": "forteller",
+      "text": "Egget som røper seg",
+      "where": "Fuglehuset",
+      "kind": "triks: tittel",
+      "before": "Hønene fikk gjerne litt ekstra korn, og noen satte ut en skål grøt til nissen."
+    },
+    {
+      "id": "1ugn83a",
+      "n": 163,
+      "who": "forteller",
+      "text": "To egg ser helt like ut. Du kan si hvilket som er kokt og hvilket som er rått, uten å knekke dem!",
+      "where": "Fuglehuset",
+      "kind": "triks: effekt",
+      "before": "Egget som røper seg"
+    },
+    {
       "id": "16pmurn",
-      "n": 138,
+      "n": 164,
       "who": "jente",
       "text": "Bak låven, over låvebrua, ligger Tryllemuseet! Der bor tryllekunsten hele året.",
       "where": "Tryllemuseet",
       "kind": "samtale",
-      "before": "Hønene fikk gjerne litt ekstra korn, og noen satte ut en skål grøt til nissen."
+      "before": "To egg ser helt like ut. Du kan si hvilket som er kokt og hvilket som er rått, uten å knekke dem!"
     },
     {
       "id": "1cmp8nk",
-      "n": 139,
+      "n": 165,
       "who": "jan",
       "text": "Hei, jeg heter Jan, og jeg er tryllekunstner her. Se på kortene på bordet. Når du ikke ser etter, bytter jeg ett av dem.",
       "where": "Tryllemuseet",
@@ -1273,7 +1507,7 @@
     },
     {
       "id": "05mr0o4",
-      "n": 140,
+      "n": 166,
       "who": "gutt",
       "text": "Klarer du å se hvilket kort som er byttet?",
       "where": "Tryllemuseet",
@@ -1282,7 +1516,7 @@
     },
     {
       "id": "0duicw5",
-      "n": 141,
+      "n": 167,
       "who": "forteller",
       "text": "Se nøye på kortene. Finn kortet Jan har byttet ut.",
       "where": "Tryllemuseet",
@@ -1291,7 +1525,7 @@
     },
     {
       "id": "07l298z",
-      "n": 142,
+      "n": 168,
       "who": "nisse",
       "text": "Si kortene høyt, fra venstre mot høyre, før du trykker på «Jeg er klar».",
       "where": "Tryllemuseet",
@@ -1300,7 +1534,7 @@
     },
     {
       "id": "1n6dqw3",
-      "n": 143,
+      "n": 169,
       "who": "nisse",
       "text": "Trykk på «Se hvordan det var» og sammenlign ett kort om gangen.",
       "where": "Tryllemuseet",
@@ -1309,7 +1543,7 @@
     },
     {
       "id": "16ropxh",
-      "n": 144,
+      "n": 170,
       "who": "jente",
       "text": "Skarpe øyne! Jan ble imponert. En tryllekunstner ser det minste som forandrer seg.",
       "where": "Tryllemuseet",
@@ -1319,7 +1553,7 @@
     },
     {
       "id": "1r8fe8c",
-      "n": 145,
+      "n": 171,
       "who": "forteller",
       "text": "Tryllemuseet ligger på Årvoll gård, på baksiden av låven. Der samles tryllekunstens historie, og der kan du møte ekte tryllekunstnere.",
       "where": "Tryllemuseet",
@@ -1328,7 +1562,7 @@
     },
     {
       "id": "0qlgaws",
-      "n": 146,
+      "n": 172,
       "who": "forteller",
       "text": "Tryllegården er laget ut fra Årvoll gård i Oslo, der Tryllemuseet holder til. Museet er åpent søndager kl. 12–15, og inngangen er gratis.",
       "where": "Tryllemuseet",
@@ -1336,17 +1570,35 @@
       "before": "Tryllemuseet ligger på Årvoll gård, på baksiden av låven. Der samles tryllekunstens historie, og der kan du møte ekte tryllekunstnere."
     },
     {
+      "id": "056ortl",
+      "n": 173,
+      "who": "forteller",
+      "text": "Møt Jan på ekte",
+      "where": "Tryllemuseet",
+      "kind": "triks: tittel",
+      "before": "Tryllegården er laget ut fra Årvoll gård i Oslo, der Tryllemuseet holder til. Museet er åpent søndager kl. 12–15, og inngangen er gratis."
+    },
+    {
+      "id": "0lhx9az",
+      "n": 174,
+      "who": "forteller",
+      "text": "Jan tryller for deg i museet, og på kurs kan du lære å gjøre det selv. Hemmeligheten hans må du få fortalt av ham selv!",
+      "where": "Tryllemuseet",
+      "kind": "triks: effekt",
+      "before": "Møt Jan på ekte"
+    },
+    {
       "id": "0uc82ci",
-      "n": 147,
+      "n": 175,
       "who": "forteller",
       "text": "All pynten henger på treet. Inne på låven er det tent lykter, og dyra har satt seg på benkene.",
       "where": "Finalen",
       "kind": "samtale",
-      "before": "Tryllegården er laget ut fra Årvoll gård i Oslo, der Tryllemuseet holder til. Museet er åpent søndager kl. 12–15, og inngangen er gratis."
+      "before": "Jan tryller for deg i museet, og på kurs kan du lære å gjøre det selv. Hemmeligheten hans må du få fortalt av ham selv!"
     },
     {
       "id": "11pavjg",
-      "n": 148,
+      "n": 176,
       "who": "jente",
       "text": "I kveld holder vi juleforestilling – for alle som bor på Tryllegården!",
       "where": "Finalen",
@@ -1355,12 +1607,426 @@
     },
     {
       "id": "0vfoqt4",
-      "n": 149,
+      "n": 177,
       "who": "gutt",
       "text": "Og du bestemmer hva vi skal vise.",
       "where": "Finalen",
       "kind": "samtale",
       "before": "I kveld holder vi juleforestilling – for alle som bor på Tryllegården!"
+    },
+    {
+      "id": "18f8gl9",
+      "n": 178,
+      "who": "forteller",
+      "text": "Se der det lyser!",
+      "where": "Minispill",
+      "kind": "tilbakemelding",
+      "before": "Og du bestemmer hva vi skal vise."
+    },
+    {
+      "id": "1vsfy4p",
+      "n": 179,
+      "who": "forteller",
+      "text": "Den hører ikke hjemme her!",
+      "where": "Minispill",
+      "kind": "tilbakemelding",
+      "before": "Se der det lyser!"
+    },
+    {
+      "id": "0jv5duc",
+      "n": 180,
+      "who": "forteller",
+      "text": "Ikke helt ennå. Hva må skje før det?",
+      "where": "Minispill",
+      "kind": "tilbakemelding",
+      "before": "Den hører ikke hjemme her!"
+    },
+    {
+      "id": "1deu629",
+      "n": 181,
+      "who": "forteller",
+      "text": "Ferdig! Alt i riktig rekkefølge.",
+      "where": "Minispill",
+      "kind": "tilbakemelding",
+      "before": "Ikke helt ennå. Hva må skje før det?"
+    },
+    {
+      "id": "03gq19p",
+      "n": 182,
+      "who": "forteller",
+      "text": "Riktig! Hva kommer så?",
+      "where": "Minispill",
+      "kind": "tilbakemelding",
+      "before": "Ferdig! Alt i riktig rekkefølge."
+    },
+    {
+      "id": "1mu9qsw",
+      "n": 183,
+      "who": "forteller",
+      "text": "Se nøye etter!",
+      "where": "Minispill",
+      "kind": "tilbakemelding",
+      "before": "Riktig! Hva kommer så?"
+    },
+    {
+      "id": "0rsg55w",
+      "n": 184,
+      "who": "forteller",
+      "text": "Din tur! Denne gangen baklengs: den siste fuglen først.",
+      "where": "Minispill",
+      "kind": "tilbakemelding",
+      "before": "Se nøye etter!"
+    },
+    {
+      "id": "1vb88du",
+      "n": 185,
+      "who": "forteller",
+      "text": "Din tur! Trykk på fuglene i samme rekkefølge.",
+      "where": "Minispill",
+      "kind": "tilbakemelding",
+      "before": "Din tur! Denne gangen baklengs: den siste fuglen først."
+    },
+    {
+      "id": "00uh5tk",
+      "n": 186,
+      "who": "forteller",
+      "text": "Oi, det ble ikke helt riktig. Se en gang til!",
+      "where": "Minispill",
+      "kind": "tilbakemelding",
+      "before": "Din tur! Trykk på fuglene i samme rekkefølge."
+    },
+    {
+      "id": "1y1wgna",
+      "n": 187,
+      "who": "forteller",
+      "text": "Du husket alle sammen!",
+      "where": "Minispill",
+      "kind": "tilbakemelding",
+      "before": "Oi, det ble ikke helt riktig. Se en gang til!"
+    },
+    {
+      "id": "03ti2wx",
+      "n": 188,
+      "who": "forteller",
+      "text": "Flott! Én runde til, litt lengre.",
+      "where": "Minispill",
+      "kind": "tilbakemelding",
+      "before": "Du husket alle sammen!"
+    },
+    {
+      "id": "0o0c5hx",
+      "n": 189,
+      "who": "forteller",
+      "text": "Riktig! Du fulgte alle flettene.",
+      "where": "Minispill",
+      "kind": "tilbakemelding",
+      "before": "Flott! Én runde til, litt lengre."
+    },
+    {
+      "id": "1wdbp9u",
+      "n": 190,
+      "who": "forteller",
+      "text": "Riktig! Én flette til.",
+      "where": "Minispill",
+      "kind": "tilbakemelding",
+      "before": "Riktig! Du fulgte alle flettene."
+    },
+    {
+      "id": "04ykdw8",
+      "n": 191,
+      "who": "forteller",
+      "text": "Hvilken kake mangler der det lyser?",
+      "where": "Minispill",
+      "kind": "tilbakemelding",
+      "before": "Riktig! Én flette til."
+    },
+    {
+      "id": "0bz9gdq",
+      "n": 192,
+      "who": "forteller",
+      "text": "Ikke den. Si mønsteret høyt fra starten!",
+      "where": "Minispill",
+      "kind": "tilbakemelding",
+      "before": "Hvilken kake mangler der det lyser?"
+    },
+    {
+      "id": "0v9qdek",
+      "n": 193,
+      "who": "forteller",
+      "text": "Alle kakene er på plass!",
+      "where": "Minispill",
+      "kind": "tilbakemelding",
+      "before": "Ikke den. Si mønsteret høyt fra starten!"
+    },
+    {
+      "id": "09tasjf",
+      "n": 194,
+      "who": "forteller",
+      "text": "Riktig! En ny rad.",
+      "where": "Minispill",
+      "kind": "tilbakemelding",
+      "before": "Alle kakene er på plass!"
+    },
+    {
+      "id": "0krrew1",
+      "n": 195,
+      "who": "forteller",
+      "text": "Kurven er ferdig flettet!",
+      "where": "Minispill",
+      "kind": "tilbakemelding",
+      "before": "Riktig! En ny rad."
+    },
+    {
+      "id": "0o87x54",
+      "n": 196,
+      "who": "forteller",
+      "text": "Helt likt! Nå en litt større kurv.",
+      "where": "Minispill",
+      "kind": "tilbakemelding",
+      "before": "Kurven er ferdig flettet!"
+    },
+    {
+      "id": "1txed6k",
+      "n": 197,
+      "who": "forteller",
+      "text": "Hysj … nissen lister seg inn.",
+      "where": "Minispill",
+      "kind": "tilbakemelding",
+      "before": "Helt likt! Nå en litt større kurv."
+    },
+    {
+      "id": "0v1hpcl",
+      "n": 198,
+      "who": "forteller",
+      "text": "Slik sto det før.",
+      "where": "Minispill",
+      "kind": "tilbakemelding",
+      "before": "Hysj … nissen lister seg inn."
+    },
+    {
+      "id": "16i4p8i",
+      "n": 199,
+      "who": "forteller",
+      "text": "Hva har nissen byttet ut? Trykk på det.",
+      "where": "Minispill",
+      "kind": "tilbakemelding",
+      "before": "Slik sto det før."
+    },
+    {
+      "id": "1dm9ied",
+      "n": 200,
+      "who": "forteller",
+      "text": "Riktig! Deg lurer han ikke.",
+      "where": "Minispill",
+      "kind": "tilbakemelding",
+      "before": "Hva har nissen byttet ut? Trykk på det."
+    },
+    {
+      "id": "07sd279",
+      "n": 201,
+      "who": "forteller",
+      "text": "Riktig! Én gang til, med flere ting.",
+      "where": "Minispill",
+      "kind": "tilbakemelding",
+      "before": "Riktig! Deg lurer han ikke."
+    },
+    {
+      "id": "0f23ubn",
+      "n": 202,
+      "who": "forteller",
+      "text": "Den lyser allerede.",
+      "where": "Minispill",
+      "kind": "tilbakemelding",
+      "before": "Riktig! Én gang til, med flere ting."
+    },
+    {
+      "id": "1e6gom7",
+      "n": 203,
+      "who": "forteller",
+      "text": "Alle lyktene lyser!",
+      "where": "Minispill",
+      "kind": "tilbakemelding",
+      "before": "Den lyser allerede."
+    },
+    {
+      "id": "1ilrrct",
+      "n": 204,
+      "who": "forteller",
+      "text": "Alle lyser! Nissen tuller til lyktene en gang til.",
+      "where": "Minispill",
+      "kind": "tilbakemelding",
+      "before": "Alle lyktene lyser!"
+    },
+    {
+      "id": "1s3mkz1",
+      "n": 205,
+      "who": "forteller",
+      "text": "Her mangler det ledetråder.",
+      "where": "Minispill",
+      "kind": "tilbakemelding",
+      "before": "Alle lyser! Nissen tuller til lyktene en gang til."
+    },
+    {
+      "id": "1hrti40",
+      "n": 206,
+      "who": "forteller",
+      "text": "Ikke den. Les ledetråden en gang til!",
+      "where": "Minispill",
+      "kind": "tilbakemelding",
+      "before": "Her mangler det ledetråder."
+    },
+    {
+      "id": "17yfcyc",
+      "n": 207,
+      "who": "forteller",
+      "text": "Riktig! Du fant dem alle.",
+      "where": "Minispill",
+      "kind": "tilbakemelding",
+      "before": "Ikke den. Les ledetråden en gang til!"
+    },
+    {
+      "id": "1iqimmt",
+      "n": 208,
+      "who": "forteller",
+      "text": "Riktig! Her kommer en ny ledetråd.",
+      "where": "Minispill",
+      "kind": "tilbakemelding",
+      "before": "Riktig! Du fant dem alle."
+    },
+    {
+      "id": "015j6iz",
+      "n": 209,
+      "who": "forteller",
+      "text": "Ikke helt. Se en gang til og tell sakte!",
+      "where": "Minispill",
+      "kind": "tilbakemelding",
+      "before": "Riktig! Her kommer en ny ledetråd."
+    },
+    {
+      "id": "0h6z4m8",
+      "n": 210,
+      "who": "forteller",
+      "text": "Riktig! Du telte alt.",
+      "where": "Minispill",
+      "kind": "tilbakemelding",
+      "before": "Ikke helt. Se en gang til og tell sakte!"
+    },
+    {
+      "id": "17f9vx8",
+      "n": 211,
+      "who": "forteller",
+      "text": "Riktig! Her kommer nye.",
+      "where": "Minispill",
+      "kind": "tilbakemelding",
+      "before": "Riktig! Du telte alt."
+    },
+    {
+      "id": "1cl9qo0",
+      "n": 212,
+      "who": "forteller",
+      "text": "Finnes det en som er lengre?",
+      "where": "Minispill",
+      "kind": "tilbakemelding",
+      "before": "Riktig! Her kommer nye."
+    },
+    {
+      "id": "0kjy2gd",
+      "n": 213,
+      "who": "forteller",
+      "text": "Finnes det en som er kortere?",
+      "where": "Minispill",
+      "kind": "tilbakemelding",
+      "before": "Finnes det en som er lengre?"
+    },
+    {
+      "id": "1ue3alu",
+      "n": 214,
+      "who": "forteller",
+      "text": "Finnes det et lengre lys?",
+      "where": "Minispill",
+      "kind": "tilbakemelding",
+      "before": "Finnes det en som er kortere?"
+    },
+    {
+      "id": "04f0od7",
+      "n": 215,
+      "who": "forteller",
+      "text": "Finnes det et kortere lys?",
+      "where": "Minispill",
+      "kind": "tilbakemelding",
+      "before": "Finnes det et lengre lys?"
+    },
+    {
+      "id": "1qny6et",
+      "n": 216,
+      "who": "forteller",
+      "text": "Alt henger på rekke!",
+      "where": "Minispill",
+      "kind": "tilbakemelding",
+      "before": "Finnes det et kortere lys?"
+    },
+    {
+      "id": "0w2d0bj",
+      "n": 217,
+      "who": "forteller",
+      "text": "Alle lysene står på rekke!",
+      "where": "Minispill",
+      "kind": "tilbakemelding",
+      "before": "Alt henger på rekke!"
+    },
+    {
+      "id": "04dyirv",
+      "n": 218,
+      "who": "forteller",
+      "text": "Riktig! En gang til.",
+      "where": "Minispill",
+      "kind": "tilbakemelding",
+      "before": "Alle lysene står på rekke!"
+    },
+    {
+      "id": "0dzbyy2",
+      "n": 219,
+      "who": "forteller",
+      "text": "Riktig! Nye lys.",
+      "where": "Minispill",
+      "kind": "tilbakemelding",
+      "before": "Riktig! En gang til."
+    },
+    {
+      "id": "0arpg3b",
+      "n": 220,
+      "who": "forteller",
+      "text": "Hvor vil du gå?",
+      "where": "Kartet",
+      "kind": "tilbakemelding",
+      "before": "Riktig! Nye lys."
+    },
+    {
+      "id": "0hrc7a3",
+      "n": 221,
+      "who": "forteller",
+      "text": "Stjerna lyser på toppen!",
+      "where": "Kartet",
+      "kind": "tilbakemelding",
+      "before": "Hvor vil du gå?"
+    },
+    {
+      "id": "116k585",
+      "n": 222,
+      "who": "forteller",
+      "text": "Nok pynt henger på treet! Nå mangler bare stjerna.",
+      "where": "Kartet",
+      "kind": "tilbakemelding",
+      "before": "Stjerna lyser på toppen!"
+    },
+    {
+      "id": "070j6o2",
+      "n": 223,
+      "who": "forteller",
+      "text": "All pynten henger! Nå mangler bare stjerna.",
+      "where": "Kartet",
+      "kind": "tilbakemelding",
+      "before": "Nok pynt henger på treet! Nå mangler bare stjerna."
     }
   ]
 }

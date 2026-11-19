@@ -16,11 +16,12 @@
 // Reads the built-in season pack only. Lines edited in Studio get a new id and
 // therefore fall back to speech synthesis until they are recorded again.
 // See docs/tryllegarden-lyd/README.md.
-import { readdirSync, writeFileSync, mkdirSync, existsSync, copyFileSync } from 'node:fs'
+import { readdirSync, readFileSync, writeFileSync, mkdirSync, existsSync, copyFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { dirname, join, extname } from 'node:path'
 import { BUILT_IN_SEASONS } from '../web/src/lib/tryllegardenSeason.ts'
 import { audioKey, audioText } from '../web/src/lib/tryllegardenAudio.ts'
+import { PHRASES } from '../web/src/lib/tryllegardenPhrases.ts'
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..')
 const AUDIO_DIR = join(root, 'web/public/audio/tryllegarden')
@@ -56,8 +57,16 @@ export function collectLines(season, lang) {
     add('forteller', lang === 'en' ? 'Did you know …' : 'Visste du at …', place, 'tradisjon')
     add('forteller', pick(p, 'traditionShort'), place, 'tradisjon')
     add('forteller', pick(p, 'traditionLong'), place, 'tradisjon (lang)')
+    // The trick card is read as two clips: the title, then what the audience sees.
+    add('forteller', pick(p, 'trickTitle'), place, 'triks: tittel')
+    add('forteller', pick(p, 'trickEffect'), place, 'triks: effekt')
   }
   for (const l of season.finale ?? []) add(l.who, pick(l, 'text'), 'Finalen', 'samtale', { pose: l.pose })
+  // Fixed sentences from the mini-games and the map (web/src/lib/tryllegardenPhrases.ts).
+  const MAP_PHRASES = ['hvorVilDuGa', 'stjernaLyserPaToppen', 'nokPyntHengerPaTreet', 'allPyntenHengerNaMangler']
+  for (const [key, [nb, en]] of Object.entries(PHRASES)) {
+    add('forteller', lang === 'en' ? en : nb, MAP_PHRASES.includes(key) ? 'Kartet' : 'Minispill', 'tilbakemelding')
+  }
   // The same words said in several places need one clip only.
   const seen = new Set()
   return out.filter(l => (seen.has(l.text) ? false : seen.add(l.text))).map((l, i, all) => ({
@@ -94,6 +103,21 @@ if (cmd === 'list') {
     '',
   ].join('\n')
   writeFileSync(join(OUT_DIR, `replikker-${lang}.md`), md)
+  // The lines that have no clip yet: the list to send for recording.
+  const have = existsSync(join(AUDIO_DIR, 'manifest.json')) ? JSON.parse(readFileSync(join(AUDIO_DIR, 'manifest.json'), 'utf8')).lines : {}
+  const missing = lines.filter(l => !have[l.id])
+  writeFileSync(join(OUT_DIR, `replikker-${lang}-mangler.md`), [
+    `# Replikker uten innspilling: ${seasonKey} (${lang})`,
+    '',
+    `Laget av \`scripts/tryllegarden-audio.mjs list\`. ${missing.length} replikker, ${missing.reduce((n, l) => n + l.text.length, 0)} tegn. Samme brief og samme stemmer som før (se brief.md).`,
+    'Les teksten ordrett. `id` er filnavnet.',
+    '',
+    '| # | id | Hvem | Hvor | Type | Tekst |',
+    '|---|---|---|---|---|---|',
+    ...missing.map((l, i) => `| ${i + 1} | \`${l.id}\` | ${l.who} | ${esc(l.where)} | ${esc(l.kind)}${l.pose ? ` (${l.pose})` : ''} | ${esc(l.text)} |`),
+    '',
+  ].join('\n'))
+  console.log(`${missing.length} lines without a clip -> replikker-${lang}-mangler.md`)
   const byWho = {}
   for (const l of lines) { byWho[l.who] ??= { n: 0, c: 0 }; byWho[l.who].n++; byWho[l.who].c += l.text.length }
   console.log(`${lines.length} lines, ${lines.reduce((n, l) => n + l.text.length, 0)} characters`)

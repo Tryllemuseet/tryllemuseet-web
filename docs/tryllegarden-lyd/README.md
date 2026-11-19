@@ -8,7 +8,7 @@ Spillet spiller innspilte klipp der de finnes og bruker nettleserens talesyntese
 - Klippene ligger i `web/public/audio/tryllegarden/<språk>/<id>.mp3`.
 - `web/public/audio/tryllegarden/manifest.json` kobler id til fil. Spillet henter den når siden åpnes.
 - Endres en tekst (i koden eller i Studio), eller navnet til Tiril eller Trym, får replikken ny id. Da finnes ingen fil lenger, og spillet faller tilbake til talesyntese. Stemmen kan aldri si noe annet enn det som står på skjermen.
-- Gjelder: samtalene, startteksten, oppgaven, hint, gåter, «feil svar», «ferdig», tradisjonsteksten og finalen. Ikke dekket (bruker syntese): tallene i statuslinja, triksbeskrivelsene fra det lukkede området, lag-selv-trinnene og meldinger som settes sammen underveis i spillet.
+- Gjelder: samtalene, startteksten, oppgaven, hint, gåter, «feil svar», «ferdig», tradisjonsteksten og finalen. Også dekket: triks-kortets tittel og effekt og de faste setningene i minispillene og på kartet. Ikke dekket (bruker syntese): tellingen på kartet, hemmelighetene fra det lukkede området (de skal ikke ligge åpent som lydfiler), lag-selv-trinnene og setninger der navn eller tall settes inn underveis.
 - Navnene som brukes når listen lages er standardnavnene. Er navnene endret i `farmGameConfig`, må replikkene tas opp på nytt.
 - Replikker med helt lik tekst på flere steder deler ett klipp.
 
@@ -19,7 +19,7 @@ node scripts/tryllegarden-audio.mjs list            # norsk
 node scripts/tryllegarden-audio.mjs list --lang=en  # engelsk (ingen engelsk innlesing er laget)
 ```
 
-Skriver `docs/tryllegarden-lyd/replikker-<språk>.md` og `.json`. Gi `brief.md` og `replikker-nb.md` til den som skal lage stemmene (en AI-tjeneste eller en innleser).
+Skriver `docs/tryllegarden-lyd/replikker-<språk>.md` og `.json`, og `replikker-<språk>-mangler.md` med bare replikkene som ikke har klipp ennå (den som sendes til innspilling). Faste setninger fra minispillene og kartet ligger i `web/src/lib/tryllegardenPhrases.ts` og kommer med automatisk. Gi `brief.md` og `replikker-nb.md` til den som skal lage stemmene (en AI-tjeneste eller en innleser).
 
 ## Velge og legge inn
 
