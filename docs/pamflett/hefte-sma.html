@@ -1,0 +1,63 @@
+<!doctype html><html lang="nb"><head><meta charset="utf-8"><title>Jul på Årvoll gård – oppgavehefte 4–6 år</title><link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet"><style>
+:root { --burg:#6B0F1A; --burg-dk:#4A0A12; --gold:#D4A843; --gold-dk:#A07820; --cream:#FBF7EF; --cream-dk:#F0E8D8; --ink:#1A1208; }
+* { box-sizing: border-box; margin: 0; }
+html, body { background: #fff; }
+body { font-family: "Source Sans 3", "Liberation Sans", sans-serif; color: var(--ink); font-size: 11pt; line-height: 1.35;
+       -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+@page { size: 148.5mm 210mm; margin: 0; }
+.page { position: relative; width: 148.5mm; height: 210mm; overflow: hidden; background: #fff; page-break-after: always; }
+.content { position: relative; z-index: 1; padding: 10mm 11mm 9mm; height: 100%; display: flex; flex-direction: column; }
+h1, h2, h3, .kicker, .sub, .age { font-family: Cinzel, "DejaVu Serif", serif; }
+h2 { font-size: 15pt; color: var(--burg); display: flex; align-items: center; gap: 3mm; line-height: 1.15; }
+h2.small { font-size: 13pt; }
+h3 { font-size: 11pt; color: var(--burg); margin-bottom: 1mm; }
+.num { display: inline-flex; width: 8mm; height: 8mm; border-radius: 50%; background: var(--gold); color: var(--burg-dk);
+       align-items: center; justify-content: center; font-size: 12pt; font-weight: 700; flex: none; }
+.lead { margin: 2mm 0 3mm; font-size: 11.5pt; }
+.fill { flex: 1; min-height: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3mm; }
+.pic { display: block; max-width: 100%; max-height: 100%; min-height: 0; object-fit: contain; }
+.fill .pic { flex: 1 1 0; width: 100%; }
+.tally { font-size: 12pt; color: var(--burg); letter-spacing: .05em; flex: none; }
+.words { font-family: Cinzel, serif; font-size: 9.5pt; text-align: center; color: var(--burg); letter-spacing: .03em; flex: none; line-height: 1.5; }
+.frame { flex: 1; width: 100%; border: .8mm dashed var(--gold-dk); border-radius: 5mm; }
+
+/* cover */
+.cover-bg { position: absolute; inset: 0; background: #14213d url("../../web/public/images/tryllegarden/jul-laven.webp") 45% 50% / auto 100% no-repeat; }
+.cover-bg::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(74,10,18,.94) 0, rgba(74,10,18,.6) 30%, rgba(20,33,61,0) 48%, rgba(20,33,61,0) 70%, rgba(20,33,61,.85) 100%); }
+.cover-top { position: absolute; z-index: 2; top: 14mm; left: 0; right: 0; text-align: center; color: #fff; padding: 0 10mm; }
+.kicker { font-size: 8.4pt; letter-spacing: .24em; text-transform: uppercase; color: var(--gold); }
+h1 { font-size: 34pt; line-height: 1.04; margin: 4mm 0 3mm; color: #fff; text-shadow: 0 1.2mm 3mm rgba(0,0,0,.45); }
+.sub { font-size: 14pt; color: var(--gold); letter-spacing: .05em; }
+.age { position: absolute; z-index: 2; right: 8mm; top: 92mm; background: var(--gold); color: var(--burg-dk); font-weight: 700;
+       font-size: 11pt; padding: 2.5mm 4mm; border-radius: 3mm; transform: rotate(-4deg); box-shadow: 0 1mm 2mm rgba(0,0,0,.35); }
+.cover-bottom { position: absolute; z-index: 2; left: 0; right: 0; bottom: 8mm; text-align: center; color: var(--cream); }
+.cover-bottom p { font-size: 11pt; margin-bottom: 3.5mm; text-shadow: 0 .4mm 1.4mm rgba(0,0,0,.6); }
+.logo { width: 58mm; display: block; margin: 0 auto; }
+
+/* back page with answers */
+.backpage .content { background: var(--cream); gap: 2.5mm; }
+.backpage .lead { margin: 0; font-size: 9.5pt; color: #5a4a3a; }
+.answers { display: flex; flex-wrap: wrap; gap: 2.5mm; justify-content: center; align-items: flex-end; }
+.answers figure { flex: 0 0 auto; text-align: center; }
+.answers img { display: block; height: 50mm; max-width: 72mm; object-fit: contain; background: #fff; border: .25mm solid #d8ccb6; margin: 0 auto; }
+.answers figcaption { font-size: 8pt; color: #5a4a3a; margin-top: .8mm; }
+.notes { font-size: 9pt; text-align: center; }
+.game { display: flex; gap: 4mm; align-items: center; background: #fff; border-left: 1.2mm solid var(--gold); border-radius: 0 2mm 2mm 0; padding: 2.4mm 3.4mm; margin-top: auto; font-size: 9.5pt; }
+.qr { flex: none; width: 24mm; } .qr svg { display: block; width: 100%; height: auto; }
+.url { font-weight: 700; color: var(--burg); white-space: nowrap; }
+.foot { text-align: center; font-size: 8.6pt; } .foot .logo { width: 44mm; margin-bottom: 1.5mm; }
+</style></head><body><section class="page cover"><div class="cover-bg"></div>
+<div class="cover-top"><p class="kicker">Tryllemuseet · Jul 2026</p><h1>Jul på<br>Årvoll gård</h1>
+<p class="sub">Kaninens julejakt</p></div>
+<div class="age">Oppgavehefte for 4–6 år</div>
+<div class="cover-bottom"><p>Hjelp tryllekaninen, nissen, Tiril og Trym!</p>
+<img class="logo" src="../../web/public/LOGO-bred.png" alt="Tryllemuseet"></div></section><section class="page "><div class="content"><h2><span class="num">1</span>Finn nissens skygge</h2><p class="lead">Nissen har mistet skyggen sin. Hvilken av de svarte skyggene er hans?</p><div class="fill"><img class="pic tall" src="hefter/skygge-sma.png" alt=""></div></div></section><section class="page "><div class="content"><h2><span class="num">2</span>Finn 5 feil</h2><p class="lead">Bildene i bakstehuset er nesten like. Finner du de 5 forskjellene?</p><div class="fill"><img class="pic" src="hefter/finn-feil-sma-a.png" alt=""><img class="pic" src="hefter/finn-feil-sma-b.png" alt=""><p class="tally">Kryss av for hver feil du finner: ○ ○ ○ ○ ○ </p></div></div></section><section class="page "><div class="content"><h2><span class="num">3</span>Hjelp kaninen hjem</h2><p class="lead">Tryllekaninen skal hjem i hatten før jul. Finn veien!</p><div class="fill"><img class="pic tall" src="hefter/labyrint-sma.png" alt=""></div></div></section><section class="page "><div class="content"><h2><span class="num">4</span>Tegn fra prikk til prikk</h2><p class="lead">Start på den røde 1-eren og tegn videre til 23. Hva blir det? Fargelegg etterpå!</p><div class="fill"><img class="pic" src="hefter/prikk-sma.png" alt=""></div></div></section><section class="page "><div class="content"><h2><span class="num">5</span>Finn to like kaniner</h2><p class="lead">Bare to av kaninene er helt like. Se på sløyfen, hatten og stjernen!</p><div class="fill"><img class="pic" src="hefter/kaniner-sma.png" alt=""></div></div></section><section class="page "><div class="content"><h2><span class="num">6</span>Tegn din egen tryllekunstner</h2><p class="lead">Tegn deg selv med tryllehatt og tryllestav. Hva tryller du fram?</p><div class="fill"><div class="frame"></div></div></div></section><section class="page backpage"><div class="content"><h2 class="small">Fasit</h2>
+<p class="lead">For voksne, eller for den som har prøvd skikkelig først.</p>
+<div class="answers"><figure><img src="hefter/finn-feil-sma-fasit.png" alt=""><figcaption>Finn 5 feil</figcaption></figure><figure><img src="hefter/labyrint-sma-fasit.png" alt=""><figcaption>Labyrinten</figcaption></figure><figure><img src="hefter/kaniner-sma-fasit.png" alt=""><figcaption>Like kaniner: nr. 2 og 7 (telt radvis fra øverst til venstre)</figcaption></figure></div><p class="notes"><b>Skyggen:</b> A. <b>Prikk til prikk:</b> et juletre.</p>
+<div class="game"><div class="qr"><?xml version="1.0" encoding="utf-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="312" height="312" class="segno"><path transform="scale(8)" class="qrline" stroke="#1b1b2f" d="M3 3.5h7m2 0h4m2 0h1m1 0h2m2 0h3m2 0h7m-33 1h1m5 0h1m10 0h1m1 0h1m2 0h1m1 0h1m1 0h1m5 0h1m-33 1h1m1 0h3m1 0h1m1 0h10m1 0h1m1 0h4m1 0h1m1 0h3m1 0h1m-33 1h1m1 0h3m1 0h1m3 0h2m4 0h2m5 0h1m2 0h1m1 0h3m1 0h1m-33 1h1m1 0h3m1 0h1m1 0h2m3 0h3m2 0h1m4 0h1m2 0h1m1 0h3m1 0h1m-33 1h1m5 0h1m1 0h2m2 0h2m2 0h1m2 0h1m1 0h1m4 0h1m5 0h1m-33 1h7m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h7m-21 1h1m1 0h1m1 0h3m1 0h4m-23 1h1m2 0h1m1 0h1m1 0h4m1 0h1m2 0h2m1 0h1m1 0h3m1 0h1m1 0h2m1 0h1m-30 1h2m4 0h3m3 0h1m2 0h1m1 0h1m2 0h3m1 0h1m3 0h3m-32 1h3m2 0h3m1 0h2m2 0h1m2 0h2m2 0h2m1 0h1m5 0h1m1 0h1m-32 1h2m1 0h1m1 0h1m5 0h1m2 0h1m1 0h2m2 0h3m1 0h1m1 0h1m5 0h1m-30 1h6m3 0h2m1 0h1m2 0h6m2 0h4m-30 1h2m5 0h1m4 0h2m2 0h3m2 0h1m1 0h1m1 0h1m1 0h1m1 0h1m-27 1h1m2 0h2m2 0h4m1 0h1m1 0h1m3 0h3m1 0h2m1 0h4m-32 1h3m2 0h1m1 0h1m1 0h1m3 0h1m2 0h1m1 0h1m1 0h2m3 0h4m-27 1h5m1 0h1m1 0h1m3 0h1m1 0h4m1 0h2m1 0h1m1 0h1m1 0h1m2 0h1m-30 1h2m4 0h2m2 0h2m1 0h2m1 0h1m4 0h2m4 0h3m-31 1h2m2 0h3m1 0h1m4 0h4m2 0h2m1 0h5m1 0h1m-29 1h1m1 0h1m1 0h1m1 0h2m2 0h3m1 0h1m1 0h1m2 0h2m2 0h1m1 0h2m-26 1h1m1 0h1m1 0h4m1 0h1m6 0h1m1 0h3m2 0h2m1 0h2m2 0h1m-33 1h2m1 0h1m4 0h3m1 0h2m1 0h1m1 0h1m3 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m-27 1h4m6 0h1m1 0h1m3 0h1m1 0h1m1 0h1m1 0h1m2 0h2m-30 1h2m1 0h1m2 0h1m1 0h4m1 0h1m1 0h3m1 0h9m1 0h1m-32 1h3m2 0h6m2 0h1m3 0h6m1 0h5m-21 1h3m4 0h2m6 0h2m3 0h1m1 0h1m-31 1h7m2 0h2m2 0h1m1 0h4m1 0h1m3 0h1m1 0h1m1 0h2m1 0h1m-32 1h1m5 0h1m13 0h2m2 0h1m3 0h1m2 0h1m-32 1h1m1 0h3m1 0h1m1 0h2m4 0h3m1 0h2m1 0h2m1 0h6m2 0h1m-33 1h1m1 0h3m1 0h1m2 0h7m5 0h1m1 0h1m2 0h4m1 0h1m-32 1h1m1 0h3m1 0h1m2 0h1m2 0h3m1 0h1m1 0h1m1 0h2m3 0h4m1 0h1m-31 1h1m5 0h1m1 0h5m1 0h1m1 0h3m2 0h2m1 0h3m-27 1h7m3 0h1m1 0h1m3 0h2m1 0h6m7 0h1"/></svg>
+</div>
+<div><h3>Spill Tryllegården</h3><p>Lær ekte tryllekunster sammen med Tiril, Trym og nissen.</p>
+<p class="url">tryllemuseet.no/barn/tryllegarden</p></div></div>
+<div class="foot"><img class="logo" src="../../web/public/LOGO-bred.png" alt="Tryllemuseet">
+<p>Årvoll gård, Årvollveien 35, 0590 Oslo · tryllemuseet.no</p></div></div></section></body></html>

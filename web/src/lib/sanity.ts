@@ -7,13 +7,19 @@ type SanityImageSource = any
 // "production" i Vercel prod-miljø, "preview" i preview-bygg, undefined lokalt
 const isProd = import.meta.env.PUBLIC_VERCEL_ENV === 'production'
 
+// Drafts are only shown where a preview token is set (locally, and preview
+// builds that have one). Everything without a token reads published content
+// from the API CDN: CDN requests have a much larger quota (1M/month) than
+// uncached API requests (250k/month), and a build makes thousands of queries.
+const previewToken = isProd ? undefined : (import.meta.env.SANITY_PREVIEW_TOKEN || undefined)
+
 export const sanityClient = createClient({
   projectId:   import.meta.env.PUBLIC_SANITY_PROJECT_ID ?? 'n2ynpgty',
   dataset:     import.meta.env.PUBLIC_SANITY_DATASET   ?? 'production',
   apiVersion:  '2024-01-01',
-  useCdn:      isProd,
-  perspective: isProd ? 'published' : 'drafts',
-  token:       isProd ? undefined : (import.meta.env.SANITY_PREVIEW_TOKEN ?? undefined),
+  useCdn:      !previewToken,
+  perspective: previewToken ? 'drafts' : 'published',
+  token:       previewToken,
 })
 
 // ── Bildebygger ──────────────────────────────────────────────────
