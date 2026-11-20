@@ -16,48 +16,43 @@ def img(path, x, y, w, h):
     data = base64.b64encode(open(path, 'rb').read()).decode()
     return f'<image href="data:image/webp;base64,{data}" x="{x}" y="{y}" width="{w}" height="{h}" preserveAspectRatio="xMidYMid meet"/>'
 
-# ---------- the magic rabbit (drawn, so it can vary) ----------
-def rabbit(x, y, s=1, ear_l=-12, ear_r=12, fold=None, bow=None, hat=None, carrot=False,
-           spot=None, wink=False, tooth=True, star=False):
-    g = [f'<g transform="translate({x},{y}) scale({s})" stroke="{INK}" stroke-width="4" stroke-linejoin="round" stroke-linecap="round">']
-    def ear(angle, side, folded):
-        ex = -26 if side < 0 else 26
-        inner = f'<ellipse cx="0" cy="-70" rx="9" ry="34" fill="#f6c9cf" stroke="none"/>'
-        if folded:
-            return (f'<g transform="translate({ex},-60) rotate({angle})"><path d="M-17 0 C-20 -60 18 -60 17 0 Z" fill="#fff"/>'
-                    f'<path d="M-12 -46 C 0 -70 30 -60 40 -40 C 28 -34 10 -40 -2 -44 Z" fill="#fff"/></g>')
-        return (f'<g transform="translate({ex},-60) rotate({angle})"><ellipse cx="0" cy="-60" rx="18" ry="58" fill="#fff"/>'
-                f'{inner}</g>')
-    g.append(ear(ear_l, -1, fold == 'l'))
-    g.append(ear(ear_r, 1, fold == 'r'))
-    g.append('<ellipse cx="0" cy="70" rx="58" ry="62" fill="#fff"/>')               # body
-    if spot == 'body': g.append('<ellipse cx="22" cy="78" rx="18" ry="14" fill="#c9b8a6" stroke="none"/>')
-    g.append('<circle cx="0" cy="-10" r="52" fill="#fff"/>')                          # head
-    if spot == 'head': g.append('<ellipse cx="-24" cy="-26" rx="15" ry="12" fill="#c9b8a6" stroke="none"/>')
-    if wink:
-        g.append('<path d="M-28 -16 q9 -8 18 0" fill="none"/>')
-    else:
-        g.append(f'<circle cx="-19" cy="-16" r="7" fill="{INK}" stroke="none"/>')
-    g.append(f'<circle cx="19" cy="-16" r="7" fill="{INK}" stroke="none"/>')
-    g.append(f'<ellipse cx="0" cy="4" rx="8" ry="6" fill="#e88a9a"/>')                # nose
-    g.append('<path d="M0 10 v8 M0 18 q-10 8 -18 0 M0 18 q10 8 18 0" fill="none"/>')
-    if tooth: g.append('<rect x="-6" y="20" width="12" height="11" rx="2" fill="#fff" stroke-width="3"/>')
-    for sx in (-1, 1):
-        g.append(f'<path d="M{sx*26} 8 l{sx*30} -6 M{sx*26} 14 l{sx*32} 4" fill="none" stroke-width="3"/>')
-    g.append('<ellipse cx="-30" cy="128" rx="22" ry="12" fill="#fff"/><ellipse cx="30" cy="128" rx="22" ry="12" fill="#fff"/>')  # feet
-    if bow:
-        g.append(f'<path d="M0 42 l-22 -12 v24 Z M0 42 l22 -12 v24 Z" fill="{bow}"/><circle cx="0" cy="42" r="6" fill="{bow}"/>')
-    if hat:
-        g.append(f'<g transform="translate(0,-58)"><rect x="-38" y="-6" width="76" height="12" rx="4" fill="{hat}"/>'
-                 f'<rect x="-24" y="-52" width="48" height="48" rx="4" fill="{hat}"/>'
-                 f'<rect x="-24" y="-20" width="48" height="9" fill="{RED if hat == INK else GOLD}" stroke="none"/></g>')
-    if star:
-        g.append(f'<path d="M58 -60 l6 13 14 2 -10 10 3 14 -13 -7 -13 7 3 -14 -10 -10 14 -2 Z" fill="{GOLD}" stroke-width="3"/>')
-    if carrot:
-        g.append(f'<g transform="translate(-60,80) rotate(-25)"><path d="M0 0 L12 -60 L24 0 Z" fill="#ef8a2c"/>'
-                 f'<path d="M12 -60 l-8 -16 M12 -60 l0 -18 M12 -60 l8 -16" stroke="{GREEN}" stroke-width="5" fill="none"/></g>')
+# ---------- the magic rabbit from the game's start picture (see lag-kanin.py) ----------
+def png(path):
+    return 'data:image/png;base64,' + base64.b64encode(open(path, 'rb').read()).decode()
+KANIN_HATT, KANIN = 'docs/pamflett/figur/kanin-hatt.png', 'docs/pamflett/figur/kanin.png'
+KH_W, KH_H = 516, 646    # size of kanin-hatt.png
+K_W, K_H = 433, 410      # size of kanin.png
+
+def star_path(cx, cy, r, inner=.45, n=5):
+    pts = []
+    for i in range(n * 2):
+        a = -math.pi / 2 + i * math.pi / n; rr = r if i % 2 == 0 else r * inner
+        pts.append(f'{cx + rr * math.cos(a):.1f},{cy + rr * math.sin(a):.1f}')
+    return 'M' + ' L'.join(pts) + ' Z'
+
+def rabbit_pic(x, y, s=1, mirror=False, bow=None, band=None, star=None, wand=False, sparkle=False):
+    """kanin-hatt.png with optional extras; (x, y) is the picture's centre.
+    The extras are placed in the picture's own pixel coordinates."""
+    g = [f'<g transform="translate({x},{y}) scale({s * (-1 if mirror else 1)},{s}) translate({-KH_W/2},{-KH_H/2})">',
+         f'<use href="#kanin-hatt"/>']
+    if band:   # hat band just under the brim
+        g.append(f'<path d="M95 470 L447 470 L449 500 L93 500 Z" fill="{band}"/>')
+    if star:   # star on the front of the hat
+        g.append(f'<path d="{star_path(272, 575, 40)}" fill="{star}" stroke="{INK}" stroke-width="4" stroke-linejoin="round"/>')
+    if bow:    # bow tie under the chin
+        g.append(f'<g transform="translate(282,338)" stroke="{INK}" stroke-width="4" stroke-linejoin="round">'
+                 f'<path d="M0 0 L-38 -20 L-38 20 Z M0 0 L38 -20 L38 20 Z" fill="{bow}"/><circle r="10" fill="{bow}"/></g>')
+    if wand:   # magic wand held up in the raised right paw
+        g.append(f'<g transform="translate(462,300) rotate(12)" stroke="{INK}" stroke-width="4">'
+                 f'<rect x="-9" y="-115" width="18" height="115" rx="4" fill="{INK}"/>'
+                 f'<rect x="-9" y="-115" width="18" height="26" rx="4" fill="#fff"/></g>')
+    if sparkle: # a big sparkle by the right ear
+        g.append(f'<path d="{star_path(420, 70, 46, .22, 4)}" fill="{GOLD}" stroke="{INK}" stroke-width="3"/>')
     g.append('</g>')
     return ''.join(g)
+
+def rabbit_defs():
+    return f'<defs><image id="kanin-hatt" href="{png(KANIN_HATT)}" width="{KH_W}" height="{KH_H}"/></defs>'
 
 # ---------- maze: the rabbit must get home to the magic hat ----------
 def maze(name, cols, rows, cell):
@@ -98,7 +93,7 @@ def maze(name, cols, rows, cell):
         if show:
             pts = ' '.join(f'{mx + c * cell + cell/2},{my + r * cell + cell/2}' for c, r in path)
             out += f'<polyline points="{mx + cell/2},{my - 40} {pts} {mx + (cols-0.5)*cell},{my + rows*cell + 40}" fill="none" stroke="{RED}" stroke-width="{sw+2}" stroke-linecap="round" stroke-linejoin="round" opacity=".85"/>'
-        out += rabbit(mx + cell / 2, my - 150, .9)
+        out += f'<image href="{png(KANIN)}" x="{mx + cell/2 - 125}" y="{my - 14 - 250*K_H/K_W}" width="250" height="{250*K_H/K_W:.0f}"/>'
         out += img('web/public/images/tryllegarden/pynt/hatt.webp', mx + (cols - 1) * cell - 70, my + rows * cell + 20, cell + 140, 200)
         return out
     save(name, draw(False), W, H); save(name + '-fasit', draw(True), W, H)
@@ -153,19 +148,27 @@ wordsearch('ordsok-store', 13,
            [(0, 1), (1, 0), (1, 1), (-1, 1)])
 
 # ---------- dot to dot ----------
-def dots(name, pts, title_shape, r, fs, close=True):
+def dots(name, pts, title_shape, r, fs, close=True, picture=None):
     xs = [p[0] for p in pts]; ys = [p[1] for p in pts]
     W, H = max(xs) + 140, max(ys) + 140
+    area = sum(pts[i][0] * pts[(i + 1) % len(pts)][1] - pts[(i + 1) % len(pts)][0] * pts[i][1] for i in range(len(pts)))
+    turn = 1 if area > 0 else -1   # which side is "outside" depends on the winding
     def draw(show):
         o = []
+        if show and picture:
+            href, px, py, pw, ph = picture
+            o.append(f'<image href="{href}" x="{px}" y="{py}" width="{pw}" height="{ph}" opacity=".45"/>')
         if show:
             seq = pts + ([pts[0]] if close else [])
             o.append(f'<polyline points="{" ".join(f"{x},{y}" for x, y in seq)}" fill="none" stroke="{INK}" stroke-width="7" stroke-linejoin="round"/>')
         for i, (x, y) in enumerate(pts):
             o.append(f'<circle cx="{x}" cy="{y}" r="{r}" fill="{INK}"/>')
-            # put the number outside the shape, away from the centre
-            cx, cy = sum(xs) / len(xs), sum(ys) / len(ys)
-            a = math.atan2(y - cy, x - cx); tx, ty = x + math.cos(a) * (r + fs * .8), y + math.sin(a) * (r + fs * .8) + fs * .35
+            # put the number on the outside of the line, at right angles to it
+            (ax, ay), (bx, by) = pts[i - 1], pts[(i + 1) % len(pts)]
+            dx, dy = bx - ax, by - ay; L = math.hypot(dx, dy) or 1
+            nx, ny = turn * dy / L, -turn * dx / L
+            d = r + fs * .85
+            tx, ty = x + nx * d, y + ny * d + fs * .35
             o.append(f'<text x="{tx:.0f}" y="{ty:.0f}" font-family="DejaVu Sans, sans-serif" font-size="{fs}" text-anchor="middle" fill="{RED if i == 0 else INK}">{i+1}</text>')
         return ''.join(o)
     save(name, draw(False), W, H); save(name + '-fasit', draw(True), W, H)
@@ -183,43 +186,64 @@ def densify(p, n):
         out += [(a[0] + (b[0] - a[0]) * j / k, a[1] + (b[1] - a[1]) * j / k) for j in range(k)]
     return [(round(x), round(y)) for x, y in out]
 dots('prikk-sma', densify(tree, 170), 'juletre', 14, 46)
-# Big: a rabbit peeping out of the magic hat, ~48 dots.
-hat_rabbit = [(470, 700), (470, 1060), (300, 1080), (300, 1130), (900, 1130), (900, 1080), (730, 1060), (730, 700),
-              (700, 640), (720, 560), (760, 420), (790, 260), (770, 160), (720, 150), (680, 230),
-              (655, 380), (645, 475), (555, 475), (545, 380), (520, 230), (480, 150), (430, 160),
-              (410, 260), (440, 420), (480, 560), (500, 640)]
-dots('prikk-store', densify(hat_rabbit, 85), 'kanin i tryllehatt', 10, 34)
+# Big: the outline of the rabbit in the hat (from kanin-hatt.png).
+def rabbit_outline(n_target, scale, ox, oy):
+    import cv2
+    a = cv2.imread(KANIN_HATT, cv2.IMREAD_UNCHANGED)[:, :, 3]
+    a = cv2.GaussianBlur(a, (41, 41), 0)          # smooth away the fur
+    cs, _ = cv2.findContours((a > 128).astype('uint8'), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
+    c = max(cs, key=cv2.contourArea)
+    eps = 1.0
+    while True:   # simplify until about n_target corners are left
+        poly = cv2.approxPolyDP(c, eps, True)
+        if len(poly) <= n_target: break
+        eps *= 1.05
+    pts = [(ox + p[0][0] * scale, oy + p[0][1] * scale) for p in poly]
+    # drop corners that sit too close to the previous one (numbers would collide)
+    kept = [pts[0]]
+    for p in pts[1:]:
+        if math.dist(p, kept[-1]) >= 70: kept.append(p)
+    if math.dist(kept[-1], kept[0]) < 70: kept.pop()
+    pts = densify(kept, 210)
+    # start at the top of the left ear and go clockwise
+    i0 = min(range(len(pts)), key=lambda i: pts[i][1] + pts[i][0] * .3)
+    return pts[i0:] + pts[:i0]
+S_DOT, OX, OY = 1.75, 90, 90
+dots('prikk-store', rabbit_outline(40, S_DOT, OX, OY), 'kanin i tryllehatt', 10, 32,
+     picture=(png(KANIN_HATT), OX, OY, KH_W * S_DOT, KH_H * S_DOT))
 
 # ---------- find the two identical rabbits ----------
 def twins(name, n, cols, traits, min_diff=1):
     keys = list(traits)
     def rnd(): return {k: random.choice(traits[k]) for k in keys}
     def dist(a, b): return sum(a[k] != b[k] for k in keys)
-    twin = rnd(); items = [twin, dict(twin)]
-    while len(items) < n:
-        c = rnd()
-        # every other rabbit differs from the twin and from all others by at least min_diff traits
-        if all(dist(c, o) >= min_diff for o in items): items.append(c)
+    while True:   # start over if the random picks paint themselves into a corner
+        twin = rnd(); items = [twin, dict(twin)]; tries = 0
+        while len(items) < n and tries < 5000:
+            c = rnd(); tries += 1
+            # every other rabbit differs from the twin and from all others by at least min_diff traits
+            if all(dist(c, o) >= min_diff for o in items): items.append(c)
+        if len(items) == n: break
     random.shuffle(items)
     pair = [i for i, it in enumerate(items) if dist(it, twin) == 0]
     cw, ch = 330, 420; rows = (n + cols - 1) // cols
     W, H = cols * cw, rows * ch
     def draw(show):
-        o = []
+        o = [rabbit_defs()]
         for i, t in enumerate(items):
-            x, y = (i % cols) * cw + cw / 2, (i // cols) * ch + 210
+            x, y = (i % cols) * cw + cw / 2, (i // cols) * ch + ch / 2
             if show and i in pair:
                 o.append(f'<rect x="{(i % cols) * cw + 12}" y="{(i // cols) * ch + 12}" width="{cw-24}" height="{ch-24}" rx="26" fill="none" stroke="{RED}" stroke-width="10"/>')
-            o.append(rabbit(x, y, .85, **t))
+            o.append(rabbit_pic(x, y, .52, **t))
         return ''.join(o)
     save(name, draw(False), W, H); save(name + '-fasit', draw(True), W, H)
     open(f'{OUT}/{name}-fasit.txt', 'w').write(f'De like kaninene: nr. {pair[0]+1} og {pair[1]+1} (telt radvis fra øverst til venstre)\n')
     print(name, n, 'like:', [p + 1 for p in pair])
 
 twins('kaniner-store', 20, 5, {
-    'ear_l': [-14, -4], 'ear_r': [14, 4], 'fold': [None, 'l', 'r'], 'bow': [None, RED, GREEN],
-    'hat': [None, INK], 'carrot': [False, True], 'wink': [False, True], 'spot': [None, 'head', 'body'],
+    'mirror': [False, True], 'bow': [None, RED, GREEN], 'band': [None, RED, GREEN],
+    'star': [None, GOLD, RED], 'wand': [False, True], 'sparkle': [False, True],
 })
 twins('kaniner-sma', 12, 4, {
-    'fold': [None, 'r'], 'bow': [None, RED, GREEN], 'hat': [None, INK], 'carrot': [False, True], 'star': [False, True],
+    'bow': [None, RED, GREEN], 'band': [None, RED], 'star': [None, GOLD], 'wand': [False, True], 'sparkle': [False, True],
 }, min_diff=2)
