@@ -1,6 +1,6 @@
 # Replikker: jul (nb)
 
-Laget av `scripts/tryllegarden-audio.mjs list`. 223 replikker, 13526 tegn.
+Laget av `scripts/tryllegarden-audio.mjs list`. 247 replikker, 14929 tegn.
 Les teksten ordrett. `id` er filnavnet (se brief.md).
 
 | # | id | Hvem | Hvor | Type | Tekst |
@@ -179,52 +179,76 @@ Les teksten ordrett. `id` er filnavnet (se brief.md).
 | 172 | `0qlgaws` | forteller | Tryllemuseet | tradisjon (lang) | Tryllegården er laget ut fra Årvoll gård i Oslo, der Tryllemuseet holder til. Museet er åpent søndager kl. 12–15, og inngangen er gratis. |
 | 173 | `056ortl` | forteller | Tryllemuseet | triks: tittel | Møt Jan på ekte |
 | 174 | `0lhx9az` | forteller | Tryllemuseet | triks: effekt | Jan tryller for deg i museet, og på kurs kan du lære å gjøre det selv. Hemmeligheten hans må du få fortalt av ham selv! |
-| 175 | `0uc82ci` | forteller | Finalen | samtale | All pynten henger på treet. Inne på låven er det tent lykter, og dyra har satt seg på benkene. |
-| 176 | `11pavjg` | jente | Finalen | samtale | I kveld holder vi juleforestilling – for alle som bor på Tryllegården! |
-| 177 | `0vfoqt4` | gutt | Finalen | samtale | Og du bestemmer hva vi skal vise. |
-| 178 | `18f8gl9` | forteller | Minispill | tilbakemelding | Se der det lyser! |
-| 179 | `1vsfy4p` | forteller | Minispill | tilbakemelding | Den hører ikke hjemme her! |
-| 180 | `0jv5duc` | forteller | Minispill | tilbakemelding | Ikke helt ennå. Hva må skje før det? |
-| 181 | `1deu629` | forteller | Minispill | tilbakemelding | Ferdig! Alt i riktig rekkefølge. |
-| 182 | `03gq19p` | forteller | Minispill | tilbakemelding | Riktig! Hva kommer så? |
-| 183 | `1mu9qsw` | forteller | Minispill | tilbakemelding | Se nøye etter! |
-| 184 | `0rsg55w` | forteller | Minispill | tilbakemelding | Din tur! Denne gangen baklengs: den siste fuglen først. |
-| 185 | `1vb88du` | forteller | Minispill | tilbakemelding | Din tur! Trykk på fuglene i samme rekkefølge. |
-| 186 | `00uh5tk` | forteller | Minispill | tilbakemelding | Oi, det ble ikke helt riktig. Se en gang til! |
-| 187 | `1y1wgna` | forteller | Minispill | tilbakemelding | Du husket alle sammen! |
-| 188 | `03ti2wx` | forteller | Minispill | tilbakemelding | Flott! Én runde til, litt lengre. |
-| 189 | `0o0c5hx` | forteller | Minispill | tilbakemelding | Riktig! Du fulgte alle flettene. |
-| 190 | `1wdbp9u` | forteller | Minispill | tilbakemelding | Riktig! Én flette til. |
-| 191 | `04ykdw8` | forteller | Minispill | tilbakemelding | Hvilken kake mangler der det lyser? |
-| 192 | `0bz9gdq` | forteller | Minispill | tilbakemelding | Ikke den. Si mønsteret høyt fra starten! |
-| 193 | `0v9qdek` | forteller | Minispill | tilbakemelding | Alle kakene er på plass! |
-| 194 | `09tasjf` | forteller | Minispill | tilbakemelding | Riktig! En ny rad. |
-| 195 | `0krrew1` | forteller | Minispill | tilbakemelding | Kurven er ferdig flettet! |
-| 196 | `0o87x54` | forteller | Minispill | tilbakemelding | Helt likt! Nå en litt større kurv. |
-| 197 | `1txed6k` | forteller | Minispill | tilbakemelding | Hysj … nissen lister seg inn. |
-| 198 | `0v1hpcl` | forteller | Minispill | tilbakemelding | Slik sto det før. |
-| 199 | `16i4p8i` | forteller | Minispill | tilbakemelding | Hva har nissen byttet ut? Trykk på det. |
-| 200 | `1dm9ied` | forteller | Minispill | tilbakemelding | Riktig! Deg lurer han ikke. |
-| 201 | `07sd279` | forteller | Minispill | tilbakemelding | Riktig! Én gang til, med flere ting. |
-| 202 | `0f23ubn` | forteller | Minispill | tilbakemelding | Den lyser allerede. |
-| 203 | `1e6gom7` | forteller | Minispill | tilbakemelding | Alle lyktene lyser! |
-| 204 | `1ilrrct` | forteller | Minispill | tilbakemelding | Alle lyser! Nissen tuller til lyktene en gang til. |
-| 205 | `1s3mkz1` | forteller | Minispill | tilbakemelding | Her mangler det ledetråder. |
-| 206 | `1hrti40` | forteller | Minispill | tilbakemelding | Ikke den. Les ledetråden en gang til! |
-| 207 | `17yfcyc` | forteller | Minispill | tilbakemelding | Riktig! Du fant dem alle. |
-| 208 | `1iqimmt` | forteller | Minispill | tilbakemelding | Riktig! Her kommer en ny ledetråd. |
-| 209 | `015j6iz` | forteller | Minispill | tilbakemelding | Ikke helt. Se en gang til og tell sakte! |
-| 210 | `0h6z4m8` | forteller | Minispill | tilbakemelding | Riktig! Du telte alt. |
-| 211 | `17f9vx8` | forteller | Minispill | tilbakemelding | Riktig! Her kommer nye. |
-| 212 | `1cl9qo0` | forteller | Minispill | tilbakemelding | Finnes det en som er lengre? |
-| 213 | `0kjy2gd` | forteller | Minispill | tilbakemelding | Finnes det en som er kortere? |
-| 214 | `1ue3alu` | forteller | Minispill | tilbakemelding | Finnes det et lengre lys? |
-| 215 | `04f0od7` | forteller | Minispill | tilbakemelding | Finnes det et kortere lys? |
-| 216 | `1qny6et` | forteller | Minispill | tilbakemelding | Alt henger på rekke! |
-| 217 | `0w2d0bj` | forteller | Minispill | tilbakemelding | Alle lysene står på rekke! |
-| 218 | `04dyirv` | forteller | Minispill | tilbakemelding | Riktig! En gang til. |
-| 219 | `0dzbyy2` | forteller | Minispill | tilbakemelding | Riktig! Nye lys. |
-| 220 | `0arpg3b` | forteller | Kartet | tilbakemelding | Hvor vil du gå? |
-| 221 | `0hrc7a3` | forteller | Kartet | tilbakemelding | Stjerna lyser på toppen! |
-| 222 | `116k585` | forteller | Kartet | tilbakemelding | Nok pynt henger på treet! Nå mangler bare stjerna. |
-| 223 | `070j6o2` | forteller | Kartet | tilbakemelding | All pynten henger! Nå mangler bare stjerna. |
+| 175 | `043fgtv` | forteller | Stua | lag selv | Du trenger: tynt papir i to farger, saks, blyant, linjal, litt papp og lim. Be gjerne en voksen om hjelp til klippingen. 1. Lag en mal av papp: en firkant på 10 ganger 10 centimeter, med en halv sirkel på toppen. 2. Brett et ark dobbelt. Legg den rette kanten på malen helt inntil bretten, tegn rundt og klipp ut. Ikke klipp i bretten! Lag en del i hver farge. 3. Klipp tre snitt fra bretten og opp til der buen begynner. Nå har hver del fire doble remser. 4. Flett! Remsene er doble, som små løkker. Tre den første remsa gjennom en løkke, og la neste løkke gå gjennom remsa. Annenhver gang, hele veien. Neste rad begynner motsatt. 5. Skyv remsene forsiktig på plass. Lim på en papirremse som hank. Nå kan kurven åpnes, og du kan henge den på treet! |
+| 176 | `0uc82ci` | forteller | Finalen | samtale | All pynten henger på treet. Inne på låven er det tent lykter, og dyra har satt seg på benkene. |
+| 177 | `11pavjg` | jente | Finalen | samtale | I kveld holder vi juleforestilling – for alle som bor på Tryllegården! |
+| 178 | `0vfoqt4` | gutt | Finalen | samtale | Og du bestemmer hva vi skal vise. |
+| 179 | `1ikfhhc` | forteller | Kartet | teller | 0 av 5 pynt henger på treet. |
+| 180 | `1g5hisp` | forteller | Kartet | teller | 1 av 5 pynt henger på treet. |
+| 181 | `1vgujea` | forteller | Kartet | teller | 2 av 5 pynt henger på treet. |
+| 182 | `0msb1oj` | forteller | Kartet | teller | 3 av 5 pynt henger på treet. |
+| 183 | `194ngho` | forteller | Kartet | teller | 4 av 5 pynt henger på treet. |
+| 184 | `1obaxkz` | forteller | Kartet | teller | 0 av 8 pynt henger på treet. |
+| 185 | `1a6cxna` | forteller | Kartet | teller | 1 av 8 pynt henger på treet. |
+| 186 | `0fu1bxp` | forteller | Kartet | teller | 2 av 8 pynt henger på treet. |
+| 187 | `1ab5hxc` | forteller | Kartet | teller | 3 av 8 pynt henger på treet. |
+| 188 | `1dljc93` | forteller | Kartet | teller | 4 av 8 pynt henger på treet. |
+| 189 | `01crzzu` | forteller | Kartet | teller | 5 av 8 pynt henger på treet. |
+| 190 | `07h0djl` | forteller | Kartet | teller | 6 av 8 pynt henger på treet. |
+| 191 | `1khkok4` | forteller | Kartet | teller | 7 av 8 pynt henger på treet. |
+| 192 | `0bc1ldu` | forteller | Kartet | teller | 0 av 10 pynt henger på treet. |
+| 193 | `1hrwamx` | forteller | Kartet | teller | 1 av 10 pynt henger på treet. |
+| 194 | `0koh8z4` | forteller | Kartet | teller | 2 av 10 pynt henger på treet. |
+| 195 | `1yvuct3` | forteller | Kartet | teller | 3 av 10 pynt henger på treet. |
+| 196 | `1voaoq6` | forteller | Kartet | teller | 4 av 10 pynt henger på treet. |
+| 197 | `13kvnyt` | forteller | Kartet | teller | 5 av 10 pynt henger på treet. |
+| 198 | `0eibggc` | forteller | Kartet | teller | 6 av 10 pynt henger på treet. |
+| 199 | `0x3ovjn` | forteller | Kartet | teller | 7 av 10 pynt henger på treet. |
+| 200 | `1fmpdne` | forteller | Kartet | teller | 8 av 10 pynt henger på treet. |
+| 201 | `0m4jrip` | forteller | Kartet | teller | 9 av 10 pynt henger på treet. |
+| 202 | `18f8gl9` | forteller | Minispill | tilbakemelding | Se der det lyser! |
+| 203 | `1vsfy4p` | forteller | Minispill | tilbakemelding | Den hører ikke hjemme her! |
+| 204 | `0jv5duc` | forteller | Minispill | tilbakemelding | Ikke helt ennå. Hva må skje før det? |
+| 205 | `1deu629` | forteller | Minispill | tilbakemelding | Ferdig! Alt i riktig rekkefølge. |
+| 206 | `03gq19p` | forteller | Minispill | tilbakemelding | Riktig! Hva kommer så? |
+| 207 | `1mu9qsw` | forteller | Minispill | tilbakemelding | Se nøye etter! |
+| 208 | `0rsg55w` | forteller | Minispill | tilbakemelding | Din tur! Denne gangen baklengs: den siste fuglen først. |
+| 209 | `1vb88du` | forteller | Minispill | tilbakemelding | Din tur! Trykk på fuglene i samme rekkefølge. |
+| 210 | `00uh5tk` | forteller | Minispill | tilbakemelding | Oi, det ble ikke helt riktig. Se en gang til! |
+| 211 | `1y1wgna` | forteller | Minispill | tilbakemelding | Du husket alle sammen! |
+| 212 | `03ti2wx` | forteller | Minispill | tilbakemelding | Flott! Én runde til, litt lengre. |
+| 213 | `0o0c5hx` | forteller | Minispill | tilbakemelding | Riktig! Du fulgte alle flettene. |
+| 214 | `1wdbp9u` | forteller | Minispill | tilbakemelding | Riktig! Én flette til. |
+| 215 | `04ykdw8` | forteller | Minispill | tilbakemelding | Hvilken kake mangler der det lyser? |
+| 216 | `0bz9gdq` | forteller | Minispill | tilbakemelding | Ikke den. Si mønsteret høyt fra starten! |
+| 217 | `0v9qdek` | forteller | Minispill | tilbakemelding | Alle kakene er på plass! |
+| 218 | `09tasjf` | forteller | Minispill | tilbakemelding | Riktig! En ny rad. |
+| 219 | `0krrew1` | forteller | Minispill | tilbakemelding | Kurven er ferdig flettet! |
+| 220 | `0o87x54` | forteller | Minispill | tilbakemelding | Helt likt! Nå en litt større kurv. |
+| 221 | `1txed6k` | forteller | Minispill | tilbakemelding | Hysj … nissen lister seg inn. |
+| 222 | `0v1hpcl` | forteller | Minispill | tilbakemelding | Slik sto det før. |
+| 223 | `16i4p8i` | forteller | Minispill | tilbakemelding | Hva har nissen byttet ut? Trykk på det. |
+| 224 | `1dm9ied` | forteller | Minispill | tilbakemelding | Riktig! Deg lurer han ikke. |
+| 225 | `07sd279` | forteller | Minispill | tilbakemelding | Riktig! Én gang til, med flere ting. |
+| 226 | `0f23ubn` | forteller | Minispill | tilbakemelding | Den lyser allerede. |
+| 227 | `1e6gom7` | forteller | Minispill | tilbakemelding | Alle lyktene lyser! |
+| 228 | `1ilrrct` | forteller | Minispill | tilbakemelding | Alle lyser! Nissen tuller til lyktene en gang til. |
+| 229 | `1s3mkz1` | forteller | Minispill | tilbakemelding | Her mangler det ledetråder. |
+| 230 | `1hrti40` | forteller | Minispill | tilbakemelding | Ikke den. Les ledetråden en gang til! |
+| 231 | `17yfcyc` | forteller | Minispill | tilbakemelding | Riktig! Du fant dem alle. |
+| 232 | `1iqimmt` | forteller | Minispill | tilbakemelding | Riktig! Her kommer en ny ledetråd. |
+| 233 | `015j6iz` | forteller | Minispill | tilbakemelding | Ikke helt. Se en gang til og tell sakte! |
+| 234 | `0h6z4m8` | forteller | Minispill | tilbakemelding | Riktig! Du telte alt. |
+| 235 | `17f9vx8` | forteller | Minispill | tilbakemelding | Riktig! Her kommer nye. |
+| 236 | `1cl9qo0` | forteller | Minispill | tilbakemelding | Finnes det en som er lengre? |
+| 237 | `0kjy2gd` | forteller | Minispill | tilbakemelding | Finnes det en som er kortere? |
+| 238 | `1ue3alu` | forteller | Minispill | tilbakemelding | Finnes det et lengre lys? |
+| 239 | `04f0od7` | forteller | Minispill | tilbakemelding | Finnes det et kortere lys? |
+| 240 | `1qny6et` | forteller | Minispill | tilbakemelding | Alt henger på rekke! |
+| 241 | `0w2d0bj` | forteller | Minispill | tilbakemelding | Alle lysene står på rekke! |
+| 242 | `04dyirv` | forteller | Minispill | tilbakemelding | Riktig! En gang til. |
+| 243 | `0dzbyy2` | forteller | Minispill | tilbakemelding | Riktig! Nye lys. |
+| 244 | `0arpg3b` | forteller | Kartet | tilbakemelding | Hvor vil du gå? |
+| 245 | `0hrc7a3` | forteller | Kartet | tilbakemelding | Stjerna lyser på toppen! |
+| 246 | `116k585` | forteller | Kartet | tilbakemelding | Nok pynt henger på treet! Nå mangler bare stjerna. |
+| 247 | `070j6o2` | forteller | Kartet | tilbakemelding | All pynten henger! Nå mangler bare stjerna. |

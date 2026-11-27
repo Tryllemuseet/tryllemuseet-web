@@ -61,7 +61,22 @@ export function collectLines(season, lang) {
     add('forteller', pick(p, 'trickTitle'), place, 'triks: tittel')
     add('forteller', pick(p, 'trickEffect'), place, 'triks: effekt')
   }
+  // The «Lag selv» guide is read in one go, the same text the page builds for its read-aloud button.
+  for (const p of season.places) {
+    const c = p.craft
+    if (!c) continue
+    const text = [pick(c, 'needs'), ...(c.steps ?? []).map((st, i) => `${i + 1}. ${pick(st, 'text')}`)].filter(Boolean).join(' ')
+    add('forteller', text, pick(p, 'title') || p.key, 'lag selv')
+  }
   for (const l of season.finale ?? []) add(l.who, pick(l, 'text'), 'Finalen', 'samtale', { pose: l.pose })
+  // The map's counter («3 av 8 pynt henger på treet.»), one clip per count and level size.
+  const sizes = new Set(['smanisse', 'laerling', 'mester'].map(l =>
+    season.places.filter(p => (p.requiredFor ? p.requiredFor.includes(l) : !p.bonus)).length))
+  for (const n of [...sizes].sort((a, b) => a - b)) {
+    for (let d = 0; d < n; d++) {
+      add('forteller', lang === 'en' ? `${d} of ${n} ornaments are on the tree.` : `${d} av ${n} pynt henger på treet.`, 'Kartet', 'teller')
+    }
+  }
   // Fixed sentences from the mini-games and the map (web/src/lib/tryllegardenPhrases.ts).
   const MAP_PHRASES = ['hvorVilDuGa', 'stjernaLyserPaToppen', 'nokPyntHengerPaTreet', 'allPyntenHengerNaMangler']
   for (const [key, [nb, en]] of Object.entries(PHRASES)) {
