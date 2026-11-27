@@ -1,6 +1,6 @@
 # Replikker uten innspilling: jul (nb)
 
-Laget av `scripts/tryllegarden-audio.mjs list`. 74 replikker, 3410 tegn. Samme brief og samme stemmer som før (se brief.md).
+Laget av `scripts/tryllegarden-audio.mjs list`. 72 replikker, 3317 tegn. Samme brief og samme stemmer som før (se brief.md).
 Les teksten ordrett. `id` er filnavnet.
 
 | # | id | Hvem | Hvor | Type | Tekst |
@@ -77,5 +77,3 @@ Les teksten ordrett. `id` er filnavnet.
 | 70 | `0dzbyy2` | forteller | Minispill | tilbakemelding | Riktig! Nye lys. |
 | 71 | `0arpg3b` | forteller | Kartet | tilbakemelding | Hvor vil du gå? |
 | 72 | `0hrc7a3` | forteller | Kartet | tilbakemelding | Stjerna lyser på toppen! |
-| 73 | `116k585` | forteller | Kartet | tilbakemelding | Nok pynt henger på treet! Nå mangler bare stjerna. |
-| 74 | `070j6o2` | forteller | Kartet | tilbakemelding | All pynten henger! Nå mangler bare stjerna. |
