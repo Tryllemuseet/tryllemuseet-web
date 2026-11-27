@@ -688,7 +688,7 @@ const paletteStyle = `--tg-sky:${pal.sky};--tg-ground:${pal.ground};--tg-accent:
       show(`<div class="tg-card">
         <div class="tg-head"><h1 class="tg-h1" tabindex="-1" data-focus>${esc(fill('{gard}'))}</h1>${sayBtn([where, status])}</div>
         <p class="tg-lead tg-lead--tight">${esc(where)}</p>
-        <div class="tg-scene tg-map">
+        <div class="tg-scene tg-map tg-map--${level()}">
           ${season.mapImageUrl ? `<img class="tg-backdrop" src="${esc(season.mapImageUrl)}" alt="${esc(season.mapAlt ?? '')}">` : backdropSvg('map')}
           <div class="tg-tree${season.treeImageUrl ? ' tg-tree--img' : ''}" role="img" aria-label="${esc(`${collection}. ${status}`)}">
             ${season.treeImageUrl ? `<img class="tg-tree-pic" src="${esc(season.treeImageUrl)}" alt="">` : `<svg viewBox="0 0 60 80" aria-hidden="true"><rect x="26" y="68" width="8" height="12" fill="#6b4226"/><path d="M30 6 L10 34 H20 L6 54 H18 L4 72 H56 L42 54 H54 L40 34 H50Z" fill="#1f5c3a"/><path d="M30 6 L22 18 Q30 22 38 18Z" fill="#f4f8fc"/></svg>`}
@@ -701,7 +701,9 @@ const paletteStyle = `--tg-sky:${pal.sky};--tg-ground:${pal.ground};--tg-accent:
           </button>`).join('')}
         </div>
         <p class="tg-status">${esc(status)}</p>
-        ${hasExtras ? `<p class="tg-note tg-center">${t('Steder med stiplet ring er ekstra. Du trenger dem ikke for å nå finalen, men nissen blir glad for besøk.', 'Places with a dashed ring are extras. You do not need them for the finale, but the nisse is happy to see you.')}</p>` : ''}
+        ${hasExtras ? `<p class="tg-note tg-center">${level() === 'smanisse'
+          ? t('Besøk stedene som lyser. De små, grå stedene er ekstra – dem kan du ta senere.', 'Visit the places that glow. The small grey places are extras – you can do them later.')
+          : t('De små, grå stedene er ekstra. Du trenger dem ikke for å nå finalen, men nissen blir glad for besøk.', 'The small grey places are extras. You do not need them for the finale, but the nisse is happy to see you.')}</p>` : ''}
         <ul class="tg-tally">
           <li>${HAT} ${t(`Nisseluer funnet: ${hats} av ${season.places.length}`, `Nisse hats found: ${hats} of ${season.places.length}`)}</li>
           <li>${pic('smor', 'tg-tally-icon')} ${t(`Smørøyne: ${smor}`, `Butter-eyes: ${smor}`)} <small>${t('(for steder uten hint)', '(for places done without hints)')}</small></li>
@@ -2190,8 +2192,17 @@ const paletteStyle = `--tg-sky:${pal.sky};--tg-ground:${pal.ground};--tg-accent:
   .tg-spot-name { font: 700 clamp(.68rem, 2.42cqw, 1rem) var(--font-ui); color: #fff; background: var(--tg-accent); border-radius: 999px; padding: .15em .8em; white-space: nowrap; }
   .tg-spot.is-done .tg-spot-icon { border-color: var(--tg-accent2); box-shadow: none; }
   .tg-spot.is-done .tg-spot-name { background: var(--tg-accent2); }
-  .tg-spot.is-extra .tg-spot-icon { border-style: dashed; box-shadow: none; }
-  .tg-spot.is-extra:not(.is-done) .tg-spot-name { background: color-mix(in srgb, var(--tg-accent) 70%, #000); }
+  /* Extras (not needed for the finale at this level) are toned down so the child sees where to go. */
+  .tg-spot.is-extra { z-index: 0; }
+  .tg-spot.is-extra .tg-spot-icon { border-style: dashed; border-color: #cfd6dc; box-shadow: none; }
+  .tg-spot.is-extra:not(.is-done) { opacity: .55; transform: translate(-50%, -50%) scale(.72); }
+  .tg-spot.is-extra:not(.is-done) .tg-spot-icon { filter: grayscale(1); }
+  .tg-spot.is-extra:not(.is-done) .tg-spot-name { background: rgba(40, 40, 40, .55); font-weight: 600; }
+  /* The youngest: extras almost fade away (no name), and the places to visit pulse gently. */
+  .tg-map--smanisse .tg-spot.is-extra:not(.is-done) { opacity: .35; transform: translate(-50%, -50%) scale(.6); }
+  .tg-map--smanisse .tg-spot.is-extra:not(.is-done) .tg-spot-name { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; padding: 0; }
+  .tg-map--smanisse .tg-spot:not(.is-extra):not(.is-done) .tg-spot-icon { animation: tg-spot-pulse 1.8s ease-in-out infinite; }
+  @keyframes tg-spot-pulse { 50% { box-shadow: 0 0 0 7px color-mix(in srgb, var(--tg-glow) 55%, transparent), 0 0 22px var(--tg-glow); } }
   .tg-chip:disabled { opacity: .45; cursor: not-allowed; }
   .tg-spot:hover .tg-spot-icon { transform: scale(1.06); }
   .tg-tally { list-style: none; padding: 0; display: flex; flex-wrap: wrap; gap: var(--space-2) var(--space-5); justify-content: center; font-size: 1.05rem; }
