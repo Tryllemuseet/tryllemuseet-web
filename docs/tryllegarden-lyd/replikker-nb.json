@@ -1588,17 +1588,26 @@
       "before": "Møt Jan på ekte"
     },
     {
-      "id": "0uc82ci",
+      "id": "043fgtv",
       "n": 175,
+      "who": "forteller",
+      "text": "Du trenger: tynt papir i to farger, saks, blyant, linjal, litt papp og lim. Be gjerne en voksen om hjelp til klippingen. 1. Lag en mal av papp: en firkant på 10 ganger 10 centimeter, med en halv sirkel på toppen. 2. Brett et ark dobbelt. Legg den rette kanten på malen helt inntil bretten, tegn rundt og klipp ut. Ikke klipp i bretten! Lag en del i hver farge. 3. Klipp tre snitt fra bretten og opp til der buen begynner. Nå har hver del fire doble remser. 4. Flett! Remsene er doble, som små løkker. Tre den første remsa gjennom en løkke, og la neste løkke gå gjennom remsa. Annenhver gang, hele veien. Neste rad begynner motsatt. 5. Skyv remsene forsiktig på plass. Lim på en papirremse som hank. Nå kan kurven åpnes, og du kan henge den på treet!",
+      "where": "Stua",
+      "kind": "lag selv",
+      "before": "Jan tryller for deg i museet, og på kurs kan du lære å gjøre det selv. Hemmeligheten hans må du få fortalt av ham selv!"
+    },
+    {
+      "id": "0uc82ci",
+      "n": 176,
       "who": "forteller",
       "text": "All pynten henger på treet. Inne på låven er det tent lykter, og dyra har satt seg på benkene.",
       "where": "Finalen",
       "kind": "samtale",
-      "before": "Jan tryller for deg i museet, og på kurs kan du lære å gjøre det selv. Hemmeligheten hans må du få fortalt av ham selv!"
+      "before": "Du trenger: tynt papir i to farger, saks, blyant, linjal, litt papp og lim. Be gjerne en voksen om hjelp til klippingen. 1. Lag en mal av papp: en firkant på 10 ganger 10 centimeter, med en halv sirkel på toppen. 2. Brett et ark dobbelt. Legg den rette kanten på malen helt inntil bretten, tegn rundt og klipp ut. Ikke klipp i bretten! Lag en del i hver farge. 3. Klipp tre snitt fra bretten og opp til der buen begynner. Nå har hver del fire doble remser. 4. Flett! Remsene er doble, som små løkker. Tre den første remsa gjennom en løkke, og la neste løkke gå gjennom remsa. Annenhver gang, hele veien. Neste rad begynner motsatt. 5. Skyv remsene forsiktig på plass. Lim på en papirremse som hank. Nå kan kurven åpnes, og du kan henge den på treet!"
     },
     {
       "id": "11pavjg",
-      "n": 176,
+      "n": 177,
       "who": "jente",
       "text": "I kveld holder vi juleforestilling – for alle som bor på Tryllegården!",
       "where": "Finalen",
@@ -1607,7 +1616,7 @@
     },
     {
       "id": "0vfoqt4",
-      "n": 177,
+      "n": 178,
       "who": "gutt",
       "text": "Og du bestemmer hva vi skal vise.",
       "where": "Finalen",
@@ -1615,17 +1624,224 @@
       "before": "I kveld holder vi juleforestilling – for alle som bor på Tryllegården!"
     },
     {
+      "id": "1ikfhhc",
+      "n": 179,
+      "who": "forteller",
+      "text": "0 av 5 pynt henger på treet.",
+      "where": "Kartet",
+      "kind": "teller",
+      "before": "Og du bestemmer hva vi skal vise."
+    },
+    {
+      "id": "1g5hisp",
+      "n": 180,
+      "who": "forteller",
+      "text": "1 av 5 pynt henger på treet.",
+      "where": "Kartet",
+      "kind": "teller",
+      "before": "0 av 5 pynt henger på treet."
+    },
+    {
+      "id": "1vgujea",
+      "n": 181,
+      "who": "forteller",
+      "text": "2 av 5 pynt henger på treet.",
+      "where": "Kartet",
+      "kind": "teller",
+      "before": "1 av 5 pynt henger på treet."
+    },
+    {
+      "id": "0msb1oj",
+      "n": 182,
+      "who": "forteller",
+      "text": "3 av 5 pynt henger på treet.",
+      "where": "Kartet",
+      "kind": "teller",
+      "before": "2 av 5 pynt henger på treet."
+    },
+    {
+      "id": "194ngho",
+      "n": 183,
+      "who": "forteller",
+      "text": "4 av 5 pynt henger på treet.",
+      "where": "Kartet",
+      "kind": "teller",
+      "before": "3 av 5 pynt henger på treet."
+    },
+    {
+      "id": "1obaxkz",
+      "n": 184,
+      "who": "forteller",
+      "text": "0 av 8 pynt henger på treet.",
+      "where": "Kartet",
+      "kind": "teller",
+      "before": "4 av 5 pynt henger på treet."
+    },
+    {
+      "id": "1a6cxna",
+      "n": 185,
+      "who": "forteller",
+      "text": "1 av 8 pynt henger på treet.",
+      "where": "Kartet",
+      "kind": "teller",
+      "before": "0 av 8 pynt henger på treet."
+    },
+    {
+      "id": "0fu1bxp",
+      "n": 186,
+      "who": "forteller",
+      "text": "2 av 8 pynt henger på treet.",
+      "where": "Kartet",
+      "kind": "teller",
+      "before": "1 av 8 pynt henger på treet."
+    },
+    {
+      "id": "1ab5hxc",
+      "n": 187,
+      "who": "forteller",
+      "text": "3 av 8 pynt henger på treet.",
+      "where": "Kartet",
+      "kind": "teller",
+      "before": "2 av 8 pynt henger på treet."
+    },
+    {
+      "id": "1dljc93",
+      "n": 188,
+      "who": "forteller",
+      "text": "4 av 8 pynt henger på treet.",
+      "where": "Kartet",
+      "kind": "teller",
+      "before": "3 av 8 pynt henger på treet."
+    },
+    {
+      "id": "01crzzu",
+      "n": 189,
+      "who": "forteller",
+      "text": "5 av 8 pynt henger på treet.",
+      "where": "Kartet",
+      "kind": "teller",
+      "before": "4 av 8 pynt henger på treet."
+    },
+    {
+      "id": "07h0djl",
+      "n": 190,
+      "who": "forteller",
+      "text": "6 av 8 pynt henger på treet.",
+      "where": "Kartet",
+      "kind": "teller",
+      "before": "5 av 8 pynt henger på treet."
+    },
+    {
+      "id": "1khkok4",
+      "n": 191,
+      "who": "forteller",
+      "text": "7 av 8 pynt henger på treet.",
+      "where": "Kartet",
+      "kind": "teller",
+      "before": "6 av 8 pynt henger på treet."
+    },
+    {
+      "id": "0bc1ldu",
+      "n": 192,
+      "who": "forteller",
+      "text": "0 av 10 pynt henger på treet.",
+      "where": "Kartet",
+      "kind": "teller",
+      "before": "7 av 8 pynt henger på treet."
+    },
+    {
+      "id": "1hrwamx",
+      "n": 193,
+      "who": "forteller",
+      "text": "1 av 10 pynt henger på treet.",
+      "where": "Kartet",
+      "kind": "teller",
+      "before": "0 av 10 pynt henger på treet."
+    },
+    {
+      "id": "0koh8z4",
+      "n": 194,
+      "who": "forteller",
+      "text": "2 av 10 pynt henger på treet.",
+      "where": "Kartet",
+      "kind": "teller",
+      "before": "1 av 10 pynt henger på treet."
+    },
+    {
+      "id": "1yvuct3",
+      "n": 195,
+      "who": "forteller",
+      "text": "3 av 10 pynt henger på treet.",
+      "where": "Kartet",
+      "kind": "teller",
+      "before": "2 av 10 pynt henger på treet."
+    },
+    {
+      "id": "1voaoq6",
+      "n": 196,
+      "who": "forteller",
+      "text": "4 av 10 pynt henger på treet.",
+      "where": "Kartet",
+      "kind": "teller",
+      "before": "3 av 10 pynt henger på treet."
+    },
+    {
+      "id": "13kvnyt",
+      "n": 197,
+      "who": "forteller",
+      "text": "5 av 10 pynt henger på treet.",
+      "where": "Kartet",
+      "kind": "teller",
+      "before": "4 av 10 pynt henger på treet."
+    },
+    {
+      "id": "0eibggc",
+      "n": 198,
+      "who": "forteller",
+      "text": "6 av 10 pynt henger på treet.",
+      "where": "Kartet",
+      "kind": "teller",
+      "before": "5 av 10 pynt henger på treet."
+    },
+    {
+      "id": "0x3ovjn",
+      "n": 199,
+      "who": "forteller",
+      "text": "7 av 10 pynt henger på treet.",
+      "where": "Kartet",
+      "kind": "teller",
+      "before": "6 av 10 pynt henger på treet."
+    },
+    {
+      "id": "1fmpdne",
+      "n": 200,
+      "who": "forteller",
+      "text": "8 av 10 pynt henger på treet.",
+      "where": "Kartet",
+      "kind": "teller",
+      "before": "7 av 10 pynt henger på treet."
+    },
+    {
+      "id": "0m4jrip",
+      "n": 201,
+      "who": "forteller",
+      "text": "9 av 10 pynt henger på treet.",
+      "where": "Kartet",
+      "kind": "teller",
+      "before": "8 av 10 pynt henger på treet."
+    },
+    {
       "id": "18f8gl9",
-      "n": 178,
+      "n": 202,
       "who": "forteller",
       "text": "Se der det lyser!",
       "where": "Minispill",
       "kind": "tilbakemelding",
-      "before": "Og du bestemmer hva vi skal vise."
+      "before": "9 av 10 pynt henger på treet."
     },
     {
       "id": "1vsfy4p",
-      "n": 179,
+      "n": 203,
       "who": "forteller",
       "text": "Den hører ikke hjemme her!",
       "where": "Minispill",
@@ -1634,7 +1850,7 @@
     },
     {
       "id": "0jv5duc",
-      "n": 180,
+      "n": 204,
       "who": "forteller",
       "text": "Ikke helt ennå. Hva må skje før det?",
       "where": "Minispill",
@@ -1643,7 +1859,7 @@
     },
     {
       "id": "1deu629",
-      "n": 181,
+      "n": 205,
       "who": "forteller",
       "text": "Ferdig! Alt i riktig rekkefølge.",
       "where": "Minispill",
@@ -1652,7 +1868,7 @@
     },
     {
       "id": "03gq19p",
-      "n": 182,
+      "n": 206,
       "who": "forteller",
       "text": "Riktig! Hva kommer så?",
       "where": "Minispill",
@@ -1661,7 +1877,7 @@
     },
     {
       "id": "1mu9qsw",
-      "n": 183,
+      "n": 207,
       "who": "forteller",
       "text": "Se nøye etter!",
       "where": "Minispill",
@@ -1670,7 +1886,7 @@
     },
     {
       "id": "0rsg55w",
-      "n": 184,
+      "n": 208,
       "who": "forteller",
       "text": "Din tur! Denne gangen baklengs: den siste fuglen først.",
       "where": "Minispill",
@@ -1679,7 +1895,7 @@
     },
     {
       "id": "1vb88du",
-      "n": 185,
+      "n": 209,
       "who": "forteller",
       "text": "Din tur! Trykk på fuglene i samme rekkefølge.",
       "where": "Minispill",
@@ -1688,7 +1904,7 @@
     },
     {
       "id": "00uh5tk",
-      "n": 186,
+      "n": 210,
       "who": "forteller",
       "text": "Oi, det ble ikke helt riktig. Se en gang til!",
       "where": "Minispill",
@@ -1697,7 +1913,7 @@
     },
     {
       "id": "1y1wgna",
-      "n": 187,
+      "n": 211,
       "who": "forteller",
       "text": "Du husket alle sammen!",
       "where": "Minispill",
@@ -1706,7 +1922,7 @@
     },
     {
       "id": "03ti2wx",
-      "n": 188,
+      "n": 212,
       "who": "forteller",
       "text": "Flott! Én runde til, litt lengre.",
       "where": "Minispill",
@@ -1715,7 +1931,7 @@
     },
     {
       "id": "0o0c5hx",
-      "n": 189,
+      "n": 213,
       "who": "forteller",
       "text": "Riktig! Du fulgte alle flettene.",
       "where": "Minispill",
@@ -1724,7 +1940,7 @@
     },
     {
       "id": "1wdbp9u",
-      "n": 190,
+      "n": 214,
       "who": "forteller",
       "text": "Riktig! Én flette til.",
       "where": "Minispill",
@@ -1733,7 +1949,7 @@
     },
     {
       "id": "04ykdw8",
-      "n": 191,
+      "n": 215,
       "who": "forteller",
       "text": "Hvilken kake mangler der det lyser?",
       "where": "Minispill",
@@ -1742,7 +1958,7 @@
     },
     {
       "id": "0bz9gdq",
-      "n": 192,
+      "n": 216,
       "who": "forteller",
       "text": "Ikke den. Si mønsteret høyt fra starten!",
       "where": "Minispill",
@@ -1751,7 +1967,7 @@
     },
     {
       "id": "0v9qdek",
-      "n": 193,
+      "n": 217,
       "who": "forteller",
       "text": "Alle kakene er på plass!",
       "where": "Minispill",
@@ -1760,7 +1976,7 @@
     },
     {
       "id": "09tasjf",
-      "n": 194,
+      "n": 218,
       "who": "forteller",
       "text": "Riktig! En ny rad.",
       "where": "Minispill",
@@ -1769,7 +1985,7 @@
     },
     {
       "id": "0krrew1",
-      "n": 195,
+      "n": 219,
       "who": "forteller",
       "text": "Kurven er ferdig flettet!",
       "where": "Minispill",
@@ -1778,7 +1994,7 @@
     },
     {
       "id": "0o87x54",
-      "n": 196,
+      "n": 220,
       "who": "forteller",
       "text": "Helt likt! Nå en litt større kurv.",
       "where": "Minispill",
@@ -1787,7 +2003,7 @@
     },
     {
       "id": "1txed6k",
-      "n": 197,
+      "n": 221,
       "who": "forteller",
       "text": "Hysj … nissen lister seg inn.",
       "where": "Minispill",
@@ -1796,7 +2012,7 @@
     },
     {
       "id": "0v1hpcl",
-      "n": 198,
+      "n": 222,
       "who": "forteller",
       "text": "Slik sto det før.",
       "where": "Minispill",
@@ -1805,7 +2021,7 @@
     },
     {
       "id": "16i4p8i",
-      "n": 199,
+      "n": 223,
       "who": "forteller",
       "text": "Hva har nissen byttet ut? Trykk på det.",
       "where": "Minispill",
@@ -1814,7 +2030,7 @@
     },
     {
       "id": "1dm9ied",
-      "n": 200,
+      "n": 224,
       "who": "forteller",
       "text": "Riktig! Deg lurer han ikke.",
       "where": "Minispill",
@@ -1823,7 +2039,7 @@
     },
     {
       "id": "07sd279",
-      "n": 201,
+      "n": 225,
       "who": "forteller",
       "text": "Riktig! Én gang til, med flere ting.",
       "where": "Minispill",
@@ -1832,7 +2048,7 @@
     },
     {
       "id": "0f23ubn",
-      "n": 202,
+      "n": 226,
       "who": "forteller",
       "text": "Den lyser allerede.",
       "where": "Minispill",
@@ -1841,7 +2057,7 @@
     },
     {
       "id": "1e6gom7",
-      "n": 203,
+      "n": 227,
       "who": "forteller",
       "text": "Alle lyktene lyser!",
       "where": "Minispill",
@@ -1850,7 +2066,7 @@
     },
     {
       "id": "1ilrrct",
-      "n": 204,
+      "n": 228,
       "who": "forteller",
       "text": "Alle lyser! Nissen tuller til lyktene en gang til.",
       "where": "Minispill",
@@ -1859,7 +2075,7 @@
     },
     {
       "id": "1s3mkz1",
-      "n": 205,
+      "n": 229,
       "who": "forteller",
       "text": "Her mangler det ledetråder.",
       "where": "Minispill",
@@ -1868,7 +2084,7 @@
     },
     {
       "id": "1hrti40",
-      "n": 206,
+      "n": 230,
       "who": "forteller",
       "text": "Ikke den. Les ledetråden en gang til!",
       "where": "Minispill",
@@ -1877,7 +2093,7 @@
     },
     {
       "id": "17yfcyc",
-      "n": 207,
+      "n": 231,
       "who": "forteller",
       "text": "Riktig! Du fant dem alle.",
       "where": "Minispill",
@@ -1886,7 +2102,7 @@
     },
     {
       "id": "1iqimmt",
-      "n": 208,
+      "n": 232,
       "who": "forteller",
       "text": "Riktig! Her kommer en ny ledetråd.",
       "where": "Minispill",
@@ -1895,7 +2111,7 @@
     },
     {
       "id": "015j6iz",
-      "n": 209,
+      "n": 233,
       "who": "forteller",
       "text": "Ikke helt. Se en gang til og tell sakte!",
       "where": "Minispill",
@@ -1904,7 +2120,7 @@
     },
     {
       "id": "0h6z4m8",
-      "n": 210,
+      "n": 234,
       "who": "forteller",
       "text": "Riktig! Du telte alt.",
       "where": "Minispill",
@@ -1913,7 +2129,7 @@
     },
     {
       "id": "17f9vx8",
-      "n": 211,
+      "n": 235,
       "who": "forteller",
       "text": "Riktig! Her kommer nye.",
       "where": "Minispill",
@@ -1922,7 +2138,7 @@
     },
     {
       "id": "1cl9qo0",
-      "n": 212,
+      "n": 236,
       "who": "forteller",
       "text": "Finnes det en som er lengre?",
       "where": "Minispill",
@@ -1931,7 +2147,7 @@
     },
     {
       "id": "0kjy2gd",
-      "n": 213,
+      "n": 237,
       "who": "forteller",
       "text": "Finnes det en som er kortere?",
       "where": "Minispill",
@@ -1940,7 +2156,7 @@
     },
     {
       "id": "1ue3alu",
-      "n": 214,
+      "n": 238,
       "who": "forteller",
       "text": "Finnes det et lengre lys?",
       "where": "Minispill",
@@ -1949,7 +2165,7 @@
     },
     {
       "id": "04f0od7",
-      "n": 215,
+      "n": 239,
       "who": "forteller",
       "text": "Finnes det et kortere lys?",
       "where": "Minispill",
@@ -1958,7 +2174,7 @@
     },
     {
       "id": "1qny6et",
-      "n": 216,
+      "n": 240,
       "who": "forteller",
       "text": "Alt henger på rekke!",
       "where": "Minispill",
@@ -1967,7 +2183,7 @@
     },
     {
       "id": "0w2d0bj",
-      "n": 217,
+      "n": 241,
       "who": "forteller",
       "text": "Alle lysene står på rekke!",
       "where": "Minispill",
@@ -1976,7 +2192,7 @@
     },
     {
       "id": "04dyirv",
-      "n": 218,
+      "n": 242,
       "who": "forteller",
       "text": "Riktig! En gang til.",
       "where": "Minispill",
@@ -1985,7 +2201,7 @@
     },
     {
       "id": "0dzbyy2",
-      "n": 219,
+      "n": 243,
       "who": "forteller",
       "text": "Riktig! Nye lys.",
       "where": "Minispill",
@@ -1994,7 +2210,7 @@
     },
     {
       "id": "0arpg3b",
-      "n": 220,
+      "n": 244,
       "who": "forteller",
       "text": "Hvor vil du gå?",
       "where": "Kartet",
@@ -2003,7 +2219,7 @@
     },
     {
       "id": "0hrc7a3",
-      "n": 221,
+      "n": 245,
       "who": "forteller",
       "text": "Stjerna lyser på toppen!",
       "where": "Kartet",
@@ -2012,7 +2228,7 @@
     },
     {
       "id": "116k585",
-      "n": 222,
+      "n": 246,
       "who": "forteller",
       "text": "Nok pynt henger på treet! Nå mangler bare stjerna.",
       "where": "Kartet",
@@ -2021,7 +2237,7 @@
     },
     {
       "id": "070j6o2",
-      "n": 223,
+      "n": 247,
       "who": "forteller",
       "text": "All pynten henger! Nå mangler bare stjerna.",
       "where": "Kartet",
